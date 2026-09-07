@@ -8,6 +8,7 @@ use App\Enums\HouseholdRole;
 use App\Http\Requests\InviteRequest;
 use App\Http\Requests\JoinCodeToggleRequest;
 use App\Http\Requests\RoleRequest;
+use App\Http\Requests\SubscribeRequest;
 use App\Models\Household;
 use App\Models\User;
 use App\Traits\ResolvesHouseholdTrait;
@@ -92,11 +93,9 @@ class HouseController extends Controller
         return back()->with('toast', 'New invite code generated');
     }
 
-    public function subscribe(Request $request, SubscribeHouseholdUseCase $subscribe): SymfonyResponse
+    public function subscribe(SubscribeRequest $request, SubscribeHouseholdUseCase $subscribe): SymfonyResponse
     {
-        $interval = $request->validate([
-            'interval' => ['required', 'string', 'in:monthly,annual'],
-        ])['interval'];
+        $interval = $request->validated('interval');
 
         try {
             $checkoutUrl = $subscribe->execute(

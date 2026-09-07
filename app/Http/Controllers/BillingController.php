@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Data\PlanData;
+use App\Http\Requests\SubscribeRequest;
 use App\Traits\ResolvesHouseholdTrait;
 use App\UseCases\House\SubscribeHouseholdUseCase;
 use Illuminate\Http\Request;
@@ -27,13 +28,9 @@ class BillingController extends Controller
         ]);
     }
 
-    public function subscribe(Request $request, SubscribeHouseholdUseCase $subscribe): SymfonyResponse
+    public function subscribe(SubscribeRequest $request, SubscribeHouseholdUseCase $subscribe): SymfonyResponse
     {
-        abort_if($request->user()->currentRole()?->value !== 'owner', 403);
-
-        $interval = $request->validate([
-            'interval' => ['required', 'string', 'in:monthly,annual'],
-        ])['interval'];
+        $interval = $request->validated('interval');
 
         try {
             $checkoutUrl = $subscribe->execute(
