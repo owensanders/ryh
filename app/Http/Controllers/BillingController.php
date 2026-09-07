@@ -22,7 +22,8 @@ class BillingController extends Controller
         return Inertia::render('BillingRequired', [
             'plan' => PlanData::current(),
             'isOwner' => $request->user()->currentRole()?->value === 'owner',
-            'billingConfigured' => filled(config('plans.stripe_price')),
+            'billingConfigured' => filled(config('plans.intervals.monthly.stripe_price'))
+                && filled(config('plans.intervals.annual.stripe_price')),
         ]);
     }
 
@@ -30,9 +31,14 @@ class BillingController extends Controller
     {
         abort_if($request->user()->currentRole()?->value !== 'owner', 403);
 
+        $interval = $request->validate([
+            'interval' => ['required', 'string', 'in:monthly,annual'],
+        ])['interval'];
+
         try {
             $checkoutUrl = $subscribe->execute(
                 $this->household($request),
+                interval: $interval,
                 successUrl: route('dashboard'),
                 cancelUrl: route('billing.required'),
             );

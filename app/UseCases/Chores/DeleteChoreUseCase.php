@@ -6,13 +6,30 @@ namespace App\UseCases\Chores;
 
 use App\Contracts\Repositories\ChoreRepositoryInterface;
 use App\Models\Chore;
+use App\Models\User;
+use App\Notifications\ChoreDeletedNotification;
 
 class DeleteChoreUseCase
 {
     public function __construct(private readonly ChoreRepositoryInterface $chores) {}
 
-    public function execute(Chore $chore): void
+    public function execute(Chore $chore, User $actor): void
     {
+        $this->notifyInterestedParties($chore, $actor);
+
         $this->chores->delete($chore);
+    }
+
+    /** Tells the assignee and/or creator when someone else deletes their chore, without notifying either twice. */
+    private function notifyInterestedParties(Chore $chore, User $actor): void
+    {
+        $notified = [$actor->id];
+
+        foreach ([$chore->assignee, $chore->creator] as $recipient) {
+            if ($recipient !== null && ! in_array($recipient->id, $notified, true)) {
+                $recipient->notify(new ChoreDeletedNotification($chore, $actor));
+                $notified[] = $recipient->id;
+            }
+        }
     }
 }

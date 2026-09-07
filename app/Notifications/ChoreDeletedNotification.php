@@ -1,0 +1,40 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Notifications;
+
+use App\Models\Chore;
+use App\Models\User;
+
+class ChoreDeletedNotification extends HouseholdNotification
+{
+    public function __construct(
+        private readonly Chore $chore,
+        private readonly User $actor,
+    ) {}
+
+    /**
+     * @param  User  $notifiable
+     * @return array<string, mixed>
+     */
+    public function toArray(object $notifiable): array
+    {
+        return [
+            'type' => $this->notificationType(),
+            'user_id' => $notifiable->id,
+            'body' => "{$this->actor->name} deleted \"{$this->chore->name}\"",
+            'url' => route('chores.index'),
+        ];
+    }
+
+    protected function householdId(): int
+    {
+        return $this->chore->household_id;
+    }
+
+    protected function notificationType(): string
+    {
+        return 'chore_deleted';
+    }
+}

@@ -3,13 +3,15 @@ import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
 import { formatPlanPrice } from '@/lib/househub';
 import type { House } from '@/types/househub';
 import { router, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const props = defineProps<{ house: House }>();
 
 const invite = useForm({ email: '', role: 'adult' });
+const interval = ref<'monthly' | 'annual'>('monthly');
 
 function subscribe(): void {
-    router.post(route('house.subscribe'), {}, { preserveScroll: true });
+    router.post(route('house.subscribe'), { interval: interval.value }, { preserveScroll: true });
 }
 
 function sendInvite(): void {
@@ -209,31 +211,43 @@ function regenerateJoinCode(): void {
 
                         <div class="mt-3 rounded-2xl border border-hh-line bg-hh-sunk p-3.5">
                             <template v-if="props.house.planStatus.subscribed">
-                                <div class="text-[13.5px] font-bold">Home · {{ formatPlanPrice(props.house.planStatus.price) }}/month</div>
+                                <div class="text-[13.5px] font-bold">Home · {{ formatPlanPrice(props.house.planStatus.priceMonthly) }}/month</div>
                                 <div class="mt-0.5 text-[12px] text-hh-ink3">Cancel or update your billing details with support.</div>
                             </template>
-                            <template v-else-if="props.house.planStatus.onTrial">
-                                <div class="text-[13.5px] font-bold">Free trial · ends {{ props.house.planStatus.trialEndsLabel }}</div>
-                                <div class="mt-0.5 text-[12px] text-hh-ink3">
-                                    Then {{ formatPlanPrice(props.house.planStatus.price) }}/month for everyone in the house.
-                                </div>
-                                <button
-                                    type="button"
-                                    class="mt-3 flex h-[38px] items-center justify-center rounded-[11px] bg-hh-coral px-4 text-[13px] font-bold text-white transition hover:-translate-y-0.5"
-                                    @click="subscribe"
-                                >
-                                    Start subscription now
-                                </button>
-                            </template>
                             <template v-else>
-                                <div class="text-[13.5px] font-bold">Trial ended</div>
-                                <div class="mt-0.5 text-[12px] text-hh-ink3">Subscribe to keep using HouseHub.</div>
+                                <template v-if="props.house.planStatus.onTrial">
+                                    <div class="text-[13.5px] font-bold">Free trial · ends {{ props.house.planStatus.trialEndsLabel }}</div>
+                                </template>
+                                <template v-else>
+                                    <div class="text-[13.5px] font-bold">Trial ended</div>
+                                    <div class="mt-0.5 text-[12px] text-hh-ink3">Subscribe to keep using HouseHub.</div>
+                                </template>
+
+                                <div class="mt-3 grid grid-cols-2 gap-2">
+                                    <button
+                                        type="button"
+                                        class="flex h-[36px] items-center justify-center rounded-[10px] border-[1.5px] text-[12.5px] font-bold transition"
+                                        :class="interval === 'monthly' ? 'border-hh-coral bg-hh-coral/10 text-hh-coral' : 'border-hh-line text-hh-ink2'"
+                                        @click="interval = 'monthly'"
+                                    >
+                                        {{ formatPlanPrice(props.house.planStatus.priceMonthly) }}/month
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="flex h-[36px] items-center justify-center rounded-[10px] border-[1.5px] text-[12.5px] font-bold transition"
+                                        :class="interval === 'annual' ? 'border-hh-coral bg-hh-coral/10 text-hh-coral' : 'border-hh-line text-hh-ink2'"
+                                        @click="interval = 'annual'"
+                                    >
+                                        {{ formatPlanPrice(props.house.planStatus.priceAnnual) }}/year
+                                    </button>
+                                </div>
+
                                 <button
                                     type="button"
-                                    class="mt-3 flex h-[38px] items-center justify-center rounded-[11px] bg-hh-coral px-4 text-[13px] font-bold text-white transition hover:-translate-y-0.5"
+                                    class="mt-2.5 flex h-[38px] w-full items-center justify-center rounded-[11px] bg-hh-coral px-4 text-[13px] font-bold text-white transition hover:-translate-y-0.5"
                                     @click="subscribe"
                                 >
-                                    Subscribe now
+                                    {{ props.house.planStatus.onTrial ? 'Start subscription now' : 'Subscribe now' }}
                                 </button>
                             </template>
                         </div>

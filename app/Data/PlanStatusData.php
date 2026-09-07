@@ -13,7 +13,8 @@ class PlanStatusData extends Data
         public bool $onTrial,
         public ?string $trialEndsLabel,
         public bool $subscribed,
-        public float $price,
+        public float $priceMonthly,
+        public float $priceAnnual,
     ) {}
 
     public static function fromHousehold(Household $household): self
@@ -22,7 +23,8 @@ class PlanStatusData extends Data
             onTrial: $household->isOnTrial(),
             trialEndsLabel: $household->isOnTrial() ? $household->trial_ends_at->format('j F Y') : null,
             subscribed: $household->subscribed('default'),
-            price: config('plans.price'),
+            priceMonthly: config('plans.intervals.monthly.price'),
+            priceAnnual: config('plans.intervals.annual.price'),
         );
     }
 }

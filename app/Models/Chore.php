@@ -14,10 +14,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $household_id
  * @property int|null $assigned_to
+ * @property int|null $created_by
  * @property string $name
  * @property ChoreStatus $status
  * @property int $position
  * @property User|null $assignee
+ * @property User|null $creator
  */
 class Chore extends Model
 {
@@ -25,7 +27,7 @@ class Chore extends Model
     use HasFactory;
 
     /** @var list<string> */
-    protected $fillable = ['household_id', 'assigned_to', 'name', 'status', 'position'];
+    protected $fillable = ['household_id', 'assigned_to', 'created_by', 'name', 'status', 'position'];
 
     protected function casts(): array
     {
@@ -42,5 +44,11 @@ class Chore extends Model
     public function assignee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

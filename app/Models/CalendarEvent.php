@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Collection;
 /**
  * @property int $id
  * @property int $household_id
+ * @property int|null $created_by
  * @property string $title
  * @property \Illuminate\Support\Carbon $starts_at
  * @property \Illuminate\Support\Carbon|null $ends_at
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Collection;
  * @property string|null $notes
  * @property \App\Enums\Palette $colour
  * @property Collection<int, User> $attendees
+ * @property User|null $creator
  */
 class CalendarEvent extends Model
 {
@@ -29,7 +31,7 @@ class CalendarEvent extends Model
     use HasFactory;
 
     /** @var list<string> */
-    protected $fillable = ['household_id', 'title', 'starts_at', 'ends_at', 'is_all_day', 'location', 'notes', 'colour'];
+    protected $fillable = ['household_id', 'created_by', 'title', 'starts_at', 'ends_at', 'is_all_day', 'location', 'notes', 'colour'];
 
     protected function casts(): array
     {
@@ -45,6 +47,12 @@ class CalendarEvent extends Model
     public function household(): BelongsTo
     {
         return $this->belongsTo(Household::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**

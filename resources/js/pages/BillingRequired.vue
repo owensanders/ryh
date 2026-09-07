@@ -3,6 +3,7 @@ import { formatPlanPrice } from '@/lib/househub';
 import type { Plan } from '@/types/househub';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { House } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 const props = defineProps<{
     plan: Plan;
@@ -10,8 +11,10 @@ const props = defineProps<{
     billingConfigured: boolean;
 }>();
 
+const interval = ref<'monthly' | 'annual'>('monthly');
+
 function subscribe(): void {
-    router.post(route('billing.subscribe'));
+    router.post(route('billing.subscribe'), { interval: interval.value });
 }
 </script>
 
@@ -36,11 +39,31 @@ function subscribe(): void {
             </template>
             <template v-else-if="props.isOwner">
                 <p class="mt-2.5 text-[14.5px] leading-relaxed text-hh-ink2">
-                    Subscribe for {{ formatPlanPrice(props.plan.price) }}/month to keep everyone in the house up and running.
+                    Subscribe to keep everyone in the house up and running.
                 </p>
+
+                <div class="mt-4 grid grid-cols-2 gap-2">
+                    <button
+                        type="button"
+                        class="flex h-[46px] flex-col items-center justify-center rounded-[12px] border-[1.5px] text-[13.5px] font-bold transition"
+                        :class="interval === 'monthly' ? 'border-hh-coral bg-hh-coral/10 text-hh-coral' : 'border-hh-line text-hh-ink2'"
+                        @click="interval = 'monthly'"
+                    >
+                        {{ formatPlanPrice(props.plan.priceMonthly) }}/month
+                    </button>
+                    <button
+                        type="button"
+                        class="flex h-[46px] flex-col items-center justify-center rounded-[12px] border-[1.5px] text-[13.5px] font-bold transition"
+                        :class="interval === 'annual' ? 'border-hh-coral bg-hh-coral/10 text-hh-coral' : 'border-hh-line text-hh-ink2'"
+                        @click="interval = 'annual'"
+                    >
+                        {{ formatPlanPrice(props.plan.priceAnnual) }}/year
+                    </button>
+                </div>
+
                 <button
                     type="button"
-                    class="mt-6 flex h-[50px] w-full items-center justify-center rounded-[14px] bg-hh-coral text-[15px] font-bold text-white transition hover:-translate-y-0.5"
+                    class="mt-4 flex h-[50px] w-full items-center justify-center rounded-[14px] bg-hh-coral text-[15px] font-bold text-white transition hover:-translate-y-0.5"
                     @click="subscribe"
                 >
                     Subscribe now
@@ -48,7 +71,8 @@ function subscribe(): void {
             </template>
             <template v-else>
                 <p class="mt-2.5 text-[14.5px] leading-relaxed text-hh-ink2">
-                    Ask the household owner to subscribe for {{ formatPlanPrice(props.plan.price) }}/month to keep everyone up and running.
+                    Ask the household owner to subscribe ({{ formatPlanPrice(props.plan.priceMonthly) }}/month or
+                    {{ formatPlanPrice(props.plan.priceAnnual) }}/year) to keep everyone up and running.
                 </p>
             </template>
 

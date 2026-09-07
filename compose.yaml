@@ -25,6 +25,25 @@ services:
         depends_on:
             - mysql
             - redis
+    reverb:
+        image: 'sail-8.4/app'
+        environment:
+            WWWUSER: '${WWWUSER}'
+            LARAVEL_SAIL: 1
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - sail
+        ports:
+            - '${REVERB_PORT:-8080}:${REVERB_PORT:-8080}'
+        entrypoint:
+            - php
+            - artisan
+            - reverb:start
+            - '--host=0.0.0.0'
+            - '--port=${REVERB_PORT:-8080}'
+        depends_on:
+            - laravel.test
     mysql:
         image: 'mysql:8.4'
         ports:

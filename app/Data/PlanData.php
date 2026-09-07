@@ -11,7 +11,8 @@ class PlanData extends Data
     /** @param  list<string>  $features */
     public function __construct(
         public string $name,
-        public float $price,
+        public float $priceMonthly,
+        public float $priceAnnual,
         public string $sub,
         public string $cta,
         public string $note,
@@ -22,7 +23,8 @@ class PlanData extends Data
     {
         return new self(
             name: config('plans.name'),
-            price: config('plans.price'),
+            priceMonthly: config('plans.intervals.monthly.price'),
+            priceAnnual: config('plans.intervals.annual.price'),
             sub: config('plans.sub'),
             cta: config('plans.cta'),
             note: config('plans.note'),

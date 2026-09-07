@@ -94,9 +94,14 @@ class HouseController extends Controller
 
     public function subscribe(Request $request, SubscribeHouseholdUseCase $subscribe): SymfonyResponse
     {
+        $interval = $request->validate([
+            'interval' => ['required', 'string', 'in:monthly,annual'],
+        ])['interval'];
+
         try {
             $checkoutUrl = $subscribe->execute(
                 $this->household($request),
+                interval: $interval,
                 successUrl: route('house.index'),
                 cancelUrl: route('house.index'),
             );

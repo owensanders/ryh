@@ -67,4 +67,24 @@ class BillingGateTest extends TestCase
 
         $this->actingAs($user)->post('/billing/subscribe')->assertForbidden();
     }
+
+    #[Test]
+    public function subscribingRequiresAValidInterval(): void
+    {
+        $household = Household::factory()->create(['trial_ends_at' => now()->subDay()]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
+
+        $this->actingAs($user)->post('/billing/subscribe', ['interval' => 'weekly'])
+            ->assertSessionHasErrors('interval');
+    }
+
+    #[Test]
+    public function subscribingFailsCleanlyWhenBillingIsNotConfigured(): void
+    {
+        $household = Household::factory()->create(['trial_ends_at' => now()->subDay()]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
+
+        $this->actingAs($user)->post('/billing/subscribe', ['interval' => 'annual'])
+            ->assertSessionHasErrors('plan');
+    }
 }

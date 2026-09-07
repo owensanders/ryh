@@ -11,22 +11,23 @@ use RuntimeException;
 class SubscribeHouseholdUseCase
 {
     /**
-     * There is only one plan, so this only ever starts the household's
-     * subscription to it — nothing to swap between. A household that's
-     * already subscribed has nothing left to do here.
+     * Starts the household's subscription to the Home plan at the given
+     * billing interval. A household that's already subscribed has nothing
+     * left to do here.
      *
+     * @param  'monthly'|'annual'  $interval
      * @return string|null A Stripe Checkout URL to redirect to, or null when the household was already subscribed.
      */
-    public function execute(Household $household, string $successUrl, string $cancelUrl): ?string
+    public function execute(Household $household, string $interval, string $successUrl, string $cancelUrl): ?string
     {
         if ($household->subscribed('default')) {
             return null;
         }
 
-        $stripePrice = config('plans.stripe_price');
+        $stripePrice = config("plans.intervals.{$interval}.stripe_price");
 
         if (blank($stripePrice)) {
-            Log::error('No Stripe price configured for the Home plan.');
+            Log::error("No Stripe price configured for the Home plan's {$interval} interval.");
 
             throw new RuntimeException('Billing is not set up yet.');
         }

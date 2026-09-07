@@ -8,16 +8,25 @@ use App\Contracts\Repositories\ChoreRepositoryInterface;
 use App\Data\ChoreData;
 use App\Enums\ChoreStatus;
 use App\Models\Household;
+use App\Models\User;
+use App\Notifications\ChoreAssignedNotification;
 
 class CreateChoreUseCase
 {
     public function __construct(private readonly ChoreRepositoryInterface $chores) {}
 
     /** @param array<string, mixed> $attributes */
-    public function execute(Household $household, array $attributes): ChoreData
+    public function execute(Household $household, array $attributes, User $actor): ChoreData
     {
         $attributes['status'] = ChoreStatus::Today->value;
+        $attributes['created_by'] = $actor->id;
 
-        return ChoreData::fromModel($this->chores->create($household, $attributes));
+        $chore = $this->chores->create($household, $attributes);
+
+        if ($chore->assigned_to !== null && $chore->assigned_to !== $actor->id) {
+            $chore->assignee?->notify(new ChoreAssignedNotification($chore, $actor));
+        }
+
+        return ChoreData::fromModel($chore);
     }
 }

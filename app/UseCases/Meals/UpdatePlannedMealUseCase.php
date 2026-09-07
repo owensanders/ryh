@@ -8,6 +8,9 @@ use App\Contracts\Repositories\MealPlanRepositoryInterface;
 use App\Contracts\Repositories\ShoppingRepositoryInterface;
 use App\Data\PlannedMealData;
 use App\Models\PlannedMeal;
+use App\Models\User;
+use App\Notifications\MealAssignedNotification;
+use App\Notifications\MealEditedNotification;
 use App\UseCases\Meals\Concerns\PushesNewRecipeIngredients;
 use App\UseCases\Shopping\AddRecipeIngredientsToListUseCase;
 
@@ -22,11 +25,21 @@ class UpdatePlannedMealUseCase
     ) {}
 
     /** @param  array<string, mixed>  $attributes */
-    public function execute(PlannedMeal $meal, array $attributes): PlannedMealData
+    public function execute(PlannedMeal $meal, array $attributes, User $actor): PlannedMealData
     {
+        $previousCookId = $meal->cook_id;
+
         $updated = $this->meals->update($meal, $attributes);
 
         $this->pushNewRecipeIngredients($updated->household, $updated, $attributes);
+
+        if ($updated->cook_id !== null && $updated->cook_id !== $actor->id) {
+            $notification = $updated->cook_id !== $previousCookId
+                ? new MealAssignedNotification($updated, $actor)
+                : new MealEditedNotification($updated, $actor);
+
+            $updated->cook?->notify($notification);
+        }
 
         return PlannedMealData::fromModel($updated);
     }

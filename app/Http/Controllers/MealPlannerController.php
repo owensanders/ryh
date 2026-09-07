@@ -49,7 +49,7 @@ class MealPlannerController extends Controller
 
     public function store(PlannedMealRequest $request, AddPlannedMealUseCase $add): RedirectResponse
     {
-        $meal = $add->execute($this->household($request), $request->plannedMealAttributes());
+        $meal = $add->execute($this->household($request), $request->plannedMealAttributes(), $request->user());
 
         return back()->with('toast', "{$meal->name} added");
     }
@@ -58,7 +58,7 @@ class MealPlannerController extends Controller
     {
         $this->assertOwned($request, $meal);
 
-        $updated = $update->execute($meal, $request->plannedMealAttributes());
+        $updated = $update->execute($meal, $request->plannedMealAttributes(), $request->user());
 
         return back()->with('toast', "{$updated->name} updated");
     }
@@ -68,7 +68,7 @@ class MealPlannerController extends Controller
         $this->assertOwned($request, $meal);
 
         $name = $meal->recipe->name;
-        $delete->execute($meal);
+        $delete->execute($meal, $request->user());
 
         return back()->with('toast', "{$name} removed");
     }
