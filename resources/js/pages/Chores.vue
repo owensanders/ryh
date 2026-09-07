@@ -6,16 +6,42 @@ import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
 import { dial, tickStyle } from '@/lib/househub';
 import type { Chore, ChoreColumn, ChoreStatus, Member, MemberScore } from '@/types/househub';
 import { router, useForm } from '@inertiajs/vue3';
-import { Plus, X } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { Bell, Plus, X } from 'lucide-vue-next';
+import { computed, onUnmounted, ref } from 'vue';
 
-defineProps<{
+const props = defineProps<{
     columns: ChoreColumn[];
     scores: MemberScore[];
     members: Member[];
+    notifyChoresAvailableAt: string | null;
 }>();
 
 const { canManage, canToggleChore } = useHouseholdRole();
+
+// Notify chores
+const now = ref(new Date());
+const nowTimer = setInterval(() => (now.value = new Date()), 30_000);
+onUnmounted(() => clearInterval(nowTimer));
+
+const notifyChoresReady = computed(() => props.notifyChoresAvailableAt === null || new Date(props.notifyChoresAvailableAt) <= now.value);
+
+const notifyChoresCooldownLabel = computed(() => {
+    if (notifyChoresReady.value || props.notifyChoresAvailableAt === null) {
+        return null;
+    }
+
+    const minutes = Math.max(1, Math.ceil((new Date(props.notifyChoresAvailableAt).getTime() - now.value.getTime()) / 60_000));
+
+    return `Available again in ${minutes}m`;
+});
+
+function notifyChores(): void {
+    if (!notifyChoresReady.value) {
+        return;
+    }
+
+    router.post(route('chores.notify'), {}, { preserveScroll: true });
+}
 
 // Add chore
 const draft = ref('');
@@ -156,6 +182,19 @@ function confirmDestroy(): void {
                         <div class="mt-[3px] text-[12.5px] text-hh-ink3">{{ score.done }} of {{ score.total }} this week</div>
                     </div>
                 </div>
+            </div>
+
+            <div v-if="canManage" class="flex items-center justify-end gap-2.5">
+                <span v-if="notifyChoresCooldownLabel" class="text-[12px] text-hh-ink3">{{ notifyChoresCooldownLabel }}</span>
+                <button
+                    type="button"
+                    :disabled="!notifyChoresReady"
+                    class="hh-btn w-auto bg-hh-soft text-hh-ink disabled:cursor-not-allowed disabled:opacity-50"
+                    @click="notifyChores"
+                >
+                    <Bell class="h-4 w-4" :stroke-width="2.5" />
+                    Notify Chores
+                </button>
             </div>
 
             <section v-if="canManage" class="flex flex-wrap items-center gap-2.5 rounded-[20px] border border-hh-line bg-hh-panel p-[18px]">

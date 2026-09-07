@@ -205,7 +205,7 @@ function startRegistration(): void {
                                 {{ face.initials }}
                             </span>
                         </div>
-                        <span class="ml-2 text-[13.5px] text-hh-ink3">Unlimited household members · no card required</span>
+                        <span class="ml-2 text-[13.5px] text-hh-ink3">Unlimited household members</span>
                     </div>
                 </div>
 
@@ -399,9 +399,13 @@ function startRegistration(): void {
 
                         <div class="relative mt-[22px] flex items-baseline gap-2">
                             <span class="text-[46px] font-black leading-none tracking-[-0.045em] sm:text-[58px]">{{
-                                formatPlanPrice(props.plan.price)
+                                formatPlanPrice(props.plan.priceMonthly)
                             }}</span>
                             <span class="text-sm font-semibold text-hh-onhero2">/month</span>
+                        </div>
+
+                        <div class="relative mt-1 text-[13.5px] font-semibold text-hh-onhero2">
+                            or {{ formatPlanPrice(props.plan.priceAnnual) }}/year
                         </div>
 
                         <div class="relative mt-2.5 max-w-[290px] text-[14.5px] leading-relaxed text-hh-onhero2">

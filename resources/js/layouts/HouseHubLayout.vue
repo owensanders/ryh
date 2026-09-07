@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import NotificationBell from '@/components/househub/NotificationBell.vue';
 import Toast from '@/components/househub/Toast.vue';
 import { useAppearance } from '@/composables/useAppearance';
 import { useHouseholdRole } from '@/composables/useHouseholdRole';
@@ -100,6 +101,8 @@ function toggleTheme(): void {
                     >
                         {{ isDark ? '☀️' : '🌙' }}
                     </button>
+
+                    <NotificationBell />
 
                     <Link
                         :href="route('profile.edit')"

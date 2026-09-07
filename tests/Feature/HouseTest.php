@@ -56,7 +56,7 @@ class HouseTest extends TestCase
         $owner->household->update(['trial_ends_at' => now()->addDays(30)]);
 
         $this->actingAs($owner)
-            ->post('/house/subscribe')
+            ->post('/house/subscribe', ['interval' => 'monthly'])
             ->assertSessionHasErrors('plan');
     }
 

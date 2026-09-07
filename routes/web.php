@@ -13,6 +13,7 @@ use App\Http\Controllers\HouseController;
 use App\Http\Controllers\HouseholdInviteController;
 use App\Http\Controllers\IncomeSourceController;
 use App\Http\Controllers\MealPlannerController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RecipeController;
 use App\Http\Controllers\ShoppingListController;
 use Illuminate\Support\Facades\Route;
@@ -45,6 +46,11 @@ Route::middleware(['auth', 'verified', 'household'])->group(function (): void {
         // controller rather than the route; shopping items aren't assigned to
         // anyone, so Teen (not Child) is a plain role check here.
         Route::patch('chores/{chore}/toggle', [ChoreController::class, 'toggle'])->name('chores.toggle');
+
+        Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::patch('notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+        Route::post('notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
+        Route::delete('notifications', [NotificationController::class, 'destroyAll'])->name('notifications.destroyAll');
         Route::patch('shopping-items/{item}/toggle', [ShoppingListController::class, 'toggle'])
             ->name('shopping.items.toggle')
             ->middleware('role:owner,adult,teen');
@@ -85,6 +91,7 @@ Route::middleware(['auth', 'verified', 'household'])->group(function (): void {
             Route::patch('chores/{chore}', [ChoreController::class, 'update'])->name('chores.update');
             Route::delete('chores/{chore}', [ChoreController::class, 'destroy'])->name('chores.destroy');
             Route::patch('chores/{chore}/move', [ChoreController::class, 'move'])->name('chores.move');
+            Route::post('chores/notify', [ChoreController::class, 'notify'])->name('chores.notify');
 
             Route::get('budget', [BudgetController::class, 'index'])->name('budget.index');
             Route::post('budget/categories', [BudgetController::class, 'storeCategory'])->name('budget.categories.store');

@@ -42,6 +42,7 @@ class CalendarController extends Controller
             $this->household($request),
             $request->eventAttributes(),
             $request->attendeeIds(),
+            $request->user(),
         );
 
         return back()->with('toast', "“{$event->title}” added");
@@ -51,7 +52,7 @@ class CalendarController extends Controller
     {
         $this->assertOwned($request, $event);
 
-        $updated = $update->execute($event, $request->eventAttributes(), $request->attendeeIds());
+        $updated = $update->execute($event, $request->eventAttributes(), $request->attendeeIds(), $request->user());
 
         return back()->with('toast', "“{$updated->title}” updated");
     }
@@ -61,7 +62,7 @@ class CalendarController extends Controller
         $this->assertOwned($request, $event);
 
         $title = $event->title;
-        $delete->execute($event);
+        $delete->execute($event, $request->user());
 
         return back()->with('toast', "“{$title}” deleted");
     }

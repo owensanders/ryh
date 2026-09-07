@@ -248,7 +248,8 @@ export interface HouseRole {
 
 export interface Plan {
     name: string;
-    price: number;
+    priceMonthly: number;
+    priceAnnual: number;
     sub: string;
     cta: string;
     note: string;
@@ -259,7 +260,8 @@ export interface PlanStatus {
     onTrial: boolean;
     trialEndsLabel: string | null;
     subscribed: boolean;
-    price: number;
+    priceMonthly: number;
+    priceAnnual: number;
 }
 
 export interface HouseholdOption {

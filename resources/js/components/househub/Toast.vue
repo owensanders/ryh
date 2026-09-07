@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { latestToast } from '@/composables/useNotifications';
 import type { SharedData } from '@/types';
 import { usePage } from '@inertiajs/vue3';
 import { onUnmounted, ref, watch } from 'vue';
@@ -11,19 +12,19 @@ let timer: ReturnType<typeof setTimeout> | undefined;
 
 onUnmounted(() => clearTimeout(timer));
 
+function show(toast: string): void {
+    message.value = toast;
+    clearTimeout(timer);
+    timer = setTimeout(() => (message.value = null), DISMISS_AFTER_MS);
+}
+
 watch(
     () => page.props.flash?.toast,
-    (toast) => {
-        if (!toast) {
-            return;
-        }
-
-        message.value = toast;
-        clearTimeout(timer);
-        timer = setTimeout(() => (message.value = null), DISMISS_AFTER_MS);
-    },
+    (toast) => toast && show(toast),
     { immediate: true },
 );
+
+watch(latestToast, (toast) => toast && show(toast));
 </script>
 
 <template>

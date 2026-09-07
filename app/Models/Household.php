@@ -22,6 +22,7 @@ use Laravel\Cashier\Billable;
  * @property \Illuminate\Support\Carbon|null $streak_last_active_date
  * @property \Illuminate\Support\Carbon|null $trial_ends_at
  * @property \Illuminate\Support\Carbon|null $ai_meal_plan_generated_at
+ * @property \Illuminate\Support\Carbon|null $last_chore_notification_sent_at
  * @property-read HouseholdUser|null $pivot Present when loaded through a `User::households()` query.
  */
 class Household extends Model
@@ -32,7 +33,7 @@ class Household extends Model
     use HasFactory;
 
     /** @var list<string> */
-    protected $fillable = ['name', 'join_code', 'join_code_enabled', 'location', 'streak_days', 'streak_last_active_date', 'trial_ends_at', 'ai_meal_plan_generated_at'];
+    protected $fillable = ['name', 'join_code', 'join_code_enabled', 'location', 'streak_days', 'streak_last_active_date', 'trial_ends_at', 'ai_meal_plan_generated_at', 'last_chore_notification_sent_at'];
 
     protected function casts(): array
     {
@@ -42,6 +43,7 @@ class Household extends Model
             'join_code_enabled' => 'boolean',
             'trial_ends_at' => 'datetime',
             'ai_meal_plan_generated_at' => 'datetime',
+            'last_chore_notification_sent_at' => 'datetime',
         ];
     }
 

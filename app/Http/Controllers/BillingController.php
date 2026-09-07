@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Data\PlanData;
+use App\Http\Requests\SubscribeRequest;
 use App\Traits\ResolvesHouseholdTrait;
 use App\UseCases\House\SubscribeHouseholdUseCase;
 use Illuminate\Http\Request;
@@ -22,17 +23,19 @@ class BillingController extends Controller
         return Inertia::render('BillingRequired', [
             'plan' => PlanData::current(),
             'isOwner' => $request->user()->currentRole()?->value === 'owner',
-            'billingConfigured' => filled(config('plans.stripe_price')),
+            'billingConfigured' => filled(config('plans.intervals.monthly.stripe_price'))
+                && filled(config('plans.intervals.annual.stripe_price')),
         ]);
     }
 
-    public function subscribe(Request $request, SubscribeHouseholdUseCase $subscribe): SymfonyResponse
+    public function subscribe(SubscribeRequest $request, SubscribeHouseholdUseCase $subscribe): SymfonyResponse
     {
-        abort_if($request->user()->currentRole()?->value !== 'owner', 403);
+        $interval = $request->validated('interval');
 
         try {
             $checkoutUrl = $subscribe->execute(
                 $this->household($request),
+                interval: $interval,
                 successUrl: route('dashboard'),
                 cancelUrl: route('billing.required'),
             );
