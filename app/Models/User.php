@@ -43,6 +43,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'status_line',
         'email',
         'password',
+        'trial_claimed_at',
     ];
 
     /** @var list<string> */
@@ -56,6 +57,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'trial_claimed_at' => 'datetime',
             'colour' => Palette::class,
         ];
     }

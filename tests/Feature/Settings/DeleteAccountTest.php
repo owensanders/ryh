@@ -8,6 +8,7 @@ use App\Enums\HouseholdRole;
 use App\Models\Chore;
 use App\Models\Household;
 use App\Models\User;
+use App\UseCases\House\CancelHouseholdSubscriptionUseCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -109,5 +110,33 @@ class DeleteAccountTest extends TestCase
 
         $this->assertDatabaseHas('users', ['id' => $member->id, 'current_household_id' => null]);
         $this->assertDatabaseMissing('household_user', ['user_id' => $member->id, 'household_id' => $household->id]);
+    }
+
+    #[Test]
+    public function deletingTheSoleOwnersAccountCancelsTheHouseholdsSubscription(): void
+    {
+        $this->mock(CancelHouseholdSubscriptionUseCase::class)
+            ->shouldReceive('execute')->once();
+
+        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $householdId = $owner->household_id;
+
+        $this->actingAs($owner)->delete('/settings/profile', ['password' => 'password']);
+
+        $this->assertDatabaseMissing('households', ['id' => $householdId]);
+    }
+
+    #[Test]
+    public function deletingANonOwnerLeavesTheSubscriptionAlone(): void
+    {
+        $this->mock(CancelHouseholdSubscriptionUseCase::class)
+            ->shouldNotReceive('execute');
+
+        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $member = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRole::Adult]);
+
+        $this->actingAs($member)->delete('/settings/profile', ['password' => 'password']);
+
+        $this->assertDatabaseHas('households', ['id' => $owner->household_id]);
     }
 }

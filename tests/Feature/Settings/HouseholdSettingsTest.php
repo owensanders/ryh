@@ -7,6 +7,7 @@ namespace Tests\Feature\Settings;
 use App\Enums\HouseholdRole;
 use App\Models\Household;
 use App\Models\User;
+use App\UseCases\House\CancelHouseholdSubscriptionUseCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -103,5 +104,19 @@ class HouseholdSettingsTest extends TestCase
             ->assertRedirect();
 
         $this->assertDatabaseHas('users', ['id' => $user->id, 'current_household_id' => $second->id]);
+    }
+
+    #[Test]
+    public function deletingAHouseholdByLeavingCancelsItsSubscription(): void
+    {
+        $this->mock(CancelHouseholdSubscriptionUseCase::class)
+            ->shouldReceive('execute')->once();
+
+        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+
+        $this->actingAs($owner)
+            ->delete('/settings/households/current', ['household_id' => $owner->household_id]);
+
+        $this->assertDatabaseMissing('households', ['id' => $owner->household_id]);
     }
 }

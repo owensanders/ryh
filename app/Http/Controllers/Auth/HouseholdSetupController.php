@@ -22,7 +22,9 @@ class HouseholdSetupController extends Controller
             return to_route('household.done');
         }
 
-        return Inertia::render('auth/HouseholdSetup');
+        return Inertia::render('auth/HouseholdSetup', [
+            'trialAvailable' => $request->user()->trial_claimed_at === null,
+        ]);
     }
 
     public function store(HouseholdSetupRequest $request, CreateHouseholdUseCase $createHousehold): RedirectResponse

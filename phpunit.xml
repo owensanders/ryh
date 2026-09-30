@@ -28,6 +28,11 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+        <env name="STRIPE_KEY" value=""/>
+        <env name="STRIPE_SECRET" value=""/>
+        <env name="STRIPE_WEBHOOK_SECRET" value=""/>
+        <env name="STRIPE_PRICE_HOME_MONTHLY" value=""/>
+        <env name="STRIPE_PRICE_HOME_ANNUAL" value=""/>
         <env name="TELESCOPE_ENABLED" value="false"/>
     </php>
 </phpunit>

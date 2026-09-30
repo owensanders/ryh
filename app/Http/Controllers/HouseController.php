@@ -101,7 +101,7 @@ class HouseController extends Controller
             $checkoutUrl = $subscribe->execute(
                 $this->household($request),
                 interval: $interval,
-                successUrl: route('house.index'),
+                successUrl: route('billing.checkout.complete', ['from' => 'house']),
                 cancelUrl: route('house.index'),
             );
         } catch (RuntimeException $e) {

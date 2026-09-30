@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use App\Models\Household;
+use Database\Seeders\HouseHubSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Cashier\Subscription;
 use PHPUnit\Framework\Attributes\Test;
@@ -45,5 +46,31 @@ class HouseholdPlanTest extends TestCase
         ]);
 
         $this->assertFalse($household->needsToSubscribe());
+    }
+
+    #[Test]
+    public function aFailedRenewalIsAPaymentIssueNotASubscription(): void
+    {
+        $household = Household::factory()->create(['trial_ends_at' => null]);
+        Subscription::create([
+            'household_id' => $household->id,
+            'type' => 'default',
+            'stripe_id' => 'sub_test123',
+            'stripe_status' => 'past_due',
+            'stripe_price' => 'price_home_monthly_test',
+        ]);
+
+        $this->assertTrue($household->hasPaymentIssue());
+        $this->assertTrue($household->needsToSubscribe());
+    }
+
+    #[Test]
+    public function theDemoSeederRefusesToRunInProduction(): void
+    {
+        $this->app->detectEnvironment(fn () => 'production');
+
+        (new HouseHubSeeder)->run();
+
+        $this->assertDatabaseCount('households', 0);
     }
 }

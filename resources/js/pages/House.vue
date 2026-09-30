@@ -2,16 +2,21 @@
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
 import { formatPlanPrice } from '@/lib/househub';
 import type { House } from '@/types/househub';
-import { router, useForm } from '@inertiajs/vue3';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 const props = defineProps<{ house: House }>();
 
 const invite = useForm({ email: '', role: 'adult' });
+const page = usePage();
 const interval = ref<'monthly' | 'annual'>('monthly');
 
 function subscribe(): void {
     router.post(route('house.subscribe'), { interval: interval.value }, { preserveScroll: true });
+}
+
+function manageBilling(): void {
+    router.post(route('billing.portal'), {}, { preserveScroll: true });
 }
 
 function sendInvite(): void {
@@ -211,19 +216,39 @@ function regenerateJoinCode(): void {
 
                         <div class="mt-3 rounded-2xl border border-hh-line bg-hh-sunk p-3.5">
                             <template v-if="props.house.planStatus.subscribed">
-                                <div class="text-[13.5px] font-bold">Home · {{ formatPlanPrice(props.house.planStatus.priceMonthly) }}/month</div>
-                                <div class="mt-0.5 text-[12px] text-hh-ink3">Cancel or update your billing details with support.</div>
+                                <div class="text-[13.5px] font-bold">
+                                    <template v-if="props.house.planStatus.interval === 'annual'">
+                                        Home · {{ formatPlanPrice(props.house.planStatus.priceAnnual) }}/year
+                                    </template>
+                                    <template v-else>Home · {{ formatPlanPrice(props.house.planStatus.priceMonthly) }}/month</template>
+                                </div>
+                                <div class="mt-0.5 text-[12px] text-hh-ink3">
+                                    <template v-if="props.house.planStatus.endsLabel">Cancelled · access until {{ props.house.planStatus.endsLabel }}</template>
+                                    <template v-else>Change plan, update your card or cancel anytime.</template>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    class="mt-3 flex h-[38px] w-full items-center justify-center rounded-[11px] border-[1.5px] border-hh-line px-4 text-[13px] font-bold text-hh-ink2 transition hover:-translate-y-0.5"
+                                    @click="manageBilling"
+                                >
+                                    {{ props.house.planStatus.endsLabel ? 'Resume or manage billing' : 'Manage billing' }}
+                                </button>
                             </template>
                             <template v-else>
                                 <template v-if="props.house.planStatus.onTrial">
                                     <div class="text-[13.5px] font-bold">Free trial · ends {{ props.house.planStatus.trialEndsLabel }}</div>
+                                </template>
+                                <template v-else-if="props.house.planStatus.paymentIssue">
+                                    <div class="text-[13.5px] font-bold">Payment failed</div>
+                                    <div class="mt-0.5 text-[12px] text-hh-ink3">Update your card and we’ll retry the payment.</div>
                                 </template>
                                 <template v-else>
                                     <div class="text-[13.5px] font-bold">Trial ended</div>
                                     <div class="mt-0.5 text-[12px] text-hh-ink3">Subscribe to keep using HouseHub.</div>
                                 </template>
 
-                                <div class="mt-3 grid grid-cols-2 gap-2">
+                                <div v-if="!props.house.planStatus.paymentIssue" class="mt-3 grid grid-cols-2 gap-2">
                                     <button
                                         type="button"
                                         class="flex h-[36px] items-center justify-center rounded-[10px] border-[1.5px] text-[12.5px] font-bold transition"
@@ -247,10 +272,12 @@ function regenerateJoinCode(): void {
                                     class="mt-2.5 flex h-[38px] w-full items-center justify-center rounded-[11px] bg-hh-coral px-4 text-[13px] font-bold text-white transition hover:-translate-y-0.5"
                                     @click="subscribe"
                                 >
-                                    {{ props.house.planStatus.onTrial ? 'Start subscription now' : 'Subscribe now' }}
+                                    <template v-if="props.house.planStatus.paymentIssue">Update your card</template>
+                                    <template v-else>{{ props.house.planStatus.onTrial ? 'Start subscription now' : 'Subscribe now' }}</template>
                                 </button>
                             </template>
                         </div>
+                        <p v-if="page.props.errors.plan" class="mt-2 text-[12.5px] text-hh-coral">{{ page.props.errors.plan }}</p>
                     </section>
 
                     <!-- What each role can do -->

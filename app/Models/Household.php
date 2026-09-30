@@ -147,6 +147,20 @@ class Household extends Model
             && ($this->trial_ends_at === null || $this->trial_ends_at->isPast());
     }
 
+    /**
+     * True when the subscription still exists in Stripe but a payment has
+     * failed (past due, unpaid, or never confirmed). The fix is updating the
+     * card — starting a second subscription would double-charge once Stripe's
+     * retries on the first one succeed.
+     */
+    public function hasPaymentIssue(): bool
+    {
+        $subscription = $this->subscription('default');
+
+        return $subscription !== null
+            && ($subscription->hasIncompletePayment() || $subscription->stripe_status === 'unpaid');
+    }
+
     /** True if the household hasn't generated an AI meal plan in the last week. */
     public function canGenerateAiMealPlan(): bool
     {

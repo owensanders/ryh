@@ -16,12 +16,16 @@ class SubscribeHouseholdUseCase
      * left to do here.
      *
      * @param  'monthly'|'annual'  $interval
-     * @return string|null A Stripe Checkout URL to redirect to, or null when the household was already subscribed.
+     * @return string|null A Stripe Checkout URL to redirect to (or the billing portal, when an existing subscription just needs a new card), or null when the household was already subscribed.
      */
     public function execute(Household $household, string $interval, string $successUrl, string $cancelUrl): ?string
     {
         if ($household->subscribed('default')) {
             return null;
+        }
+
+        if ($household->hasPaymentIssue()) {
+            return $household->billingPortalUrl($cancelUrl);
         }
 
         $stripePrice = config("plans.intervals.{$interval}.stripe_price");
@@ -33,7 +37,8 @@ class SubscribeHouseholdUseCase
         }
 
         $checkout = $household->newSubscription('default', $stripePrice)->checkout([
-            'success_url' => $successUrl.(str_contains($successUrl, '?') ? '&' : '?').'plan_checkout=success',
+            // Stripe fills in {CHECKOUT_SESSION_ID} itself, so it can't go through url encoding.
+            'success_url' => $successUrl.(str_contains($successUrl, '?') ? '&' : '?').'session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => $cancelUrl.(str_contains($cancelUrl, '?') ? '&' : '?').'plan_checkout=cancelled',
         ]);
 

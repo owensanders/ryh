@@ -13,16 +13,32 @@ class PlanStatusData extends Data
         public bool $onTrial,
         public ?string $trialEndsLabel,
         public bool $subscribed,
+        /** 'monthly' | 'annual' while subscribed, otherwise null. */
+        public ?string $interval,
+        /** Set once a subscription is cancelled but still running to the end of its paid period. */
+        public ?string $endsLabel,
+        /** A renewal failed — the owner needs to update their card rather than subscribe again. */
+        public bool $paymentIssue,
         public float $priceMonthly,
         public float $priceAnnual,
     ) {}
 
     public static function fromHousehold(Household $household): self
     {
+        $subscription = $household->subscription('default');
+        $subscribed = $household->subscribed('default');
+
         return new self(
             onTrial: $household->isOnTrial(),
             trialEndsLabel: $household->isOnTrial() ? $household->trial_ends_at->format('j F Y') : null,
-            subscribed: $household->subscribed('default'),
+            subscribed: $subscribed,
+            interval: match (true) {
+                ! $subscribed => null,
+                $subscription->hasPrice(config('plans.intervals.annual.stripe_price')) => 'annual',
+                default => 'monthly',
+            },
+            endsLabel: $subscription?->onGracePeriod() ? $subscription->ends_at->format('j F Y') : null,
+            paymentIssue: $household->hasPaymentIssue(),
             priceMonthly: config('plans.intervals.monthly.price'),
             priceAnnual: config('plans.intervals.annual.price'),
         );

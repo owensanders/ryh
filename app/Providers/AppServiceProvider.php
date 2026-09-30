@@ -16,6 +16,9 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->isLocal()) {
             $this->app->register(TelescopeServiceProvider::class);
         }
+
+        // Registered in routes/stripe.php instead, behind RequireStripeWebhookSecret.
+        Cashier::ignoreRoutes();
     }
 
     public function boot(): void

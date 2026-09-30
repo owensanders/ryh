@@ -87,4 +87,70 @@ class BillingGateTest extends TestCase
         $this->actingAs($user)->post('/billing/subscribe', ['interval' => 'annual'])
             ->assertSessionHasErrors('plan');
     }
+
+    #[Test]
+    public function onlyTheOwnerCanOpenTheBillingPortal(): void
+    {
+        $household = Household::factory()->create(['trial_ends_at' => now()->addDays(10)]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Adult]);
+
+        $this->actingAs($user)->post('/billing/portal')->assertForbidden();
+    }
+
+    #[Test]
+    public function theBillingPortalNeedsAStripeCustomer(): void
+    {
+        $household = Household::factory()->create(['trial_ends_at' => now()->addDays(10)]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
+
+        $this->actingAs($user)->post('/billing/portal')->assertSessionHasErrors('plan');
+    }
+
+    #[Test]
+    public function onlyTheOwnerCanCompleteCheckout(): void
+    {
+        $household = Household::factory()->create(['trial_ends_at' => now()->subDay()]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Adult]);
+
+        $this->actingAs($user)->get('/billing/checkout/complete')->assertForbidden();
+    }
+
+    #[Test]
+    public function completingCheckoutReturnsTheOwnerToWhereTheyStarted(): void
+    {
+        $household = Household::factory()->create(['trial_ends_at' => now()->addDays(10)]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
+
+        $this->actingAs($user)->get('/billing/checkout/complete')
+            ->assertRedirect(route('dashboard', absolute: false));
+        $this->actingAs($user)->get('/billing/checkout/complete?from=house')
+            ->assertRedirect(route('house.index', absolute: false));
+    }
+
+    #[Test]
+    public function aPastDueHouseholdIsAskedToUpdateItsCardNotSubscribeAgain(): void
+    {
+        $household = Household::factory()->create(['trial_ends_at' => null]);
+        Subscription::create([
+            'household_id' => $household->id,
+            'type' => 'default',
+            'stripe_id' => 'sub_test123',
+            'stripe_status' => 'past_due',
+            'stripe_price' => 'price_home_monthly_test',
+        ]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
+
+        $this->actingAs($user)->get('/dashboard')->assertRedirect(route('billing.required', absolute: false));
+        $this->actingAs($user)->get('/billing/required')
+            ->assertInertia(fn ($page) => $page->where('paymentIssue', true));
+    }
+
+    #[Test]
+    public function thePaywallSendsSubscribedHouseholdsBackToTheApp(): void
+    {
+        $household = Household::factory()->create(['trial_ends_at' => now()->addDays(10)]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
+
+        $this->actingAs($user)->get('/billing/required')->assertRedirect(route('dashboard', absolute: false));
+    }
 }

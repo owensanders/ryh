@@ -8,6 +8,10 @@ import { computed, ref } from 'vue';
 type Mode = 'create' | 'join';
 type InviteRole = 'adult' | 'teen' | 'child';
 
+const props = defineProps<{
+    trialAvailable: boolean;
+}>();
+
 const mode = ref<Mode>('create');
 
 const sizes = ['1 person', '2 people', '3 people', '4 people', '5 people', '6 or more'];
@@ -104,7 +108,10 @@ function submitJoin(): void {
                 </div>
 
                 <div class="rounded-[16px] bg-hh-soft px-4 py-3 text-[13px] leading-relaxed text-hh-ink2">
-                    Your household gets a free month, then £3.99/month (or £39.99/year) — no card needed today.
+                    <template v-if="props.trialAvailable">
+                        Your household gets a free month, then £3.99/month (or £39.99/year) — no card needed today.
+                    </template>
+                    <template v-else>You've already had your free month, so this household starts at £3.99/month (or £39.99/year).</template>
                 </div>
 
                 <div class="border-t border-hh-line pt-4">

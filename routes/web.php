@@ -30,6 +30,10 @@ Route::middleware(['auth', 'verified', 'household'])->group(function (): void {
     // household without a subscription can go.
     Route::get('billing/required', [BillingController::class, 'required'])->name('billing.required');
     Route::post('billing/subscribe', [BillingController::class, 'subscribe'])->name('billing.subscribe');
+    Route::middleware('role:owner')->group(function (): void {
+        Route::get('billing/checkout/complete', [BillingController::class, 'complete'])->name('billing.checkout.complete');
+        Route::post('billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
+    });
 
     Route::middleware('trial.active')->group(function (): void {
         Route::get('dashboard', DashboardController::class)->name('dashboard');
