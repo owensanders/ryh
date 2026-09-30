@@ -39,7 +39,7 @@ const updatePassword = () => {
 <template>
     <HouseHubLayout title="Settings" subtitle="Manage your profile and account">
         <SettingsLayout>
-            <section class="rounded-[22px] border border-hh-line bg-hh-card p-[22px]">
+            <section class="rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
                 <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">Update password</h3>
                 <p class="mt-1 text-[13px] text-hh-ink3">Use a long, random password to keep the account secure.</p>
 

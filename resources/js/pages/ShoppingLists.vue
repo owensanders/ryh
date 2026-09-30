@@ -163,7 +163,7 @@ function confirmDestroy(): void {
                 </Link>
             </div>
 
-            <div v-if="active" class="w-full min-w-0 flex-1 rounded-[22px] border border-hh-line bg-hh-card p-[22px]">
+            <div v-if="active" class="w-full min-w-0 flex-1 rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
                 <div class="flex items-center gap-3 border-b border-hh-line pb-4">
                     <div class="flex-1">
                         <div class="flex items-center gap-1.5">
@@ -196,18 +196,18 @@ function confirmDestroy(): void {
                         v-model="draft.name"
                         placeholder="Add to this list…"
                         aria-label="Add to this list"
-                        class="h-12 flex-1 rounded-[14px] border border-hh-line bg-hh-sunk px-4 text-[14.5px] text-hh-ink placeholder:text-hh-ink3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hh-coral"
+                        class="h-12 min-w-0 flex-1 rounded-[14px] border border-hh-line bg-hh-sunk px-4 text-[14.5px] text-hh-ink placeholder:text-hh-ink3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hh-coral"
                     />
                     <input
                         v-model="draft.quantity"
                         placeholder="Qty"
                         aria-label="Quantity"
-                        class="h-12 w-20 rounded-[14px] border border-hh-line bg-hh-sunk px-3 text-[14.5px] text-hh-ink placeholder:text-hh-ink3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hh-coral"
+                        class="h-12 w-16 flex-none rounded-[14px] border border-hh-line bg-hh-sunk px-3 text-[14.5px] text-hh-ink placeholder:text-hh-ink3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hh-coral sm:w-20"
                     />
                     <button
                         type="submit"
                         :disabled="draft.processing"
-                        class="h-12 rounded-[14px] bg-hh-coral px-[22px] text-sm font-bold text-white transition hover:-translate-y-0.5 disabled:opacity-50"
+                        class="h-12 flex-none rounded-[14px] bg-hh-coral px-4 text-sm font-bold text-white transition hover:-translate-y-0.5 disabled:opacity-50 sm:px-[22px]"
                     >
                         Add
                     </button>
@@ -219,7 +219,7 @@ function confirmDestroy(): void {
                         <button
                             type="button"
                             :disabled="!canToggleItems"
-                            class="flex min-h-[46px] w-full items-center gap-3 rounded-[13px] px-2.5 pr-8 text-left transition-colors hover:bg-hh-soft disabled:cursor-not-allowed"
+                            class="flex min-h-[46px] w-full items-center gap-3 rounded-[13px] px-2.5 pr-10 text-left transition-colors hover:bg-hh-soft disabled:cursor-not-allowed"
                             @click="toggleItem(item.id)"
                         >
                             <span
@@ -237,7 +237,7 @@ function confirmDestroy(): void {
                             v-if="canManage"
                             type="button"
                             aria-label="Edit item"
-                            class="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 transition group-hover:opacity-100"
+                            class="absolute right-0.5 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-lg transition [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
                             @click.stop="openEditItem(item)"
                         >
                             <Pencil class="h-3.5 w-3.5 text-hh-ink3" />
@@ -319,11 +319,6 @@ function confirmDestroy(): void {
             </DialogContent>
         </Dialog>
 
-        <ConfirmDialog
-            :open="confirmDialogOpen"
-            :message="confirmMessage"
-            @update:open="confirmDialogOpen = $event"
-            @confirm="confirmDestroy"
-        />
+        <ConfirmDialog :open="confirmDialogOpen" :message="confirmMessage" @update:open="confirmDialogOpen = $event" @confirm="confirmDestroy" />
     </HouseHubLayout>
 </template>
