@@ -27,6 +27,12 @@ const createForm = useForm<{
     invites: [],
 });
 
+// Laravel reports invite errors per row (`invites.1.email`), which Inertia's
+// form types don't know about — show whichever comes first.
+const inviteError = computed(
+    () => Object.entries(createForm.errors as Record<string, string | undefined>).find(([key]) => key.startsWith('invites'))?.[1],
+);
+
 const inviteEmail = ref('');
 const inviteRole = ref<InviteRole>('adult');
 
@@ -156,7 +162,7 @@ function submitJoin(): void {
                             Add
                         </button>
                     </div>
-                    <InputError :message="createForm.errors['invites.0.email']" />
+                    <InputError :message="inviteError" />
                 </div>
 
                 <div class="mt-2 flex items-center gap-3.5">

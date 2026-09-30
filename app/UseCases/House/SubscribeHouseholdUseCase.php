@@ -7,6 +7,7 @@ namespace App\UseCases\House;
 use App\Models\Household;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
+use Stripe\Exception\ApiErrorException;
 
 class SubscribeHouseholdUseCase
 {
@@ -24,10 +25,6 @@ class SubscribeHouseholdUseCase
             return null;
         }
 
-        if ($household->hasPaymentIssue()) {
-            return $household->billingPortalUrl($cancelUrl);
-        }
-
         $stripePrice = config("plans.intervals.{$interval}.stripe_price");
 
         if (blank($stripePrice)) {
@@ -36,12 +33,22 @@ class SubscribeHouseholdUseCase
             throw new RuntimeException('Billing is not set up yet.');
         }
 
-        $checkout = $household->newSubscription('default', $stripePrice)->checkout([
-            // Stripe fills in {CHECKOUT_SESSION_ID} itself, so it can't go through url encoding.
-            'success_url' => $successUrl.(str_contains($successUrl, '?') ? '&' : '?').'session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url' => $cancelUrl.(str_contains($cancelUrl, '?') ? '&' : '?').'plan_checkout=cancelled',
-        ]);
+        try {
+            if ($household->hasPaymentIssue()) {
+                return $household->billingPortalUrl($cancelUrl);
+            }
 
-        return $checkout->asStripeCheckoutSession()->url;
+            $checkout = $household->newSubscription('default', $stripePrice)->checkout([
+                // Stripe fills in {CHECKOUT_SESSION_ID} itself, so it can't go through url encoding.
+                'success_url' => $successUrl.(str_contains($successUrl, '?') ? '&' : '?').'session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => $cancelUrl.(str_contains($cancelUrl, '?') ? '&' : '?').'plan_checkout=cancelled',
+            ]);
+
+            return $checkout->asStripeCheckoutSession()->url;
+        } catch (ApiErrorException $e) {
+            Log::error("Couldn't start Stripe checkout for household {$household->id}: {$e->getMessage()}");
+
+            throw new RuntimeException("We couldn't reach our payment provider. Please try again in a moment.", previous: $e);
+        }
     }
 }

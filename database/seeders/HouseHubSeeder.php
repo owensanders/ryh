@@ -31,7 +31,7 @@ class HouseHubSeeder extends Seeder
         // running this in production would hand out free access. Guarded
         // here rather than in DatabaseSeeder so `--class=` can't skip it.
         if (app()->isProduction()) {
-            $this->command?->error('Refusing to seed demo data in production.');
+            $this->command->error('Refusing to seed demo data in production.');
 
             return;
         }

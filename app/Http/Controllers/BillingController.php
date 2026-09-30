@@ -87,6 +87,12 @@ class BillingController extends Controller
             return back()->withErrors(['plan' => 'There are no billing details to manage yet.']);
         }
 
-        return Inertia::location($household->billingPortalUrl(route('house.index')));
+        try {
+            return Inertia::location($household->billingPortalUrl(route('house.index')));
+        } catch (ApiErrorException $e) {
+            Log::error("Couldn't open the Stripe billing portal for household {$household->id}: {$e->getMessage()}");
+
+            return back()->withErrors(['plan' => "We couldn't reach our payment provider. Please try again in a moment."]);
+        }
     }
 }

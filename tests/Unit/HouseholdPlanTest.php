@@ -69,7 +69,9 @@ class HouseholdPlanTest extends TestCase
     {
         $this->app->detectEnvironment(fn () => 'production');
 
-        (new HouseHubSeeder)->run();
+        $this->artisan('db:seed', ['--class' => HouseHubSeeder::class, '--force' => true])
+            ->expectsOutputToContain('Refusing to seed demo data in production.')
+            ->assertSuccessful();
 
         $this->assertDatabaseCount('households', 0);
     }

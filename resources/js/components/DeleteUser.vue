@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import InputError from '@/components/InputError.vue';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -11,6 +11,10 @@ const form = useForm({
     password: '',
     confirm_household_deletion: false,
 });
+
+// The server reports the "you're the sole owner" warning under `household`,
+// which isn't a form field, so Inertia's form types don't include it.
+const householdError = computed(() => (form.errors as Partial<Record<string, string>>).household);
 
 const deleteUser = (e: Event) => {
     e.preventDefault();
@@ -69,8 +73,8 @@ const closeModal = () => {
                             <InputError :message="form.errors.password" />
                         </div>
 
-                        <div v-if="form.errors.household" class="rounded-[13px] bg-[color-mix(in_srgb,var(--hh-coral)_10%,transparent)] p-3.5">
-                            <p class="text-[13px] text-hh-ink2">{{ form.errors.household }}</p>
+                        <div v-if="householdError" class="rounded-[13px] bg-[color-mix(in_srgb,var(--hh-coral)_10%,transparent)] p-3.5">
+                            <p class="text-[13px] text-hh-ink2">{{ householdError }}</p>
                             <a :href="route('house.index')" class="mt-1.5 inline-block text-[13px] font-bold text-hh-coral underline">
                                 Go promote another member to Owner instead
                             </a>
@@ -86,7 +90,7 @@ const closeModal = () => {
                             <button
                                 type="submit"
                                 class="hh-btn w-auto bg-hh-coral text-white"
-                                :disabled="form.processing || (!!form.errors.household && !form.confirm_household_deletion)"
+                                :disabled="form.processing || (!!householdError && !form.confirm_household_deletion)"
                             >
                                 Delete account
                             </button>

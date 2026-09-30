@@ -18,7 +18,7 @@ const form = useForm({
     name: '',
     email: props.email ?? '',
     password: '',
-    terms: false,
+    terms: false as boolean,
 });
 
 const passwordScore = computed(() => {

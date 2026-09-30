@@ -8,13 +8,15 @@ use App\Enums\HouseholdRole;
 use App\Models\Chore;
 use App\Models\Household;
 use App\Models\User;
-use App\UseCases\House\CancelHouseholdSubscriptionUseCase;
+use Laravel\Cashier\Subscription;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\Support\FakesStripe;
 use Tests\TestCase;
 
 class DeleteAccountTest extends TestCase
 {
+    use FakesStripe;
     use RefreshDatabase;
 
     #[Test]
@@ -115,28 +117,41 @@ class DeleteAccountTest extends TestCase
     #[Test]
     public function deletingTheSoleOwnersAccountCancelsTheHouseholdsSubscription(): void
     {
-        $this->mock(CancelHouseholdSubscriptionUseCase::class)
-            ->shouldReceive('execute')->once();
-
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $stripe = $this->fakeStripe()->respond('DELETE', '/v1/subscriptions/sub_live', $this->stripeSubscription('sub_live', 'cus_test123', 'price_monthly', 'canceled'));
+        $owner = $this->ownerOfPaidHousehold();
         $householdId = $owner->household_id;
 
         $this->actingAs($owner)->delete('/settings/profile', ['password' => 'password']);
 
+        $stripe->assertRequested('DELETE', '/v1/subscriptions/sub_live');
         $this->assertDatabaseMissing('households', ['id' => $householdId]);
     }
 
     #[Test]
     public function deletingANonOwnerLeavesTheSubscriptionAlone(): void
     {
-        $this->mock(CancelHouseholdSubscriptionUseCase::class)
-            ->shouldNotReceive('execute');
-
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $stripe = $this->fakeStripe();
+        $owner = $this->ownerOfPaidHousehold();
         $member = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRole::Adult]);
 
         $this->actingAs($member)->delete('/settings/profile', ['password' => 'password']);
 
-        $this->assertDatabaseHas('households', ['id' => $owner->household_id]);
+        $stripe->assertNothingRequested();
+        $this->assertTrue($owner->household->fresh()->subscribed('default'));
+    }
+
+    private function ownerOfPaidHousehold(): User
+    {
+        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner->household->update(['stripe_id' => 'cus_test123']);
+        Subscription::create([
+            'household_id' => $owner->household_id,
+            'type' => 'default',
+            'stripe_id' => 'sub_live',
+            'stripe_status' => 'active',
+            'stripe_price' => 'price_monthly',
+        ]);
+
+        return $owner;
     }
 }
