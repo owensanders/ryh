@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useAppearance } from '@/composables/useAppearance';
-import { dial, formatPlanPrice, tickStyle, tint } from '@/lib/househub';
+import { formatPlanPrice, tint } from '@/lib/househub';
 import type { SharedData } from '@/types';
 import type { Plan } from '@/types/househub';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { House } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { House, Menu, X } from 'lucide-vue-next';
+import { computed, onMounted, ref } from 'vue';
 
 const props = defineProps<{ plan: Plan }>();
 
@@ -16,6 +16,9 @@ const isDark = computed(() => appearance.value === 'dark');
 const user = computed(() => page.props.auth?.user);
 
 const email = ref('');
+
+// Below `lg` the section links (and, on phones, Log in and the theme toggle) live in a menu.
+const menuOpen = ref(false);
 
 const heroGradient = 'linear-gradient(118deg, var(--hh-hero1) 0%, var(--hh-hero2) 100%)';
 
@@ -33,47 +36,59 @@ const faces = [
     { initials: 'NP', colour: 'var(--hh-sky)' },
 ];
 
-const demoList = [
-    { name: 'Chicken thighs', qty: '1kg', done: false },
-    { name: 'New potatoes', qty: '750g', done: false },
-    { name: 'Lemons', qty: 'x3', done: true },
-    { name: 'Oat milk', qty: 'x2', done: false },
-];
+// The hero's product tour autoplays muted (browsers block autoplay with sound),
+// unless the visitor has asked for reduced motion.
+const tourVideo = ref<HTMLVideoElement | null>(null);
+const tourMuted = ref(true);
 
-const demoAgenda = [
-    { time: '09:30', title: 'Dentist — Noah', colour: 'var(--hh-sky)' },
-    { time: '16:00', title: 'Swim club pickup', colour: 'var(--hh-sun)' },
-    { time: '19:00', title: 'Council tax £186', colour: 'var(--hh-coral)' },
-];
+onMounted(() => {
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        tourVideo.value?.play().catch(() => {});
+    }
+});
+
+function watchWithSound(): void {
+    const video = tourVideo.value;
+    if (!video) {
+        return;
+    }
+    video.muted = false;
+    video.currentTime = 0;
+    video.play().catch(() => {});
+    tourMuted.value = false;
+}
 
 const pillars = [
     {
         icon: '🍽',
         title: "What's for dinner?",
-        body: "A week of meals planned in minutes, with whoever's cooking assigned. Drag a meal to another night and the shopping list follows.",
+        body: "A week of dinners planned in minutes, with whoever's cooking assigned. Drag a meal to another night, or send a recipe's ingredients straight to a shopping list.",
         proof: 'Answered before you reach the kitchen',
     },
     {
         icon: '📅',
         title: "What's on today?",
-        body: 'Every appointment, club run and direct debit for the whole household on one timeline, colour-coded per person.',
-        proof: 'One shared calendar, four phones',
+        body: "Every appointment, club run and bill date for the whole household on one shared calendar, with who's going on each.",
+        proof: 'One shared calendar for the whole house',
     },
     {
         icon: '🛒',
         title: 'What do we need?',
-        body: 'Lists that update live while someone else is mid-aisle, grouped the way the shop is laid out. Tesco, Aldi, DIY, Christmas.',
-        proof: 'Shared lists, live as you shop',
+        body: 'As many named lists as you need — Tesco, Aldi, DIY, Christmas. Everyone sees the same list and ticks things off as they shop.',
+        proof: 'Shared lists for every shop',
     },
 ];
 
 const secondary = [
-    { icon: '💰', title: 'Budgeting', body: 'Household spend by category, month to month.' },
-    { icon: '📂', title: 'Documents', body: 'A searchable vault for insurance, MOTs and tenancy paperwork.' },
-    { icon: '✅', title: 'Chores', body: 'Streaks and a bit of friendly rivalry.' },
-    { icon: '🔑', title: 'Guest access', body: 'Give cleaners, sitters or other helpers their own login.' },
-    { icon: '✨', title: 'AI insights', body: 'Smart meal planning and household insights, automatically.' },
-    { icon: '🏘', title: 'Multiple properties', body: 'Landlords and multi-home households, all under one login.' },
+    { icon: '📖', title: 'Recipe library', body: 'Family favourites with ingredients, tags and cook times, ready to plan.' },
+    { icon: '✨', title: 'AI meal plans', body: "Say who's eating and what to avoid, and get a week of dinners." },
+    { icon: '✅', title: 'Chores', body: "Assign jobs, see who's pulling their weight, and nudge everyone in one tap." },
+    { icon: '🔔', title: 'Live notifications', body: 'Know the moment a chore, meal or event is assigned to you, changed or cancelled.' },
+    { icon: '💰', title: 'Budgeting', body: 'Income and planned spending by category, month to month.' },
+    { icon: '📂', title: 'Documents', body: 'Insurance, MOTs and tenancy paperwork in folders, tagged and searchable.' },
+    { icon: '👪', title: 'Family roles', body: 'Owner, Adult, Teen and Child access, so kids tick off and grown-ups manage.' },
+    { icon: '✉️', title: 'Easy invites', body: 'Invite by email, or share a join code and approve who gets in.' },
+    { icon: '🏘', title: 'Multiple homes', body: 'Two households, or helping run a parent’s? Switch between them under one login.' },
 ];
 
 const promises = [
@@ -85,7 +100,7 @@ const promises = [
     {
         icon: '🔒',
         title: 'Your household data is yours',
-        body: 'No advertising, no selling shopping habits to supermarkets. Export everything, or delete the household outright, whenever you like.',
+        body: "No advertising, no selling shopping habits to supermarkets. Close your account whenever you like, and if you are the household's only owner, everything in it goes too.",
     },
     {
         icon: '📬',
@@ -135,7 +150,7 @@ function startRegistration(): void {
                     type="button"
                     :title="isDark ? 'Light mode' : 'Dark mode'"
                     :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-                    class="h-10 w-10 rounded-xl bg-hh-soft text-[15px] transition-colors hover:bg-hh-line"
+                    class="hidden h-10 w-10 rounded-xl bg-hh-soft text-[15px] transition-colors hover:bg-hh-line sm:block"
                     @click="toggleTheme"
                 >
                     {{ isDark ? '☀️' : '🌙' }}
@@ -144,7 +159,7 @@ function startRegistration(): void {
                 <Link
                     v-if="user"
                     :href="route('dashboard')"
-                    class="flex h-10 items-center rounded-xl bg-hh-coral px-5 text-sm font-bold text-white transition hover:-translate-y-0.5"
+                    class="flex h-10 items-center whitespace-nowrap rounded-xl bg-hh-coral px-4 text-sm font-bold text-white transition hover:-translate-y-0.5 sm:px-5"
                 >
                     Go to dashboard
                 </Link>
@@ -157,11 +172,55 @@ function startRegistration(): void {
                     </Link>
                     <Link
                         :href="route('register')"
-                        class="flex h-10 items-center rounded-xl bg-hh-coral px-5 text-sm font-bold text-white transition hover:-translate-y-0.5"
+                        class="flex h-10 items-center whitespace-nowrap rounded-xl bg-hh-coral px-4 text-sm font-bold text-white transition hover:-translate-y-0.5 sm:px-5"
                     >
-                        Register free
+                        Register<span class="hidden min-[400px]:inline">&nbsp;free</span>
                     </Link>
                 </template>
+
+                <button
+                    type="button"
+                    class="grid h-10 w-10 flex-none place-items-center rounded-xl bg-hh-soft transition-colors hover:bg-hh-line lg:hidden"
+                    :aria-expanded="menuOpen"
+                    aria-controls="landing-menu"
+                    :aria-label="menuOpen ? 'Close menu' : 'Open menu'"
+                    @click="menuOpen = !menuOpen"
+                >
+                    <X v-if="menuOpen" class="h-[18px] w-[18px]" />
+                    <Menu v-else class="h-[18px] w-[18px]" />
+                </button>
+
+                <div
+                    v-if="menuOpen"
+                    id="landing-menu"
+                    class="absolute inset-x-0 top-full border-b border-hh-line bg-hh-shell px-5 pb-5 pt-2 shadow-hh sm:px-8 lg:hidden"
+                >
+                    <a
+                        v-for="link in navLinks"
+                        :key="link.href"
+                        :href="link.href"
+                        class="flex min-h-[48px] items-center rounded-xl px-3 text-[15px] font-semibold text-hh-ink2 hover:bg-hh-soft hover:text-hh-ink"
+                        @click="menuOpen = false"
+                    >
+                        {{ link.label }}
+                    </a>
+                    <div class="mt-2 flex gap-2 border-t border-hh-line pt-4 sm:hidden">
+                        <button
+                            type="button"
+                            class="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-hh-soft text-sm font-semibold"
+                            @click="toggleTheme"
+                        >
+                            {{ isDark ? '☀️ Light mode' : '🌙 Dark mode' }}
+                        </button>
+                        <Link
+                            v-if="!user"
+                            :href="route('login')"
+                            class="flex h-11 flex-1 items-center justify-center rounded-xl border border-hh-line text-sm font-bold"
+                        >
+                            Log in
+                        </Link>
+                    </div>
+                </div>
             </header>
 
             <!-- Hero -->
@@ -209,100 +268,37 @@ function startRegistration(): void {
                     </div>
                 </div>
 
-                <!-- Dashboard preview -->
+                <!-- Product tour video -->
                 <div class="relative animate-hh-rise">
                     <div class="absolute -top-8 right-10 h-[300px] w-[300px] rounded-full bg-hh-coral opacity-[0.16] blur-[50px]"></div>
 
-                    <div class="relative rounded-3xl p-[22px] text-hh-onhero shadow-hh" :style="{ background: heroGradient }">
-                        <div class="mb-4 flex flex-wrap items-center gap-2">
-                            <span class="h-[9px] w-[9px] rounded-full bg-hh-heroline"></span>
-                            <span class="h-[9px] w-[9px] rounded-full bg-hh-heroline"></span>
-                            <span class="h-[9px] w-[9px] rounded-full bg-hh-heroline"></span>
-                            <span class="ml-2 text-xs text-hh-onhero2">Good morning, Sarah · Tuesday 5 August</span>
+                    <div class="relative overflow-hidden rounded-3xl shadow-hh" :style="{ background: heroGradient }">
+                        <video
+                            ref="tourVideo"
+                            class="block aspect-video w-full"
+                            src="/videos/househub-promo.mp4"
+                            poster="/videos/househub-promo-poster.jpg"
+                            aria-label="HouseHub product tour"
+                            muted
+                            loop
+                            playsinline
+                            preload="metadata"
+                            :controls="!tourMuted"
+                        ></video>
+
+                        <button
+                            v-if="tourMuted"
+                            type="button"
+                            class="group absolute inset-0 flex items-end p-4"
+                            aria-label="Watch the product tour with sound"
+                            @click="watchWithSound"
+                        >
                             <span
-                                class="ml-auto inline-flex h-6 items-center gap-1.5 rounded-lg border border-hh-heroline bg-hh-herofilm px-2.5 text-[11px] font-bold"
+                                class="flex h-11 items-center gap-2 rounded-[13px] bg-hh-coral px-4 text-sm font-bold text-white shadow-hh transition group-hover:-translate-y-0.5"
                             >
-                                <span aria-hidden="true">🔥</span> 12 day streak
+                                <span aria-hidden="true">▶</span> Watch with sound
                             </span>
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-[1.25fr_1fr]">
-                            <div class="rounded-[18px] bg-hh-card p-4 text-hh-ink">
-                                <div class="text-xs font-bold uppercase tracking-[0.08em] text-hh-ink3">Tonight's dinner</div>
-                                <div class="mt-3 flex gap-3.5">
-                                    <div
-                                        class="flex h-[104px] w-[104px] flex-none items-end rounded-[14px] bg-hh-coral p-3 text-lg font-extrabold leading-tight tracking-tight text-white"
-                                    >
-                                        Lemon chicken
-                                    </div>
-                                    <div class="flex min-w-0 flex-1 flex-col gap-[7px]">
-                                        <div class="flex flex-wrap gap-1.5">
-                                            <span class="rounded-lg bg-hh-soft px-[9px] py-1 text-[11.5px] font-semibold text-hh-ink2">45 min</span>
-                                            <span class="rounded-lg bg-hh-soft px-[9px] py-1 text-[11.5px] font-semibold text-hh-ink2">Easy</span>
-                                        </div>
-                                        <div class="text-[13px] leading-normal text-hh-ink2">
-                                            One tray. James is cooking. Everything's already in the fridge.
-                                        </div>
-                                        <div class="mt-auto flex items-center gap-[7px]">
-                                            <span
-                                                class="grid h-6 w-6 place-items-center rounded-lg bg-hh-lilac text-[10px] font-extrabold text-[#0E1A2B]"
-                                            >
-                                                JP
-                                            </span>
-                                            <span class="text-xs text-hh-ink3">James is cooking</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="rounded-[18px] bg-hh-card p-4 text-hh-ink">
-                                <div class="flex items-baseline gap-2">
-                                    <div class="text-xs font-bold uppercase tracking-[0.08em] text-hh-ink3">Tesco list</div>
-                                    <span class="ml-auto font-mono text-[11px] text-hh-ink3">7 left</span>
-                                </div>
-                                <div class="mt-2.5 flex flex-col gap-0.5">
-                                    <div v-for="item in demoList" :key="item.name" class="flex min-h-[34px] items-center gap-2.5">
-                                        <span
-                                            class="grid h-[19px] w-[19px] flex-none place-items-center rounded-md border-[1.5px] text-[10px] text-[#0E1A2B]"
-                                            :style="tickStyle(item.done)"
-                                        >
-                                            {{ item.done ? '✓' : '' }}
-                                        </span>
-                                        <span class="flex-1 text-[13.5px]" :class="item.done ? 'text-hh-ink3 line-through' : 'text-hh-ink'">
-                                            {{ item.name }}
-                                        </span>
-                                        <span class="font-mono text-[11px] text-hh-ink3">{{ item.qty }}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center gap-3.5 rounded-[18px] bg-hh-card p-4 text-hh-ink">
-                                <div class="grid h-[60px] w-[60px] flex-none place-items-center rounded-full" :style="{ background: dial(50) }">
-                                    <div class="flex h-[46px] w-[46px] items-center justify-center rounded-full bg-hh-card text-sm font-extrabold">
-                                        50%
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="text-[13.5px] font-extrabold">Today's chores</div>
-                                    <div class="mt-1 text-[12.5px] text-hh-ink3">3 of 6 done · Noah's turn on bins</div>
-                                </div>
-                            </div>
-
-                            <div class="rounded-[18px] bg-hh-card p-4 text-hh-ink">
-                                <div class="text-xs font-bold uppercase tracking-[0.08em] text-hh-ink3">Coming up</div>
-                                <div class="mt-2.5 flex flex-col gap-[5px]">
-                                    <div
-                                        v-for="event in demoAgenda"
-                                        :key="event.title"
-                                        class="flex items-center gap-2.5 rounded-[11px] bg-hh-sunk px-2.5 py-[7px]"
-                                    >
-                                        <span class="h-6 w-[3px] flex-none rounded-sm" :style="{ background: event.colour }"></span>
-                                        <span class="w-11 flex-none font-mono text-[11px] text-hh-ink2">{{ event.time }}</span>
-                                        <span class="flex-1 text-[12.5px] font-medium">{{ event.title }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        </button>
                     </div>
                 </div>
             </section>
@@ -353,8 +349,8 @@ function startRegistration(): void {
                     <div>
                         <h2 class="text-[30px] font-black leading-tight tracking-[-0.03em] sm:text-4xl">Then it holds everything else</h2>
                         <p class="mt-3.5 text-pretty text-base leading-relaxed text-hh-onhero2">
-                            Budgets, documents, guest access, AI insights. Nobody signs up for a filing cabinet — but once HouseHub is the app you
-                            already open every morning, the boring things finally have a home.
+                            Recipes, chores, budgets, documents. Nobody signs up for a filing cabinet — but once HouseHub is the app you already open
+                            every morning, the boring things finally have a home.
                         </p>
                         <Link
                             :href="route('register')"
@@ -364,7 +360,7 @@ function startRegistration(): void {
                         </Link>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3 lg:grid-cols-3">
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         <div
                             v-for="feature in secondary"
                             :key="feature.title"
