@@ -95,7 +95,11 @@ function toggleChore(chore: Chore): void {
 
                     <div v-if="dashboard.tonight" class="flex flex-col gap-4 sm:flex-row">
                         <div class="flex h-[132px] w-full flex-none flex-col justify-end rounded-[18px] bg-hh-coral p-4 sm:h-[172px] sm:w-[172px]">
-                            <div class="text-[26px] font-extrabold leading-[1.08] tracking-[-0.025em] text-white">
+                            <div
+                                class="line-clamp-4 hyphens-auto break-words font-extrabold leading-[1.1] tracking-[-0.025em] text-white"
+                                :class="dashboard.tonight.name.length > 24 ? 'text-[20px]' : 'text-[22px] sm:text-[26px]'"
+                                :title="dashboard.tonight.name"
+                            >
                                 {{ dashboard.tonight.name }}
                             </div>
                         </div>

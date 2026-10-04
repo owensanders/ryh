@@ -177,7 +177,7 @@ function accept(): void {
 
 <template>
     <Dialog :open="open" @update:open="emit('update:open', $event)">
-        <DialogContent class="max-h-[90dvh] max-w-lg overflow-y-auto rounded-[22px] border-hh-line bg-hh-card text-hh-ink sm:rounded-[22px]">
+        <DialogContent class="max-w-lg rounded-[22px] border-hh-line bg-hh-card text-hh-ink sm:rounded-[22px]">
             <DialogHeader>
                 <DialogTitle class="text-[16px] font-extrabold tracking-tight">
                     {{ stage === 'result' ? 'Your week, ready to go' : 'Plan my week' }}
