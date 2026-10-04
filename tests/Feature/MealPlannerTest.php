@@ -12,6 +12,7 @@ use App\Models\ShoppingList;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Ai\Exceptions\RateLimitedException;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -374,7 +375,7 @@ class MealPlannerTest extends TestCase
     #[Test]
     public function itGeneratesAnAiMealPlanWhenConfigured(): void
     {
-        config(['ai.providers.openai.key' => 'test-key']);
+        config(['ai.providers.anthropic.key' => 'test-key']);
         MealPlanAgent::fake([
             [
                 'meals' => [[
@@ -400,7 +401,7 @@ class MealPlannerTest extends TestCase
     #[Test]
     public function itRefusesToGenerateWhenAiIsNotConfigured(): void
     {
-        config(['ai.providers.openai.key' => null]);
+        config(['ai.providers.anthropic.key' => null]);
         $user = User::factory()->create();
 
         $this->actingAs($user)
@@ -413,7 +414,7 @@ class MealPlannerTest extends TestCase
     #[Test]
     public function itRefusesASecondGenerationWithinAWeek(): void
     {
-        config(['ai.providers.openai.key' => 'test-key']);
+        config(['ai.providers.anthropic.key' => 'test-key']);
         MealPlanAgent::fake();
         $user = User::factory()->create();
         Household::where('id', $user->household_id)->update(['ai_meal_plan_generated_at' => now()->subDays(2)]);
@@ -421,5 +422,37 @@ class MealPlannerTest extends TestCase
         $this->actingAs($user)
             ->post('/meals/ai-plan', ['people' => 4, 'budget' => null, 'diets' => [], 'avoid' => '', 'goals' => []])
             ->assertSessionHasErrors('ai');
+    }
+
+    #[Test]
+    public function aProviderFailureShowsAnErrorWithoutUsingUpTheWeeklyPlan(): void
+    {
+        config(['ai.providers.anthropic.key' => 'test-key']);
+        MealPlanAgent::fake(fn () => throw RateLimitedException::forProvider('anthropic'));
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/meals/ai-plan', ['people' => 4, 'budget' => null, 'diets' => [], 'avoid' => '', 'goals' => []])
+            ->assertRedirect()
+            ->assertSessionHasErrors(['ai' => 'We couldn\'t generate a meal plan right now — please try again in a few minutes.']);
+
+        $this->assertNull($user->household->refresh()->ai_meal_plan_generated_at);
+    }
+
+    #[Test]
+    public function itReportsAiAsConfiguredOnlyWhenTheDefaultProviderHasAKey(): void
+    {
+        config(['ai.default' => 'anthropic', 'ai.providers.anthropic.key' => null, 'ai.providers.openai.key' => 'test-key']);
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/meals')
+            ->assertInertia(fn ($page) => $page->where('aiConfigured', false));
+
+        config(['ai.providers.anthropic.key' => 'test-key']);
+
+        $this->actingAs($user)
+            ->get('/meals')
+            ->assertInertia(fn ($page) => $page->where('aiConfigured', true));
     }
 }

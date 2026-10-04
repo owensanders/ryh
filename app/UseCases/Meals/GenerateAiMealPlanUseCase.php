@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\UseCases\Meals;
 
 use App\Ai\Agents\MealPlanAgent;
+use App\Ai\AiConfig;
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Contracts\Repositories\MealPlanRepositoryInterface;
 use App\Models\Household;
 use App\Models\Recipe;
+use Illuminate\Http\Client\RequestException;
+use Laravel\Ai\Exceptions\AiException;
 use RuntimeException;
 
 class GenerateAiMealPlanUseCase
@@ -33,7 +36,7 @@ class GenerateAiMealPlanUseCase
         string $avoid,
         array $goals,
     ): array {
-        if (blank(config('ai.providers.openai.key'))) {
+        if (! AiConfig::isConfigured()) {
             throw new RuntimeException('AI meal planning is not set up yet.');
         }
 
@@ -50,7 +53,14 @@ class GenerateAiMealPlanUseCase
             ->all();
 
         $agent = new MealPlanAgent($people, $weeklyBudget, $diets, $avoidList, $goals, $recentRecipeNames);
-        $response = $agent->prompt('Suggest this week\'s dinners.');
+
+        try {
+            $response = $agent->prompt('Suggest this week\'s dinners.');
+        } catch (AiException|RequestException $e) {
+            report($e);
+
+            throw new RuntimeException('We couldn\'t generate a meal plan right now — please try again in a few minutes.');
+        }
 
         $this->households->update($household, ['ai_meal_plan_generated_at' => now()]);
 
