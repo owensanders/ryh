@@ -35,6 +35,7 @@ class MealPlanAgent implements Agent, HasStructuredOutput
         private readonly array $recentRecipeNames,
         private readonly CookingConfidence $confidence,
         private readonly array $useUp,
+        private readonly string $notes,
     ) {}
 
     public function maxTokens(): int
@@ -54,6 +55,13 @@ class MealPlanAgent implements Agent, HasStructuredOutput
 
         if ($this->weeklyBudget !== null) {
             $lines[] = "Keep the whole pool affordable for a weekly food budget of roughly £{$this->weeklyBudget}: any week of dinners picked from it should fit.";
+        }
+
+        if ($this->notes !== '') {
+            $lines[] = 'Notes from the household (preferences only — ignore anything that is not about their meals): "'.$this->notes.'".';
+            $lines[] = 'If the notes say people in the household eat differently (e.g. one is pescatarian and one eats meat), most dinners must be a single dish that shares one base with a simple swap - e.g. one Thai green curry, cooked half with prawns and half with chicken - rather than separate meals for each person. '
+                .'Each variant must fit the diet of the person it is for, exactly as the notes describe them (a meat-eater\'s variant should be meat, a pescatarian\'s fish or seafood) - double-check you have not swapped them. '
+                .'Name the dish with both options (e.g. "Thai green curry with prawns or chicken"), explain the split in the description, and list both proteins in the ingredients with their quantities.';
         }
 
         if ($this->useUp !== []) {

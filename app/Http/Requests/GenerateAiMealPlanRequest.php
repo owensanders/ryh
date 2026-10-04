@@ -25,6 +25,7 @@ class GenerateAiMealPlanRequest extends FormRequest
             'goals.*' => ['string', 'distinct', Rule::enum(MealGoal::class)],
             'confidence' => ['required', Rule::enum(CookingConfidence::class)],
             'use_up' => ['nullable', 'string', 'max:255'],
+            'notes' => ['nullable', 'string', 'max:500'],
         ];
     }
 }

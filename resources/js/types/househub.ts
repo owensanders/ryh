@@ -107,14 +107,18 @@ export interface Recipe {
     isFavourite: boolean;
 }
 
+/** A suggested dinner - from the AI, or (with recipe_id) from the household's library. */
 export interface AiMealSuggestion {
     name: string;
-    description: string;
-    duration_label: string;
-    difficulty: string;
-    estimated_cost: number;
+    description: string | null;
+    duration_label: string | null;
+    difficulty: string | null;
+    estimated_cost: number | null;
     tags: string[];
     ingredients: RecipeIngredient[];
+    recipe_id?: number;
+    tint?: number;
+    is_favourite?: boolean;
 }
 
 export interface AiPlannerOptions {

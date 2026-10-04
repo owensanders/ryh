@@ -2,6 +2,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { SharedData } from '@/types';
 import type { AiMealSuggestion, AiPlannerOptions, PlannerDay, ShoppingList } from '@/types/househub';
+import type { RequestPayload } from '@inertiajs/core';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { ArrowLeftRight } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
@@ -26,10 +27,17 @@ const pool = ref<AiMealSuggestion[]>([]);
 // Pool index shown for each selected day, in day order.
 const choices = ref<number[]>([]);
 const regenerated = ref(false);
+// Where the pool came from: the AI (one regenerate) or the recipe library (free, unlimited).
+const source = ref<'ai' | 'library'>('ai');
+// Plan positions ticked for replacement before regenerating.
+const marked = ref<number[]>([]);
 const selectedDays = ref<number[]>([]);
 const targetListId = ref<number | null>(null);
 const accepting = ref(false);
 const acceptIndex = ref(0);
+// Days whose dinner couldn't be saved on accept, with the first reason given.
+const acceptFailures = ref<string[]>([]);
+const acceptError = ref<string | null>(null);
 
 const form = useForm({
     people: 4,
@@ -39,6 +47,7 @@ const form = useForm({
     goals: [] as string[],
     confidence: 'comfortable',
     use_up: '',
+    notes: '',
 });
 
 function freeDayIndexes(): number[] {
@@ -61,6 +70,9 @@ watch(
         pool.value = [];
         choices.value = [];
         regenerated.value = false;
+        marked.value = [];
+        acceptFailures.value = [];
+        acceptError.value = null;
         selectedDays.value = freeDayIndexes();
         targetListId.value = props.shoppingLists[0]?.id ?? null;
         if (form.budget === '' && props.aiSuggestedBudget !== null) {
@@ -90,7 +102,22 @@ const assignment = computed(() =>
 /** Pool indexes not currently on the plan, in pool order. */
 const unusedChoices = computed(() => pool.value.map((_, index) => index).filter((index) => !choices.value.includes(index)));
 
-const canRegenerate = computed(() => !regenerated.value && unusedChoices.value.length > 0);
+const canRegenerate = computed(() => unusedChoices.value.length > 0 && (source.value === 'library' || !regenerated.value));
+
+const canSwap = computed(() => unusedChoices.value.length > 0 && (source.value === 'library' || regenerated.value));
+
+/** Why the AI option can't be used right now, if it can't. Planning from recipes still works. */
+const aiUnavailable = computed(() => {
+    if (!props.aiConfigured) {
+        return "AI meal planning isn't available right now.";
+    }
+
+    if (props.aiPaused) {
+        return "AI meal planning is taking a short break. Your weekly plan hasn't been used.";
+    }
+
+    return props.aiAvailableFrom ? `You've used this week's AI plan — the next one is available from ${props.aiAvailableFrom}.` : null;
+});
 
 const estimatedTotal = computed(() => assignment.value.reduce((sum, entry) => sum + (entry.suggestion.estimated_cost ?? 0), 0));
 
@@ -112,6 +139,15 @@ function pounds(amount: number): string {
     return `£${amount.toFixed(2)}`;
 }
 
+function showPool(from: 'ai' | 'library', meals: AiMealSuggestion[]): void {
+    source.value = from;
+    pool.value = meals;
+    choices.value = plannedDays.value.map((_, position) => position).filter((index) => index < meals.length);
+    regenerated.value = false;
+    marked.value = [];
+    stage.value = meals.length > 0 ? 'result' : 'form';
+}
+
 function generate(): void {
     stage.value = 'loading';
 
@@ -120,33 +156,54 @@ function generate(): void {
         budget: data.budget === '' ? null : data.budget,
     })).post(route('meals.aiPlan'), {
         preserveScroll: true,
-        onSuccess: () => {
-            pool.value = page.props.flash?.aiMeals ?? [];
-            choices.value = plannedDays.value.map((_, position) => position).filter((index) => index < pool.value.length);
-            stage.value = pool.value.length > 0 ? 'result' : 'form';
-        },
+        onSuccess: () => showPool('ai', page.props.flash?.aiMeals ?? []),
         onError: () => {
             stage.value = 'form';
         },
     });
 }
 
+/** A week from the household's saved recipes - no AI call, doesn't use the weekly plan. */
+function planFromLibrary(): void {
+    form.transform((data) => ({ diets: data.diets, avoid: data.avoid })).post(route('meals.libraryPlan'), {
+        preserveScroll: true,
+        onSuccess: () => showPool('library', page.props.flash?.libraryMeals ?? []),
+    });
+}
+
 const planHint = computed(() => {
-    if (canRegenerate.value) {
-        return 'Not quite right? You can regenerate once for a completely different set of meals.';
+    if (source.value === 'library') {
+        return canSwap.value
+            ? "From your saved recipes, so it doesn't use your AI plan. Swap any dinner, or tick some and regenerate as often as you like."
+            : "From your saved recipes, so it doesn't use your AI plan. Add more recipes for more variety.";
     }
 
-    return unusedChoices.value.length > 0
+    if (canRegenerate.value) {
+        return "Not quite right? Tick the dinners you'd like replaced and regenerate once — or regenerate them all.";
+    }
+
+    return canSwap.value
         ? "Tap the swap icon on any dinner you're not keen on to switch it for another suggestion."
         : "That's every suggestion for this week — your next AI plan is available in a week.";
 });
 
-/** One free do-over: a fresh week from the meals not yet shown. No API call. */
+const regenerateLabel = computed(() => (marked.value.length === 0 ? 'Regenerate all' : `Regenerate ${marked.value.length}`));
+
+function toggleMarked(position: number): void {
+    marked.value = marked.value.includes(position) ? marked.value.filter((p) => p !== position) : [...marked.value, position];
+}
+
+/** Replace the ticked dinners (or all of them) with meals not on the plan. No API call. */
 function regenerate(): void {
     const fresh = [...unusedChoices.value];
+    const positions = marked.value.length > 0 ? marked.value : choices.value.map((_, position) => position);
 
-    choices.value = choices.value.map((current) => fresh.shift() ?? current);
-    regenerated.value = true;
+    choices.value = choices.value.map((current, position) => (positions.includes(position) ? (fresh.shift() ?? current) : current));
+    marked.value = [];
+
+    if (source.value === 'ai') {
+        regenerated.value = true;
+    }
 }
 
 /** Replace one day's dinner with the next meal from the pool that isn't on the plan. */
@@ -159,42 +216,61 @@ function swap(position: number): void {
     }
 }
 
+const acceptFailureMessage = computed(() => {
+    const added = assignment.value.length - acceptFailures.value.length;
+    const reason = acceptError.value ? `: ${acceptError.value}` : '';
+
+    return `Added ${added} of ${assignment.value.length}. Couldn't add ${acceptFailures.value.join(', ')}${reason}. The rest are on your planner.`;
+});
+
+function mealPayload(entry: { day: PlannerDay; suggestion: AiMealSuggestion }, index: number): RequestPayload {
+    const common = { new_recipe_shopping_list_id: targetListId.value, planned_on: entry.day.date, slot: 'dinner', cook_id: null };
+
+    // A library recipe is planned by id alone, which leaves its saved details untouched.
+    if (entry.suggestion.recipe_id !== undefined) {
+        return { recipe_id: entry.suggestion.recipe_id, ...common };
+    }
+
+    return {
+        recipe_id: null,
+        new_recipe_name: entry.suggestion.name,
+        new_recipe_description: entry.suggestion.description,
+        new_recipe_duration_label: entry.suggestion.duration_label,
+        new_recipe_difficulty: entry.suggestion.difficulty,
+        new_recipe_tags: [],
+        new_recipe_ingredients: entry.suggestion.ingredients.map((i) => ({ name: i.name, quantity: i.quantity ?? '' })),
+        new_recipe_tint: index % 5,
+        new_recipe_is_favourite: false,
+        ...common,
+    };
+}
+
 function acceptNext(entries: { day: PlannerDay; suggestion: AiMealSuggestion }[]): void {
     if (acceptIndex.value >= entries.length) {
         accepting.value = false;
-        emit('update:open', false);
+
+        // Keep the dialog open to say what didn't save, rather than dropping it silently.
+        if (acceptFailures.value.length === 0) {
+            emit('update:open', false);
+        }
 
         return;
     }
 
     const entry = entries[acceptIndex.value];
 
-    router.post(
-        route('meals.store'),
-        {
-            recipe_id: null,
-            new_recipe_name: entry.suggestion.name,
-            new_recipe_description: entry.suggestion.description,
-            new_recipe_duration_label: entry.suggestion.duration_label,
-            new_recipe_difficulty: entry.suggestion.difficulty,
-            new_recipe_tags: [],
-            new_recipe_ingredients: entry.suggestion.ingredients.map((i) => ({ name: i.name, quantity: i.quantity ?? '' })),
-            new_recipe_tint: acceptIndex.value % 5,
-            new_recipe_is_favourite: false,
-            new_recipe_shopping_list_id: targetListId.value,
-            planned_on: entry.day.date,
-            slot: 'dinner',
-            cook_id: null,
+    router.post(route('meals.store'), mealPayload(entry, acceptIndex.value), {
+        preserveScroll: true,
+        preserveState: true,
+        onError: (errors) => {
+            acceptFailures.value.push(`${entry.day.dayLabel} (${entry.suggestion.name})`);
+            acceptError.value ??= Object.values(errors)[0] ?? null;
         },
-        {
-            preserveScroll: true,
-            preserveState: true,
-            onFinish: () => {
-                acceptIndex.value++;
-                acceptNext(entries);
-            },
+        onFinish: () => {
+            acceptIndex.value++;
+            acceptNext(entries);
         },
-    );
+    });
 }
 
 function accept(): void {
@@ -204,6 +280,8 @@ function accept(): void {
 
     accepting.value = true;
     acceptIndex.value = 0;
+    acceptFailures.value = [];
+    acceptError.value = null;
     acceptNext(assignment.value);
 }
 </script>
@@ -217,22 +295,11 @@ function accept(): void {
                 </DialogTitle>
             </DialogHeader>
 
-            <div v-if="!aiConfigured" class="flex flex-col gap-2 text-[13.5px] text-hh-ink2">
-                <p>AI meal planning isn't available right now — you can still plan meals by hand.</p>
-                <button type="button" class="hh-btn w-auto self-start bg-hh-soft text-hh-ink" @click="emit('update:open', false)">Close</button>
-            </div>
+            <form v-if="stage === 'form'" class="flex flex-col gap-4" @submit.prevent="generate">
+                <p v-if="aiUnavailable" class="rounded-xl bg-hh-soft px-3 py-2 text-[12.5px] text-hh-ink2">
+                    {{ aiUnavailable }} You can still plan the week from your saved recipes.
+                </p>
 
-            <div v-else-if="aiPaused && stage === 'form'" class="flex flex-col gap-2 text-[13.5px] text-hh-ink2">
-                <p>AI meal planning is taking a short break — you can still plan meals by hand. Your weekly plan hasn't been used.</p>
-                <button type="button" class="hh-btn w-auto self-start bg-hh-soft text-hh-ink" @click="emit('update:open', false)">Close</button>
-            </div>
-
-            <div v-else-if="aiAvailableFrom && stage === 'form'" class="flex flex-col gap-2 text-[13.5px] text-hh-ink2">
-                <p>Your household can generate one AI meal plan a week. Next one available from {{ aiAvailableFrom }}.</p>
-                <button type="button" class="hh-btn w-auto self-start bg-hh-soft text-hh-ink" @click="emit('update:open', false)">Close</button>
-            </div>
-
-            <form v-else-if="stage === 'form'" class="flex flex-col gap-4" @submit.prevent="generate">
                 <div class="flex flex-col gap-1.5">
                     <span class="hh-label">Which days?</span>
                     <div class="flex flex-wrap gap-1.5">
@@ -300,6 +367,18 @@ function accept(): void {
                 </div>
 
                 <div class="flex flex-col gap-1.5">
+                    <label for="ai_notes" class="hh-label">Notes for the AI</label>
+                    <textarea
+                        id="ai_notes"
+                        v-model="form.notes"
+                        rows="2"
+                        maxlength="500"
+                        class="hh-input min-h-[64px] resize-y"
+                        placeholder="e.g. My wife is pescatarian but I eat meat — can we share meals with a different protein?"
+                    ></textarea>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
                     <span class="hh-label">Goals</span>
                     <div class="flex flex-wrap gap-x-3 gap-y-1.5">
                         <label v-for="goal in aiOptions.goals" :key="goal" class="flex items-center gap-1.5 text-[12.5px] text-hh-ink2">
@@ -311,16 +390,28 @@ function accept(): void {
 
                 <p class="rounded-xl bg-hh-soft px-3 py-2 text-[12.5px] text-hh-ink2">
                     Your household gets one AI plan a week. Not keen on it? You can regenerate once for a completely different set of meals, then swap
-                    any dinner you don't fancy.
+                    any dinner you don't fancy. Planning from your saved recipes is free and unlimited.
                 </p>
 
                 <p v-if="page.props.errors.ai" class="text-[12.5px] text-hh-coral">{{ page.props.errors.ai }}</p>
 
                 <div class="flex items-center gap-2">
-                    <button type="submit" class="hh-btn w-auto bg-hh-coral text-white" :disabled="selectedDays.length === 0 || form.processing">
+                    <button
+                        type="submit"
+                        class="hh-btn w-auto bg-hh-coral text-white"
+                        :disabled="aiUnavailable !== null || selectedDays.length === 0 || form.processing"
+                    >
                         Generate my week
                     </button>
-                    <button type="button" class="hh-btn w-auto bg-hh-soft text-hh-ink" @click="emit('update:open', false)">Cancel</button>
+                    <button
+                        type="button"
+                        class="hh-btn w-auto bg-hh-soft text-hh-ink"
+                        :disabled="selectedDays.length === 0 || form.processing"
+                        @click="planFromLibrary"
+                    >
+                        Use my recipes
+                    </button>
+                    <button type="button" class="hh-btn ml-auto w-auto bg-hh-soft text-hh-ink" @click="emit('update:open', false)">Cancel</button>
                 </div>
             </form>
 
@@ -336,11 +427,27 @@ function accept(): void {
                     <div v-for="entry in assignment" :key="entry.day.date" class="rounded-2xl border border-hh-line bg-hh-panel p-3">
                         <div class="flex items-start gap-1.5">
                             <span class="pt-[3px] text-[12px] font-extrabold">{{ entry.day.dayLabel }}</span>
-                            <span class="text-[15px] font-extrabold tracking-tight">{{ entry.suggestion.name }}</span>
+                            <span class="mr-auto text-[15px] font-extrabold tracking-tight">{{ entry.suggestion.name }}</span>
                             <button
-                                v-if="regenerated && unusedChoices.length > 0"
+                                v-if="canRegenerate"
                                 type="button"
-                                class="ml-auto grid h-7 w-7 flex-none place-items-center rounded-md text-hh-ink3 transition hover:bg-hh-soft hover:text-hh-ink"
+                                class="ml-auto flex-none rounded-md border px-2 py-1 text-[11px] font-semibold transition"
+                                :class="
+                                    marked.includes(entry.position)
+                                        ? 'border-hh-coral bg-hh-coral text-white'
+                                        : 'border-hh-line bg-hh-card text-hh-ink2'
+                                "
+                                :aria-pressed="marked.includes(entry.position)"
+                                :aria-label="`Replace ${entry.day.dayLabel}'s dinner when regenerating`"
+                                :disabled="accepting"
+                                @click="toggleMarked(entry.position)"
+                            >
+                                Replace
+                            </button>
+                            <button
+                                v-if="canSwap"
+                                type="button"
+                                class="grid h-7 w-7 flex-none place-items-center rounded-md text-hh-ink3 transition hover:bg-hh-soft hover:text-hh-ink"
                                 :aria-label="`Swap ${entry.day.dayLabel}'s dinner`"
                                 title="Swap this dinner"
                                 :disabled="accepting"
@@ -349,12 +456,18 @@ function accept(): void {
                                 <ArrowLeftRight class="h-3.5 w-3.5" :stroke-width="2.5" />
                             </button>
                         </div>
-                        <p class="mt-1 text-[12.5px] text-hh-ink2">{{ entry.suggestion.description }}</p>
+                        <p v-if="entry.suggestion.description" class="mt-1 text-[12.5px] text-hh-ink2">{{ entry.suggestion.description }}</p>
                         <div class="mt-1.5 flex flex-wrap gap-1.5">
-                            <span class="rounded-md bg-hh-soft px-1.5 py-[3px] font-mono text-[10.5px] text-hh-ink2">
+                            <span
+                                v-if="entry.suggestion.duration_label"
+                                class="rounded-md bg-hh-soft px-1.5 py-[3px] font-mono text-[10.5px] text-hh-ink2"
+                            >
                                 {{ entry.suggestion.duration_label }}
                             </span>
-                            <span class="rounded-md bg-hh-soft px-1.5 py-[3px] text-[10.5px] font-semibold text-hh-ink2">
+                            <span
+                                v-if="entry.suggestion.difficulty"
+                                class="rounded-md bg-hh-soft px-1.5 py-[3px] text-[10.5px] font-semibold text-hh-ink2"
+                            >
                                 {{ entry.suggestion.difficulty }}
                             </span>
                             <span
@@ -381,12 +494,20 @@ function accept(): void {
                     </select>
                 </div>
 
+                <p v-if="acceptFailures.length > 0" class="text-[12.5px] text-hh-coral">{{ acceptFailureMessage }}</p>
+
                 <div class="flex items-center gap-2">
-                    <button type="button" class="hh-btn w-auto bg-hh-coral text-white" :disabled="accepting" @click="accept">
+                    <button
+                        v-if="acceptFailures.length === 0"
+                        type="button"
+                        class="hh-btn w-auto bg-hh-coral text-white"
+                        :disabled="accepting"
+                        @click="accept"
+                    >
                         {{ accepting ? `Adding ${acceptIndex + 1} of ${assignment.length}…` : 'Accept this week' }}
                     </button>
                     <button v-if="canRegenerate" type="button" class="hh-btn w-auto bg-hh-soft text-hh-ink" :disabled="accepting" @click="regenerate">
-                        Regenerate
+                        {{ regenerateLabel }}
                     </button>
                     <button
                         type="button"

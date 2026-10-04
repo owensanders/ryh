@@ -56,6 +56,21 @@ class MealPlanAgentTest extends TestCase
     }
 
     #[Test]
+    public function itAsksForSharedBaseDinnersWhenNotesDescribeMixedDiets(): void
+    {
+        $instructions = (string) $this->agent(CookingConfidence::Comfortable, [], 'My wife is pescatarian but I eat meat')->instructions();
+
+        $this->assertStringContainsString('"My wife is pescatarian but I eat meat"', $instructions);
+        $this->assertStringContainsString('shares one base with a simple swap', $instructions);
+    }
+
+    #[Test]
+    public function itLeavesNotesOutWhenThereAreNone(): void
+    {
+        $this->assertStringNotContainsString('Notes from the household', (string) $this->agent(CookingConfidence::Comfortable, [])->instructions());
+    }
+
+    #[Test]
     public function itCapsOutputTokensFromConfig(): void
     {
         config(['meal_planner.max_output_tokens' => 1234]);
@@ -64,8 +79,8 @@ class MealPlanAgentTest extends TestCase
     }
 
     /** @param  list<string>  $useUp */
-    private function agent(CookingConfidence $confidence, array $useUp): MealPlanAgent
+    private function agent(CookingConfidence $confidence, array $useUp, string $notes = ''): MealPlanAgent
     {
-        return new MealPlanAgent(4, 85.0, [], [], [], [], $confidence, $useUp);
+        return new MealPlanAgent(4, 85.0, [], [], [], [], $confidence, $useUp, $notes);
     }
 }

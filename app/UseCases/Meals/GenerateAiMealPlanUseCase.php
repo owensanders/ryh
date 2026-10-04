@@ -45,6 +45,7 @@ class GenerateAiMealPlanUseCase
         array $goals,
         CookingConfidence $confidence,
         string $useUp,
+        string $notes,
     ): array {
         if (! AiConfig::isConfigured()) {
             throw new RuntimeException('AI meal planning is not set up yet.');
@@ -80,6 +81,7 @@ class GenerateAiMealPlanUseCase
                 $this->recentRecipeNames($household),
                 $confidence,
                 $this->splitList($useUp),
+                trim($notes),
             );
 
             try {
