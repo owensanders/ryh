@@ -122,29 +122,49 @@ class MealPlanRepository implements MealPlanRepositoryInterface
         $recipe->delete();
     }
 
-    /** @param  array<string, mixed>  $attributes */
+    /** Recipe column => planned-meal attribute carrying it, with its default for a new recipe. */
+    private const RECIPE_DETAILS = [
+        'description' => ['new_recipe_description', null],
+        'duration_label' => ['new_recipe_duration_label', null],
+        'difficulty' => ['new_recipe_difficulty', null],
+        'tags' => ['new_recipe_tags', []],
+        'ingredients' => ['new_recipe_ingredients', []],
+        'tint' => ['new_recipe_tint', 0],
+        'is_favourite' => ['new_recipe_is_favourite', false],
+    ];
+
+    /**
+     * An existing recipe only has the details that were actually sent updated,
+     * so planning it by id alone can't blank its description, tags, etc.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
     private function resolveRecipeId(Household $household, array $attributes): int
     {
-        $details = [
-            'description' => $attributes['new_recipe_description'] ?? null,
-            'duration_label' => $attributes['new_recipe_duration_label'] ?? null,
-            'difficulty' => $attributes['new_recipe_difficulty'] ?? null,
-            'tags' => $attributes['new_recipe_tags'] ?? [],
-            'ingredients' => $attributes['new_recipe_ingredients'] ?? [],
-            'tint' => $attributes['new_recipe_tint'] ?? 0,
-            'is_favourite' => $attributes['new_recipe_is_favourite'] ?? false,
-        ];
+        $provided = [];
+
+        foreach (self::RECIPE_DETAILS as $column => [$key]) {
+            if (array_key_exists($key, $attributes)) {
+                $provided[$column] = $attributes[$key];
+            }
+        }
 
         if (! empty($attributes['recipe_id'])) {
             $recipe = $household->recipes()->findOrFail($attributes['recipe_id']);
-            $this->updateRecipe($recipe, $details);
+
+            if ($provided !== []) {
+                $this->updateRecipe($recipe, $provided);
+            }
 
             return $recipe->id;
         }
 
+        $defaults = array_map(fn (array $detail) => $detail[1], self::RECIPE_DETAILS);
+
         return $this->createRecipe($household, [
             'name' => trim((string) $attributes['new_recipe_name']),
-            ...$details,
+            ...$defaults,
+            ...$provided,
         ])->id;
     }
 }

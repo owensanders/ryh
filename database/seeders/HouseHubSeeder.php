@@ -9,6 +9,7 @@ use App\Enums\HouseholdRole;
 use App\Enums\MealSlot;
 use App\Enums\Palette;
 use App\Enums\PendingReason;
+use App\Enums\RecipeTag;
 use App\Models\Household;
 use App\Models\Recipe;
 use App\Models\ShoppingList;
@@ -192,35 +193,35 @@ class HouseHubSeeder extends Seeder
     private function seedMeals(Household $household, array $members): void
     {
         $recipes = [
-            ['Lemon chicken traybake', '45 min', 'Easy', 0, ['Healthy'], true,
+            ['Lemon chicken traybake', '45 min', 'Easy', 0, [RecipeTag::Healthy->value], true,
                 'One tray, one oven. Chicken thighs, new potatoes, lemon and thyme. Serves four with leftovers for Mia\'s packed lunch.'],
-            ['Halloumi wraps', '15 min', 'Easy', 1, ['Quick', 'Vegetarian'], false,
+            ['Halloumi wraps', '15 min', 'Easy', 1, [RecipeTag::Quick->value, RecipeTag::Vegetarian->value], false,
                 'Griddled halloumi, houmous and slaw in a warm wrap. On the table before the kettle\'s even cool.'],
-            ['Slow cooker chilli', '6 hrs', 'Easy', 3, ['Slow Cooker'], false,
+            ['Slow cooker chilli', '6 hrs', 'Easy', 3, [RecipeTag::OnePot->value], false,
                 'Beef mince, kidney beans and a slow afternoon in the cooker. Freezes well if there\'s any left.'],
-            ['Salmon & greens', '25 min', 'Medium', 2, ['Healthy'], false,
+            ['Salmon & greens', '25 min', 'Medium', 2, [RecipeTag::Healthy->value], false,
                 'Pan-seared salmon with steamed greens and a lemon butter sauce. Quick enough for a school night.'],
-            ['Fish finger sarnies', '12 min', 'Easy', 4, ['Quick'], false,
+            ['Fish finger sarnies', '12 min', 'Easy', 4, [RecipeTag::Quick->value], false,
                 'Crispy fish fingers, buttered bread, a squeeze of ketchup. The kids\' favourite, no arguments.'],
-            ['Veg lasagne', '1 hr 10', 'Medium', 0, ['Vegetarian'], false,
+            ['Veg lasagne', '1 hr 10', 'Medium', 0, [RecipeTag::Vegetarian->value], false,
                 'Layers of roasted veg, béchamel and pasta sheets. Worth the oven time — leftovers reheat well.'],
-            ['BBQ burgers', '35 min', 'Easy', 1, ['BBQ'], false,
+            ['BBQ burgers', '35 min', 'Easy', 1, [RecipeTag::KidFriendly->value], false,
                 'Home-formed beef patties on the grill with all the usual toppings. Weather permitting.'],
             ['Roast chicken', '1 hr 45', 'Medium', 2, [], false,
                 'The Sunday classic — roast chicken, potatoes and all the trimmings. Stock the carcass for soup.'],
-            ['Pancakes', '20 min', 'Easy', 3, ['Desserts'], false,
+            ['Pancakes', '20 min', 'Easy', 3, [RecipeTag::ComfortFood->value], false,
                 'Stacked pancakes with maple syrup and whatever fruit is in the bowl. A slow-morning breakfast.'],
             ['Katsu curry', '50 min', 'Medium', 1, [], true,
                 'Crumbed chicken with a mild, sweet curry sauce over rice. A household favourite on repeat.'],
-            ['Tomato orzo', '25 min', 'Easy', 0, ['Quick'], true,
+            ['Tomato orzo', '25 min', 'Easy', 0, [RecipeTag::Quick->value], true,
                 'One-pot orzo simmered in a rich tomato sauce with basil and parmesan. Ready in one pan.'],
-            ['Beef stew', '3 hrs', 'Slow cooker', 4, ['Slow Cooker'], true,
+            ['Beef stew', '3 hrs', 'Slow cooker', 4, [RecipeTag::OnePot->value], true,
                 'Chunky beef, root veg and a rich gravy, left to its own devices for the afternoon.'],
-            ['Chickpea curry', '30 min', 'Vegetarian', 2, ['Vegetarian'], true,
+            ['Chickpea curry', '30 min', 'Vegetarian', 2, [RecipeTag::Vegetarian->value], true,
                 'Chickpeas simmered in a spiced tomato and coconut sauce. Naturally vegan, always a crowd-pleaser.'],
-            ['Sticky toffee pud', '55 min', 'Dessert', 3, ['Desserts'], true,
+            ['Sticky toffee pud', '55 min', 'Dessert', 3, [RecipeTag::ComfortFood->value], true,
                 'Warm sponge, dates and a toffee sauce poured on right before serving. Best with custard.'],
-            ['Greek salad', '10 min', 'Quick', 0, ['Quick', 'Healthy'], true,
+            ['Greek salad', '10 min', 'Quick', 0, [RecipeTag::Quick->value, RecipeTag::Healthy->value], true,
                 'Cucumber, tomato, olives and feta with a simple olive oil dressing. No cooking required.'],
         ];
 

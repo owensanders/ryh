@@ -72,16 +72,24 @@ class PlannedMealRequest extends FormRequest
      */
     public function plannedMealAttributes(): array
     {
+        $validated = $this->validated();
+
+        // Recipe details are only passed on when the request sent them, so an
+        // existing recipe planned by id alone keeps its details untouched.
+        $details = array_filter([
+            'new_recipe_description' => fn () => trim((string) $validated['new_recipe_description']) ?: null,
+            'new_recipe_duration_label' => fn () => $validated['new_recipe_duration_label'],
+            'new_recipe_difficulty' => fn () => $validated['new_recipe_difficulty'],
+            'new_recipe_tags' => fn () => $validated['new_recipe_tags'] ?? [],
+            'new_recipe_ingredients' => fn () => $validated['new_recipe_ingredients'] ?? [],
+            'new_recipe_tint' => fn () => $validated['new_recipe_tint'] ?? 0,
+            'new_recipe_is_favourite' => fn () => (bool) $validated['new_recipe_is_favourite'],
+        ], fn (string $key) => array_key_exists($key, $validated), ARRAY_FILTER_USE_KEY);
+
         return [
             'recipe_id' => $this->validated('recipe_id'),
             'new_recipe_name' => trim((string) $this->validated('new_recipe_name', '')) ?: null,
-            'new_recipe_description' => trim((string) $this->validated('new_recipe_description', '')) ?: null,
-            'new_recipe_duration_label' => $this->validated('new_recipe_duration_label'),
-            'new_recipe_difficulty' => $this->validated('new_recipe_difficulty'),
-            'new_recipe_tags' => $this->validated('new_recipe_tags', []),
-            'new_recipe_ingredients' => $this->validated('new_recipe_ingredients', []),
-            'new_recipe_tint' => $this->validated('new_recipe_tint') ?? 0,
-            'new_recipe_is_favourite' => (bool) $this->validated('new_recipe_is_favourite', false),
+            ...array_map(fn (callable $value) => $value(), $details),
             'new_recipe_shopping_list_id' => $this->validated('new_recipe_shopping_list_id'),
             'planned_on' => $this->validated('planned_on'),
             'slot' => MealSlot::from($this->validated('slot')),
