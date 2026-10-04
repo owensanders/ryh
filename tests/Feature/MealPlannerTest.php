@@ -479,6 +479,7 @@ class MealPlannerTest extends TestCase
     public function itRequiresAKnownCookingConfidence(): void
     {
         config(['ai.providers.anthropic.key' => 'test-key']);
+        MealPlanAgent::fake()->preventStrayPrompts();
         $user = User::factory()->create();
 
         $this->actingAs($user)
