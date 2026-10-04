@@ -10,7 +10,6 @@ use App\Data\BudgetMonthSummaryData;
 use App\Data\IncomeSourceData;
 use App\Models\BudgetCategory;
 use App\Models\Household;
-use App\Models\IncomeSource;
 use App\Support\Money;
 use Carbon\CarbonImmutable;
 

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Palette;
+use Database\Factories\ShoppingListFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,13 +17,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $household_id
  * @property string $name
  * @property string $slug
- * @property \App\Enums\Palette $colour
+ * @property Palette $colour
  * @property int $position
- * @property \Illuminate\Database\Eloquent\Collection<int, ShoppingItem> $items
+ * @property Collection<int, ShoppingItem> $items
  */
 class ShoppingList extends Model
 {
-    /** @use HasFactory<\Database\Factories\ShoppingListFactory> */
+    /** @use HasFactory<ShoppingListFactory> */
     use HasFactory;
 
     /** @var list<string> */

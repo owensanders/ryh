@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\HouseholdRole;
 use App\Enums\Palette;
+use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -21,17 +23,17 @@ use Illuminate\Notifications\Notifiable;
  * @property-read int|null $household_id Alias for `current_household_id` — see `householdId()` below.
  * @property string $name
  * @property string|null $initials
- * @property \App\Enums\Palette $colour
+ * @property Palette $colour
  * @property string|null $status_line
  * @property string $email
- * @property \Illuminate\Support\Carbon|null $email_verified_at
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
+ * @property Carbon|null $email_verified_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  * @property-read HouseholdUser|null $pivot Present when loaded through a `Household::members()`/`User::households()` query.
  */
 class User extends Authenticatable implements MustVerifyEmail
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /** @var list<string> */

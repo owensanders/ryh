@@ -56,15 +56,13 @@ function subscribe(): void {
                 <p v-if="page.props.errors.plan" class="mt-2 text-[12.5px] text-hh-coral">{{ page.props.errors.plan }}</p>
             </template>
             <template v-else-if="props.isOwner">
-                <p class="mt-2.5 text-[14.5px] leading-relaxed text-hh-ink2">
-                    Subscribe to keep everyone in the house up and running.
-                </p>
+                <p class="mt-2.5 text-[14.5px] leading-relaxed text-hh-ink2">Subscribe to keep everyone in the house up and running.</p>
 
                 <div class="mt-4 grid grid-cols-2 gap-2">
                     <button
                         type="button"
                         class="flex h-[46px] flex-col items-center justify-center rounded-[12px] border-[1.5px] text-[13.5px] font-bold transition"
-                        :class="interval === 'monthly' ? 'border-hh-coral bg-hh-coral/10 text-hh-coral' : 'border-hh-line text-hh-ink2'"
+                        :class="interval === 'monthly' ? 'bg-hh-coral/10 border-hh-coral text-hh-coral' : 'border-hh-line text-hh-ink2'"
                         @click="interval = 'monthly'"
                     >
                         {{ formatPlanPrice(props.plan.priceMonthly) }}/month
@@ -72,7 +70,7 @@ function subscribe(): void {
                     <button
                         type="button"
                         class="flex h-[46px] flex-col items-center justify-center rounded-[12px] border-[1.5px] text-[13.5px] font-bold transition"
-                        :class="interval === 'annual' ? 'border-hh-coral bg-hh-coral/10 text-hh-coral' : 'border-hh-line text-hh-ink2'"
+                        :class="interval === 'annual' ? 'bg-hh-coral/10 border-hh-coral text-hh-coral' : 'border-hh-line text-hh-ink2'"
                         @click="interval = 'annual'"
                     >
                         {{ formatPlanPrice(props.plan.priceAnnual) }}/year

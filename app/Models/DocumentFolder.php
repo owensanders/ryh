@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $household_id
  * @property string $name
  * @property string $icon
- * @property \App\Enums\Palette $colour
+ * @property Palette $colour
  * @property int $position
  */
 class DocumentFolder extends Model

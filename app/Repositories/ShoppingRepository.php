@@ -12,7 +12,6 @@ use App\Models\ShoppingList;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
-
 class ShoppingRepository implements ShoppingRepositoryInterface
 {
     /** @return Collection<int, ShoppingList> */

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\RecipeFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Recipe extends Model
 {
-    /** @use HasFactory<\Database\Factories\RecipeFactory> */
+    /** @use HasFactory<RecipeFactory> */
     use HasFactory;
 
     /** @var list<string> */

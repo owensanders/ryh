@@ -24,7 +24,7 @@ class NewPasswordController extends Controller
         ]);
     }
 
-    /** @throws \Illuminate\Validation\ValidationException */
+    /** @throws ValidationException */
     public function store(NewPasswordRequest $request, ResetPasswordUseCase $reset): RedirectResponse
     {
         $status = $reset->execute(

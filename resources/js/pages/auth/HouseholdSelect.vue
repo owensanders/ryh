@@ -48,7 +48,7 @@ function submit(): void {
                 class="relative hidden w-[340px] flex-none flex-col overflow-hidden p-8 text-hh-onhero lg:flex"
                 style="background: linear-gradient(150deg, var(--hh-hero1), var(--hh-hero2))"
             >
-                <div class="absolute -top-16 -right-16 h-72 w-72 rounded-full bg-hh-coral opacity-20 blur-3xl"></div>
+                <div class="absolute -right-16 -top-16 h-72 w-72 rounded-full bg-hh-coral opacity-20 blur-3xl"></div>
 
                 <div class="relative flex items-center gap-2.5">
                     <div class="grid h-9 w-9 flex-none place-items-center rounded-xl bg-hh-coral text-white">
@@ -70,7 +70,7 @@ function submit(): void {
                     </div>
                 </div>
 
-                <div class="relative mt-7 max-w-[280px] text-[22px] font-black tracking-[-0.03em] leading-tight">
+                <div class="relative mt-7 max-w-[280px] text-[22px] font-black leading-tight tracking-[-0.03em]">
                     You are in more than one household
                 </div>
                 <p class="relative mt-3 max-w-[290px] text-[13.5px] leading-relaxed text-hh-onhero2">
@@ -150,11 +150,13 @@ function submit(): void {
                         </button>
                     </div>
 
-                    <div class="mt-3.5 flex items-center gap-3 rounded-[18px] border border-dashed border-hh-line bg-hh-sunk p-4.5">
+                    <div class="p-4.5 mt-3.5 flex items-center gap-3 rounded-[18px] border border-dashed border-hh-line bg-hh-sunk">
                         <span class="grid h-[38px] w-[38px] flex-none place-items-center rounded-xl bg-hh-card text-base">🔑</span>
                         <span class="min-w-0 flex-1">
                             <span class="block text-sm font-bold">Somewhere new to add?</span>
-                            <span class="mt-0.5 block text-[12.5px] text-hh-ink3">Join another household with an invite code, or set one up from scratch.</span>
+                            <span class="mt-0.5 block text-[12.5px] text-hh-ink3"
+                                >Join another household with an invite code, or set one up from scratch.</span
+                            >
                         </span>
                         <Link
                             :href="route('household.setup')"

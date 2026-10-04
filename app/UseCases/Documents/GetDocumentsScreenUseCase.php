@@ -7,6 +7,7 @@ namespace App\UseCases\Documents;
 use App\Contracts\Repositories\DocumentRepositoryInterface;
 use App\Data\DocumentData;
 use App\Data\DocumentFolderData;
+use App\Models\Document;
 use App\Models\DocumentFolder;
 use App\Models\Household;
 use Illuminate\Support\Collection;
@@ -29,7 +30,7 @@ class GetDocumentsScreenUseCase
         $folders = $this->documents->foldersFor($household);
         $active ??= $folders->first();
 
-        /** @var Collection<int, \App\Models\Document> $activeDocuments */
+        /** @var Collection<int, Document> $activeDocuments */
         $activeDocuments = $active !== null ? $this->documents->documentsFor($active) : collect();
 
         $totalBytes = $this->documents->totalSizeFor($household);

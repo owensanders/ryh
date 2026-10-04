@@ -40,7 +40,11 @@ const nextSteps = [
             <p class="mt-3 text-[15.5px] leading-relaxed text-hh-ink2">{{ doneBody }}</p>
 
             <div class="mt-6 flex flex-col gap-2">
-                <div v-for="step in nextSteps" :key="step.title" class="flex items-center gap-3.5 rounded-[18px] border border-hh-line bg-hh-card px-4 py-4">
+                <div
+                    v-for="step in nextSteps"
+                    :key="step.title"
+                    class="flex items-center gap-3.5 rounded-[18px] border border-hh-line bg-hh-card px-4 py-4"
+                >
                     <span class="grid h-10 w-10 flex-none place-items-center rounded-[13px] text-[17px]" :style="{ background: step.tint }">
                         {{ step.icon }}
                     </span>

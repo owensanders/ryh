@@ -93,13 +93,15 @@ function submitJoin(): void {
                 >
                     <span class="grid h-[42px] w-[42px] place-items-center rounded-[14px] text-lg" style="background: var(--hh-t3)">🔑</span>
                     <span class="text-[17px] font-extrabold tracking-[-0.02em]">Join with a code</span>
-                    <span class="text-[13.5px] leading-relaxed text-hh-ink2">
-                        Someone already set your home up. Paste the code they sent you.
-                    </span>
+                    <span class="text-[13.5px] leading-relaxed text-hh-ink2"> Someone already set your home up. Paste the code they sent you. </span>
                 </button>
             </div>
 
-            <form v-if="mode === 'create'" class="mt-5 flex flex-col gap-3.5 rounded-[20px] border border-hh-line bg-hh-card p-6" @submit.prevent="submitCreate">
+            <form
+                v-if="mode === 'create'"
+                class="mt-5 flex flex-col gap-3.5 rounded-[20px] border border-hh-line bg-hh-card p-6"
+                @submit.prevent="submitCreate"
+            >
                 <div class="flex flex-col gap-1.5">
                     <label for="householdName" class="hh-label">Household name</label>
                     <input id="householdName" v-model="createForm.name" type="text" class="hh-input" placeholder="The Doe household" />
@@ -151,7 +153,10 @@ function submitJoin(): void {
                             class="h-[46px] min-w-0 flex-1 rounded-[13px] border border-hh-line bg-hh-sunk px-3.5 text-sm placeholder:text-hh-ink3"
                             @keydown.enter.prevent="addInvite"
                         />
-                        <select v-model="inviteRole" class="h-[46px] w-[130px] rounded-[13px] border border-hh-line bg-hh-sunk px-2.5 text-[13px] font-semibold">
+                        <select
+                            v-model="inviteRole"
+                            class="h-[46px] w-[130px] rounded-[13px] border border-hh-line bg-hh-sunk px-2.5 text-[13px] font-semibold"
+                        >
                             <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
                         </select>
                         <button
@@ -166,7 +171,11 @@ function submitJoin(): void {
                 </div>
 
                 <div class="mt-2 flex items-center gap-3.5">
-                    <button type="submit" class="hh-btn bg-hh-coral px-6 text-white" :disabled="createForm.name.trim() === '' || createForm.processing">
+                    <button
+                        type="submit"
+                        class="hh-btn bg-hh-coral px-6 text-white"
+                        :disabled="createForm.name.trim() === '' || createForm.processing"
+                    >
                         <LoaderCircle v-if="createForm.processing" class="h-4 w-4 animate-spin" />
                         Create household
                     </button>
@@ -180,7 +189,7 @@ function submitJoin(): void {
                         id="joinCode"
                         v-model="joinForm.code"
                         type="text"
-                        class="hh-input font-mono text-lg tracking-[0.12em] uppercase"
+                        class="hh-input font-mono text-lg uppercase tracking-[0.12em]"
                         placeholder="DOE-4Q72KD"
                     />
                     <span class="text-[12.5px] text-hh-ink3">Ask whoever set the household up to send you the code.</span>
@@ -194,9 +203,7 @@ function submitJoin(): void {
                     </button>
                 </div>
 
-                <div class="text-[13px] leading-relaxed text-hh-ink3">
-                    Owners must approve new members before you get access.
-                </div>
+                <div class="text-[13px] leading-relaxed text-hh-ink3">Owners must approve new members before you get access.</div>
             </form>
         </div>
     </AuthWizardLayout>
