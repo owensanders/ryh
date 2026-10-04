@@ -151,7 +151,7 @@ function confirmDestroy(): void {
                     v-for="recipe in recipes"
                     :key="recipe.id"
                     type="button"
-                    class="rounded-2xl border border-hh-line bg-hh-card p-3.5 text-left transition hover:-translate-y-[3px] hover:shadow-hh"
+                    class="flex flex-col rounded-2xl border border-hh-line bg-hh-card p-3.5 text-left transition hover:-translate-y-[3px] hover:shadow-hh"
                     @click="canManage && openEdit(recipe)"
                 >
                     <div class="relative mb-2.5 h-[58px] rounded-xl" :style="{ background: tint(recipe.tint) }">

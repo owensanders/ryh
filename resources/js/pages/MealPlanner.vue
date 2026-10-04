@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useHouseholdRole } from '@/composables/useHouseholdRole';
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
 import { tint } from '@/lib/househub';
-import type { Member, PlannedMeal, PlannerDay, Recipe, ShoppingList, TagOption } from '@/types/househub';
+import type { AiPlannerOptions, Member, PlannedMeal, PlannerDay, Recipe, ShoppingList, TagOption } from '@/types/househub';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { Plus, Sparkles } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -21,7 +21,10 @@ const props = defineProps<{
     shoppingLists: ShoppingList[];
     tagOptions: TagOption[];
     aiConfigured: boolean;
+    aiPaused: boolean;
     aiAvailableFrom: string | null;
+    aiSuggestedBudget: number | null;
+    aiOptions: AiPlannerOptions;
 }>();
 
 const aiOpen = ref(false);
@@ -277,11 +280,16 @@ function drop(date: string): void {
                         @dragend="endDrag"
                         @click="canManage && openEdit(meal, day.date)"
                     >
-                        <div class="relative flex h-[76px] items-end px-3 py-2.5" :style="{ background: tint(meal.tint) }">
-                            <span class="absolute right-2.5 top-2 text-[10px] font-extrabold uppercase tracking-[0.08em] text-hh-ontint opacity-60">
+                        <div class="flex min-h-[76px] flex-col justify-between gap-1 px-3 py-2.5" :style="{ background: tint(meal.tint) }">
+                            <span class="self-end text-[10px] font-extrabold uppercase tracking-[0.08em] text-hh-ontint opacity-60">
                                 {{ meal.slot }}
                             </span>
-                            <span class="text-[17px] font-extrabold leading-[1.15] tracking-[-0.02em] text-hh-ontint">{{ meal.name }}</span>
+                            <span
+                                class="line-clamp-3 hyphens-auto break-words text-[14px] font-extrabold leading-[1.2] tracking-[-0.02em] text-hh-ontint"
+                                :title="meal.name"
+                            >
+                                {{ meal.name }}
+                            </span>
                         </div>
                         <div class="flex flex-col gap-[7px] px-3 py-2.5">
                             <div class="flex flex-wrap gap-1.5">
@@ -432,7 +440,10 @@ function drop(date: string): void {
         <AiMealPlanDialog
             :open="aiOpen"
             :ai-configured="aiConfigured"
+            :ai-paused="aiPaused"
             :ai-available-from="aiAvailableFrom"
+            :ai-suggested-budget="aiSuggestedBudget"
+            :ai-options="aiOptions"
             :days="days"
             :shopping-lists="shoppingLists"
             @update:open="aiOpen = $event"

@@ -11,6 +11,7 @@ use App\Models\CalendarEvent;
 use App\Models\Household;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 
 class HouseholdRepository implements HouseholdRepositoryInterface
@@ -70,6 +71,20 @@ class HouseholdRepository implements HouseholdRepositoryInterface
         return $household->budgetCategories()
             ->whereDate('month', $month->startOfMonth()->toDateString())
             ->get();
+    }
+
+    /** @return Collection<int, BudgetCategory> */
+    public function budgetCategoriesUpTo(Household $household, CarbonImmutable $month): Collection
+    {
+        return $household->budgetCategories()
+            ->whereDate('month', '<=', $month->startOfMonth()->toDateString())
+            ->orderByDesc('month')
+            ->get();
+    }
+
+    public function countAiMealPlansSince(CarbonInterface $since): int
+    {
+        return Household::where('ai_meal_plan_generated_at', '>=', $since)->count();
     }
 
     public function delete(Household $household): void

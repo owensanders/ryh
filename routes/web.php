@@ -72,6 +72,7 @@ Route::middleware(['auth', 'verified', 'household'])->group(function (): void {
         // Owner/Adult only. Teen and Child get 403s.
         Route::middleware('role:owner,adult')->group(function (): void {
             Route::post('meals/ai-plan', [MealPlannerController::class, 'generateAiPlan'])->name('meals.aiPlan');
+            Route::post('meals/library-plan', [MealPlannerController::class, 'suggestLibraryPlan'])->name('meals.libraryPlan');
             Route::post('meals', [MealPlannerController::class, 'store'])->name('meals.store');
             Route::patch('meals/{meal}', [MealPlannerController::class, 'update'])->name('meals.update');
             Route::delete('meals/{meal}', [MealPlannerController::class, 'destroy'])->name('meals.destroy');

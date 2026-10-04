@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\CookingConfidence;
+use App\Enums\MealDiet;
+use App\Enums\MealGoal;
 use App\Enums\RecipeTag;
 use App\Http\Requests\GenerateAiMealPlanRequest;
 use App\Http\Requests\IndexMealPlannerRequest;
 use App\Http\Requests\PlannedMealRequest;
 use App\Http\Requests\RescheduleMealRequest;
+use App\Http\Requests\SuggestLibraryMealPlanRequest;
 use App\Models\PlannedMeal;
 use App\Traits\ResolvesHouseholdTrait;
 use App\UseCases\Meals\AddPlannedMealUseCase;
@@ -16,6 +20,7 @@ use App\UseCases\Meals\DeletePlannedMealUseCase;
 use App\UseCases\Meals\GenerateAiMealPlanUseCase;
 use App\UseCases\Meals\GetMealPlannerUseCase;
 use App\UseCases\Meals\RescheduleMealUseCase;
+use App\UseCases\Meals\SuggestLibraryMealPlanUseCase;
 use App\UseCases\Meals\UpdatePlannedMealUseCase;
 use App\UseCases\Shopping\GetShoppingListOptionsUseCase;
 use Carbon\CarbonImmutable;
@@ -44,6 +49,11 @@ class MealPlannerController extends Controller
             ),
             'shoppingLists' => $getShoppingLists->execute($household),
             'tagOptions' => RecipeTag::options(),
+            'aiOptions' => [
+                'diets' => MealDiet::values(),
+                'goals' => MealGoal::values(),
+                'confidence' => CookingConfidence::options(),
+            ],
         ]);
     }
 
@@ -95,12 +105,30 @@ class MealPlannerController extends Controller
                 $request->validated('diets', []),
                 (string) $request->validated('avoid', ''),
                 $request->validated('goals', []),
+                CookingConfidence::from($request->validated('confidence')),
+                (string) $request->validated('use_up', ''),
+                (string) $request->validated('notes', ''),
             );
         } catch (RuntimeException $e) {
             return back()->withErrors(['ai' => $e->getMessage()]);
         }
 
         return back()->with('aiMeals', $meals);
+    }
+
+    public function suggestLibraryPlan(SuggestLibraryMealPlanRequest $request, SuggestLibraryMealPlanUseCase $suggest): RedirectResponse
+    {
+        try {
+            $meals = $suggest->execute(
+                $this->household($request),
+                $request->validated('diets', []),
+                (string) $request->validated('avoid', ''),
+            );
+        } catch (RuntimeException $e) {
+            return back()->withErrors(['ai' => $e->getMessage()]);
+        }
+
+        return back()->with('libraryMeals', $meals);
     }
 
     private function assertOwned(Request $request, PlannedMeal $meal): void

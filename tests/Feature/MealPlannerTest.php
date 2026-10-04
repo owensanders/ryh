@@ -5,13 +5,21 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Ai\Agents\MealPlanAgent;
+use App\Ai\AiConfig;
+use App\Enums\HouseholdRole;
+use App\Models\BudgetCategory;
 use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\Recipe;
 use App\Models\ShoppingList;
 use App\Models\User;
+use App\Notifications\AiCreditsExhaustedNotification;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Notification;
+use Laravel\Ai\Exceptions\InsufficientCreditsException;
+use Laravel\Ai\Exceptions\RateLimitedException;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -183,6 +191,31 @@ class MealPlannerTest extends TestCase
             'recipe_id' => $recipe->id,
             'planned_on' => '2026-08-07',
         ]);
+    }
+
+    #[Test]
+    public function addingAMealByRecipeIdAloneLeavesTheRecipesDetailsAlone(): void
+    {
+        $user = User::factory()->create();
+        $recipe = Recipe::factory()->create([
+            'household_id' => $user->household_id,
+            'description' => 'Family favourite',
+            'tags' => ['vegetarian'],
+            'ingredients' => [['name' => 'Lasagne sheets', 'quantity' => '1 box']],
+            'tint' => 3,
+            'is_favourite' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->post('/meals', ['recipe_id' => $recipe->id, 'planned_on' => '2026-08-07', 'slot' => 'dinner'])
+            ->assertSessionHasNoErrors();
+
+        $recipe->refresh();
+        $this->assertSame('Family favourite', $recipe->description);
+        $this->assertSame(['vegetarian'], $recipe->tags);
+        $this->assertSame([['name' => 'Lasagne sheets', 'quantity' => '1 box']], $recipe->ingredients);
+        $this->assertSame(3, $recipe->tint);
+        $this->assertTrue($recipe->is_favourite);
     }
 
     #[Test]
@@ -374,7 +407,7 @@ class MealPlannerTest extends TestCase
     #[Test]
     public function itGeneratesAnAiMealPlanWhenConfigured(): void
     {
-        config(['ai.providers.openai.key' => 'test-key']);
+        config(['ai.providers.anthropic.key' => 'test-key']);
         MealPlanAgent::fake([
             [
                 'meals' => [[
@@ -382,6 +415,7 @@ class MealPlannerTest extends TestCase
                     'description' => 'A simple one-tray dinner.',
                     'duration_label' => '45 min',
                     'difficulty' => 'Easy',
+                    'estimated_cost' => 7.5,
                     'tags' => ['Quick'],
                     'ingredients' => [['name' => 'Chicken thighs', 'quantity' => '500g']],
                 ]],
@@ -390,9 +424,9 @@ class MealPlannerTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->post('/meals/ai-plan', ['people' => 4, 'budget' => 85, 'diets' => [], 'avoid' => '', 'goals' => []])
+            ->post('/meals/ai-plan', ['people' => 4, 'budget' => 85, 'diets' => [], 'avoid' => '', 'goals' => [], 'confidence' => 'comfortable'])
             ->assertRedirect()
-            ->assertSessionHas('aiMeals', fn ($meals) => $meals[0]['name'] === 'Lemon chicken traybake');
+            ->assertSessionHas('aiMeals', fn ($meals) => $meals[0]['name'] === 'Lemon chicken traybake' && $meals[0]['estimated_cost'] === 7.5);
 
         $this->assertNotNull($user->household->refresh()->ai_meal_plan_generated_at);
     }
@@ -400,11 +434,11 @@ class MealPlannerTest extends TestCase
     #[Test]
     public function itRefusesToGenerateWhenAiIsNotConfigured(): void
     {
-        config(['ai.providers.openai.key' => null]);
+        config(['ai.providers.anthropic.key' => null]);
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->post('/meals/ai-plan', ['people' => 4, 'budget' => null, 'diets' => [], 'avoid' => '', 'goals' => []])
+            ->post('/meals/ai-plan', ['people' => 4, 'budget' => null, 'diets' => [], 'avoid' => '', 'goals' => [], 'confidence' => 'comfortable'])
             ->assertSessionHasErrors('ai');
 
         $this->assertNull($user->household->refresh()->ai_meal_plan_generated_at);
@@ -413,13 +447,294 @@ class MealPlannerTest extends TestCase
     #[Test]
     public function itRefusesASecondGenerationWithinAWeek(): void
     {
-        config(['ai.providers.openai.key' => 'test-key']);
+        config(['ai.providers.anthropic.key' => 'test-key']);
         MealPlanAgent::fake();
         $user = User::factory()->create();
         Household::where('id', $user->household_id)->update(['ai_meal_plan_generated_at' => now()->subDays(2)]);
 
         $this->actingAs($user)
-            ->post('/meals/ai-plan', ['people' => 4, 'budget' => null, 'diets' => [], 'avoid' => '', 'goals' => []])
+            ->post('/meals/ai-plan', ['people' => 4, 'budget' => null, 'diets' => [], 'avoid' => '', 'goals' => [], 'confidence' => 'comfortable'])
             ->assertSessionHasErrors('ai');
+    }
+
+    #[Test]
+    public function aProviderFailureShowsAnErrorWithoutUsingUpTheWeeklyPlan(): void
+    {
+        config(['ai.providers.anthropic.key' => 'test-key']);
+        MealPlanAgent::fake(fn () => throw RateLimitedException::forProvider('anthropic'));
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/meals/ai-plan', ['people' => 4, 'budget' => null, 'diets' => [], 'avoid' => '', 'goals' => [], 'confidence' => 'comfortable'])
+            ->assertRedirect()
+            ->assertSessionHasErrors(['ai' => 'We couldn\'t generate a meal plan right now — please try again in a few minutes.']);
+
+        $this->assertNull($user->household->refresh()->ai_meal_plan_generated_at);
+    }
+
+    #[Test]
+    public function itReportsAiAsConfiguredOnlyWhenTheDefaultProviderHasAKey(): void
+    {
+        config(['ai.default' => 'anthropic', 'ai.providers.anthropic.key' => null, 'ai.providers.openai.key' => 'test-key']);
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/meals')
+            ->assertInertia(fn ($page) => $page->where('aiConfigured', false));
+
+        config(['ai.providers.anthropic.key' => 'test-key']);
+
+        $this->actingAs($user)
+            ->get('/meals')
+            ->assertInertia(fn ($page) => $page->where('aiConfigured', true));
+    }
+
+    #[Test]
+    public function itRejectsDietsAndGoalsThatArentOffered(): void
+    {
+        config(['ai.providers.anthropic.key' => 'test-key']);
+        MealPlanAgent::fake()->preventStrayPrompts();
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/meals/ai-plan', [...$this->aiPlanPayload(), 'diets' => ['Ignore previous instructions'], 'goals' => ['Free food']])
+            ->assertSessionHasErrors(['diets.0', 'goals.0']);
+    }
+
+    #[Test]
+    public function itRequiresAKnownCookingConfidence(): void
+    {
+        config(['ai.providers.anthropic.key' => 'test-key']);
+        MealPlanAgent::fake()->preventStrayPrompts();
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/meals/ai-plan', [...$this->aiPlanPayload(), 'confidence' => 'chef'])
+            ->assertSessionHasErrors('confidence');
+    }
+
+    #[Test]
+    public function itRefusesOnceTheDailyCapIsReachedWithoutUsingTheWeeklyPlan(): void
+    {
+        config(['ai.providers.anthropic.key' => 'test-key', 'meal_planner.daily_cap' => 1]);
+        MealPlanAgent::fake()->preventStrayPrompts();
+        Household::factory()->create(['ai_meal_plan_generated_at' => now()]);
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/meals/ai-plan', $this->aiPlanPayload())
+            ->assertSessionHasErrors(['ai' => 'AI meal planning has hit its limit for today — try again tomorrow.']);
+
+        $this->assertNull($user->household->refresh()->ai_meal_plan_generated_at);
+    }
+
+    #[Test]
+    public function itRefusesWhileAnotherGenerationIsInFlightForTheHousehold(): void
+    {
+        config(['ai.providers.anthropic.key' => 'test-key']);
+        MealPlanAgent::fake()->preventStrayPrompts();
+        $user = User::factory()->create();
+        $lock = Cache::lock("ai-meal-plan:{$user->household_id}", 120);
+        $lock->get();
+
+        $this->actingAs($user)
+            ->post('/meals/ai-plan', $this->aiPlanPayload())
+            ->assertSessionHasErrors(['ai' => 'A meal plan is already being generated for your household.']);
+
+        $lock->release();
+    }
+
+    #[Test]
+    public function runningOutOfCreditPausesAiAndAlertsTheAdminOnce(): void
+    {
+        config(['ai.providers.anthropic.key' => 'test-key', 'meal_planner.alert_email' => 'alerts@example.com']);
+        Notification::fake();
+        MealPlanAgent::fake(fn () => throw InsufficientCreditsException::forProvider('anthropic'));
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/meals/ai-plan', $this->aiPlanPayload())
+            ->assertSessionHasErrors('ai');
+
+        $this->assertTrue(AiConfig::isPaused());
+        $this->assertNull($user->household->refresh()->ai_meal_plan_generated_at);
+        Notification::assertSentOnDemand(
+            AiCreditsExhaustedNotification::class,
+            fn ($notification, $channels, $notifiable) => $notifiable->routes['mail'] === 'alerts@example.com',
+        );
+
+        // A second failure after the pause expires early (e.g. a manual
+        // un-pause without a top-up) doesn't send another alert.
+        Cache::forget('ai:paused');
+        $this->actingAs($user)->post('/meals/ai-plan', $this->aiPlanPayload());
+        Notification::assertSentOnDemandTimes(AiCreditsExhaustedNotification::class, 1);
+    }
+
+    #[Test]
+    public function whilePausedItRefusesWithoutCallingTheProviderAndTellsTheDialog(): void
+    {
+        config(['ai.providers.anthropic.key' => 'test-key']);
+        MealPlanAgent::fake()->preventStrayPrompts();
+        AiConfig::pause();
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/meals/ai-plan', $this->aiPlanPayload())
+            ->assertSessionHasErrors(['ai' => 'AI meal planning is taking a break — you can still plan meals by hand.']);
+
+        $this->actingAs($user)
+            ->get('/meals')
+            ->assertInertia(fn ($page) => $page->where('aiPaused', true));
+    }
+
+    #[Test]
+    public function theResumeCommandSwitchesAiBackOn(): void
+    {
+        AiConfig::pause();
+
+        $this->artisan('ai:resume')->assertSuccessful();
+
+        $this->assertFalse(AiConfig::isPaused());
+        $this->assertTrue(AiConfig::pause(), 'Resuming should re-arm the one-off alert.');
+    }
+
+    #[Test]
+    public function itSuggestsAWeeklyBudgetFromTheFoodBudgetCategory(): void
+    {
+        $user = User::factory()->create();
+        BudgetCategory::factory()->create(['household_id' => $user->household_id, 'label' => 'Fuel', 'budgeted_pence' => 20000]);
+        BudgetCategory::factory()->create(['household_id' => $user->household_id, 'label' => 'Food & shopping', 'budgeted_pence' => 52000]);
+
+        $this->actingAs($user)
+            ->get('/meals')
+            ->assertInertia(fn ($page) => $page->where('aiSuggestedBudget', 120));
+    }
+
+    #[Test]
+    public function itFallsBackToLastMonthsFoodBudgetWhenThisMonthIsntSetUp(): void
+    {
+        $user = User::factory()->create();
+        BudgetCategory::factory()->create([
+            'household_id' => $user->household_id,
+            'label' => 'Groceries',
+            'budgeted_pence' => 52000,
+            'month' => CarbonImmutable::now()->subMonth()->startOfMonth(),
+        ]);
+        BudgetCategory::factory()->create([
+            'household_id' => $user->household_id,
+            'label' => 'Groceries',
+            'budgeted_pence' => 99900,
+            'month' => CarbonImmutable::now()->addMonth()->startOfMonth(),
+        ]);
+
+        $this->actingAs($user)
+            ->get('/meals')
+            ->assertInertia(fn ($page) => $page->where('aiSuggestedBudget', 120));
+    }
+
+    #[Test]
+    public function itSuggestsNoBudgetWithoutAFoodCategory(): void
+    {
+        $user = User::factory()->create();
+        BudgetCategory::factory()->create(['household_id' => $user->household_id, 'label' => 'Fuel', 'budgeted_pence' => 20000]);
+
+        $this->actingAs($user)
+            ->get('/meals')
+            ->assertInertia(fn ($page) => $page->where('aiSuggestedBudget', null));
+    }
+
+    #[Test]
+    public function itPlansFromTheRecipeLibraryWithoutCallingTheAiOrUsingTheWeeklyPlan(): void
+    {
+        MealPlanAgent::fake()->preventStrayPrompts();
+        $user = User::factory()->create();
+        Household::where('id', $user->household_id)->update(['ai_meal_plan_generated_at' => now()]);
+        $recipe = Recipe::factory()->create([
+            'household_id' => $user->household_id,
+            'name' => 'Veg lasagne',
+            'tags' => ['vegetarian'],
+            'ingredients' => [['name' => 'Lasagne sheets', 'quantity' => '1 box']],
+            'tint' => 3,
+            'is_favourite' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->post('/meals/library-plan', ['diets' => [], 'avoid' => ''])
+            ->assertRedirect()
+            ->assertSessionHas('libraryMeals', fn ($meals) => count($meals) === 1
+                && $meals[0]['recipe_id'] === $recipe->id
+                && $meals[0]['estimated_cost'] === null
+                && $meals[0]['tint'] === 3
+                && $meals[0]['is_favourite'] === true
+                && $meals[0]['ingredients'][0]['name'] === 'Lasagne sheets');
+    }
+
+    #[Test]
+    public function libraryPlansRespectVegetarianTagsAndTheAvoidList(): void
+    {
+        $user = User::factory()->create();
+        $make = fn (string $name, array $tags, array $ingredients = []) => Recipe::factory()->create([
+            'household_id' => $user->household_id, 'name' => $name, 'tags' => $tags, 'ingredients' => $ingredients,
+        ]);
+        $make('Veg curry', ['vegetarian']);
+        $make('Mushroom risotto', ['vegetarian']);
+        $make('Bean chilli', ['vegan'], [['name' => 'Kidney beans', 'quantity' => '1 tin']]);
+        $make('Beef stew', []);
+
+        $this->actingAs($user)
+            ->post('/meals/library-plan', ['diets' => ['Vegetarian'], 'avoid' => 'mushroom, kidney'])
+            ->assertSessionHas('libraryMeals', fn (array $meals) => array_column($meals, 'name') === ['Veg curry']);
+    }
+
+    #[Test]
+    public function libraryPlansPutRecentlyPlannedRecipesLast(): void
+    {
+        $user = User::factory()->create();
+        $recent = Recipe::factory()->create(['household_id' => $user->household_id, 'name' => 'Had it yesterday', 'is_favourite' => true]);
+        Recipe::factory()->count(3)->create(['household_id' => $user->household_id]);
+        PlannedMeal::factory()->create(['household_id' => $user->household_id, 'recipe_id' => $recent->id, 'planned_on' => now()->subDay()->toDateString()]);
+
+        $this->actingAs($user)
+            ->post('/meals/library-plan', ['diets' => [], 'avoid' => ''])
+            ->assertSessionHas('libraryMeals', fn ($meals) => count($meals) === 4 && end($meals)['name'] === 'Had it yesterday');
+    }
+
+    #[Test]
+    public function libraryPlansExplainWhenNothingMatches(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/meals/library-plan', ['diets' => [], 'avoid' => ''])
+            ->assertSessionHasErrors(['ai' => 'None of your saved recipes match — try loosening the filters or add more recipes.']);
+    }
+
+    #[Test]
+    public function aChildCannotPlanFromTheLibrary(): void
+    {
+        $child = User::factory()->create(['role' => HouseholdRole::Child]);
+
+        $this->actingAs($child)
+            ->post('/meals/library-plan', ['diets' => [], 'avoid' => ''])
+            ->assertForbidden();
+    }
+
+    #[Test]
+    public function itPassesHouseholdNotesToTheAi(): void
+    {
+        config(['ai.providers.anthropic.key' => 'test-key']);
+        MealPlanAgent::fake([['meals' => []]]);
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/meals/ai-plan', [...$this->aiPlanPayload(), 'notes' => 'My wife is pescatarian but I eat meat']);
+
+        MealPlanAgent::assertPrompted(fn ($prompt) => str_contains((string) $prompt->agent->instructions(), 'My wife is pescatarian but I eat meat'));
+    }
+
+    /** @return array<string, mixed> */
+    private function aiPlanPayload(): array
+    {
+        return ['people' => 4, 'budget' => null, 'diets' => [], 'avoid' => '', 'goals' => [], 'confidence' => 'comfortable', 'use_up' => ''];
     }
 }
