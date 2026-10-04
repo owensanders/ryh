@@ -21,7 +21,7 @@ const steps = [
                 class="relative hidden w-[340px] flex-none flex-col overflow-hidden p-8 text-hh-onhero lg:flex"
                 style="background: linear-gradient(150deg, var(--hh-hero1), var(--hh-hero2))"
             >
-                <div class="absolute -top-16 -right-16 h-72 w-72 rounded-full bg-hh-coral opacity-20 blur-3xl"></div>
+                <div class="absolute -right-16 -top-16 h-72 w-72 rounded-full bg-hh-coral opacity-20 blur-3xl"></div>
 
                 <Link :href="route('home')" class="relative flex items-center gap-2.5">
                     <div class="grid h-9 w-9 flex-none place-items-center rounded-xl bg-hh-coral text-white">

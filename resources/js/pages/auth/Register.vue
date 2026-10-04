@@ -36,7 +36,8 @@ const passwordNote = computed(
 );
 
 const ready = computed(
-    () => firstName.value.trim() !== '' && lastName.value.trim() !== '' && form.email.includes('@') && passwordScore.value >= 3 && acceptedTerms.value,
+    () =>
+        firstName.value.trim() !== '' && lastName.value.trim() !== '' && form.email.includes('@') && passwordScore.value >= 3 && acceptedTerms.value,
 );
 
 const submit = () => {
@@ -57,15 +58,21 @@ const submit = () => {
 
         <div class="max-w-[560px]">
             <h1 class="text-[32px] font-black tracking-[-0.035em] sm:text-[38px]">Create your account</h1>
-            <p class="mt-3 text-[15.5px] leading-relaxed text-hh-ink2">
-                One login per person. You'll connect it to a household on the next step.
-            </p>
+            <p class="mt-3 text-[15.5px] leading-relaxed text-hh-ink2">One login per person. You'll connect it to a household on the next step.</p>
 
             <form class="mt-7 flex flex-col gap-3.5" @submit.prevent="submit">
                 <div class="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                     <div class="flex flex-col gap-1.5">
                         <label for="firstName" class="hh-label">First name</label>
-                        <input id="firstName" v-model="firstName" type="text" class="hh-input" autofocus autocomplete="given-name" placeholder="John" />
+                        <input
+                            id="firstName"
+                            v-model="firstName"
+                            type="text"
+                            class="hh-input"
+                            autofocus
+                            autocomplete="given-name"
+                            placeholder="John"
+                        />
                     </div>
                     <div class="flex flex-col gap-1.5">
                         <label for="lastName" class="hh-label">Last name</label>
@@ -75,14 +82,7 @@ const submit = () => {
 
                 <div class="flex flex-col gap-1.5">
                     <label for="email" class="hh-label">Email address</label>
-                    <input
-                        id="email"
-                        v-model="form.email"
-                        type="email"
-                        class="hh-input"
-                        autocomplete="email"
-                        placeholder="you@example.com"
-                    />
+                    <input id="email" v-model="form.email" type="email" class="hh-input" autocomplete="email" placeholder="you@example.com" />
                     <InputError :message="form.errors.email" />
                 </div>
 
@@ -129,9 +129,7 @@ const submit = () => {
                     >
                         {{ acceptedTerms ? '✓' : '' }}
                     </span>
-                    <span class="flex-1 text-[13.5px] leading-relaxed text-hh-ink2">
-                        I agree to the terms of service and privacy policy.
-                    </span>
+                    <span class="flex-1 text-[13.5px] leading-relaxed text-hh-ink2"> I agree to the terms of service and privacy policy. </span>
                 </button>
                 <InputError :message="form.errors.terms" />
 

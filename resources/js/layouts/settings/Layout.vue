@@ -10,7 +10,7 @@ const tabs = [
 </script>
 
 <template>
-    <div class="animate-hh-rise flex flex-col gap-5">
+    <div class="flex animate-hh-rise flex-col gap-5">
         <nav class="flex flex-wrap gap-1.5 rounded-[15px] border border-hh-line bg-hh-panel p-1.5">
             <Link
                 v-for="tab in tabs"

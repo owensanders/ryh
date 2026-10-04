@@ -19,7 +19,7 @@ class ConfirmablePasswordController extends Controller
         return Inertia::render('auth/ConfirmPassword');
     }
 
-    /** @throws \Illuminate\Validation\ValidationException */
+    /** @throws ValidationException */
     public function store(ConfirmPasswordRequest $request, ConfirmPasswordUseCase $confirm): RedirectResponse
     {
         if (! $confirm->execute($request->user(), $request->validated('password'))) {

@@ -24,9 +24,7 @@ const emit = defineEmits<{
                 <button type="button" class="hh-btn w-auto bg-hh-coral text-white" @click="emit('confirm')">
                     {{ confirmLabel ?? 'Delete' }}
                 </button>
-                <button type="button" class="hh-btn w-auto bg-hh-soft text-hh-ink" @click="emit('update:open', false)">
-                    Cancel
-                </button>
+                <button type="button" class="hh-btn w-auto bg-hh-soft text-hh-ink" @click="emit('update:open', false)">Cancel</button>
             </div>
         </DialogContent>
     </Dialog>

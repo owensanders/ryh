@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Database\Factories\HouseholdFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Laravel\Cashier\Billable;
+use Laravel\Cashier\Subscription;
 
 /**
  * @property int $id
@@ -19,12 +22,12 @@ use Laravel\Cashier\Billable;
  * @property bool $join_code_enabled
  * @property string|null $location
  * @property int $streak_days
- * @property \Illuminate\Support\Carbon|null $streak_last_active_date
- * @property \Illuminate\Support\Carbon|null $trial_ends_at
- * @property \Illuminate\Support\Carbon|null $ai_meal_plan_generated_at
- * @property \Illuminate\Support\Carbon|null $last_chore_notification_sent_at
+ * @property Carbon|null $streak_last_active_date
+ * @property Carbon|null $trial_ends_at
+ * @property Carbon|null $ai_meal_plan_generated_at
+ * @property Carbon|null $last_chore_notification_sent_at
  * @property-read HouseholdUser|null $pivot Present when loaded through a `User::households()` query.
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Cashier\Subscription> $subscriptions
+ * @property-read Collection<int, Subscription> $subscriptions
  */
 class Household extends Model
 {

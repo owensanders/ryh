@@ -5,29 +5,31 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Palette;
+use Database\Factories\CalendarEventFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int $household_id
  * @property int|null $created_by
  * @property string $title
- * @property \Illuminate\Support\Carbon $starts_at
- * @property \Illuminate\Support\Carbon|null $ends_at
+ * @property Carbon $starts_at
+ * @property Carbon|null $ends_at
  * @property bool $is_all_day
  * @property string|null $location
  * @property string|null $notes
- * @property \App\Enums\Palette $colour
+ * @property Palette $colour
  * @property Collection<int, User> $attendees
  * @property User|null $creator
  */
 class CalendarEvent extends Model
 {
-    /** @use HasFactory<\Database\Factories\CalendarEventFactory> */
+    /** @use HasFactory<CalendarEventFactory> */
     use HasFactory;
 
     /** @var list<string> */

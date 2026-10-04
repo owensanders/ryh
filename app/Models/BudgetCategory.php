@@ -5,24 +5,26 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Palette;
+use Database\Factories\BudgetCategoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int $household_id
  * @property string $label
  * @property string|null $icon
- * @property \App\Enums\Palette $colour
+ * @property Palette $colour
  * @property int $budgeted_pence
  * @property bool $is_recurring
- * @property \Illuminate\Support\Carbon $month
+ * @property Carbon $month
  * @property int $position
  */
 class BudgetCategory extends Model
 {
-    /** @use HasFactory<\Database\Factories\BudgetCategoryFactory> */
+    /** @use HasFactory<BudgetCategoryFactory> */
     use HasFactory;
 
     /** @var list<string> */
