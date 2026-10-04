@@ -11,6 +11,7 @@ use App\Data\MemberData;
 use App\Data\PlannedMealData;
 use App\Data\PlannerDayData;
 use App\Data\RecipeData;
+use App\Models\BudgetCategory;
 use App\Models\Household;
 use App\Models\PlannedMeal;
 use Carbon\CarbonImmutable;
@@ -18,6 +19,8 @@ use Carbon\CarbonImmutable;
 class GetMealPlannerUseCase
 {
     private const LIBRARY_SIZE = 6;
+
+    private const FOOD_BUDGET_LABEL = '/food|grocer|shopping/i';
 
     public function __construct(
         private readonly MealPlanRepositoryInterface $meals,
@@ -33,7 +36,9 @@ class GetMealPlannerUseCase
      *     recipes: list<RecipeData>,
      *     members: list<MemberData>,
      *     aiConfigured: bool,
+     *     aiPaused: bool,
      *     aiAvailableFrom: ?string,
+     *     aiSuggestedBudget: ?int,
      * }
      */
     public function execute(Household $household, CarbonImmutable $anyDayInWeek): array
@@ -77,9 +82,28 @@ class GetMealPlannerUseCase
                 ->values()
                 ->all(),
             'aiConfigured' => AiConfig::isConfigured(),
+            'aiPaused' => AiConfig::isPaused(),
             'aiAvailableFrom' => $household->canGenerateAiMealPlan()
                 ? null
                 : $household->ai_meal_plan_generated_at->addWeek()->toDateString(),
+            'aiSuggestedBudget' => $this->suggestedWeeklyFoodBudget($household, $today),
         ];
+    }
+
+    /**
+     * Weekly £ from the food budget category, to prefill the AI planner. Uses
+     * the latest month that has one, since the current month's budget often
+     * isn't set up yet early in the month.
+     */
+    private function suggestedWeeklyFoodBudget(Household $household, CarbonImmutable $today): ?int
+    {
+        $food = $this->households->budgetCategoriesUpTo($household, $today)
+            ->first(fn (BudgetCategory $category) => preg_match(self::FOOD_BUDGET_LABEL, $category->label) === 1);
+
+        if ($food === null || $food->budgeted_pence <= 0) {
+            return null;
+        }
+
+        return (int) round($food->budgeted_pence / 100 * 12 / 52);
     }
 }

@@ -1,22 +1,22 @@
 <script setup lang="ts">
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { SharedData } from '@/types';
-import type { AiMealSuggestion, PlannerDay, ShoppingList } from '@/types/househub';
+import type { AiMealSuggestion, AiPlannerOptions, PlannerDay, ShoppingList } from '@/types/househub';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
     open: boolean;
     aiConfigured: boolean;
+    aiPaused: boolean;
     aiAvailableFrom: string | null;
+    aiSuggestedBudget: number | null;
+    aiOptions: AiPlannerOptions;
     days: PlannerDay[];
     shoppingLists: ShoppingList[];
 }>();
 
 const emit = defineEmits<{ 'update:open': [value: boolean] }>();
-
-const DIET_OPTIONS = ['Vegetarian', 'Vegan', 'Pescatarian', 'Gluten free', 'Dairy free', 'Nut free'];
-const GOAL_OPTIONS = ['Eat healthier', 'Spend less', 'Eat more veg', 'Quick weeknights', 'Batch cook'];
 
 const page = usePage<SharedData>();
 
@@ -34,12 +34,17 @@ const form = useForm({
     diets: [] as string[],
     avoid: '',
     goals: [] as string[],
+    confidence: 'comfortable',
+    use_up: '',
 });
 
 function freeDayIndexes(): number[] {
-    const free = props.days.map((day, index) => ({ index, hasDinner: day.meals.some((m) => m.slotKey === 'dinner') })).filter((d) => !d.hasDinner);
+    // Past days are never preselected - planning dinners for them is wasted.
+    const today = props.days.find((day) => day.isToday)?.date ?? new Date().toLocaleDateString('en-CA');
+    const upcoming = props.days.map((day, index) => ({ day, index })).filter(({ day }) => day.date >= today);
+    const free = upcoming.filter(({ day }) => !day.meals.some((m) => m.slotKey === 'dinner'));
 
-    return free.length ? free.map((d) => d.index) : props.days.map((_, index) => index);
+    return (free.length ? free : upcoming).map(({ index }) => index);
 }
 
 watch(
@@ -54,6 +59,9 @@ watch(
         seed.value = 0;
         selectedDays.value = freeDayIndexes();
         targetListId.value = props.shoppingLists[0]?.id ?? null;
+        if (form.budget === '' && props.aiSuggestedBudget !== null) {
+            form.budget = props.aiSuggestedBudget;
+        }
         form.clearErrors();
     },
 );
@@ -75,6 +83,26 @@ const assignment = computed(() => {
         }))
         .filter((entry) => entry.day !== undefined);
 });
+
+const estimatedTotal = computed(() => assignment.value.reduce((sum, entry) => sum + (entry.suggestion.estimated_cost ?? 0), 0));
+
+const budgetAmount = computed(() => {
+    const amount = Number(form.budget);
+
+    return form.budget === '' || Number.isNaN(amount) ? null : amount;
+});
+
+const overBudget = computed(() => budgetAmount.value !== null && estimatedTotal.value > budgetAmount.value);
+
+const costSummary = computed(() => {
+    const dinners = `for ${assignment.value.length} ${assignment.value.length === 1 ? 'dinner' : 'dinners'}`;
+
+    return budgetAmount.value === null ? `${dinners}.` : `${dinners} vs your ${pounds(budgetAmount.value)} weekly food budget.`;
+});
+
+function pounds(amount: number): string {
+    return `£${amount.toFixed(2)}`;
+}
 
 function generate(): void {
     stage.value = 'loading';
@@ -149,7 +177,7 @@ function accept(): void {
 
 <template>
     <Dialog :open="open" @update:open="emit('update:open', $event)">
-        <DialogContent class="max-w-lg rounded-[22px] border-hh-line bg-hh-card text-hh-ink sm:rounded-[22px]">
+        <DialogContent class="max-h-[90dvh] max-w-lg overflow-y-auto rounded-[22px] border-hh-line bg-hh-card text-hh-ink sm:rounded-[22px]">
             <DialogHeader>
                 <DialogTitle class="text-[16px] font-extrabold tracking-tight">
                     {{ stage === 'result' ? 'Your week, ready to go' : 'Plan my week' }}
@@ -157,11 +185,16 @@ function accept(): void {
             </DialogHeader>
 
             <div v-if="!aiConfigured" class="flex flex-col gap-2 text-[13.5px] text-hh-ink2">
-                <p>AI meal planning isn't set up yet — ask the household owner to add an OpenAI API key.</p>
+                <p>AI meal planning isn't available right now — you can still plan meals by hand.</p>
                 <button type="button" class="hh-btn w-auto self-start bg-hh-soft text-hh-ink" @click="emit('update:open', false)">Close</button>
             </div>
 
-            <div v-else-if="aiAvailableFrom" class="flex flex-col gap-2 text-[13.5px] text-hh-ink2">
+            <div v-else-if="aiPaused && stage === 'form'" class="flex flex-col gap-2 text-[13.5px] text-hh-ink2">
+                <p>AI meal planning is taking a short break — you can still plan meals by hand. Your weekly plan hasn't been used.</p>
+                <button type="button" class="hh-btn w-auto self-start bg-hh-soft text-hh-ink" @click="emit('update:open', false)">Close</button>
+            </div>
+
+            <div v-else-if="aiAvailableFrom && stage === 'form'" class="flex flex-col gap-2 text-[13.5px] text-hh-ink2">
                 <p>Your household can generate one AI meal plan a week. Next one available from {{ aiAvailableFrom }}.</p>
                 <button type="button" class="hh-btn w-auto self-start bg-hh-soft text-hh-ink" @click="emit('update:open', false)">Close</button>
             </div>
@@ -197,11 +230,35 @@ function accept(): void {
                 <div class="flex flex-col gap-1.5">
                     <span class="hh-label">Diets</span>
                     <div class="flex flex-wrap gap-x-3 gap-y-1.5">
-                        <label v-for="diet in DIET_OPTIONS" :key="diet" class="flex items-center gap-1.5 text-[12.5px] text-hh-ink2">
+                        <label v-for="diet in aiOptions.diets" :key="diet" class="flex items-center gap-1.5 text-[12.5px] text-hh-ink2">
                             <input v-model="form.diets" type="checkbox" :value="diet" class="h-3.5 w-3.5 accent-hh-coral" />
                             {{ diet }}
                         </label>
                     </div>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <span class="hh-label">Cooking confidence</span>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button
+                            v-for="level in aiOptions.confidence"
+                            :key="level.value"
+                            type="button"
+                            class="rounded-lg border px-2.5 py-1.5 text-[12.5px] font-semibold"
+                            :class="
+                                form.confidence === level.value ? 'border-hh-ink bg-hh-ink text-hh-shell' : 'border-hh-line bg-hh-card text-hh-ink2'
+                            "
+                            :aria-pressed="form.confidence === level.value"
+                            @click="form.confidence = level.value"
+                        >
+                            {{ level.label }}
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label for="ai_use_up" class="hh-label">Anything to use up?</label>
+                    <input id="ai_use_up" v-model="form.use_up" type="text" class="hh-input" placeholder="e.g. half a butternut squash, chickpeas" />
                 </div>
 
                 <div class="flex flex-col gap-1.5">
@@ -212,7 +269,7 @@ function accept(): void {
                 <div class="flex flex-col gap-1.5">
                     <span class="hh-label">Goals</span>
                     <div class="flex flex-wrap gap-x-3 gap-y-1.5">
-                        <label v-for="goal in GOAL_OPTIONS" :key="goal" class="flex items-center gap-1.5 text-[12.5px] text-hh-ink2">
+                        <label v-for="goal in aiOptions.goals" :key="goal" class="flex items-center gap-1.5 text-[12.5px] text-hh-ink2">
                             <input v-model="form.goals" type="checkbox" :value="goal" class="h-3.5 w-3.5 accent-hh-coral" />
                             {{ goal }}
                         </label>
@@ -249,9 +306,21 @@ function accept(): void {
                             <span class="rounded-md bg-hh-soft px-1.5 py-[3px] text-[10.5px] font-semibold text-hh-ink2">
                                 {{ entry.suggestion.difficulty }}
                             </span>
+                            <span
+                                v-if="entry.suggestion.estimated_cost"
+                                class="rounded-md bg-hh-soft px-1.5 py-[3px] font-mono text-[10.5px] text-hh-ink2"
+                            >
+                                ~{{ pounds(entry.suggestion.estimated_cost) }}
+                            </span>
                         </div>
                     </div>
                 </div>
+
+                <p v-if="estimatedTotal > 0" class="text-[12.5px] text-hh-ink2">
+                    Estimated
+                    <span class="font-bold" :class="overBudget ? 'text-hh-coral' : 'text-hh-ink'">{{ pounds(estimatedTotal) }}</span>
+                    {{ costSummary }}
+                </p>
 
                 <div v-if="shoppingLists.length > 0" class="flex flex-col gap-1.5 border-t border-hh-line pt-4">
                     <label for="ai_shopping_list" class="hh-label">Add missing ingredients to</label>

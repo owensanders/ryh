@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useHouseholdRole } from '@/composables/useHouseholdRole';
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
 import { tint } from '@/lib/househub';
-import type { Member, PlannedMeal, PlannerDay, Recipe, ShoppingList, TagOption } from '@/types/househub';
+import type { AiPlannerOptions, Member, PlannedMeal, PlannerDay, Recipe, ShoppingList, TagOption } from '@/types/househub';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { Plus, Sparkles } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -21,7 +21,10 @@ const props = defineProps<{
     shoppingLists: ShoppingList[];
     tagOptions: TagOption[];
     aiConfigured: boolean;
+    aiPaused: boolean;
     aiAvailableFrom: string | null;
+    aiSuggestedBudget: number | null;
+    aiOptions: AiPlannerOptions;
 }>();
 
 const aiOpen = ref(false);
@@ -432,7 +435,10 @@ function drop(date: string): void {
         <AiMealPlanDialog
             :open="aiOpen"
             :ai-configured="aiConfigured"
+            :ai-paused="aiPaused"
             :ai-available-from="aiAvailableFrom"
+            :ai-suggested-budget="aiSuggestedBudget"
+            :ai-options="aiOptions"
             :days="days"
             :shopping-lists="shoppingLists"
             @update:open="aiOpen = $event"

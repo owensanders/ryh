@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\CookingConfidence;
+use App\Enums\MealDiet;
+use App\Enums\MealGoal;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class GenerateAiMealPlanRequest extends FormRequest
 {
@@ -13,12 +17,14 @@ class GenerateAiMealPlanRequest extends FormRequest
     {
         return [
             'people' => ['required', 'integer', 'min:1', 'max:12'],
-            'budget' => ['nullable', 'numeric', 'min:0'],
-            'diets' => ['array'],
-            'diets.*' => ['string', 'max:40'],
+            'budget' => ['nullable', 'numeric', 'min:0', 'max:10000'],
+            'diets' => ['array', 'max:'.count(MealDiet::cases())],
+            'diets.*' => ['string', 'distinct', Rule::enum(MealDiet::class)],
             'avoid' => ['nullable', 'string', 'max:255'],
-            'goals' => ['array'],
-            'goals.*' => ['string', 'max:60'],
+            'goals' => ['array', 'max:'.count(MealGoal::cases())],
+            'goals.*' => ['string', 'distinct', Rule::enum(MealGoal::class)],
+            'confidence' => ['required', Rule::enum(CookingConfidence::class)],
+            'use_up' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

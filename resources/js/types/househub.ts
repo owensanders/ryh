@@ -112,8 +112,15 @@ export interface AiMealSuggestion {
     description: string;
     duration_label: string;
     difficulty: string;
+    estimated_cost: number;
     tags: string[];
     ingredients: RecipeIngredient[];
+}
+
+export interface AiPlannerOptions {
+    diets: string[];
+    goals: string[];
+    confidence: TagOption[];
 }
 
 export interface TagOption {

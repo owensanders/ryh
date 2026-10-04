@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\CookingConfidence;
+use App\Enums\MealDiet;
+use App\Enums\MealGoal;
 use App\Enums\RecipeTag;
 use App\Http\Requests\GenerateAiMealPlanRequest;
 use App\Http\Requests\IndexMealPlannerRequest;
@@ -44,6 +47,11 @@ class MealPlannerController extends Controller
             ),
             'shoppingLists' => $getShoppingLists->execute($household),
             'tagOptions' => RecipeTag::options(),
+            'aiOptions' => [
+                'diets' => MealDiet::values(),
+                'goals' => MealGoal::values(),
+                'confidence' => CookingConfidence::options(),
+            ],
         ]);
     }
 
@@ -95,6 +103,8 @@ class MealPlannerController extends Controller
                 $request->validated('diets', []),
                 (string) $request->validated('avoid', ''),
                 $request->validated('goals', []),
+                CookingConfidence::from($request->validated('confidence')),
+                (string) $request->validated('use_up', ''),
             );
         } catch (RuntimeException $e) {
             return back()->withErrors(['ai' => $e->getMessage()]);
