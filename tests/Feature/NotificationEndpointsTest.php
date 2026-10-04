@@ -35,7 +35,7 @@ class NotificationEndpointsTest extends TestCase
         $user->notify(new ChoresReminderNotification($user->household, 1));
         $notification = $user->notifications()->firstOrFail();
 
-        $this->actingAs($user)->patch("/notifications/{$notification->id}/read")->assertRedirect();
+        $this->actingAs($user)->patch("/notifications/{$notification->id}/read")->assertRedirect(route('chores.index'));
 
         $this->assertNotNull($notification->refresh()->read_at);
     }

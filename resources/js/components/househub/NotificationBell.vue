@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { deleteAll, markAllAsRead, markAsRead, notifications, subscribeToNotifications, type AppNotification } from '@/composables/useNotifications';
-import { router } from '@inertiajs/vue3';
+import { deleteAll, markAllAsRead, notifications, openNotification, subscribeToNotifications } from '@/composables/useNotifications';
 import { onClickOutside } from '@vueuse/core';
 import { Bell } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -16,11 +15,6 @@ const unreadCount = computed(() => notifications.value.filter((notification) => 
 
 function toggle(): void {
     open.value = !open.value;
-}
-
-function openNotification(notification: AppNotification): void {
-    markAsRead(notification.id);
-    router.visit(notification.url);
 }
 </script>
 
