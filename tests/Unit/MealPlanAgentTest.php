@@ -44,6 +44,18 @@ class MealPlanAgentTest extends TestCase
     }
 
     #[Test]
+    public function itAsksForTwoWeeksOfDinnersSoRegenerateAndSwapsNeedNoExtraCall(): void
+    {
+        $agent = $this->agent(CookingConfidence::Comfortable, []);
+
+        $this->assertStringContainsString('Suggest 14 distinct dinner recipes', (string) $agent->instructions());
+
+        $meals = $agent->schema(new JsonSchemaTypeFactory)['meals']->toArray();
+        $this->assertSame(14, $meals['minItems']);
+        $this->assertSame(14, $meals['maxItems']);
+    }
+
+    #[Test]
     public function itCapsOutputTokensFromConfig(): void
     {
         config(['meal_planner.max_output_tokens' => 1234]);

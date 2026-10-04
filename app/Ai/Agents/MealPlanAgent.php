@@ -15,7 +15,9 @@ class MealPlanAgent implements Agent, HasStructuredOutput
 {
     use Promptable;
 
-    private const POOL_SIZE = 12;
+    // Two weeks' worth: the first seven dinners are the plan, the rest back
+    // the one free "regenerate" and per-day swaps without another API call.
+    private const POOL_SIZE = 14;
 
     /**
      * @param  list<string>  $diets

@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import type { SharedData } from '@/types';
 import type { AiMealSuggestion, AiPlannerOptions, PlannerDay, ShoppingList } from '@/types/househub';
 import { router, useForm, usePage } from '@inertiajs/vue3';
+import { ArrowLeftRight } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -22,7 +23,9 @@ const page = usePage<SharedData>();
 
 const stage = ref<'form' | 'loading' | 'result'>('form');
 const pool = ref<AiMealSuggestion[]>([]);
-const seed = ref(0);
+// Pool index shown for each selected day, in day order.
+const choices = ref<number[]>([]);
+const regenerated = ref(false);
 const selectedDays = ref<number[]>([]);
 const targetListId = ref<number | null>(null);
 const accepting = ref(false);
@@ -56,7 +59,8 @@ watch(
 
         stage.value = 'form';
         pool.value = [];
-        seed.value = 0;
+        choices.value = [];
+        regenerated.value = false;
         selectedDays.value = freeDayIndexes();
         targetListId.value = props.shoppingLists[0]?.id ?? null;
         if (form.budget === '' && props.aiSuggestedBudget !== null) {
@@ -70,19 +74,23 @@ function toggleDay(index: number): void {
     selectedDays.value = selectedDays.value.includes(index) ? selectedDays.value.filter((i) => i !== index) : [...selectedDays.value, index];
 }
 
-const assignment = computed(() => {
-    if (pool.value.length === 0) {
-        return [];
-    }
-
-    return [...selectedDays.value]
+const plannedDays = computed(() =>
+    [...selectedDays.value]
         .sort((a, b) => a - b)
-        .map((dayIndex, position) => ({
-            day: props.days[dayIndex],
-            suggestion: pool.value[(position + seed.value) % pool.value.length],
-        }))
-        .filter((entry) => entry.day !== undefined);
-});
+        .map((dayIndex) => props.days[dayIndex])
+        .filter((day) => day !== undefined),
+);
+
+const assignment = computed(() =>
+    plannedDays.value
+        .map((day, position) => ({ day, position, suggestion: pool.value[choices.value[position]] }))
+        .filter((entry) => entry.suggestion !== undefined),
+);
+
+/** Pool indexes not currently on the plan, in pool order. */
+const unusedChoices = computed(() => pool.value.map((_, index) => index).filter((index) => !choices.value.includes(index)));
+
+const canRegenerate = computed(() => !regenerated.value && unusedChoices.value.length > 0);
 
 const estimatedTotal = computed(() => assignment.value.reduce((sum, entry) => sum + (entry.suggestion.estimated_cost ?? 0), 0));
 
@@ -114,6 +122,7 @@ function generate(): void {
         preserveScroll: true,
         onSuccess: () => {
             pool.value = page.props.flash?.aiMeals ?? [];
+            choices.value = plannedDays.value.map((_, position) => position).filter((index) => index < pool.value.length);
             stage.value = pool.value.length > 0 ? 'result' : 'form';
         },
         onError: () => {
@@ -122,8 +131,32 @@ function generate(): void {
     });
 }
 
+const planHint = computed(() => {
+    if (canRegenerate.value) {
+        return 'Not quite right? You can regenerate once for a completely different week.';
+    }
+
+    return unusedChoices.value.length > 0
+        ? "Tap the swap icon on any dinner you're not keen on to switch it for another suggestion."
+        : "That's every suggestion for this week — your next AI plan is available in a week.";
+});
+
+/** One free do-over: a fresh week from the meals not yet shown. No API call. */
 function regenerate(): void {
-    seed.value++;
+    const fresh = [...unusedChoices.value];
+
+    choices.value = choices.value.map((current) => fresh.shift() ?? current);
+    regenerated.value = true;
+}
+
+/** Replace one day's dinner with the next meal from the pool that isn't on the plan. */
+function swap(position: number): void {
+    const current = choices.value[position];
+    const next = unusedChoices.value.find((index) => index > current) ?? unusedChoices.value[0];
+
+    if (next !== undefined) {
+        choices.value = choices.value.map((choice, i) => (i === position ? next : choice));
+    }
 }
 
 function acceptNext(entries: { day: PlannerDay; suggestion: AiMealSuggestion }[]): void {
@@ -276,6 +309,11 @@ function accept(): void {
                     </div>
                 </div>
 
+                <p class="rounded-xl bg-hh-soft px-3 py-2 text-[12.5px] text-hh-ink2">
+                    Your household gets one AI plan a week. Not keen on it? You can regenerate once for a completely different week, then swap any
+                    dinner you don't fancy.
+                </p>
+
                 <p v-if="page.props.errors.ai" class="text-[12.5px] text-hh-coral">{{ page.props.errors.ai }}</p>
 
                 <div class="flex items-center gap-2">
@@ -292,11 +330,24 @@ function accept(): void {
             </div>
 
             <div v-else class="flex flex-col gap-4">
+                <p class="rounded-xl bg-hh-soft px-3 py-2 text-[12.5px] text-hh-ink2">{{ planHint }}</p>
+
                 <div class="flex flex-col gap-2">
                     <div v-for="entry in assignment" :key="entry.day.date" class="rounded-2xl border border-hh-line bg-hh-panel p-3">
-                        <div class="flex items-baseline gap-1.5">
-                            <span class="text-[12px] font-extrabold">{{ entry.day.dayLabel }}</span>
+                        <div class="flex items-start gap-1.5">
+                            <span class="pt-[3px] text-[12px] font-extrabold">{{ entry.day.dayLabel }}</span>
                             <span class="text-[15px] font-extrabold tracking-tight">{{ entry.suggestion.name }}</span>
+                            <button
+                                v-if="regenerated && unusedChoices.length > 0"
+                                type="button"
+                                class="ml-auto grid h-7 w-7 flex-none place-items-center rounded-md text-hh-ink3 transition hover:bg-hh-soft hover:text-hh-ink"
+                                :aria-label="`Swap ${entry.day.dayLabel}'s dinner`"
+                                title="Swap this dinner"
+                                :disabled="accepting"
+                                @click="swap(entry.position)"
+                            >
+                                <ArrowLeftRight class="h-3.5 w-3.5" :stroke-width="2.5" />
+                            </button>
                         </div>
                         <p class="mt-1 text-[12.5px] text-hh-ink2">{{ entry.suggestion.description }}</p>
                         <div class="mt-1.5 flex flex-wrap gap-1.5">
@@ -334,7 +385,9 @@ function accept(): void {
                     <button type="button" class="hh-btn w-auto bg-hh-coral text-white" :disabled="accepting" @click="accept">
                         {{ accepting ? `Adding ${acceptIndex + 1} of ${assignment.length}…` : 'Accept this week' }}
                     </button>
-                    <button type="button" class="hh-btn w-auto bg-hh-soft text-hh-ink" :disabled="accepting" @click="regenerate">Regenerate</button>
+                    <button v-if="canRegenerate" type="button" class="hh-btn w-auto bg-hh-soft text-hh-ink" :disabled="accepting" @click="regenerate">
+                        Regenerate
+                    </button>
                     <button
                         type="button"
                         class="hh-btn ml-auto w-auto bg-hh-soft text-hh-ink"
