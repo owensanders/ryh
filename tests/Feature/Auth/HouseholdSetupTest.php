@@ -165,4 +165,25 @@ class HouseholdSetupTest extends TestCase
                 ->component('auth/HouseholdDone')
                 ->where('pending', false));
     }
+
+    #[Test]
+    public function aUserOnlyGetsOneFreeTrialAcrossHouseholds(): void
+    {
+        $user = User::factory()->create(['household_id' => null]);
+
+        $this->actingAs($user)->post('/household/setup', ['name' => 'First house']);
+        $user->refresh();
+        $this->assertTrue($user->household->isOnTrial());
+        $this->assertNotNull($user->trial_claimed_at);
+
+        $this->actingAs($user)
+            ->get('/household/setup')
+            ->assertInertia(fn ($page) => $page->where('trialAvailable', false));
+
+        $this->actingAs($user)->post('/household/setup', ['name' => 'Second house']);
+        $user->refresh();
+        $this->assertSame('Second house', $user->household->name);
+        $this->assertFalse($user->household->isOnTrial());
+        $this->assertTrue($user->household->needsToSubscribe());
+    }
 }

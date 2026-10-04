@@ -2,16 +2,21 @@
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
 import { formatPlanPrice } from '@/lib/househub';
 import type { House } from '@/types/househub';
-import { router, useForm } from '@inertiajs/vue3';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 const props = defineProps<{ house: House }>();
 
 const invite = useForm({ email: '', role: 'adult' });
+const page = usePage();
 const interval = ref<'monthly' | 'annual'>('monthly');
 
 function subscribe(): void {
     router.post(route('house.subscribe'), { interval: interval.value }, { preserveScroll: true });
+}
+
+function manageBilling(): void {
+    router.post(route('billing.portal'), {}, { preserveScroll: true });
 }
 
 function sendInvite(): void {
@@ -51,24 +56,28 @@ function regenerateJoinCode(): void {
         <div class="flex animate-hh-rise flex-col gap-4">
             <!-- Hero -->
             <section
-                class="relative flex flex-col items-start gap-5 overflow-hidden rounded-[22px] p-6 text-hh-onhero sm:flex-row sm:items-center"
+                class="relative flex flex-col items-stretch gap-5 overflow-hidden rounded-[22px] p-5 text-hh-onhero sm:p-6 md:flex-row md:items-center"
                 style="background: linear-gradient(118deg, var(--hh-hero1) 0%, var(--hh-hero2) 100%)"
             >
                 <div class="absolute -top-24 right-52 h-72 w-72 rounded-full bg-hh-coral opacity-20 blur-3xl"></div>
 
                 <div class="relative min-w-0 flex-1">
                     <div class="text-[11.5px] font-bold uppercase tracking-[0.09em] text-hh-onhero2">Household</div>
-                    <div class="mt-2 text-4xl font-black leading-[1.05] tracking-[-0.03em]">{{ props.house.houseName }}</div>
+                    <div class="mt-2 break-words text-[32px] font-black leading-[1.05] tracking-[-0.03em] sm:text-4xl">
+                        {{ props.house.houseName }}
+                    </div>
                     <div class="mt-2 text-sm text-hh-onhero2">created {{ props.house.houseCreated }}</div>
                 </div>
 
-                <div class="relative flex gap-2.5">
+                <div class="relative grid grid-cols-3 gap-2 sm:gap-2.5 md:flex">
                     <div
                         v-for="stat in props.house.houseStats"
                         :key="stat.label"
-                        class="w-[132px] rounded-2xl border border-hh-heroline bg-hh-herofilm p-4"
+                        class="min-w-0 rounded-2xl border border-hh-heroline bg-hh-herofilm p-3 sm:p-4 md:w-[132px]"
                     >
-                        <div class="text-[11px] font-bold uppercase tracking-[0.09em] text-hh-onhero2">{{ stat.label }}</div>
+                        <div class="text-[10px] font-bold uppercase leading-tight tracking-[0.08em] text-hh-onhero2 sm:text-[11px]">
+                            {{ stat.label }}
+                        </div>
                         <div class="mt-1 text-2xl font-extrabold tracking-[-0.03em]">{{ stat.value }}</div>
                     </div>
                 </div>
@@ -76,7 +85,7 @@ function regenerateJoinCode(): void {
 
             <div class="grid grid-cols-1 items-start gap-4 xl:grid-cols-[1.5fr_1fr]">
                 <!-- People in this home -->
-                <section class="rounded-[22px] border border-hh-line bg-hh-card p-[22px]">
+                <section class="rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
                     <div class="mb-3.5 flex items-center gap-2.5">
                         <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">People in this home</h3>
                         <span class="text-xs text-hh-ink3">{{ props.house.memberCount }} members</span>
@@ -86,7 +95,7 @@ function regenerateJoinCode(): void {
                         <div
                             v-for="member in props.house.members"
                             :key="member.id"
-                            class="flex items-center gap-3.5 rounded-2xl border border-hh-line p-3.5"
+                            class="flex flex-wrap items-center gap-x-3.5 gap-y-2.5 rounded-2xl border border-hh-line p-3.5 sm:flex-nowrap"
                             :class="member.pending ? 'bg-hh-sunk' : 'bg-hh-card'"
                         >
                             <span
@@ -95,19 +104,19 @@ function regenerateJoinCode(): void {
                             >
                                 {{ member.initials }}
                             </span>
-                            <div class="min-w-0 flex-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-[15px] font-bold">{{ member.name }}</span>
+                            <div class="min-w-0 flex-1 basis-[calc(100%-120px)] sm:basis-0">
+                                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                    <span class="min-w-0 truncate text-[15px] font-bold">{{ member.name }}</span>
                                     <span v-if="member.you" class="rounded-lg bg-hh-soft px-2 py-[3px] text-[11px] font-bold text-hh-ink2">You</span>
                                     <span v-if="member.pending" class="rounded-lg bg-hh-sun px-2 py-[3px] text-[11px] font-bold text-[#0E1A2B]">
                                         {{ member.pendingReason === 'requested' ? 'Wants to join' : 'Invite pending' }}
                                     </span>
                                 </div>
-                                <div class="mt-1 text-[12.5px] text-hh-ink3">{{ member.email }}</div>
+                                <div class="mt-1 truncate text-[12.5px] text-hh-ink3">{{ member.email }}</div>
                             </div>
                             <select
                                 :value="member.role"
-                                class="h-[38px] w-[132px] rounded-[11px] border border-hh-line bg-hh-sunk px-2.5 text-[13px] font-semibold"
+                                class="order-last ml-[58px] h-[38px] min-w-0 flex-1 rounded-[11px] border border-hh-line bg-hh-sunk px-2.5 text-[13px] font-semibold sm:order-none sm:ml-0 sm:w-[132px] sm:flex-none"
                                 @change="setRole(member.id, ($event.target as HTMLSelectElement).value)"
                             >
                                 <option v-for="option in props.house.roleOptions" :key="option.value" :value="option.value">
@@ -142,11 +151,11 @@ function regenerateJoinCode(): void {
                                 type="email"
                                 placeholder="their@email.co.uk"
                                 aria-label="Email"
-                                class="h-[46px] min-w-0 flex-1 rounded-[13px] border border-hh-line bg-hh-sunk px-3.5 text-sm placeholder:text-hh-ink3"
+                                class="h-[46px] w-full min-w-0 rounded-[13px] border border-hh-line bg-hh-sunk px-3.5 text-sm placeholder:text-hh-ink3 sm:flex-1"
                             />
                             <select
                                 v-model="invite.role"
-                                class="h-[46px] w-[132px] rounded-[13px] border border-hh-line bg-hh-sunk px-2.5 text-[13px] font-semibold"
+                                class="h-[46px] w-full rounded-[13px] border border-hh-line bg-hh-sunk px-2.5 text-[13px] font-semibold sm:w-[132px]"
                             >
                                 <option v-for="option in props.house.roleOptions" :key="option.value" :value="option.value">
                                     {{ option.label }}
@@ -188,8 +197,10 @@ function regenerateJoinCode(): void {
                             </button>
                         </div>
 
-                        <div v-if="props.house.joinCodeEnabled" class="mt-3 flex items-center gap-2.5">
-                            <span class="flex-1 rounded-lg bg-hh-sunk px-3 py-1.5 font-mono text-[13px] font-bold tracking-wider text-hh-ink">
+                        <div v-if="props.house.joinCodeEnabled" class="mt-3 flex flex-wrap items-center gap-2.5">
+                            <span
+                                class="min-w-0 flex-1 break-all rounded-lg bg-hh-sunk px-3 py-1.5 font-mono text-[13px] font-bold tracking-wider text-hh-ink"
+                            >
                                 {{ props.house.joinCode }}
                             </span>
                             <button
@@ -206,28 +217,52 @@ function regenerateJoinCode(): void {
 
                 <div class="flex flex-col gap-4">
                     <!-- Plan -->
-                    <section class="rounded-[22px] border border-hh-line bg-hh-card p-[22px]">
+                    <section class="rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
                         <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">Plan</h3>
 
                         <div class="mt-3 rounded-2xl border border-hh-line bg-hh-sunk p-3.5">
                             <template v-if="props.house.planStatus.subscribed">
-                                <div class="text-[13.5px] font-bold">Home · {{ formatPlanPrice(props.house.planStatus.priceMonthly) }}/month</div>
-                                <div class="mt-0.5 text-[12px] text-hh-ink3">Cancel or update your billing details with support.</div>
+                                <div class="text-[13.5px] font-bold">
+                                    <template v-if="props.house.planStatus.interval === 'annual'">
+                                        Home · {{ formatPlanPrice(props.house.planStatus.priceAnnual) }}/year
+                                    </template>
+                                    <template v-else>Home · {{ formatPlanPrice(props.house.planStatus.priceMonthly) }}/month</template>
+                                </div>
+                                <div class="mt-0.5 text-[12px] text-hh-ink3">
+                                    <template v-if="props.house.planStatus.endsLabel"
+                                        >Cancelled · access until {{ props.house.planStatus.endsLabel }}</template
+                                    >
+                                    <template v-else>Change plan, update your card or cancel anytime.</template>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    class="mt-3 flex h-[38px] w-full items-center justify-center rounded-[11px] border-[1.5px] border-hh-line px-4 text-[13px] font-bold text-hh-ink2 transition hover:-translate-y-0.5"
+                                    @click="manageBilling"
+                                >
+                                    {{ props.house.planStatus.endsLabel ? 'Resume or manage billing' : 'Manage billing' }}
+                                </button>
                             </template>
                             <template v-else>
                                 <template v-if="props.house.planStatus.onTrial">
                                     <div class="text-[13.5px] font-bold">Free trial · ends {{ props.house.planStatus.trialEndsLabel }}</div>
+                                </template>
+                                <template v-else-if="props.house.planStatus.paymentIssue">
+                                    <div class="text-[13.5px] font-bold">Payment failed</div>
+                                    <div class="mt-0.5 text-[12px] text-hh-ink3">Update your card and we’ll retry the payment.</div>
                                 </template>
                                 <template v-else>
                                     <div class="text-[13.5px] font-bold">Trial ended</div>
                                     <div class="mt-0.5 text-[12px] text-hh-ink3">Subscribe to keep using HouseHub.</div>
                                 </template>
 
-                                <div class="mt-3 grid grid-cols-2 gap-2">
+                                <div v-if="!props.house.planStatus.paymentIssue" class="mt-3 grid grid-cols-2 gap-2">
                                     <button
                                         type="button"
                                         class="flex h-[36px] items-center justify-center rounded-[10px] border-[1.5px] text-[12.5px] font-bold transition"
-                                        :class="interval === 'monthly' ? 'border-hh-coral bg-hh-coral/10 text-hh-coral' : 'border-hh-line text-hh-ink2'"
+                                        :class="
+                                            interval === 'monthly' ? 'bg-hh-coral/10 border-hh-coral text-hh-coral' : 'border-hh-line text-hh-ink2'
+                                        "
                                         @click="interval = 'monthly'"
                                     >
                                         {{ formatPlanPrice(props.house.planStatus.priceMonthly) }}/month
@@ -235,7 +270,9 @@ function regenerateJoinCode(): void {
                                     <button
                                         type="button"
                                         class="flex h-[36px] items-center justify-center rounded-[10px] border-[1.5px] text-[12.5px] font-bold transition"
-                                        :class="interval === 'annual' ? 'border-hh-coral bg-hh-coral/10 text-hh-coral' : 'border-hh-line text-hh-ink2'"
+                                        :class="
+                                            interval === 'annual' ? 'bg-hh-coral/10 border-hh-coral text-hh-coral' : 'border-hh-line text-hh-ink2'
+                                        "
                                         @click="interval = 'annual'"
                                     >
                                         {{ formatPlanPrice(props.house.planStatus.priceAnnual) }}/year
@@ -247,21 +284,25 @@ function regenerateJoinCode(): void {
                                     class="mt-2.5 flex h-[38px] w-full items-center justify-center rounded-[11px] bg-hh-coral px-4 text-[13px] font-bold text-white transition hover:-translate-y-0.5"
                                     @click="subscribe"
                                 >
-                                    {{ props.house.planStatus.onTrial ? 'Start subscription now' : 'Subscribe now' }}
+                                    <template v-if="props.house.planStatus.paymentIssue">Update your card</template>
+                                    <template v-else>{{ props.house.planStatus.onTrial ? 'Start subscription now' : 'Subscribe now' }}</template>
                                 </button>
                             </template>
                         </div>
+                        <p v-if="page.props.errors.plan" class="mt-2 text-[12.5px] text-hh-coral">{{ page.props.errors.plan }}</p>
                     </section>
 
                     <!-- What each role can do -->
-                    <section class="rounded-[22px] border border-hh-line bg-hh-card p-[22px]">
+                    <section class="rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
                         <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">What each role can do</h3>
                         <div class="mt-3 flex flex-col gap-2.5">
                             <div v-for="role in props.house.roles" :key="role.name" class="rounded-2xl bg-hh-sunk p-3.5">
                                 <div class="flex items-center gap-2">
                                     <span class="h-2 w-2 rounded-sm" :style="{ background: role.colour }"></span>
                                     <span class="text-[13.5px] font-bold">{{ role.name }}</span>
-                                    <span class="ml-auto text-[11.5px] text-hh-ink3">{{ role.count }} {{ role.count === 1 ? 'person' : 'people' }}</span>
+                                    <span class="ml-auto text-[11.5px] text-hh-ink3"
+                                        >{{ role.count }} {{ role.count === 1 ? 'person' : 'people' }}</span
+                                    >
                                 </div>
                                 <div class="mt-1.5 text-[12.5px] leading-relaxed text-hh-ink2">{{ role.body }}</div>
                             </div>

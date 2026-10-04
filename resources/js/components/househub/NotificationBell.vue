@@ -41,7 +41,10 @@ function openNotification(notification: AppNotification): void {
             </span>
         </button>
 
-        <div v-if="open" class="absolute right-0 z-50 mt-2 w-80 rounded-2xl border border-hh-line bg-hh-card p-2 shadow-hh">
+        <div
+            v-if="open"
+            class="fixed inset-x-3 top-[68px] z-50 rounded-2xl border border-hh-line bg-hh-card p-2 shadow-hh sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-80"
+        >
             <div class="flex items-center justify-between px-2 py-1.5">
                 <span class="text-[13px] font-extrabold">Notifications</span>
                 <div class="flex items-center gap-2">
@@ -73,10 +76,7 @@ function openNotification(notification: AppNotification): void {
                 class="flex w-full items-start gap-2 rounded-xl px-2 py-2 text-left text-[13px] transition-colors hover:bg-hh-soft"
                 @click="openNotification(notification)"
             >
-                <span
-                    class="mt-1.5 h-1.5 w-1.5 flex-none rounded-full"
-                    :class="notification.read_at === null ? 'bg-hh-coral' : 'bg-transparent'"
-                />
+                <span class="mt-1.5 h-1.5 w-1.5 flex-none rounded-full" :class="notification.read_at === null ? 'bg-hh-coral' : 'bg-transparent'" />
                 <span :class="notification.read_at === null ? 'font-semibold text-hh-ink' : 'text-hh-ink3'">{{ notification.body }}</span>
             </button>
         </div>

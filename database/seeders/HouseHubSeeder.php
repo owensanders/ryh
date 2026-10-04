@@ -27,6 +27,15 @@ class HouseHubSeeder extends Seeder
 {
     public function run(): void
     {
+        // The demo household is seeded with a fake active subscription —
+        // running this in production would hand out free access. Guarded
+        // here rather than in DatabaseSeeder so `--class=` can't skip it.
+        if (app()->isProduction()) {
+            $this->command->error('Refusing to seed demo data in production.');
+
+            return;
+        }
+
         $household = Household::create([
             'name' => 'The Parkers',
             'location' => 'Bristol',

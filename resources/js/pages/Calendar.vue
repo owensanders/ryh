@@ -43,9 +43,7 @@ function visibleEvents(day: CalendarDay): CalendarEvent[] {
         return day.events;
     }
 
-    return day.events.filter(
-        (event) => event.attendees.length === 0 || event.attendees.some((member) => member.id === filter.value),
-    );
+    return day.events.filter((event) => event.attendees.length === 0 || event.attendees.some((member) => member.id === filter.value));
 }
 
 const dialogTitle = computed(() => (editing.value ? 'Edit event' : 'New event'));
@@ -53,9 +51,11 @@ const dialogTitle = computed(() => (editing.value ? 'Edit event' : 'New event'))
 const todayIso = computed(() => new Date().toISOString().slice(0, 10));
 
 /** What the toolbar button defaults to: today if it's on screen, else the 1st of the month shown. */
-const defaultDay = computed(
-    () => props.calendar.days.find((day) => day.isToday) ?? props.calendar.days.find((day) => day.isCurrentMonth)!,
-);
+const defaultDay = computed(() => props.calendar.days.find((day) => day.isToday) ?? props.calendar.days.find((day) => day.isCurrentMonth)!);
+
+// Phones get a compact month (dots per day) with the chosen day's events listed underneath.
+const selectedDate = ref(defaultDay.value.date);
+const selectedDay = computed(() => props.calendar.days.find((day) => day.date === selectedDate.value) ?? defaultDay.value);
 
 function openNew(day: CalendarDay): void {
     editing.value = null;
@@ -173,10 +173,12 @@ function destroy(): void {
                     New event
                 </button>
 
-                <div class="ml-auto flex flex-wrap items-center gap-1.5">
+                <div
+                    class="-mx-4 flex w-[calc(100%+2rem)] items-center gap-1.5 overflow-x-auto px-4 pb-1 md:mx-0 md:ml-auto md:w-auto md:flex-wrap md:overflow-visible md:p-0"
+                >
                     <button
                         type="button"
-                        class="h-[34px] rounded-[11px] px-3 text-[12.5px] transition-colors"
+                        class="h-[34px] flex-none rounded-[11px] px-3 text-[12.5px] transition-colors"
                         :class="filter === null ? 'bg-hh-card font-bold shadow-hh' : 'bg-hh-soft font-medium text-hh-ink2 hover:bg-hh-line'"
                         @click="filter = null"
                     >
@@ -187,7 +189,7 @@ function destroy(): void {
                         :key="member.id"
                         type="button"
                         :title="member.name"
-                        class="flex h-[34px] items-center gap-2 rounded-[11px] py-1 pl-1 pr-3 text-[12.5px] transition-colors"
+                        class="flex h-[34px] flex-none items-center gap-2 rounded-[11px] py-1 pl-1 pr-3 text-[12.5px] transition-colors"
                         :class="filter === member.id ? 'bg-hh-card font-bold shadow-hh' : 'bg-hh-soft font-medium text-hh-ink2 hover:bg-hh-line'"
                         @click="filter = filter === member.id ? null : member.id"
                     >
@@ -202,10 +204,87 @@ function destroy(): void {
                 </div>
             </div>
 
-            <div v-if="canEditCalendar" class="text-[13px] text-hh-ink3">Click any day to add an event there, or an event to edit it.</div>
+            <div v-if="canEditCalendar" class="hidden text-[13px] text-hh-ink3 md:block">
+                Click any day to add an event there, or an event to edit it.
+            </div>
 
-            <div class="overflow-x-auto">
-                <div class="min-w-[760px]">
+            <!-- Phones: compact month + the selected day's agenda -->
+            <div class="md:hidden">
+                <div class="mb-1 grid grid-cols-7">
+                    <div v-for="label in props.calendar.weekdayLabels" :key="label" class="text-center text-[11px] font-bold text-hh-ink3">
+                        {{ label.slice(0, 1) }}
+                    </div>
+                </div>
+                <div class="grid grid-cols-7 gap-1">
+                    <button
+                        v-for="day in props.calendar.days"
+                        :key="day.date"
+                        type="button"
+                        class="flex h-[52px] flex-col items-center justify-center gap-1 rounded-xl transition-colors"
+                        :class="[
+                            day.date === selectedDay.date ? 'bg-hh-ink text-hh-shell' : day.isToday ? 'bg-hh-sunk' : '',
+                            day.isCurrentMonth ? '' : 'opacity-40',
+                        ]"
+                        :aria-label="`${day.dayLabel} ${day.dateLabel}, ${visibleEvents(day).length} events`"
+                        :aria-pressed="day.date === selectedDay.date"
+                        @click="selectedDate = day.date"
+                    >
+                        <span class="text-[14px] font-bold" :class="day.isToday && day.date !== selectedDay.date ? 'text-hh-coral' : ''">
+                            {{ day.dateLabel }}
+                        </span>
+                        <span class="flex h-1.5 gap-[3px]">
+                            <span
+                                v-for="event in visibleEvents(day).slice(0, 3)"
+                                :key="event.id"
+                                class="h-1.5 w-1.5 rounded-full"
+                                :style="{ background: event.colour }"
+                            ></span>
+                        </span>
+                    </button>
+                </div>
+
+                <div class="mt-4 rounded-[18px] border border-hh-line bg-hh-card p-3">
+                    <div class="mb-2 flex items-center gap-2 px-1">
+                        <span class="text-[15px] font-extrabold tracking-tight">{{ selectedDay.dayLabel }} {{ selectedDay.dateLabel }}</span>
+                        <button
+                            v-if="canEditCalendar && selectedDay.date >= todayIso"
+                            type="button"
+                            class="ml-auto flex h-9 items-center gap-1.5 rounded-xl bg-hh-soft px-3 text-[13px] font-semibold"
+                            @click="openNew(selectedDay)"
+                        >
+                            <Plus class="h-4 w-4" :stroke-width="2.5" /> Add
+                        </button>
+                    </div>
+                    <p v-if="visibleEvents(selectedDay).length === 0" class="px-1 py-4 text-center text-[13px] text-hh-ink3">Nothing planned.</p>
+                    <div class="flex flex-col gap-1.5">
+                        <button
+                            v-for="event in visibleEvents(selectedDay)"
+                            :key="event.id"
+                            type="button"
+                            :disabled="!canEditCalendar || event.date < todayIso"
+                            class="flex items-center gap-3 rounded-[13px] bg-hh-sunk px-3 py-2.5 text-left disabled:opacity-60"
+                            @click="openEdit(event)"
+                        >
+                            <span class="h-[30px] w-[3px] flex-none rounded-sm" :style="{ background: event.colour }"></span>
+                            <span class="min-w-0 flex-1">
+                                <span class="block truncate text-[14px] font-semibold">{{ event.title }}</span>
+                                <span class="block truncate font-mono text-[11.5px] text-hh-ink3">{{ event.time }}</span>
+                            </span>
+                            <span
+                                v-for="member in event.attendees.slice(0, 3)"
+                                :key="member.id"
+                                class="grid h-[22px] w-[22px] flex-none place-items-center rounded-md text-[9px] font-extrabold text-[#0E1A2B]"
+                                :style="{ background: member.colour }"
+                            >
+                                {{ member.initials }}
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hidden md:block">
+                <div>
                     <div class="mb-1.5 grid grid-cols-7 gap-2">
                         <div v-for="label in props.calendar.weekdayLabels" :key="label" class="text-center text-[11.5px] font-bold text-hh-ink3">
                             {{ label }}
@@ -216,7 +295,7 @@ function destroy(): void {
                         <div
                             v-for="day in props.calendar.days"
                             :key="day.date"
-                            class="group flex min-h-[116px] flex-col gap-1 rounded-[14px] border border-hh-line p-2 transition"
+                            class="group flex min-h-[116px] min-w-0 flex-col gap-1 rounded-[14px] border border-hh-line p-2 transition"
                             :class="[day.isToday ? 'bg-hh-sunk' : 'bg-hh-card', day.isCurrentMonth ? '' : 'opacity-50']"
                         >
                             <div class="flex items-center">
@@ -226,7 +305,7 @@ function destroy(): void {
                                 <button
                                     v-if="canEditCalendar && day.date >= todayIso"
                                     type="button"
-                                    class="ml-auto grid h-[22px] w-[22px] place-items-center rounded-md text-hh-ink3 opacity-0 transition hover:bg-hh-soft hover:text-hh-ink focus-visible:opacity-100 group-hover:opacity-100"
+                                    class="ml-auto grid h-7 w-7 place-items-center rounded-md text-hh-ink3 transition hover:bg-hh-soft hover:text-hh-ink [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:focus-visible:opacity-100 [@media(hover:hover)]:group-hover:opacity-100"
                                     :aria-label="`Add an event on ${day.dateLabel}`"
                                     @click="openNew(day)"
                                 >

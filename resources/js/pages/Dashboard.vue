@@ -84,17 +84,17 @@ function toggleChore(chore: Chore): void {
 
             <div class="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-[1.45fr_1fr]">
                 <!-- Tonight's dinner -->
-                <section class="rounded-[22px] border border-hh-line bg-hh-card p-[22px] transition hover:-translate-y-0.5 hover:shadow-hh">
-                    <div class="mb-3.5 flex items-baseline gap-2.5">
+                <section class="rounded-[22px] border border-hh-line bg-hh-card p-4 transition hover:-translate-y-0.5 hover:shadow-hh sm:p-[22px]">
+                    <div class="mb-3.5 flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
                         <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">Tonight's dinner</h3>
                         <span class="text-xs text-hh-ink3">Meal plan</span>
-                        <Link :href="route('meals.index')" class="ml-auto text-[13px] font-semibold text-hh-coral hover:opacity-75">
+                        <Link :href="route('meals.index')" class="ml-auto whitespace-nowrap text-[13px] font-semibold text-hh-coral hover:opacity-75">
                             Meal planner →
                         </Link>
                     </div>
 
                     <div v-if="dashboard.tonight" class="flex flex-col gap-4 sm:flex-row">
-                        <div class="flex h-[172px] w-full flex-none flex-col justify-end rounded-[18px] bg-hh-coral p-4 sm:w-[172px]">
+                        <div class="flex h-[132px] w-full flex-none flex-col justify-end rounded-[18px] bg-hh-coral p-4 sm:h-[172px] sm:w-[172px]">
                             <div class="text-[26px] font-extrabold leading-[1.08] tracking-[-0.025em] text-white">
                                 {{ dashboard.tonight.name }}
                             </div>
@@ -102,11 +102,9 @@ function toggleChore(chore: Chore): void {
                         <div class="flex min-w-0 flex-1 flex-col">
                             <div class="flex flex-wrap gap-[7px]">
                                 <span
-                                    v-for="chip in [
-                                        ...dashboard.tonight.tags,
-                                        dashboard.tonight.duration,
-                                        dashboard.tonight.difficulty,
-                                    ].filter(Boolean)"
+                                    v-for="chip in [...dashboard.tonight.tags, dashboard.tonight.duration, dashboard.tonight.difficulty].filter(
+                                        Boolean,
+                                    )"
                                     :key="chip as string"
                                     class="rounded-[9px] bg-hh-soft px-2.5 py-[5px] text-xs font-semibold text-hh-ink2"
                                 >
@@ -122,13 +120,11 @@ function toggleChore(chore: Chore): void {
                                     >
                                         {{ dashboard.tonight.cook.initials }}
                                     </div>
-                                    <span class="text-[13px] text-hh-ink2">
-                                        {{ dashboard.tonight.cook.name.split(' ')[0] }} is cooking
-                                    </span>
+                                    <span class="text-[13px] text-hh-ink2"> {{ dashboard.tonight.cook.name.split(' ')[0] }} is cooking </span>
                                 </div>
                                 <Link
                                     :href="route('meals.index')"
-                                    class="ml-auto flex h-[42px] items-center rounded-[13px] bg-hh-coral px-5 text-[13.5px] font-bold text-white transition hover:-translate-y-0.5"
+                                    class="ml-auto flex h-[42px] flex-none items-center whitespace-nowrap rounded-[13px] bg-hh-coral px-5 text-[13.5px] font-bold text-white transition hover:-translate-y-0.5"
                                 >
                                     View recipe
                                 </Link>
@@ -140,13 +136,16 @@ function toggleChore(chore: Chore): void {
 
                 <!-- Shopping preview -->
                 <section
-                    class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-[22px] transition hover:-translate-y-0.5 hover:shadow-hh"
+                    class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-4 transition hover:-translate-y-0.5 hover:shadow-hh sm:p-[22px]"
                 >
                     <template v-if="dashboard.shoppingList">
-                        <div class="mb-2.5 flex items-baseline gap-2.5">
+                        <div class="mb-2.5 flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
                             <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">{{ dashboard.shoppingList.name }} list</h3>
                             <span class="text-xs text-hh-ink3">{{ dashboard.shoppingList.remaining }} left</span>
-                            <Link :href="route('shopping.index')" class="ml-auto text-[13px] font-semibold text-hh-coral hover:opacity-75">
+                            <Link
+                                :href="route('shopping.index')"
+                                class="ml-auto whitespace-nowrap text-[13px] font-semibold text-hh-coral hover:opacity-75"
+                            >
                                 All lists →
                             </Link>
                         </div>
@@ -190,9 +189,12 @@ function toggleChore(chore: Chore): void {
                         </form>
                     </template>
                     <template v-else>
-                        <div class="mb-2.5 flex items-baseline gap-2.5">
+                        <div class="mb-2.5 flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
                             <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">Shopping list</h3>
-                            <Link :href="route('shopping.index')" class="ml-auto text-[13px] font-semibold text-hh-coral hover:opacity-75">
+                            <Link
+                                :href="route('shopping.index')"
+                                class="ml-auto whitespace-nowrap text-[13px] font-semibold text-hh-coral hover:opacity-75"
+                            >
                                 All lists →
                             </Link>
                         </div>
@@ -203,10 +205,13 @@ function toggleChore(chore: Chore): void {
 
             <div class="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2 xl:grid-cols-3">
                 <!-- Chores -->
-                <section class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-[22px]">
+                <section class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
                     <div class="mb-3.5 flex items-center gap-3">
                         <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">Today's chores</h3>
-                        <Link :href="route('chores.index')" class="ml-auto text-[13px] font-semibold text-hh-coral hover:opacity-75">
+                        <Link
+                            :href="route('chores.index')"
+                            class="ml-auto whitespace-nowrap text-[13px] font-semibold text-hh-coral hover:opacity-75"
+                        >
                             Board →
                         </Link>
                     </div>
@@ -257,7 +262,7 @@ function toggleChore(chore: Chore): void {
                 </section>
 
                 <!-- Agenda -->
-                <section class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-[22px]">
+                <section class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
                     <div class="mb-3.5 flex items-center gap-3">
                         <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">Coming up</h3>
                         <span class="ml-auto text-xs text-hh-ink3">Next 3 days</span>
@@ -284,7 +289,7 @@ function toggleChore(chore: Chore): void {
                 </section>
 
                 <!-- Budget -->
-                <section class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-[22px]">
+                <section class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
                     <div class="mb-1 flex items-center gap-3">
                         <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">{{ dashboard.budget.monthLabel }} budget</h3>
                         <span class="ml-auto text-xs text-hh-ink3">{{ dashboard.budget.daysLeft }} days left</span>

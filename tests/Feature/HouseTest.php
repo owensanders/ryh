@@ -15,6 +15,7 @@ use App\Models\Recipe;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Cashier\Subscription;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -46,6 +47,30 @@ class HouseTest extends TestCase
                 ->count('house.roles', 4)
                 ->where('house.planStatus.onTrial', true)
                 ->where('house.planStatus.subscribed', false)
+            );
+    }
+
+    #[Test]
+    public function itShowsAnAnnualSubscriptionThatHasBeenCancelled(): void
+    {
+        config(['plans.intervals.annual.stripe_price' => 'price_home_annual_test']);
+
+        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        Subscription::create([
+            'household_id' => $owner->household->id,
+            'type' => 'default',
+            'stripe_id' => 'sub_test123',
+            'stripe_status' => 'active',
+            'stripe_price' => 'price_home_annual_test',
+            'ends_at' => now()->addMonths(3),
+        ]);
+
+        $this->actingAs($owner)
+            ->get('/house')
+            ->assertInertia(fn ($page) => $page
+                ->where('house.planStatus.subscribed', true)
+                ->where('house.planStatus.interval', 'annual')
+                ->where('house.planStatus.endsLabel', now()->addMonths(3)->format('j F Y'))
             );
     }
 

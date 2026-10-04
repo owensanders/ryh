@@ -225,9 +225,14 @@ function drop(date: string): void {
 <template>
     <HouseHubLayout title="Meal Planner" :subtitle="`Week of ${weekOf}`">
         <div class="flex animate-hh-rise flex-col gap-4">
-            <div v-if="canManage" class="flex items-center gap-3">
-                <div class="text-[13px] text-hh-ink3">Drag any meal card onto another day to reschedule, or click one to edit it.</div>
-                <button type="button" class="hh-btn ml-auto w-auto bg-hh-ink text-hh-shell" @click="aiOpen = true">
+            <div v-if="canManage" class="flex flex-wrap items-center gap-3">
+                <div class="hidden min-w-0 flex-1 text-[13px] text-hh-ink3 [@media(hover:hover)]:block">
+                    Drag any meal card onto another day to reschedule, or click one to edit it.
+                </div>
+                <div class="min-w-0 flex-1 text-[13px] text-hh-ink3 [@media(hover:hover)]:hidden">
+                    Tap a meal to edit it or move it to another day.
+                </div>
+                <button type="button" class="hh-btn ml-auto w-auto flex-none whitespace-nowrap bg-hh-ink text-hh-shell" @click="aiOpen = true">
                     <Sparkles class="mr-1.5 inline h-3.5 w-3.5" :stroke-width="2.5" />
                     Plan my week
                 </button>
@@ -237,7 +242,7 @@ function drop(date: string): void {
                 <div
                     v-for="day in days"
                     :key="day.date"
-                    class="group flex min-h-[400px] flex-col gap-2.5 rounded-[18px] border border-dashed p-3 transition"
+                    class="group flex min-h-[112px] flex-col gap-2.5 rounded-[18px] border border-dashed p-3 transition xl:min-h-[400px]"
                     :style="{
                         borderColor: dropTarget === day.date ? 'var(--hh-mint)' : 'var(--hh-line)',
                         background: dropTarget === day.date ? 'var(--hh-soft)' : day.isToday ? 'var(--hh-sunk)' : 'transparent',
@@ -252,7 +257,7 @@ function drop(date: string): void {
                         <button
                             v-if="canManage"
                             type="button"
-                            class="ml-auto grid h-[22px] w-[22px] place-items-center rounded-md text-hh-ink3 opacity-0 transition hover:bg-hh-soft hover:text-hh-ink focus-visible:opacity-100 group-hover:opacity-100"
+                            class="ml-auto grid h-8 w-8 place-items-center rounded-md text-hh-ink3 transition hover:bg-hh-soft hover:text-hh-ink [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:focus-visible:opacity-100 [@media(hover:hover)]:group-hover:opacity-100"
                             :aria-label="`Add a meal on ${day.dateLabel}`"
                             @click="openNew(day.date)"
                         >
@@ -302,7 +307,7 @@ function drop(date: string): void {
                 </div>
             </div>
 
-            <div class="rounded-[22px] border border-hh-line bg-hh-panel p-[22px]">
+            <div class="rounded-[22px] border border-hh-line bg-hh-panel p-4 sm:p-[22px]">
                 <div class="mb-3.5 flex items-baseline gap-2.5">
                     <h3 class="text-[15px] font-extrabold">Recipe library</h3>
                     <span class="text-xs text-hh-ink3">Favourites · {{ recipeCount }} saved</span>

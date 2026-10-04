@@ -8,6 +8,7 @@ use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Enums\HouseholdRole;
 use App\Models\User;
+use App\UseCases\House\CancelHouseholdSubscriptionUseCase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
@@ -16,6 +17,7 @@ class DeleteAccountUseCase
     public function __construct(
         private readonly UserRepositoryInterface $users,
         private readonly HouseholdRepositoryInterface $households,
+        private readonly CancelHouseholdSubscriptionUseCase $cancelSubscription,
     ) {}
 
     /** @throws ValidationException */
@@ -51,6 +53,7 @@ class DeleteAccountUseCase
             ]);
         }
 
+        $this->cancelSubscription->execute($user->currentHousehold);
         $this->households->delete($user->currentHousehold);
     }
 }

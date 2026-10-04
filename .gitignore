@@ -3,6 +3,8 @@
 /public/build
 /public/hot
 /public/storage
+# Rendered promo video (see video/) — kept local until it's hosted on S3.
+/public/videos/*.mp4
 /storage/*.key
 /storage/pail
 /vendor

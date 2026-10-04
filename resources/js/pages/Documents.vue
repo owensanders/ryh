@@ -34,9 +34,7 @@ const sort = ref<'Recent' | 'Name'>('Recent');
 
 const shown = computed(() => {
     const q = query.value.trim().toLowerCase();
-    let list = props.documents.filter(
-        (d) => !q || d.name.toLowerCase().includes(q) || d.tags.join(' ').toLowerCase().includes(q),
-    );
+    let list = props.documents.filter((d) => !q || d.name.toLowerCase().includes(q) || d.tags.join(' ').toLowerCase().includes(q));
 
     if (sort.value === 'Name') {
         list = [...list].sort((a, b) => a.name.localeCompare(b.name));
@@ -153,10 +151,7 @@ function confirmDestroyDocument(): void {
                     @dragover.prevent
                     @drop="dropOnFolder(folder)"
                 >
-                    <span
-                        class="grid h-[26px] w-[26px] flex-none place-items-center rounded-lg text-[13px]"
-                        :style="{ background: folder.colour }"
-                    >
+                    <span class="grid h-[26px] w-[26px] flex-none place-items-center rounded-lg text-[13px]" :style="{ background: folder.colour }">
                         {{ folder.icon }}
                     </span>
                     <span class="flex-1 text-sm font-semibold">{{ folder.name }}</span>
@@ -188,15 +183,13 @@ function confirmDestroyDocument(): void {
                     <div class="mt-2.5 h-[7px] overflow-hidden rounded-full bg-hh-sunk">
                         <span class="block h-full rounded-full bg-hh-coral" :style="{ width: storagePct + '%' }"></span>
                     </div>
-                    <div class="mt-2.5 text-[11.5px] leading-relaxed text-hh-ink3">
-                        Encrypted at rest. Everything downloadable, any time.
-                    </div>
+                    <div class="mt-2.5 text-[11.5px] leading-relaxed text-hh-ink3">Encrypted at rest. Everything downloadable, any time.</div>
                 </div>
             </div>
 
             <div v-if="active" class="flex w-full min-w-0 flex-1 flex-col gap-3.5">
                 <section
-                    class="flex items-center gap-4 rounded-[20px] border-[1.5px] border-dashed p-5 transition-colors"
+                    class="flex flex-wrap items-center gap-4 rounded-[20px] border-[1.5px] border-dashed p-4 transition-colors sm:flex-nowrap sm:p-5"
                     :class="zoneHot ? 'border-hh-coral bg-hh-soft' : 'border-hh-line bg-hh-panel'"
                     @dragover.prevent="zoneHot = true"
                     @dragleave="zoneHot = false"
@@ -206,29 +199,27 @@ function confirmDestroyDocument(): void {
                         <Upload class="h-5 w-5 text-hh-ink2" />
                     </div>
                     <div class="min-w-0 flex-1">
-                        <div class="text-[15px] font-bold">{{ zoneHot ? 'Drop to upload' : 'Drag files here to upload' }}</div>
-                        <div class="mt-0.5 text-[13px] text-hh-ink3">
-                            PDF, images, spreadsheets. Up to 50MB each · going into {{ active.name }}
+                        <div class="text-[15px] font-bold">
+                            <template v-if="zoneHot">Drop to upload</template>
+                            <template v-else>
+                                <span class="[@media(hover:hover)]:hidden">Upload files</span>
+                                <span class="hidden [@media(hover:hover)]:inline">Drag files here to upload</span>
+                            </template>
                         </div>
+                        <div class="mt-0.5 text-[13px] text-hh-ink3">PDF, images, spreadsheets. Up to 50MB each · going into {{ active.name }}</div>
                     </div>
-                    <button
-                        type="button"
-                        class="hh-btn w-auto flex-none bg-hh-coral text-white"
-                        @click="chooseFiles"
-                    >
-                        Choose files
-                    </button>
+                    <button type="button" class="hh-btn w-full flex-none bg-hh-coral text-white sm:w-auto" @click="chooseFiles">Choose files</button>
                     <input ref="fileInput" type="file" multiple class="hidden" @change="onFileChange" />
                 </section>
 
-                <section class="rounded-[22px] border border-hh-line bg-hh-card p-[22px]">
-                    <div class="flex items-center gap-3 border-b border-hh-line pb-3.5">
+                <section class="rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
+                    <div class="flex flex-wrap items-center gap-3 border-b border-hh-line pb-3.5">
                         <div>
                             <h3 class="text-lg font-extrabold tracking-[-0.02em]">{{ active.name }}</h3>
                             <div class="mt-1 text-[13px] text-hh-ink3">{{ documents.length }} files</div>
                         </div>
-                        <div class="ml-auto flex items-center gap-2">
-                            <div class="flex h-10 min-w-[200px] items-center gap-2 rounded-xl bg-hh-sunk px-3.5">
+                        <div class="ml-auto flex w-full items-center gap-2 sm:w-auto">
+                            <div class="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-xl bg-hh-sunk px-3.5 sm:w-[220px] sm:flex-none">
                                 <Search class="h-3.5 w-3.5 flex-none text-hh-ink3" />
                                 <input
                                     v-model="query"
@@ -239,7 +230,7 @@ function confirmDestroyDocument(): void {
                             </div>
                             <div class="flex gap-1 rounded-xl bg-hh-soft p-1">
                                 <button
-                                    v-for="option in (['Recent', 'Name'] as const)"
+                                    v-for="option in ['Recent', 'Name'] as const"
                                     :key="option"
                                     type="button"
                                     class="h-8 rounded-lg px-3 text-[12.5px] font-bold transition"
@@ -249,7 +240,12 @@ function confirmDestroyDocument(): void {
                                     {{ option }}
                                 </button>
                             </div>
-                            <button type="button" aria-label="Delete folder" class="rounded-lg p-1.5 transition hover:bg-hh-soft" @click="destroyFolder">
+                            <button
+                                type="button"
+                                aria-label="Delete folder"
+                                class="rounded-lg p-1.5 transition hover:bg-hh-soft"
+                                @click="destroyFolder"
+                            >
                                 <Trash2 class="h-4 w-4 text-hh-ink3" />
                             </button>
                         </div>
@@ -266,7 +262,9 @@ function confirmDestroyDocument(): void {
                             @dragend="draggingId = null"
                         >
                             <div class="flex items-start gap-3">
-                                <span class="grid h-12 w-10 flex-none place-items-center rounded-lg bg-hh-soft font-mono text-[10.5px] font-semibold uppercase">
+                                <span
+                                    class="grid h-12 w-10 flex-none place-items-center rounded-lg bg-hh-soft font-mono text-[10.5px] font-semibold uppercase"
+                                >
                                     {{ document.extension }}
                                 </span>
                                 <div class="min-w-0 flex-1">
@@ -283,7 +281,11 @@ function confirmDestroyDocument(): void {
                                 >
                                     {{ document.expiryLabel }}
                                 </span>
-                                <span v-for="tag in document.tags" :key="tag" class="rounded-lg bg-hh-soft px-2.5 py-1 text-[11px] font-semibold text-hh-ink2">
+                                <span
+                                    v-for="tag in document.tags"
+                                    :key="tag"
+                                    class="rounded-lg bg-hh-soft px-2.5 py-1 text-[11px] font-semibold text-hh-ink2"
+                                >
                                     {{ tag }}
                                 </span>
                             </div>

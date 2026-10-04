@@ -5,7 +5,7 @@ import { useAppearance } from '@/composables/useAppearance';
 import { useHouseholdRole } from '@/composables/useHouseholdRole';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { House, LogOut } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
     title: string;
@@ -29,11 +29,11 @@ const initials = computed(() =>
 
 const nav = computed(() =>
     [
-        { label: 'Dashboard', icon: '🏠', route: 'dashboard' },
-        { label: 'Calendar', icon: '📅', route: 'calendar.index' },
-        { label: 'Meal Planner', icon: '🍽', route: 'meals.index' },
-        { label: 'Shopping Lists', icon: '🛒', route: 'shopping.index' },
-        { label: 'Chores', icon: '✅', route: 'chores.index' },
+        { label: 'Dashboard', short: 'Home', icon: '🏠', route: 'dashboard' },
+        { label: 'Calendar', short: 'Calendar', icon: '📅', route: 'calendar.index' },
+        { label: 'Meal Planner', short: 'Meals', icon: '🍽', route: 'meals.index' },
+        { label: 'Shopping Lists', short: 'Lists', icon: '🛒', route: 'shopping.index' },
+        { label: 'Chores', short: 'Chores', icon: '✅', route: 'chores.index' },
         // Budget and Documents involve money or sensitive records — Owner/Adult only.
         canManage.value ? { label: 'Budget', icon: '💰', route: 'budget.index' } : null,
         // House manages membership and household settings — Owner only, so an
@@ -49,6 +49,17 @@ function isActive(item: { route: string; prefix?: string }): boolean {
     return item.prefix ? page.url.startsWith(item.prefix) : route().current(item.route);
 }
 
+// Phones get a bottom tab bar: the everyday screens as tabs, the rest in a "More" sheet.
+const tabs = computed(() => nav.value.filter((item) => 'short' in item));
+const moreItems = computed(() => nav.value.filter((item) => !('short' in item)));
+const moreActive = computed(() => moreItems.value.some(isActive));
+const moreOpen = ref(false);
+
+watch(
+    () => page.url,
+    () => (moreOpen.value = false),
+);
+
 function toggleTheme(): void {
     updateAppearance(isDark.value ? 'light' : 'dark');
 }
@@ -57,10 +68,10 @@ function toggleTheme(): void {
 <template>
     <Head :title="props.title" />
 
-    <div class="min-h-screen bg-hh-bg p-3 text-hh-ink transition-colors sm:p-7">
-        <div class="mx-auto flex min-h-[calc(100vh-1.5rem)] max-w-[1440px] overflow-hidden rounded-3xl bg-hh-shell shadow-hh sm:min-h-[calc(100vh-3.5rem)]">
-            <!-- Collapses to an icon rail below `lg`; the design only specified the wide state. -->
-            <aside class="flex w-[68px] flex-none flex-col gap-[3px] border-r border-hh-line bg-hh-panel px-[14px] py-[22px] lg:w-[252px]">
+    <div class="min-h-screen bg-hh-bg text-hh-ink transition-colors sm:p-7">
+        <div class="mx-auto flex min-h-screen max-w-[1440px] overflow-hidden bg-hh-shell sm:min-h-[calc(100vh-3.5rem)] sm:rounded-3xl sm:shadow-hh">
+            <!-- Full sidebar from `lg`, an icon rail from `sm`, and the bottom tab bar below that. -->
+            <aside class="hidden w-[68px] flex-none flex-col gap-[3px] border-r border-hh-line bg-hh-panel px-[14px] py-[22px] sm:flex lg:w-[252px]">
                 <div class="flex items-center gap-3 px-2 pb-5 pt-1">
                     <div class="grid h-9 w-9 flex-none place-items-center rounded-xl bg-hh-coral text-white">
                         <House class="h-[19px] w-[19px]" :stroke-width="2.5" />
@@ -84,7 +95,10 @@ function toggleTheme(): void {
             </aside>
 
             <main class="flex min-w-0 flex-1 flex-col bg-hh-shell">
-                <header class="flex h-[72px] flex-none items-center gap-4 border-b border-hh-line px-4 sm:px-[30px]">
+                <header class="flex h-[64px] flex-none items-center gap-3 border-b border-hh-line px-4 sm:h-[72px] sm:gap-4 sm:px-[30px]">
+                    <div class="grid h-8 w-8 flex-none place-items-center rounded-[10px] bg-hh-coral text-white sm:hidden">
+                        <House class="h-4 w-4" :stroke-width="2.5" />
+                    </div>
                     <div class="min-w-0">
                         <div class="truncate text-[19px] font-extrabold tracking-tight">{{ props.title }}</div>
                     </div>
@@ -96,7 +110,7 @@ function toggleTheme(): void {
                     <button
                         type="button"
                         :title="isDark ? 'Light mode' : 'Dark mode'"
-                        class="h-[38px] w-[38px] rounded-xl bg-hh-soft text-sm transition-colors hover:bg-hh-line"
+                        class="hidden h-[38px] w-[38px] rounded-xl bg-hh-soft text-sm transition-colors hover:bg-hh-line sm:block"
                         @click="toggleTheme"
                     >
                         {{ isDark ? '☀️' : '🌙' }}
@@ -121,17 +135,107 @@ function toggleTheme(): void {
                         as="button"
                         type="button"
                         title="Logout"
-                        class="grid h-[38px] w-[38px] place-items-center rounded-xl bg-hh-soft text-sm transition-colors hover:bg-hh-line"
+                        class="hidden h-[38px] w-[38px] place-items-center rounded-xl bg-hh-soft text-sm transition-colors hover:bg-hh-line sm:grid"
                     >
                         <LogOut class="h-4 w-4" />
                     </Link>
                 </header>
 
-                <div class="flex-1 overflow-y-auto px-4 pb-10 pt-6 sm:px-[30px]">
+                <div class="flex-1 overflow-y-auto px-4 pb-28 pt-5 sm:px-[30px] sm:pb-10 sm:pt-6">
                     <slot />
                 </div>
             </main>
         </div>
+
+        <!-- Phone navigation -->
+        <nav
+            class="bg-hh-shell/95 fixed inset-x-0 bottom-0 z-40 flex border-t border-hh-line px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
+            aria-label="Main"
+        >
+            <Link
+                v-for="item in tabs"
+                :key="item.route"
+                :href="route(item.route)"
+                class="flex h-[62px] min-w-0 flex-1 flex-col items-center justify-center gap-1 text-[10.5px]"
+                :class="isActive(item) ? 'font-bold text-hh-ink' : 'font-medium text-hh-ink3'"
+                :aria-current="isActive(item) ? 'page' : undefined"
+            >
+                <span
+                    class="grid h-7 w-11 place-items-center rounded-full text-[15px] transition-colors"
+                    :class="isActive(item) ? 'bg-hh-soft' : ''"
+                    aria-hidden="true"
+                    >{{ item.icon }}</span
+                >
+                <span class="truncate">{{ item.short }}</span>
+            </Link>
+            <button
+                type="button"
+                class="flex h-[62px] min-w-0 flex-1 flex-col items-center justify-center gap-1 text-[10.5px]"
+                :class="moreActive || moreOpen ? 'font-bold text-hh-ink' : 'font-medium text-hh-ink3'"
+                :aria-expanded="moreOpen"
+                aria-controls="more-sheet"
+                @click="moreOpen = !moreOpen"
+            >
+                <span
+                    class="grid h-7 w-11 place-items-center rounded-full text-[15px] transition-colors"
+                    :class="moreActive || moreOpen ? 'bg-hh-soft' : ''"
+                    aria-hidden="true"
+                    >☰</span
+                >
+                <span>More</span>
+            </button>
+        </nav>
+
+        <Transition
+            enter-active-class="transition duration-200"
+            enter-from-class="opacity-0"
+            leave-active-class="transition duration-150"
+            leave-to-class="opacity-0"
+        >
+            <div v-if="moreOpen" class="fixed inset-0 z-30 bg-black/30 sm:hidden" @click="moreOpen = false"></div>
+        </Transition>
+        <Transition
+            enter-active-class="transition duration-200 ease-out"
+            enter-from-class="translate-y-6 opacity-0"
+            leave-active-class="transition duration-150 ease-in"
+            leave-to-class="translate-y-6 opacity-0"
+        >
+            <div
+                v-if="moreOpen"
+                id="more-sheet"
+                class="fixed inset-x-3 bottom-[calc(74px+env(safe-area-inset-bottom))] z-40 rounded-3xl border border-hh-line bg-hh-card p-2 shadow-hh sm:hidden"
+            >
+                <Link
+                    v-for="item in moreItems"
+                    :key="item.route"
+                    :href="route(item.route)"
+                    class="flex min-h-[48px] items-center gap-3 rounded-2xl px-3 text-[15px]"
+                    :class="isActive(item) ? 'bg-hh-soft font-bold' : 'font-medium text-hh-ink2'"
+                >
+                    <span class="w-6 text-center" aria-hidden="true">{{ item.icon }}</span>
+                    {{ item.label }}
+                </Link>
+                <div class="my-1 border-t border-hh-line"></div>
+                <button
+                    type="button"
+                    class="flex min-h-[48px] w-full items-center gap-3 rounded-2xl px-3 text-[15px] font-medium text-hh-ink2"
+                    @click="toggleTheme"
+                >
+                    <span class="w-6 text-center" aria-hidden="true">{{ isDark ? '☀️' : '🌙' }}</span>
+                    {{ isDark ? 'Light mode' : 'Dark mode' }}
+                </button>
+                <Link
+                    :href="route('logout')"
+                    method="post"
+                    as="button"
+                    type="button"
+                    class="flex min-h-[48px] w-full items-center gap-3 rounded-2xl px-3 text-[15px] font-medium text-hh-ink2"
+                >
+                    <LogOut class="mx-1 h-4 w-4" />
+                    Log out
+                </Link>
+            </div>
+        </Transition>
 
         <Toast />
     </div>

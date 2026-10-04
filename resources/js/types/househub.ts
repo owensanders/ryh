@@ -260,6 +260,11 @@ export interface PlanStatus {
     onTrial: boolean;
     trialEndsLabel: string | null;
     subscribed: boolean;
+    interval: 'monthly' | 'annual' | null;
+    /** Set once a subscription is cancelled but still running to the end of its paid period. */
+    endsLabel: string | null;
+    /** A renewal failed — the owner needs to update their card rather than subscribe again. */
+    paymentIssue: boolean;
     priceMonthly: number;
     priceAnnual: number;
 }

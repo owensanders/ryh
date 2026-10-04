@@ -24,6 +24,7 @@ use Laravel\Cashier\Billable;
  * @property \Illuminate\Support\Carbon|null $ai_meal_plan_generated_at
  * @property \Illuminate\Support\Carbon|null $last_chore_notification_sent_at
  * @property-read HouseholdUser|null $pivot Present when loaded through a `User::households()` query.
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Cashier\Subscription> $subscriptions
  */
 class Household extends Model
 {
@@ -145,6 +146,20 @@ class Household extends Model
     {
         return ! $this->subscribed('default')
             && ($this->trial_ends_at === null || $this->trial_ends_at->isPast());
+    }
+
+    /**
+     * True when the subscription still exists in Stripe but a payment has
+     * failed (past due, unpaid, or never confirmed). The fix is updating the
+     * card — starting a second subscription would double-charge once Stripe's
+     * retries on the first one succeed.
+     */
+    public function hasPaymentIssue(): bool
+    {
+        $subscription = $this->subscription('default');
+
+        return $subscription !== null
+            && ($subscription->hasIncompletePayment() || $subscription->stripe_status === 'unpaid');
     }
 
     /** True if the household hasn't generated an AI meal plan in the last week. */

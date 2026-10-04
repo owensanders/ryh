@@ -158,13 +158,13 @@ function addCategory(): void {
         <div class="flex animate-hh-rise flex-col gap-4">
             <!-- Hero -->
             <section
-                class="relative flex flex-col items-stretch gap-5 overflow-hidden rounded-[22px] p-6 text-hh-onhero lg:flex-row"
+                class="relative flex flex-col items-stretch gap-5 overflow-hidden rounded-[22px] p-5 text-hh-onhero sm:p-6 lg:flex-row"
                 style="background: linear-gradient(118deg, var(--hh-hero1) 0%, var(--hh-hero2) 100%)"
             >
                 <div class="absolute -top-24 right-52 h-72 w-72 rounded-full bg-hh-coral opacity-20 blur-3xl"></div>
 
                 <div class="relative min-w-0 flex-1">
-                    <div class="flex items-center gap-2.5">
+                    <div class="flex flex-wrap items-center gap-2.5">
                         <Link
                             :href="route('budget.index', { month: previousMonth })"
                             class="grid h-8 w-8 place-items-center rounded-[10px] border border-hh-heroline bg-hh-herofilm text-[13px]"
@@ -178,26 +178,28 @@ function addCategory(): void {
                         >
                             ›
                         </Link>
-                        <Link v-if="!isCurrentMonth" :href="route('budget.index')" class="ml-1.5 text-[12.5px] text-hh-onhero2">
-                            This month
-                        </Link>
+                        <Link v-if="!isCurrentMonth" :href="route('budget.index')" class="ml-1.5 text-[12.5px] text-hh-onhero2"> This month </Link>
                         <span class="ml-1.5 text-xs text-hh-onhero2">{{ daysLeftLabel }}</span>
                     </div>
 
                     <div class="mt-3.5 text-[15px] text-hh-onhero2">Left to spend this month</div>
-                    <div class="mt-1 text-[52px] font-black leading-none tracking-[-0.04em]">{{ leftToSpend }}</div>
+                    <div class="mt-1 text-[44px] font-black leading-none tracking-[-0.04em] sm:text-[52px]">{{ leftToSpend }}</div>
 
                     <div class="mt-3.5 flex h-3 max-w-[560px] overflow-hidden rounded-lg bg-hh-herofilm">
                         <span class="bg-hh-coral" :style="{ width: `${assignedPct}%` }"></span>
                     </div>
 
-                    <div class="mt-3 flex gap-5 text-[13px] text-hh-onhero2">
-                        <span><b class="text-hh-onhero">{{ budgetedLabel }}</b> assigned</span>
-                        <span><b class="text-hh-onhero">{{ perDay }}</b> a day to stay on track</span>
+                    <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-[13px] text-hh-onhero2">
+                        <span
+                            ><b class="text-hh-onhero">{{ budgetedLabel }}</b> assigned</span
+                        >
+                        <span
+                            ><b class="text-hh-onhero">{{ perDay }}</b> a day to stay on track</span
+                        >
                     </div>
                 </div>
 
-                <div class="relative flex w-full flex-none flex-col gap-2.5 lg:w-[230px]">
+                <div class="relative grid w-full flex-none grid-cols-2 gap-2.5 lg:flex lg:w-[230px] lg:flex-col">
                     <div class="flex-1 rounded-2xl border border-hh-heroline bg-hh-herofilm p-4">
                         <div class="text-[11px] font-bold uppercase tracking-[0.09em] text-hh-onhero2">Money in</div>
                         <div class="mt-1.5 text-[22px] font-extrabold tracking-[-0.03em]">{{ incomeTotal }}</div>
@@ -211,10 +213,10 @@ function addCategory(): void {
 
             <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <!-- Income vs. expenses -->
-                <section class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-[22px]">
+                <section class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
                     <h3 class="mb-3.5 text-[15px] font-extrabold tracking-[-0.01em]">Income vs. expenses</h3>
 
-                    <div class="flex items-center gap-5">
+                    <div class="flex flex-col gap-5 min-[420px]:flex-row min-[420px]:items-center">
                         <div class="grid h-[120px] w-[120px] flex-none place-items-center rounded-full" :style="{ background: incomeExpenseDonut }">
                             <div class="flex h-[92px] w-[92px] flex-col items-center justify-center rounded-full bg-hh-card text-center">
                                 <span class="text-[11px] text-hh-ink3">Left over</span>
@@ -222,7 +224,7 @@ function addCategory(): void {
                             </div>
                         </div>
 
-                        <div class="flex flex-1 flex-col gap-2.5">
+                        <div class="flex w-full flex-1 flex-col gap-2.5">
                             <div class="flex items-center gap-2.5">
                                 <span class="h-2.5 w-2.5 flex-none rounded-[3px]" style="background: var(--hh-mint)"></span>
                                 <span class="flex-1 text-[13px] font-medium">Income</span>
@@ -238,7 +240,7 @@ function addCategory(): void {
                 </section>
 
                 <!-- Last 3 months -->
-                <section class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-[22px]">
+                <section class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
                     <h3 class="mb-3.5 text-[15px] font-extrabold tracking-[-0.01em]">Last 3 months</h3>
 
                     <div class="flex h-[120px] flex-1 items-end justify-around gap-4">
@@ -255,9 +257,9 @@ function addCategory(): void {
                 </section>
             </div>
 
-            <div class="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(360px,1fr)_minmax(460px,1.4fr)]">
+            <div class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(360px,1fr)_minmax(460px,1.4fr)]">
                 <!-- Money in -->
-                <section class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-[22px]">
+                <section class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
                     <div class="mb-3.5 flex items-baseline gap-2.5">
                         <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">Money in</h3>
                         <span class="ml-auto text-[13px] font-bold">{{ incomeTotal }}</span>
@@ -298,7 +300,7 @@ function addCategory(): void {
                 </section>
 
                 <!-- Where it goes -->
-                <section class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-[22px]">
+                <section class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
                     <div class="mb-2.5 flex items-baseline gap-2.5">
                         <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">Where it goes</h3>
                     </div>
@@ -307,19 +309,20 @@ function addCategory(): void {
                         <div
                             v-for="category in categories"
                             :key="category.id"
-                            class="flex items-center gap-3.5 rounded-[14px] px-2 py-2.5 transition hover:bg-hh-soft"
+                            class="flex items-center gap-2.5 rounded-[14px] px-1 py-2.5 transition hover:bg-hh-soft sm:gap-3.5 sm:px-2"
                         >
-                            <span
-                                class="grid h-8 w-8 flex-none place-items-center rounded-[10px] text-sm"
-                                :style="{ background: category.colour }"
-                            >
+                            <span class="grid h-8 w-8 flex-none place-items-center rounded-[10px] text-sm" :style="{ background: category.colour }">
                                 {{ category.icon }}
                             </span>
 
                             <div class="min-w-0 flex-1">
                                 <template v-if="editingCategoryId === category.id">
-                                    <div class="flex items-center gap-2">
-                                        <input v-model="categoryForm.label" type="text" class="hh-input h-8 flex-1 text-[13.5px]" />
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <input
+                                            v-model="categoryForm.label"
+                                            type="text"
+                                            class="hh-input h-8 basis-full text-[13.5px] sm:flex-1 sm:basis-0"
+                                        />
                                         <span class="text-[12.5px] text-hh-ink3">budget £</span>
                                         <input v-model="categoryForm.budgeted" type="text" class="hh-input h-8 w-[80px] text-[12.5px]" />
                                     </div>
@@ -330,7 +333,7 @@ function addCategory(): void {
                                 </template>
                                 <template v-else>
                                     <div class="flex items-center gap-2">
-                                        <span class="text-sm font-semibold">{{ category.label }}</span>
+                                        <span class="min-w-0 truncate text-sm font-semibold">{{ category.label }}</span>
                                         <Repeat v-if="category.isRecurring" title="Repeats every month" class="h-3 w-3 flex-none text-hh-ink3" />
                                         <span class="ml-auto font-mono text-[12.5px]">{{ category.budgeted }}</span>
                                     </div>
@@ -378,22 +381,22 @@ function addCategory(): void {
                         No categories yet — add your first one below to start budgeting this month.
                     </p>
 
-                    <div class="mt-2.5 flex gap-2">
+                    <div class="mt-2.5 flex flex-wrap gap-2 sm:flex-nowrap">
                         <input
                             v-model="newCategoryForm.label"
                             type="text"
-                            class="hh-input flex-1"
+                            class="hh-input basis-full sm:flex-1 sm:basis-0"
                             placeholder="New category, e.g. Pets"
                             @keydown.enter="addCategory"
                         />
                         <input
                             v-model="newCategoryForm.budgeted"
                             type="text"
-                            class="hh-input w-[112px]"
+                            class="hh-input flex-1 sm:w-[112px] sm:flex-none"
                             placeholder="£ budget"
                             @keydown.enter="addCategory"
                         />
-                        <button type="button" class="hh-btn w-auto bg-hh-coral text-white" @click="addCategory">
+                        <button type="button" class="hh-btn w-auto flex-none bg-hh-coral text-white" @click="addCategory">
                             <Plus class="h-4 w-4" :stroke-width="2.5" />
                             Add
                         </button>
@@ -443,12 +446,7 @@ function addCategory(): void {
                             {{ editingIncome ? 'Save changes' : 'Add income source' }}
                         </button>
                         <button type="button" class="hh-btn w-auto bg-hh-soft text-hh-ink" @click="incomeOpen = false">Cancel</button>
-                        <button
-                            v-if="editingIncome"
-                            type="button"
-                            class="hh-btn ml-auto w-auto bg-hh-soft text-hh-coral"
-                            @click="destroyIncome"
-                        >
+                        <button v-if="editingIncome" type="button" class="hh-btn ml-auto w-auto bg-hh-soft text-hh-coral" @click="destroyIncome">
                             Delete
                         </button>
                     </div>
@@ -456,11 +454,6 @@ function addCategory(): void {
             </DialogContent>
         </Dialog>
 
-        <ConfirmDialog
-            :open="confirmDialogOpen"
-            :message="confirmMessage"
-            @update:open="confirmDialogOpen = $event"
-            @confirm="confirmDestroy"
-        />
+        <ConfirmDialog :open="confirmDialogOpen" :message="confirmMessage" @update:open="confirmDialogOpen = $event" @confirm="confirmDestroy" />
     </HouseHubLayout>
 </template>

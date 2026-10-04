@@ -7,6 +7,7 @@ namespace App\UseCases\House;
 use App\Models\Household;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
+use Stripe\Exception\ApiErrorException;
 
 class SubscribeHouseholdUseCase
 {
@@ -16,7 +17,7 @@ class SubscribeHouseholdUseCase
      * left to do here.
      *
      * @param  'monthly'|'annual'  $interval
-     * @return string|null A Stripe Checkout URL to redirect to, or null when the household was already subscribed.
+     * @return string|null A Stripe Checkout URL to redirect to (or the billing portal, when an existing subscription just needs a new card), or null when the household was already subscribed.
      */
     public function execute(Household $household, string $interval, string $successUrl, string $cancelUrl): ?string
     {
@@ -32,11 +33,22 @@ class SubscribeHouseholdUseCase
             throw new RuntimeException('Billing is not set up yet.');
         }
 
-        $checkout = $household->newSubscription('default', $stripePrice)->checkout([
-            'success_url' => $successUrl.(str_contains($successUrl, '?') ? '&' : '?').'plan_checkout=success',
-            'cancel_url' => $cancelUrl.(str_contains($cancelUrl, '?') ? '&' : '?').'plan_checkout=cancelled',
-        ]);
+        try {
+            if ($household->hasPaymentIssue()) {
+                return $household->billingPortalUrl($cancelUrl);
+            }
 
-        return $checkout->asStripeCheckoutSession()->url;
+            $checkout = $household->newSubscription('default', $stripePrice)->checkout([
+                // Stripe fills in {CHECKOUT_SESSION_ID} itself, so it can't go through url encoding.
+                'success_url' => $successUrl.(str_contains($successUrl, '?') ? '&' : '?').'session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => $cancelUrl.(str_contains($cancelUrl, '?') ? '&' : '?').'plan_checkout=cancelled',
+            ]);
+
+            return $checkout->asStripeCheckoutSession()->url;
+        } catch (ApiErrorException $e) {
+            Log::error("Couldn't start Stripe checkout for household {$household->id}: {$e->getMessage()}");
+
+            throw new RuntimeException("We couldn't reach our payment provider. Please try again in a moment.", previous: $e);
+        }
     }
 }

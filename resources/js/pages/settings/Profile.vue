@@ -33,7 +33,7 @@ const submit = () => {
 <template>
     <HouseHubLayout title="Settings" subtitle="Manage your profile and account">
         <SettingsLayout>
-            <section class="rounded-[22px] border border-hh-line bg-hh-card p-[22px]">
+            <section class="rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
                 <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">Profile information</h3>
                 <p class="mt-1 text-[13px] text-hh-ink3">Update your name and email address.</p>
 
@@ -60,12 +60,7 @@ const submit = () => {
 
                     <div v-if="mustVerifyEmail && !user.email_verified_at" class="rounded-[13px] bg-hh-sunk p-3.5 text-[13px] text-hh-ink2">
                         Your email address is unverified.
-                        <Link
-                            :href="route('verification.send')"
-                            method="post"
-                            as="button"
-                            class="font-semibold text-hh-coral hover:opacity-75"
-                        >
+                        <Link :href="route('verification.send')" method="post" as="button" class="font-semibold text-hh-coral hover:opacity-75">
                             Re-send the verification email.
                         </Link>
 

@@ -8,11 +8,14 @@ use App\Enums\HouseholdRole;
 use App\Models\Household;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Cashier\Subscription;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\Support\FakesStripe;
 use Tests\TestCase;
 
 class HouseholdSettingsTest extends TestCase
 {
+    use FakesStripe;
     use RefreshDatabase;
 
     #[Test]
@@ -103,5 +106,44 @@ class HouseholdSettingsTest extends TestCase
             ->assertRedirect();
 
         $this->assertDatabaseHas('users', ['id' => $user->id, 'current_household_id' => $second->id]);
+    }
+
+    #[Test]
+    public function leavingAPaidHouseholdCancelsItInStripeBeforeDeletingIt(): void
+    {
+        $stripe = $this->fakeStripe()->respond('DELETE', '/v1/subscriptions/sub_live', $this->stripeSubscription('sub_live', 'cus_test123', 'price_monthly', 'canceled'));
+        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner->household->update(['stripe_id' => 'cus_test123']);
+        Subscription::create([
+            'household_id' => $owner->household_id,
+            'type' => 'default',
+            'stripe_id' => 'sub_live',
+            'stripe_status' => 'active',
+            'stripe_price' => 'price_monthly',
+        ]);
+
+        $this->actingAs($owner)->delete('/settings/households/current', ['household_id' => $owner->household_id]);
+
+        $stripe->assertRequested('DELETE', '/v1/subscriptions/sub_live');
+        $this->assertDatabaseMissing('households', ['id' => $owner->household_id]);
+    }
+
+    #[Test]
+    public function aStripeOutageKeepsThePaidHouseholdRatherThanOrphanTheSubscription(): void
+    {
+        $this->fakeStripe()->respond('DELETE', '/v1/subscriptions/sub_live', ['error' => ['type' => 'api_error', 'message' => 'Down']], 500);
+        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner->household->update(['stripe_id' => 'cus_test123']);
+        Subscription::create([
+            'household_id' => $owner->household_id,
+            'type' => 'default',
+            'stripe_id' => 'sub_live',
+            'stripe_status' => 'active',
+            'stripe_price' => 'price_monthly',
+        ]);
+
+        $this->actingAs($owner)->delete('/settings/households/current', ['household_id' => $owner->household_id]);
+
+        $this->assertDatabaseHas('households', ['id' => $owner->household_id]);
     }
 }

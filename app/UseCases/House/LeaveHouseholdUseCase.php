@@ -16,6 +16,7 @@ class LeaveHouseholdUseCase
     public function __construct(
         private readonly UserRepositoryInterface $users,
         private readonly HouseholdRepositoryInterface $households,
+        private readonly CancelHouseholdSubscriptionUseCase $cancelSubscription,
     ) {}
 
     /** @throws ValidationException */
@@ -34,6 +35,7 @@ class LeaveHouseholdUseCase
                 ]);
             }
 
+            $this->cancelSubscription->execute($household);
             $this->households->delete($household);
 
             return;
