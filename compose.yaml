@@ -1,5 +1,6 @@
 services:
     laravel.test:
+        container_name: home-hub-app
         build:
             context: './vendor/laravel/sail/runtimes/8.4'
             dockerfile: Dockerfile
@@ -26,6 +27,7 @@ services:
             - mysql
             - redis
     reverb:
+        container_name: home-hub-websockets
         image: 'sail-8.4/app'
         environment:
             WWWUSER: '${WWWUSER}'
@@ -45,6 +47,7 @@ services:
         depends_on:
             - laravel.test
     mysql:
+        container_name: home-hub-mysql
         image: 'mysql:8.4'
         ports:
             - '${FORWARD_DB_PORT:-3306}:3306'
@@ -70,6 +73,7 @@ services:
             retries: 3
             timeout: 5s
     redis:
+        container_name: home-hub-redis
         image: 'redis:alpine'
         ports:
             - '${FORWARD_REDIS_PORT:-6379}:6379'
