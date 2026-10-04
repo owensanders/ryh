@@ -41,8 +41,13 @@ Then <http://localhost:8090>. Sign in as `sarah@househub.test` / `password`
 subscribed, with chores, meals, calendar events, budget and documents in
 place.
 
-`sail up -d` also starts a `reverb` container (`php artisan reverb:start`)
-for live notifications — no separate step needed.
+`sail up -d` also starts a `home-hub-websockets` container (Reverb,
+`php artisan reverb:start`) for live notifications — no separate step needed.
+
+Containers: `home-hub-app` (PHP app + Vite), `home-hub-websockets` (Reverb),
+`home-hub-mysql`, `home-hub-redis`. The Compose service names (`laravel.test`,
+`reverb`, `mysql`, `redis`) are unchanged — they're the in-network hostnames and
+what `sail` commands target.
 
 Ports are shifted off the defaults so they don't clash with the `~/docker`
 monorepo's services if both are running: app `8090`, Vite `5174`, MySQL
