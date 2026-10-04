@@ -52,14 +52,11 @@ export function subscribeToNotifications(): void {
     });
 }
 
-export function markAsRead(id: string): void {
-    const notification = notifications.value.find((item) => item.id === id);
+/** Marks the notification read and lands on its page — the server redirects there in the same request. */
+export function openNotification(notification: AppNotification): void {
+    notification.read_at = new Date().toISOString();
 
-    if (notification) {
-        notification.read_at = new Date().toISOString();
-    }
-
-    router.patch(route('notifications.read', { id }), {}, { preserveScroll: true, preserveState: true, only: [] });
+    router.patch(route('notifications.read', { id: notification.id }));
 }
 
 export function markAllAsRead(): void {

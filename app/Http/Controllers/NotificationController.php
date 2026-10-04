@@ -17,11 +17,18 @@ class NotificationController extends Controller
         );
     }
 
+    /**
+     * Opening a notification is reading it — mark it and go straight to what
+     * it's about in one request, so the bell never has to race a navigation.
+     */
     public function markAsRead(Request $request, string $id): RedirectResponse
     {
-        $request->user()->notifications()->findOrFail($id)->markAsRead();
+        $notification = $request->user()->notifications()->findOrFail($id);
+        $notification->markAsRead();
 
-        return back();
+        $url = $notification->data['url'] ?? null;
+
+        return is_string($url) ? redirect($url) : back();
     }
 
     public function markAllAsRead(Request $request): RedirectResponse
