@@ -133,7 +133,7 @@ function generate(): void {
 
 const planHint = computed(() => {
     if (canRegenerate.value) {
-        return 'Not quite right? You can regenerate once for a completely different week.';
+        return 'Not quite right? You can regenerate once for a completely different set of meals.';
     }
 
     return unusedChoices.value.length > 0
@@ -310,8 +310,8 @@ function accept(): void {
                 </div>
 
                 <p class="rounded-xl bg-hh-soft px-3 py-2 text-[12.5px] text-hh-ink2">
-                    Your household gets one AI plan a week. Not keen on it? You can regenerate once for a completely different week, then swap any
-                    dinner you don't fancy.
+                    Your household gets one AI plan a week. Not keen on it? You can regenerate once for a completely different set of meals, then swap
+                    any dinner you don't fancy.
                 </p>
 
                 <p v-if="page.props.errors.ai" class="text-[12.5px] text-hh-coral">{{ page.props.errors.ai }}</p>
