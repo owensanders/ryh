@@ -7,10 +7,14 @@
         "dev": "vite",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
-        "lint": "eslint . --fix"
+        "lint": "eslint . --fix",
+        "e2e": "playwright test",
+        "e2e:ui": "playwright test --ui",
+        "e2e:serve": "./e2e/scripts/artisan.sh serve --host=0.0.0.0 --port=8091"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",
+        "@playwright/test": "^1.63.0",
         "@vue/eslint-config-typescript": "^14.3.0",
         "eslint": "^9.17.0",
         "eslint-config-prettier": "^10.0.1",

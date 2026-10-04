@@ -86,10 +86,12 @@ function toggleTheme(): void {
                     v-for="item in nav"
                     :key="item.route"
                     :href="route(item.route)"
+                    :aria-label="item.label"
+                    :aria-current="isActive(item) ? 'page' : undefined"
                     class="flex min-h-[44px] w-full items-center gap-3 rounded-[13px] px-3 text-sm transition-colors hover:bg-hh-soft"
                     :class="isActive(item) ? 'bg-hh-card font-bold text-hh-ink' : 'font-medium text-hh-ink2'"
                 >
-                    <span class="w-5 flex-none text-center text-sm">{{ item.icon }}</span>
+                    <span class="w-5 flex-none text-center text-sm" aria-hidden="true">{{ item.icon }}</span>
                     <span class="hidden flex-1 lg:block">{{ item.label }}</span>
                 </Link>
             </aside>

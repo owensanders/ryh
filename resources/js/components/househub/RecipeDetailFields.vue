@@ -49,8 +49,14 @@ function removeIngredientRow(index: number): void {
     <div class="flex flex-col gap-1.5">
         <span class="hh-label">Ingredients</span>
         <div v-for="(ingredient, index) in ingredients" :key="index" class="flex items-center gap-2">
-            <input v-model="ingredient.name" type="text" class="hh-input" placeholder="Ingredient" />
-            <input v-model="ingredient.quantity" type="text" class="hh-input w-24" placeholder="Qty" />
+            <input v-model="ingredient.name" type="text" class="hh-input" placeholder="Ingredient" :aria-label="`Ingredient ${index + 1}`" />
+            <input
+                v-model="ingredient.quantity"
+                type="text"
+                class="hh-input w-24"
+                placeholder="Qty"
+                :aria-label="`Ingredient ${index + 1} quantity`"
+            />
             <button
                 type="button"
                 class="grid h-7 w-7 flex-none place-items-center rounded-md text-hh-ink3 hover:bg-hh-soft hover:text-hh-coral"

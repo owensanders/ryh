@@ -75,6 +75,29 @@ class HouseTest extends TestCase
     }
 
     #[Test]
+    public function itShowsASubscriptionWhenStripePricesAreNotConfigured(): void
+    {
+        config(['plans.intervals.annual.stripe_price' => null]);
+
+        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        Subscription::create([
+            'household_id' => $owner->household->id,
+            'type' => 'default',
+            'stripe_id' => 'sub_test456',
+            'stripe_status' => 'active',
+            'stripe_price' => 'price_home_monthly_test',
+        ]);
+
+        $this->actingAs($owner)
+            ->get('/house')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('house.planStatus.subscribed', true)
+                ->where('house.planStatus.interval', 'monthly')
+            );
+    }
+
+    #[Test]
     public function itRefusesToStartCheckoutWhenBillingIsNotConfigured(): void
     {
         $owner = User::factory()->create(['role' => HouseholdRole::Owner]);

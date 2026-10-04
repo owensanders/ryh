@@ -120,6 +120,8 @@ const submit = () => {
                 <button
                     type="button"
                     class="flex items-start gap-3 rounded-[14px] border border-hh-line p-3.5 text-left transition-colors hover:bg-hh-soft"
+                    role="checkbox"
+                    :aria-checked="acceptedTerms"
                     :class="acceptedTerms ? 'bg-hh-card' : 'bg-transparent'"
                     @click="acceptedTerms = !acceptedTerms"
                 >

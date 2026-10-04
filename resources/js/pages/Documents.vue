@@ -168,6 +168,7 @@ function confirmDestroyDocument(): void {
                     />
                     <button
                         type="button"
+                        aria-label="Add folder"
                         class="h-11 w-11 flex-none rounded-[13px] bg-hh-soft text-lg transition hover:bg-hh-line"
                         @click="addFolder"
                     >
@@ -209,7 +210,7 @@ function confirmDestroyDocument(): void {
                         <div class="mt-0.5 text-[13px] text-hh-ink3">PDF, images, spreadsheets. Up to 50MB each · going into {{ active.name }}</div>
                     </div>
                     <button type="button" class="hh-btn w-full flex-none bg-hh-coral text-white sm:w-auto" @click="chooseFiles">Choose files</button>
-                    <input ref="fileInput" type="file" multiple class="hidden" @change="onFileChange" />
+                    <input ref="fileInput" type="file" multiple aria-label="Upload files" class="hidden" @change="onFileChange" />
                 </section>
 
                 <section class="rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
@@ -304,6 +305,7 @@ function confirmDestroyDocument(): void {
                                     <a
                                         :href="route('documents.download', { document: document.id })"
                                         title="Download"
+                                        :aria-label="`Download ${document.name}`"
                                         class="grid h-[30px] w-[30px] place-items-center rounded-lg text-hh-ink2 transition hover:bg-hh-card"
                                     >
                                         <Download class="h-3.5 w-3.5" />
@@ -311,6 +313,7 @@ function confirmDestroyDocument(): void {
                                     <button
                                         type="button"
                                         title="Delete"
+                                        :aria-label="`Delete ${document.name}`"
                                         class="grid h-[30px] w-[30px] place-items-center rounded-lg text-hh-ink3 transition hover:bg-hh-card hover:text-hh-coral"
                                         @click="destroyDocument(document)"
                                     >

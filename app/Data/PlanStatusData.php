@@ -27,6 +27,8 @@ class PlanStatusData extends Data
     {
         $subscription = $household->subscription('default');
         $subscribed = $household->subscribed('default');
+        // Unset when Stripe isn't configured (local/e2e) — then nothing can be annual.
+        $annualPrice = config('plans.intervals.annual.stripe_price');
 
         return new self(
             onTrial: $household->isOnTrial(),
@@ -34,7 +36,7 @@ class PlanStatusData extends Data
             subscribed: $subscribed,
             interval: match (true) {
                 ! $subscribed => null,
-                $subscription->hasPrice(config('plans.intervals.annual.stripe_price')) => 'annual',
+                is_string($annualPrice) && $subscription->hasPrice($annualPrice) => 'annual',
                 default => 'monthly',
             },
             endsLabel: $subscription?->onGracePeriod() ? $subscription->ends_at->format('j F Y') : null,

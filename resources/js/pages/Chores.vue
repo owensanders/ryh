@@ -202,10 +202,11 @@ function confirmDestroy(): void {
                     v-model="draft"
                     type="text"
                     placeholder="Add a chore, e.g. Clean the bathroom"
+                    aria-label="New chore"
                     class="hh-input h-12 min-w-[220px] flex-1"
                     @keydown.enter="addChore"
                 />
-                <select v-model="draftAssignedTo" class="hh-input h-12 w-[132px]">
+                <select v-model="draftAssignedTo" aria-label="Assign new chore to" class="hh-input h-12 w-[132px]">
                     <option value="">Unassigned</option>
                     <option v-for="member in members" :key="member.id" :value="String(member.id)">{{ member.name }}</option>
                 </select>

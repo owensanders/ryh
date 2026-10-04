@@ -387,6 +387,7 @@ function addCategory(): void {
                             type="text"
                             class="hh-input basis-full sm:flex-1 sm:basis-0"
                             placeholder="New category, e.g. Pets"
+                            aria-label="New category"
                             @keydown.enter="addCategory"
                         />
                         <input
@@ -394,6 +395,7 @@ function addCategory(): void {
                             type="text"
                             class="hh-input flex-1 sm:w-[112px] sm:flex-none"
                             placeholder="£ budget"
+                            aria-label="New category budget"
                             @keydown.enter="addCategory"
                         />
                         <button type="button" class="hh-btn w-auto flex-none bg-hh-coral text-white" @click="addCategory">

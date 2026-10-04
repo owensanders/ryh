@@ -219,10 +219,13 @@ function confirmDestroy(): void {
                         <button
                             type="button"
                             :disabled="!canToggleItems"
+                            role="checkbox"
+                            :aria-checked="item.done"
                             class="flex min-h-[46px] w-full items-center gap-3 rounded-[13px] px-2.5 pr-10 text-left transition-colors hover:bg-hh-soft disabled:cursor-not-allowed"
                             @click="toggleItem(item.id)"
                         >
                             <span
+                                aria-hidden="true"
                                 class="grid h-[22px] w-[22px] flex-none place-items-center rounded-lg border-[1.5px] text-xs text-[#0E1A2B] transition"
                                 :style="tickStyle(item.done)"
                             >

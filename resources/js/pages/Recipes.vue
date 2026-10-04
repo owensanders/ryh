@@ -208,7 +208,7 @@ function confirmDestroy(): void {
                     </div>
 
                     <div v-if="editing && editing.ingredients.length > 0" class="flex items-center gap-2 border-t border-hh-line pt-4">
-                        <select v-model="selectedListId" class="hh-input">
+                        <select v-model="selectedListId" aria-label="Shopping list for ingredients" class="hh-input">
                             <option :value="null">Add ingredients to…</option>
                             <option v-for="list in shoppingLists" :key="list.id" :value="list.id">{{ list.name }}</option>
                         </select>
