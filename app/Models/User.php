@@ -89,17 +89,42 @@ class User extends Authenticatable implements MustVerifyEmail
             ->withTimestamps();
     }
 
+    /**
+     * The middleware chain and the Inertia shared props each ask for the
+     * membership, so remember it for this instance — keyed by household, so a
+     * switch mid-request still gets a fresh lookup.
+     *
+     * @var array{0: int, 1: HouseholdUser|null}|null
+     */
+    private ?array $membershipMemo = null;
+
     public function currentMembership(): ?HouseholdUser
     {
         if ($this->current_household_id === null) {
             return null;
         }
 
-        /** @var HouseholdUser|null */
-        return HouseholdUser::query()
+        if ($this->membershipMemo !== null && $this->membershipMemo[0] === $this->current_household_id) {
+            return $this->membershipMemo[1];
+        }
+
+        /** @var HouseholdUser|null $membership */
+        $membership = HouseholdUser::query()
             ->where('user_id', $this->id)
             ->where('household_id', $this->current_household_id)
             ->first();
+
+        $this->membershipMemo = [$this->current_household_id, $membership];
+
+        return $membership;
+    }
+
+    /** Reloading the user should reload its membership too. */
+    public function refresh(): static
+    {
+        $this->membershipMemo = null;
+
+        return parent::refresh();
     }
 
     public function currentRole(): ?HouseholdRole
