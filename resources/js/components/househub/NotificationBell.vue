@@ -23,12 +23,15 @@ function toggle(): void {
         <button
             type="button"
             title="Notifications"
+            :aria-label="unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'"
+            :aria-expanded="open"
             class="grid h-[38px] w-[38px] place-items-center rounded-xl bg-hh-soft text-sm transition-colors hover:bg-hh-line"
             @click="toggle"
         >
             <Bell class="h-4 w-4" />
             <span
                 v-if="unreadCount > 0"
+                aria-hidden="true"
                 class="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-hh-coral px-1 text-[9px] font-bold text-white"
             >
                 {{ unreadCount }}

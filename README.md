@@ -46,13 +46,14 @@ place.
 
 Containers: `home-hub-app` (PHP app + Vite), `home-hub-websockets` (Reverb),
 `home-hub-queue` (`queue:work`, e.g. invite emails), `home-hub-mysql`,
-`home-hub-redis` (cache, sessions and queue). The Compose service names
-(`laravel.test`, `reverb`, `queue`, `mysql`, `redis`) are unchanged — they're the in-network hostnames and
+`home-hub-redis` (cache, sessions and queue), `home-hub-mailpit` (catches all
+outgoing mail — inbox at <http://localhost:8025>). The Compose service names
+(`laravel.test`, `reverb`, `queue`, `mysql`, `redis`, `mailpit`) are unchanged — they're the in-network hostnames and
 what `sail` commands target.
 
 Ports are shifted off the defaults so they don't clash with the `~/docker`
 monorepo's services if both are running: app `8090`, Vite `5174`, MySQL
-`3307`, Redis `6380`, Reverb `8080`.
+`3307`, Redis `6380`, Reverb `8080`, Mailpit `1025`/`8025`, e2e server `8091`.
 
 ### Optional environment variables
 
@@ -73,6 +74,29 @@ The app runs locally without these, but they gate specific features:
 ./vendor/bin/sail npm run lint
 ./vendor/bin/sail npx vue-tsc --noEmit               # see caveat below
 ```
+
+### End-to-end tests
+
+Playwright drives the real UI through the main user journeys (`e2e/*.spec.ts`):
+sign-up with email verification, chores, shopping, meals, calendar, roles,
+notifications, joining a household, budget and documents, plus a phone-sized
+navigation check.
+
+```bash
+npx playwright install chromium    # once
+npm run e2e                        # or npm run e2e:ui to watch it
+```
+
+With Sail up, a run serves the app on <http://localhost:8091> from inside
+`home-hub-app` with `APP_ENV=e2e` (`.env.e2e`), and rebuilds the separate
+`testing_e2e` database from the seeder first, so your dev data is never touched.
+Registration links are read from Mailpit. Journeys share that one database, so
+they run one at a time and name what they create uniquely. CI runs the same
+suite in the `e2e` job and uploads the report and traces when it fails.
+
+Run Playwright from your Mac, but install npm packages with `sail npm install`:
+`node_modules` is shared with the Linux container, and a host `npm install`
+strips the container's native Rollup build, which breaks Vite.
 
 ## Layout
 

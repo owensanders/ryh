@@ -84,7 +84,10 @@ function toggleChore(chore: Chore): void {
 
             <div class="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-[1.45fr_1fr]">
                 <!-- Tonight's dinner -->
-                <section class="rounded-[22px] border border-hh-line bg-hh-card p-4 transition hover:-translate-y-0.5 hover:shadow-hh sm:p-[22px]">
+                <section
+                    aria-label="Tonight's dinner"
+                    class="rounded-[22px] border border-hh-line bg-hh-card p-4 transition hover:-translate-y-0.5 hover:shadow-hh sm:p-[22px]"
+                >
                     <div class="mb-3.5 flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
                         <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">Tonight's dinner</h3>
                         <span class="text-xs text-hh-ink3">Meal plan</span>
@@ -140,6 +143,7 @@ function toggleChore(chore: Chore): void {
 
                 <!-- Shopping preview -->
                 <section
+                    aria-label="Shopping"
                     class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-4 transition hover:-translate-y-0.5 hover:shadow-hh sm:p-[22px]"
                 >
                     <template v-if="dashboard.shoppingList">
@@ -209,7 +213,7 @@ function toggleChore(chore: Chore): void {
 
             <div class="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2 xl:grid-cols-3">
                 <!-- Chores -->
-                <section class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
+                <section aria-label="Today's chores" class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
                     <div class="mb-3.5 flex items-center gap-3">
                         <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">Today's chores</h3>
                         <Link
@@ -266,7 +270,7 @@ function toggleChore(chore: Chore): void {
                 </section>
 
                 <!-- Agenda -->
-                <section class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
+                <section aria-label="Coming up" class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
                     <div class="mb-3.5 flex items-center gap-3">
                         <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">Coming up</h3>
                         <span class="ml-auto text-xs text-hh-ink3">Next 3 days</span>
@@ -293,7 +297,7 @@ function toggleChore(chore: Chore): void {
                 </section>
 
                 <!-- Budget -->
-                <section class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
+                <section aria-label="Budget" class="flex flex-col rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
                     <div class="mb-1 flex items-center gap-3">
                         <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">{{ dashboard.budget.monthLabel }} budget</h3>
                         <span class="ml-auto text-xs text-hh-ink3">{{ dashboard.budget.daysLeft }} days left</span>

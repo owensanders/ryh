@@ -116,6 +116,7 @@ function regenerateJoinCode(): void {
                             </div>
                             <select
                                 :value="member.role"
+                                :aria-label="`Role for ${member.name}`"
                                 class="order-last ml-[58px] h-[38px] min-w-0 flex-1 rounded-[11px] border border-hh-line bg-hh-sunk px-2.5 text-[13px] font-semibold sm:order-none sm:ml-0 sm:w-[132px] sm:flex-none"
                                 @change="setRole(member.id, ($event.target as HTMLSelectElement).value)"
                             >
@@ -127,6 +128,7 @@ function regenerateJoinCode(): void {
                                 v-if="member.pendingReason === 'requested'"
                                 type="button"
                                 title="Approve"
+                                :aria-label="`Approve ${member.name}`"
                                 class="h-[38px] w-[38px] flex-none rounded-[11px] text-sm text-hh-ink3 transition hover:bg-hh-soft hover:text-hh-mint"
                                 @click="approveMember(member.id)"
                             >
@@ -135,6 +137,7 @@ function regenerateJoinCode(): void {
                             <button
                                 type="button"
                                 title="Remove from household"
+                                :aria-label="`Remove ${member.name} from household`"
                                 class="h-[38px] w-[38px] flex-none rounded-[11px] text-sm text-hh-ink3 transition hover:bg-hh-soft hover:text-hh-coral"
                                 @click="removeMember(member.id)"
                             >
@@ -185,6 +188,7 @@ function regenerateJoinCode(): void {
                             <button
                                 type="button"
                                 role="switch"
+                                aria-label="Invite code"
                                 :aria-checked="props.house.joinCodeEnabled"
                                 class="h-[26px] w-11 flex-none rounded-full p-[3px] transition-colors"
                                 :style="{ background: props.house.joinCodeEnabled ? 'var(--hh-mint)' : 'var(--hh-line)' }"
@@ -199,6 +203,7 @@ function regenerateJoinCode(): void {
 
                         <div v-if="props.house.joinCodeEnabled" class="mt-3 flex flex-wrap items-center gap-2.5">
                             <span
+                                data-testid="join-code"
                                 class="min-w-0 flex-1 break-all rounded-lg bg-hh-sunk px-3 py-1.5 font-mono text-[13px] font-bold tracking-wider text-hh-ink"
                             >
                                 {{ props.house.joinCode }}

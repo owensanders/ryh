@@ -12,6 +12,7 @@ services:
         ports:
             - '${APP_PORT:-80}:80'
             - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
+            - '${E2E_PORT:-8091}:8091'
         environment:
             WWWUSER: '${WWWUSER}'
             LARAVEL_SAIL: 1
@@ -26,6 +27,7 @@ services:
         depends_on:
             - mysql
             - redis
+            - mailpit
     reverb:
         container_name: home-hub-websockets
         image: 'sail-8.4/app'
@@ -107,6 +109,14 @@ services:
                 - ping
             retries: 3
             timeout: 5s
+    mailpit:
+        container_name: home-hub-mailpit
+        image: 'axllent/mailpit:latest'
+        ports:
+            - '${FORWARD_MAILPIT_PORT:-1025}:1025'
+            - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
+        networks:
+            - sail
 networks:
     sail:
         driver: bridge
