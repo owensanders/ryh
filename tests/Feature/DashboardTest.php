@@ -13,6 +13,7 @@ use App\Models\ShoppingItem;
 use App\Models\ShoppingList;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -122,5 +123,21 @@ class DashboardTest extends TestCase
             ->get('/dashboard')
             ->assertOk()
             ->assertInertia(fn ($page) => $page->where('dashboard.shoppingList', null));
+    }
+
+    #[Test]
+    public function itLooksUpTheViewersMembershipOncePerRequest(): void
+    {
+        $household = Household::factory()->create();
+        $user = User::factory()->create(['household_id' => $household->id]);
+
+        DB::enableQueryLog();
+
+        $this->actingAs($user)->get('/dashboard')->assertOk();
+
+        $lookups = collect(DB::getQueryLog())
+            ->filter(fn (array $query) => str_starts_with($query['query'], 'select * from `household_user` where `user_id`'));
+
+        $this->assertCount(1, $lookups);
     }
 }
