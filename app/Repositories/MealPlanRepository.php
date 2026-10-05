@@ -9,6 +9,7 @@ use App\Enums\MealSlot;
 use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\Recipe;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -77,6 +78,11 @@ class MealPlanRepository implements MealPlanRepositoryInterface
     public function delete(PlannedMeal $meal): void
     {
         $meal->delete();
+    }
+
+    public function unassignCook(Household $household, User $cook): void
+    {
+        PlannedMeal::where('household_id', $household->id)->where('cook_id', $cook->id)->update(['cook_id' => null]);
     }
 
     /** @return Collection<int, Recipe> */

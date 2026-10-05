@@ -51,8 +51,8 @@ class ChoreRepository implements ChoreRepositoryInterface
         $chore->delete();
     }
 
-    public function deleteAssignedTo(User $member): void
+    public function deleteAssignedTo(User $member, Household $household): void
     {
-        $member->assignedChores()->delete();
+        $member->assignedChores()->where('household_id', $household->id)->delete();
     }
 }

@@ -29,6 +29,9 @@ interface CalendarEventRepositoryInterface
 
     public function delete(CalendarEvent $event): void;
 
-    /** Deletes every event this member is the sole attendee of. */
-    public function deleteSoleAttendeeEventsFor(User $member): void;
+    /**
+     * Takes this member off this household's events: ones they were the sole
+     * attendee of are deleted, the rest just lose them. Other households' events are untouched.
+     */
+    public function removeAttendeeFrom(User $member, Household $household): void;
 }

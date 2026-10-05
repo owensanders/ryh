@@ -8,6 +8,7 @@ use App\Enums\MealSlot;
 use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\Recipe;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -27,6 +28,9 @@ interface MealPlanRepositoryInterface
     public function update(PlannedMeal $meal, array $attributes): PlannedMeal;
 
     public function delete(PlannedMeal $meal): void;
+
+    /** Clears this member as cook on this household's planned meals, leaving the meals in place. */
+    public function unassignCook(Household $household, User $cook): void;
 
     /** @return Collection<int, Recipe> */
     public function favouriteRecipes(Household $household, int $limit): Collection;

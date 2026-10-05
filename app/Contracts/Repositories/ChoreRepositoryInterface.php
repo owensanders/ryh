@@ -25,6 +25,6 @@ interface ChoreRepositoryInterface
 
     public function delete(Chore $chore): void;
 
-    /** Deletes every chore currently assigned to this member. */
-    public function deleteAssignedTo(User $member): void;
+    /** Deletes the chores assigned to this member in this household — their other households keep theirs. */
+    public function deleteAssignedTo(User $member, Household $household): void;
 }

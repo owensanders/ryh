@@ -254,7 +254,9 @@ class HouseTest extends TestCase
             ->assertRedirect()
             ->assertSessionHas('toast', 'James Parker removed from the household');
 
-        $this->assertDatabaseMissing('users', ['id' => $member->id]);
+        // Out of the household, but their account stays.
+        $this->assertDatabaseMissing('household_user', ['household_id' => $owner->household_id, 'user_id' => $member->id]);
+        $this->assertDatabaseHas('users', ['id' => $member->id]);
     }
 
     #[Test]
@@ -280,7 +282,8 @@ class HouseTest extends TestCase
             ->assertRedirect()
             ->assertSessionHas('toast', 'Margaret Parker — invite cancelled');
 
-        $this->assertDatabaseMissing('users', ['id' => $invitee->id]);
+        $this->assertDatabaseMissing('household_user', ['household_id' => $owner->household_id, 'user_id' => $invitee->id]);
+        $this->assertDatabaseHas('users', ['id' => $invitee->id]);
     }
 
     #[Test]
