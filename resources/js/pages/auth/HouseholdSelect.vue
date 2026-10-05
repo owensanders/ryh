@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Toast from '@/components/househub/Toast.vue';
 import type { SharedData } from '@/types';
 import type { HouseholdOption } from '@/types/househub';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
@@ -27,6 +28,9 @@ const initials = computed(() =>
         .toUpperCase(),
 );
 
+// Someone who has just accepted their first invite lands here with a single household.
+const inSeveral = computed(() => props.households.length > 1);
+
 const notes = [
     { icon: '🔒', title: 'Kept apart', body: 'Budgets, documents and shopping lists never mix between households.' },
     { icon: '🔁', title: 'Switch any time', body: 'Change household whenever you like from the settings page once you are logged in.' },
@@ -42,6 +46,7 @@ function submit(): void {
 <template>
     <div class="flex min-h-svh justify-center bg-hh-bg p-4 text-hh-ink transition-colors sm:p-7">
         <Head title="Select household" />
+        <Toast />
 
         <div class="flex w-full max-w-[1240px] animate-hh-rise overflow-hidden rounded-[24px] bg-hh-shell shadow-hh">
             <aside
@@ -71,10 +76,15 @@ function submit(): void {
                 </div>
 
                 <div class="relative mt-7 max-w-[280px] text-[22px] font-black leading-tight tracking-[-0.03em]">
-                    You are in more than one household
+                    {{ inSeveral ? 'You are in more than one household' : 'Here is your household' }}
                 </div>
                 <p class="relative mt-3 max-w-[290px] text-[13.5px] leading-relaxed text-hh-onhero2">
-                    Pick the one you want to open. Meals, lists, chores and documents stay separate — nothing crosses between them.
+                    <template v-if="inSeveral">
+                        Pick the one you want to open. Meals, lists, chores and documents stay separate — nothing crosses between them.
+                    </template>
+                    <template v-else>
+                        Open it to get started. If you join another household later, its meals, lists, chores and documents stay separate.
+                    </template>
                 </p>
 
                 <div class="relative mt-8 flex flex-col gap-3.5 border-t border-hh-heroline pt-6">

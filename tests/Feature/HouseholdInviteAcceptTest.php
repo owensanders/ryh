@@ -36,7 +36,8 @@ class HouseholdInviteAcceptTest extends TestCase
 
         $this->actingAs($user)
             ->get($url)
-            ->assertRedirect(route('household.select', absolute: false));
+            ->assertRedirect(route('household.select', absolute: false))
+            ->assertSessionHas('toast', "You're in {$household->name} — pick a household to view");
 
         $this->assertDatabaseHas('household_user', [
             'household_id' => $household->id,
