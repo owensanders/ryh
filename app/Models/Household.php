@@ -138,6 +138,12 @@ class Household extends Model
         return $this->hasMany(Document::class);
     }
 
+    /** True once the household has no room left — pending invites and join requests hold a place too. */
+    public function isFull(): bool
+    {
+        return $this->members()->count() >= config('plans.max_members');
+    }
+
     /** True while the household's free trial hasn't ended and it isn't subscribed yet. */
     public function isOnTrial(): bool
     {

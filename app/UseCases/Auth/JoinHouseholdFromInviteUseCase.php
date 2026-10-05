@@ -18,8 +18,16 @@ class JoinHouseholdFromInviteUseCase
         private readonly UserRepositoryInterface $users,
     ) {}
 
-    public function execute(User $user, Household $household, HouseholdRole $role): void
+    /**
+     * Invites to people without an account don't hold a place until they sign up,
+     * so the household may have filled up since — false means they weren't added.
+     */
+    public function execute(User $user, Household $household, HouseholdRole $role): bool
     {
+        if ($household->isFull()) {
+            return false;
+        }
+
         $colours = Palette::cases();
         $colour = $colours[$this->households->members($household)->count() % count($colours)];
 
@@ -34,5 +42,7 @@ class JoinHouseholdFromInviteUseCase
             'pending' => false,
             'pending_reason' => null,
         ]);
+
+        return true;
     }
 }

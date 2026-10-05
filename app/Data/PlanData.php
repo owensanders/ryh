@@ -17,6 +17,7 @@ class PlanData extends Data
         public string $cta,
         public string $note,
         public array $features,
+        public int $maxMembers,
     ) {}
 
     public static function current(): self
@@ -29,6 +30,7 @@ class PlanData extends Data
             cta: config('plans.cta'),
             note: config('plans.note'),
             features: config('plans.features'),
+            maxMembers: config('plans.max_members'),
         );
     }
 }

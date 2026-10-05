@@ -1,13 +1,16 @@
 <script setup lang="ts">
+import InputError from '@/components/InputError.vue';
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
 import { formatPlanPrice } from '@/lib/househub';
 import type { House } from '@/types/househub';
 import { router, useForm, usePage } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps<{ house: House }>();
 
 const invite = useForm({ email: '', role: 'adult' });
+// Pending invites and join requests hold a place too, so memberCount includes them.
+const isFull = computed(() => props.house.memberCount >= props.house.maxMembers);
 const page = usePage();
 const interval = ref<'monthly' | 'annual'>('monthly');
 
@@ -88,7 +91,9 @@ function regenerateJoinCode(): void {
                 <section class="rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
                     <div class="mb-3.5 flex items-center gap-2.5">
                         <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">People in this home</h3>
-                        <span class="text-xs text-hh-ink3">{{ props.house.memberCount }} members</span>
+                        <span class="text-xs text-hh-ink3" data-testid="member-count"
+                            >{{ props.house.memberCount }} of {{ props.house.maxMembers }} members</span
+                        >
                     </div>
 
                     <div class="flex flex-col gap-2">
@@ -148,7 +153,11 @@ function regenerateJoinCode(): void {
 
                     <div class="mt-4 border-t border-hh-line pt-4">
                         <div class="mb-2.5 text-[13px] font-bold">Invite someone</div>
-                        <form class="flex flex-col gap-2 sm:flex-row" @submit.prevent="sendInvite">
+                        <div v-if="isFull" class="rounded-2xl bg-hh-sunk px-3.5 py-3 text-[13px] leading-relaxed text-hh-ink2">
+                            Your household is full — it holds up to {{ props.house.maxMembers }} people, including pending invites. Remove someone or
+                            cancel an invite to make room.
+                        </div>
+                        <form v-else class="flex flex-col gap-2 sm:flex-row" @submit.prevent="sendInvite">
                             <input
                                 v-model="invite.email"
                                 type="email"
@@ -172,6 +181,7 @@ function regenerateJoinCode(): void {
                                 Send invite
                             </button>
                         </form>
+                        <InputError :message="invite.errors.email" />
                         <div class="mt-2.5 text-[12.5px] text-hh-ink3">Invites expire after 7 days.</div>
 
                         <div class="my-4 flex items-center gap-3 text-[11.5px] font-semibold text-hh-ink3">

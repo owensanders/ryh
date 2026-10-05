@@ -16,9 +16,20 @@ class HouseholdSetupRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'size' => ['nullable', 'string', 'max:32'],
-            'invites' => ['array'],
+            // The owner takes one of the places.
+            'invites' => ['array', 'max:'.(config('plans.max_members') - 1)],
             'invites.*.email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
             'invites.*.role' => ['required', Rule::enum(HouseholdRole::class)],
+        ];
+    }
+
+    /** @return array<string, string> */
+    public function messages(): array
+    {
+        $maxMembers = config('plans.max_members');
+
+        return [
+            'invites.max' => 'You can invite up to '.($maxMembers - 1)." people — a household holds {$maxMembers}, including you.",
         ];
     }
 
