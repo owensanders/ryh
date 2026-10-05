@@ -265,6 +265,8 @@ export interface Plan {
     cta: string;
     note: string;
     features: string[];
+    /** Everyone in a household counts, including pending invites and join requests. */
+    maxMembers: number;
 }
 
 export interface PlanStatus {
@@ -295,7 +297,9 @@ export interface House {
     joinCode: string;
     joinCodeEnabled: boolean;
     houseStats: HouseStat[];
+    /** Includes pending invites and join requests — they hold a place too. */
     memberCount: number;
+    maxMembers: number;
     roleOptions: RoleOption[];
     members: HouseMember[];
     roles: HouseRole[];

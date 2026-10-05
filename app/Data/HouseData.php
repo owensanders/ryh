@@ -21,6 +21,7 @@ class HouseData extends Data
         public bool $joinCodeEnabled,
         public array $houseStats,
         public int $memberCount,
+        public int $maxMembers,
         public array $roleOptions,
         public array $members,
         public array $roles,

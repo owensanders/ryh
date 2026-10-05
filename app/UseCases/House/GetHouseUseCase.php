@@ -38,6 +38,7 @@ class GetHouseUseCase
                 new StatData('Plan', $planStatus->subscribed ? config('plans.name') : ($planStatus->onTrial ? 'Free trial' : 'Trial ended')),
             ],
             memberCount: $members->count(),
+            maxMembers: config('plans.max_members'),
             roleOptions: array_map(
                 fn (HouseholdRole $role) => ['value' => $role->value, 'label' => $role->label()],
                 HouseholdRole::cases(),

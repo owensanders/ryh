@@ -28,6 +28,12 @@ class InviteMemberUseCase
             throw ValidationException::withMessages(['email' => 'This person is already part of the household.']);
         }
 
+        if ($household->isFull()) {
+            throw ValidationException::withMessages([
+                'email' => 'Your household is full — it can have up to '.config('plans.max_members').' members, including pending invites.',
+            ]);
+        }
+
         $existing = $this->users->findByEmail($email);
 
         if ($existing !== null) {

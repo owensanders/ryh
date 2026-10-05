@@ -53,9 +53,11 @@ class RegisteredUserController extends Controller
         $household = $invite !== null ? Household::find($invite['household_id']) : null;
 
         if ($household !== null) {
-            $joinFromInvite->execute($user, $household, HouseholdRole::from($invite['role']));
+            if ($joinFromInvite->execute($user, $household, HouseholdRole::from($invite['role']))) {
+                return to_route('dashboard');
+            }
 
-            return to_route('dashboard');
+            return to_route('household.setup')->with('fullHousehold', $household->name);
         }
 
         return to_route('household.setup');

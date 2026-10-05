@@ -24,6 +24,9 @@ class HouseholdSetupController extends Controller
 
         return Inertia::render('auth/HouseholdSetup', [
             'trialAvailable' => $request->user()->trial_claimed_at === null,
+            // Set when an invite link couldn't add them because the household had filled up.
+            'fullHousehold' => $request->session()->get('fullHousehold'),
+            'maxMembers' => config('plans.max_members'),
         ]);
     }
 

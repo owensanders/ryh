@@ -10,6 +10,9 @@ type InviteRole = 'adult' | 'teen' | 'child';
 
 const props = defineProps<{
     trialAvailable: boolean;
+    /** Name of the household an invite link couldn't add them to because it had filled up. */
+    fullHousehold: string | null;
+    maxMembers: number;
 }>();
 
 const mode = ref<Mode>('create');
@@ -36,9 +39,12 @@ const inviteError = computed(
 const inviteEmail = ref('');
 const inviteRole = ref<InviteRole>('adult');
 
+// The owner takes one of the household's places.
+const canAddInvite = computed(() => createForm.invites.length < props.maxMembers - 1);
+
 function addInvite(): void {
     const email = inviteEmail.value.trim();
-    if (!email.includes('@')) return;
+    if (!email.includes('@') || !canAddInvite.value) return;
     createForm.invites.push({ email, role: inviteRole.value });
     inviteEmail.value = '';
 }
@@ -71,6 +77,16 @@ function submitJoin(): void {
             <p class="mt-3 text-[15.5px] leading-relaxed text-hh-ink2">
                 A household is the shared space your meals, lists, chores and documents live in. Most people only ever need one.
             </p>
+
+            <div
+                v-if="props.fullHousehold"
+                role="alert"
+                class="mt-5 rounded-2xl border border-hh-coral bg-hh-card px-4 py-3.5 text-[13.5px] leading-relaxed"
+            >
+                <span class="font-bold">{{ props.fullHousehold }} is full.</span>
+                A household holds up to {{ props.maxMembers }} people, so you couldn't be added. Ask the owner to make room and send a new invite, or
+                set up your own household below.
+            </div>
 
             <div class="mt-6 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                 <button
@@ -145,7 +161,10 @@ function submitJoin(): void {
                         </div>
                     </div>
 
-                    <div class="mt-2.5 flex gap-2">
+                    <div v-if="!canAddInvite" class="mt-2.5 text-[12.5px] text-hh-ink3">
+                        That's everyone — a household holds {{ props.maxMembers }} people, including you.
+                    </div>
+                    <div v-else class="mt-2.5 flex gap-2">
                         <input
                             v-model="inviteEmail"
                             type="email"

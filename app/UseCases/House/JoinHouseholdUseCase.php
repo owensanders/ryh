@@ -33,6 +33,10 @@ class JoinHouseholdUseCase
             throw ValidationException::withMessages(['code' => 'This household isn\'t accepting join requests right now.']);
         }
 
+        if ($household->isFull()) {
+            throw ValidationException::withMessages(['code' => 'That household is full, so it can\'t take any more members.']);
+        }
+
         $colours = Palette::cases();
         $colour = $colours[$this->households->members($household)->count() % count($colours)];
 

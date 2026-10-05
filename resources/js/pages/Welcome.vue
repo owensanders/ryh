@@ -264,7 +264,7 @@ function startRegistration(): void {
                                 {{ face.initials }}
                             </span>
                         </div>
-                        <span class="ml-2 text-[13.5px] text-hh-ink3">Unlimited household members</span>
+                        <span class="ml-2 text-[13.5px] text-hh-ink3">Up to {{ props.plan.maxMembers }} people per household</span>
                     </div>
                 </div>
 
@@ -472,7 +472,7 @@ function startRegistration(): void {
                     >
                         Create your household
                     </button>
-                    <div class="text-center text-[12.5px] text-hh-ink3">First month free · no card · unlimited members</div>
+                    <div class="text-center text-[12.5px] text-hh-ink3">First month free · no card · up to {{ props.plan.maxMembers }} members</div>
                 </form>
             </section>
 
