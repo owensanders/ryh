@@ -7,10 +7,12 @@ namespace App\UseCases\House;
 use App\Contracts\Repositories\CalendarEventRepositoryInterface;
 use App\Contracts\Repositories\ChoreRepositoryInterface;
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
+use App\Contracts\Repositories\MealPlanRepositoryInterface;
 use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Enums\HouseholdRole;
 use App\Models\Household;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class RemoveMemberUseCase
@@ -19,19 +21,16 @@ class RemoveMemberUseCase
         private readonly UserRepositoryInterface $users,
         private readonly ChoreRepositoryInterface $chores,
         private readonly CalendarEventRepositoryInterface $events,
+        private readonly MealPlanRepositoryInterface $meals,
         private readonly HouseholdRepositoryInterface $households,
     ) {}
 
     /**
      * Covers both removing an active member and cancelling a pending invite.
-     * Chores assigned to them and events they were the only attendee of are
-     * deleted with them. Planned meals they were cooking, and events with
-     * other attendees, are left in place — the `cook_id`/attendee-pivot
-     * foreign keys null/detach those automatically when the user row goes.
-     *
-     * ponytail: deletes the whole user row rather than just detaching this
-     * household — matches prior behavior; per-household removal for a user
-     * in several households isn't requested yet.
+     * Takes them out of this household only — their account and any other
+     * households they're in are untouched. Here, chores assigned to them and
+     * events they were the only attendee of are deleted; they're taken off
+     * events with other attendees and off planned meals they were cooking.
      *
      * @throws ValidationException
      */
@@ -43,8 +42,16 @@ class RemoveMemberUseCase
             throw ValidationException::withMessages(['member' => "You're the only owner — promote someone else first."]);
         }
 
-        $this->chores->deleteAssignedTo($member);
-        $this->events->deleteSoleAttendeeEventsFor($member);
-        $this->users->delete($member);
+        DB::transaction(function () use ($member, $household): void {
+            $this->chores->deleteAssignedTo($member, $household);
+            $this->events->removeAttendeeFrom($member, $household);
+            $this->meals->unassignCook($household, $member);
+
+            $member->households()->detach($household->id);
+
+            if ($member->current_household_id === $household->id) {
+                $this->users->update($member, ['current_household_id' => $member->households()->first()?->id]);
+            }
+        });
     }
 }

@@ -57,10 +57,11 @@ class CalendarEventRepository implements CalendarEventRepositoryInterface
         $event->delete();
     }
 
-    public function deleteSoleAttendeeEventsFor(User $member): void
+    public function removeAttendeeFrom(User $member, Household $household): void
     {
-        $member->attendingEvents()->with('attendees')->get()
-            ->filter(fn (CalendarEvent $event) => $event->attendees->count() === 1)
-            ->each(fn (CalendarEvent $event) => $event->delete());
+        $member->attendingEvents()->where('household_id', $household->id)->with('attendees')->get()
+            ->each(fn (CalendarEvent $event) => $event->attendees->count() === 1
+                ? $event->delete()
+                : $event->attendees()->detach($member->id));
     }
 }
