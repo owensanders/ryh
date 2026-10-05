@@ -90,5 +90,6 @@ test('the owner invites someone who already has an account, and they accept from
     await expect(invitee).toHaveURL(/\/household\/select$/);
     await expect(invitee.getByRole('status')).toHaveText(/You're in The Parkers/);
     await expect(invitee.getByText('Here is your household')).toBeVisible();
+    await expect(invitee.getByRole('heading', { name: "You're all set" })).toBeVisible();
     await expect(invitee.getByRole('button', { name: 'Open The Parkers' })).toBeVisible();
 });

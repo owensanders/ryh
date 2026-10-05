@@ -112,9 +112,17 @@ function submit(): void {
 
             <main class="flex min-w-0 flex-1 flex-col overflow-y-auto p-8">
                 <div class="max-w-[720px]">
-                    <h1 class="text-[32px] font-black tracking-[-0.035em] sm:text-[38px]">Which house are you in today?</h1>
+                    <h1 class="text-[32px] font-black tracking-[-0.035em] sm:text-[38px]">
+                        {{ inSeveral ? 'Which house are you in today?' : "You're all set" }}
+                    </h1>
                     <p class="mt-3 text-[15.5px] leading-relaxed text-hh-ink2">
-                        Choose a household to open its dashboard. You can switch to another one at any time from the settings page.
+                        <template v-if="inSeveral">
+                            Choose a household to open its dashboard. You can switch to another one at any time from the settings page.
+                        </template>
+                        <template v-else>
+                            Open your household's dashboard to get started. If you join another one later, you can switch between them from the
+                            settings page.
+                        </template>
                     </p>
 
                     <div class="mt-6 flex flex-col gap-2.5">
