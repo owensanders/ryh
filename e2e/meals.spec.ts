@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { ownerOfNewHousehold } from './support/households';
 import { storageState, uniqueName } from './support/users';
 
 test.use({ storageState: storageState('owner') });
@@ -40,4 +41,85 @@ test('the owner saves a recipe, sends its ingredients to a list, and plans it fo
 
     await expect(dialog).toBeHidden();
     await expect(page.getByTitle(recipe)).toBeVisible();
+});
+
+test.describe('a fresh household', () => {
+    test.use({ storageState: { cookies: [], origins: [] } });
+
+    // In e2e the AI is a fixed fake (App\Ai\Fakes\E2eMealPlan) that answers after ~7s.
+    test('plans the week with the AI step by step, then from its recipes once the weekly plan is used', async ({ page }) => {
+        test.setTimeout(60_000);
+
+        // A household of its own, so its weekly AI plan and accepted dinners don't touch the shared Parkers.
+        await ownerOfNewHousehold(page, 'Wren', 'Wizard');
+
+        await page.goto('/meals');
+        await page.getByRole('button', { name: 'Plan my week' }).click();
+        const dialog = page.getByRole('dialog');
+        const next = dialog.getByRole('button', { name: 'Next' });
+
+        await expect(dialog.getByRole('button', { name: 'Days' })).toHaveAttribute('aria-current', 'step');
+        await expect(dialog.getByRole('button', { name: 'Finishing touches' })).toBeVisible();
+        await next.click();
+
+        // Too long to pass validation, to check the dialog brings us back here.
+        await dialog.getByLabel('Avoid').fill('x'.repeat(256));
+        await dialog.getByLabel('Vegetarian').check();
+        await next.click();
+
+        await expect(dialog.getByRole('button', { name: 'Kitchen' })).toHaveAttribute('aria-current', 'step');
+        await expect(dialog.getByRole('button', { name: 'Oven' })).toHaveAttribute('aria-pressed', 'true');
+        await dialog.getByRole('button', { name: 'Air fryer' }).click();
+        await expect(dialog.getByRole('button', { name: 'Air fryer' })).toHaveAttribute('aria-pressed', 'true');
+        await next.click();
+
+        await expect(dialog.getByText(/4 people · Vegetarian · Oven, Hob, Air fryer/)).toBeVisible();
+        await dialog.getByRole('button', { name: 'Generate my week' }).click();
+
+        await expect(dialog.getByRole('button', { name: 'Food' })).toHaveAttribute('aria-current', 'step');
+        await expect(dialog.getByText(/avoid field must not be greater than 255 characters/)).toBeVisible();
+        await dialog.getByLabel('Avoid').fill('mushrooms');
+        await next.click();
+        await next.click();
+        await dialog.getByRole('button', { name: 'Generate my week' }).click();
+
+        // The waiting screen works through what the AI was asked, against the clock.
+        await expect(dialog.getByText('Planning your week')).toBeVisible();
+        await expect(dialog.getByText('Steering clear of mushrooms')).toBeVisible();
+        await expect(dialog.getByRole('status')).toHaveText('Reading your answers');
+        await expect(dialog.getByRole('status')).toHaveText('Making every dinner vegetarian', { timeout: 10_000 });
+
+        await expect(dialog.getByRole('heading', { name: 'Your week, ready to go' })).toBeVisible({ timeout: 15_000 });
+        await expect(dialog.getByText('Lemon chicken traybake')).toBeVisible();
+        await dialog.getByRole('button', { name: 'Accept this week' }).click();
+        await expect(dialog).toBeHidden();
+        await expect(page.getByTitle('Lemon chicken traybake').first()).toBeVisible();
+
+        // The weekly AI plan is used, so the wizard drops its AI-only steps and plans from the saved recipes.
+        await page.getByRole('button', { name: 'Plan my week' }).click();
+        await expect(dialog.getByText(/You've used this week's AI plan/)).toBeVisible();
+        await expect(dialog.getByRole('button', { name: 'Kitchen' })).toHaveCount(0);
+        await next.click();
+
+        await expect(dialog.getByRole('button', { name: 'Food' })).toHaveAttribute('aria-current', 'step');
+        await expect(dialog.getByLabel('Anything to use up?')).toHaveCount(0);
+
+        // Back keeps answers; a done step in the indicator jumps back too.
+        await dialog.getByLabel('Avoid').fill('mushrooms');
+        await dialog.getByRole('button', { name: 'Back', exact: true }).click();
+        await next.click();
+        await expect(dialog.getByLabel('Avoid')).toHaveValue('mushrooms');
+        await dialog.getByRole('button', { name: 'Back to Days' }).click();
+        await expect(dialog.getByText('Which days?')).toBeVisible();
+        await next.click();
+
+        // Answers carry over, and the fake's recipes aren't tagged Vegetarian, so nothing matches until it's unticked.
+        await expect(dialog.getByLabel('Vegetarian')).toBeChecked();
+        await dialog.getByRole('button', { name: 'Use my recipes' }).click();
+        await expect(dialog.getByText(/None of your saved recipes match/)).toBeVisible();
+        await dialog.getByLabel('Vegetarian').uncheck();
+        await dialog.getByRole('button', { name: 'Use my recipes' }).click();
+        await expect(dialog.getByRole('heading', { name: 'Your week, ready to go' })).toBeVisible();
+        await expect(dialog.getByText(/From your saved recipes/)).toBeVisible();
+    });
 });

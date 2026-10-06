@@ -24,6 +24,7 @@ class MealPlanAgent implements Agent, HasStructuredOutput
      * @param  list<string>  $avoid
      * @param  list<string>  $goals
      * @param  list<string>  $recentRecipeNames
+     * @param  list<string>  $equipment
      * @param  list<string>  $useUp
      */
     public function __construct(
@@ -34,6 +35,7 @@ class MealPlanAgent implements Agent, HasStructuredOutput
         private readonly array $goals,
         private readonly array $recentRecipeNames,
         private readonly CookingConfidence $confidence,
+        private readonly array $equipment,
         private readonly array $useUp,
         private readonly string $notes,
     ) {}
@@ -62,6 +64,10 @@ class MealPlanAgent implements Agent, HasStructuredOutput
             $lines[] = 'If the notes say people in the household eat differently (e.g. one is pescatarian and one eats meat), most dinners must be a single dish that shares one base with a simple swap - e.g. one Thai green curry, cooked half with prawns and half with chicken - rather than separate meals for each person. '
                 .'Each variant must fit the diet of the person it is for, exactly as the notes describe them (a meat-eater\'s variant should be meat, a pescatarian\'s fish or seafood) - double-check you have not swapped them. '
                 .'Name the dish with both options (e.g. "Thai green curry with prawns or chicken"), explain the split in the description, and list both proteins in the ingredients with their quantities.';
+        }
+
+        if ($this->equipment !== []) {
+            $lines[] = "The household's kitchen has only: ".implode(', ', $this->equipment).'. Every recipe must be cookable with that equipment alone, and where it suits, make use of the less common appliances they have (e.g. an air fryer or slow cooker).';
         }
 
         if ($this->useUp !== []) {

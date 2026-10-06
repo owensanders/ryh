@@ -4,8 +4,8 @@ import type { SharedData } from '@/types';
 import type { AiMealSuggestion, AiPlannerOptions, PlannerDay, ShoppingList } from '@/types/househub';
 import type { RequestPayload } from '@inertiajs/core';
 import { router, useForm, usePage } from '@inertiajs/vue3';
-import { ArrowLeftRight } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { ArrowLeftRight, Check, Sparkles } from 'lucide-vue-next';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 const props = defineProps<{
     open: boolean;
@@ -23,6 +23,8 @@ const emit = defineEmits<{ 'update:open': [value: boolean] }>();
 const page = usePage<SharedData>();
 
 const stage = ref<'form' | 'loading' | 'result'>('form');
+// Which question step of the form is showing.
+const step = ref(0);
 const pool = ref<AiMealSuggestion[]>([]);
 // Pool index shown for each selected day, in day order.
 const choices = ref<number[]>([]);
@@ -46,6 +48,8 @@ const form = useForm({
     avoid: '',
     goals: [] as string[],
     confidence: 'comfortable',
+    // Nearly every UK kitchen has these two; unticking them is the exception.
+    equipment: ['Oven', 'Hob'] as string[],
     use_up: '',
     notes: '',
 });
@@ -67,6 +71,7 @@ watch(
         }
 
         stage.value = 'form';
+        step.value = 0;
         pool.value = [];
         choices.value = [];
         regenerated.value = false;
@@ -119,6 +124,85 @@ const aiUnavailable = computed(() => {
     return props.aiAvailableFrom ? `You've used this week's AI plan — the next one is available from ${props.aiAvailableFrom}.` : null;
 });
 
+const allSteps = [
+    { key: 'days', label: 'Days', hint: "Pick the dinners to plan and who's eating." },
+    { key: 'food', label: 'Food', hint: 'Any diets or ingredients to steer around?' },
+    { key: 'kitchen', label: 'Kitchen', hint: 'What can you cook with, and how adventurous are you feeling?' },
+    { key: 'extras', label: 'Finishing touches', hint: "A few last details, then we'll plan your week." },
+];
+
+// Planning from recipes only uses days, diets and avoid, so skip the AI-only questions when the AI can't be used.
+const steps = computed(() => (aiUnavailable.value ? allSteps.slice(0, 2) : allSteps));
+
+const isLastStep = computed(() => step.value === steps.value.length - 1);
+
+const canContinue = computed(() => step.value !== 0 || selectedDays.value.length > 0);
+
+function next(): void {
+    if (canContinue.value && !isLastStep.value) {
+        step.value++;
+    }
+}
+
+function back(): void {
+    step.value = Math.max(0, step.value - 1);
+}
+
+/** Jump back to an answered step from the indicator. */
+function goTo(index: number): void {
+    if (index < step.value) {
+        step.value = index;
+    }
+}
+
+/** Enter in a text field moves on a step rather than generating early. */
+function submit(): void {
+    if (!isLastStep.value) {
+        next();
+    } else if (aiUnavailable.value) {
+        planFromLibrary();
+    } else {
+        generate();
+    }
+}
+
+// Fields not listed here (budget, goals, notes, ai) live on the last step.
+const fieldSteps: Record<string, number> = { people: 0, diets: 1, avoid: 1, use_up: 1, equipment: 2, confidence: 2 };
+
+function firstStepWithError(errors: Record<string, string>): number {
+    return Math.min(...Object.keys(errors).map((key) => fieldSteps[key.split('.')[0]] ?? steps.value.length - 1));
+}
+
+/** The first error for a field, including per-item errors on arrays (e.g. equipment.0). */
+function fieldError(field: string): string | undefined {
+    const errors = form.errors as Record<string, string>;
+
+    return Object.entries(errors).find(([key]) => key === field || key.startsWith(`${field}.`))?.[1];
+}
+
+function toggleEquipment(item: string): void {
+    form.equipment = form.equipment.includes(item) ? form.equipment.filter((e) => e !== item) : [...form.equipment, item];
+}
+
+const summary = computed(() => {
+    const dinners = plannedDays.value.length;
+    const parts = [`${dinners} ${dinners === 1 ? 'dinner' : 'dinners'}`, `${form.people} ${form.people === 1 ? 'person' : 'people'}`];
+
+    if (form.diets.length > 0) {
+        parts.push(form.diets.join(', '));
+    }
+
+    if (form.equipment.length > 0) {
+        parts.push(form.equipment.join(', '));
+    }
+
+    if (budgetAmount.value !== null) {
+        parts.push(pounds(budgetAmount.value));
+    }
+
+    return parts.join(' · ');
+});
+
 const estimatedTotal = computed(() => assignment.value.reduce((sum, entry) => sum + (entry.suggestion.estimated_cost ?? 0), 0));
 
 const budgetAmount = computed(() => {
@@ -148,6 +232,60 @@ function showPool(from: 'ai' | 'library', meals: AiMealSuggestion[]): void {
     stage.value = meals.length > 0 ? 'result' : 'form';
 }
 
+// The AI call is one request with no real progress to report, so the waiting
+// screen paces a checklist of what it was asked to do against the clock.
+const LOADING_STEP_SECONDS = 6;
+const elapsed = ref(0);
+let ticker: ReturnType<typeof setInterval> | undefined;
+
+watch(stage, (value) => {
+    clearInterval(ticker);
+
+    if (value === 'loading') {
+        elapsed.value = 0;
+        ticker = setInterval(() => (elapsed.value += 0.5), 500);
+    }
+});
+
+onBeforeUnmount(() => clearInterval(ticker));
+
+/** "a, b and c" */
+function sentenceList(items: string[]): string {
+    return items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+}
+
+const loadingSteps = computed(() => {
+    const steps = ['Reading your answers'];
+
+    if (form.diets.length > 0) {
+        steps.push(`Making every dinner ${sentenceList(form.diets).toLowerCase()}`);
+    }
+
+    if (form.avoid.trim() !== '') {
+        steps.push(`Steering clear of ${form.avoid.trim()}`);
+    }
+
+    if (form.use_up.trim() !== '') {
+        steps.push(`Finding ways to use up ${form.use_up.trim()}`);
+    }
+
+    if (form.equipment.length > 0) {
+        steps.push(`Sticking to your ${sentenceList(form.equipment).toLowerCase()}`);
+    }
+
+    steps.push("Picking a fortnight of dinners, so there's room to swap");
+    steps.push(budgetAmount.value !== null ? `Pricing it against your ${pounds(budgetAmount.value)} budget` : 'Estimating ingredient costs');
+    steps.push('Writing up the recipes');
+
+    return steps;
+});
+
+// The last step stays in progress until the plan arrives.
+const currentLoadingStep = computed(() => Math.min(Math.floor(elapsed.value / LOADING_STEP_SECONDS), loadingSteps.value.length - 1));
+
+// Eases towards 95% (about 60% at 20s, 90% at 45s) and never claims to be done.
+const loadingProgress = computed(() => 95 * (1 - Math.exp(-elapsed.value / 20)));
+
 function generate(): void {
     stage.value = 'loading';
 
@@ -157,8 +295,9 @@ function generate(): void {
     })).post(route('meals.aiPlan'), {
         preserveScroll: true,
         onSuccess: () => showPool('ai', page.props.flash?.aiMeals ?? []),
-        onError: () => {
+        onError: (errors) => {
             stage.value = 'form';
+            step.value = firstStepWithError(errors);
         },
     });
 }
@@ -295,129 +434,288 @@ function accept(): void {
                 </DialogTitle>
             </DialogHeader>
 
-            <form v-if="stage === 'form'" class="flex flex-col gap-4" @submit.prevent="generate">
-                <p v-if="aiUnavailable" class="rounded-xl bg-hh-soft px-3 py-2 text-[12.5px] text-hh-ink2">
-                    {{ aiUnavailable }} You can still plan the week from your saved recipes.
-                </p>
-
-                <div class="flex flex-col gap-1.5">
-                    <span class="hh-label">Which days?</span>
-                    <div class="flex flex-wrap gap-1.5">
+            <form v-if="stage === 'form'" class="flex flex-col gap-4" @submit.prevent="submit">
+                <ol class="flex items-start" aria-label="Plan my week steps">
+                    <li v-for="(item, index) in steps" :key="item.key" class="relative flex flex-1 flex-col items-center gap-1">
+                        <span
+                            v-if="index > 0"
+                            class="absolute right-1/2 top-[13px] h-0.5 w-full transition-colors"
+                            :class="index <= step ? 'bg-hh-ink' : 'bg-hh-line'"
+                            aria-hidden="true"
+                        ></span>
                         <button
-                            v-for="(day, index) in days"
-                            :key="day.date"
                             type="button"
-                            class="rounded-lg border px-2.5 py-1.5 text-[12.5px] font-semibold"
-                            :class="selectedDays.includes(index) ? 'border-hh-ink bg-hh-ink text-hh-shell' : 'border-hh-line bg-hh-card text-hh-ink2'"
-                            @click="toggleDay(index)"
-                        >
-                            {{ day.dayLabel }}
-                        </button>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="flex flex-col gap-1.5">
-                        <label for="ai_people" class="hh-label">People</label>
-                        <input id="ai_people" v-model.number="form.people" type="number" min="1" max="12" class="hh-input" />
-                    </div>
-                    <div class="flex flex-col gap-1.5">
-                        <label for="ai_budget" class="hh-label">Weekly budget (£)</label>
-                        <input id="ai_budget" v-model="form.budget" type="text" inputmode="decimal" class="hh-input" placeholder="Optional" />
-                    </div>
-                </div>
-
-                <div class="flex flex-col gap-1.5">
-                    <span class="hh-label">Diets</span>
-                    <div class="flex flex-wrap gap-x-3 gap-y-1.5">
-                        <label v-for="diet in aiOptions.diets" :key="diet" class="flex items-center gap-1.5 text-[12.5px] text-hh-ink2">
-                            <input v-model="form.diets" type="checkbox" :value="diet" class="h-3.5 w-3.5 accent-hh-coral" />
-                            {{ diet }}
-                        </label>
-                    </div>
-                </div>
-
-                <div class="flex flex-col gap-1.5">
-                    <span class="hh-label">Cooking confidence</span>
-                    <div class="flex flex-wrap gap-1.5">
-                        <button
-                            v-for="level in aiOptions.confidence"
-                            :key="level.value"
-                            type="button"
-                            class="rounded-lg border px-2.5 py-1.5 text-[12.5px] font-semibold"
+                            class="relative z-10 grid h-7 w-7 place-items-center rounded-full text-[12px] font-extrabold transition"
                             :class="
-                                form.confidence === level.value ? 'border-hh-ink bg-hh-ink text-hh-shell' : 'border-hh-line bg-hh-card text-hh-ink2'
+                                index < step
+                                    ? 'bg-hh-ink text-hh-shell'
+                                    : index === step
+                                      ? 'border-2 border-hh-coral bg-hh-card text-hh-coral'
+                                      : 'border border-hh-line bg-hh-soft text-hh-ink3'
                             "
-                            :aria-pressed="form.confidence === level.value"
-                            @click="form.confidence = level.value"
+                            :disabled="index >= step"
+                            :aria-current="index === step ? 'step' : undefined"
+                            :aria-label="index < step ? `Back to ${item.label}` : item.label"
+                            @click="goTo(index)"
                         >
-                            {{ level.label }}
+                            <Check v-if="index < step" class="h-3.5 w-3.5" :stroke-width="3" />
+                            <template v-else>{{ index + 1 }}</template>
                         </button>
+                        <span class="text-center text-[11px] font-semibold" :class="index === step ? 'text-hh-ink' : 'text-hh-ink3'">
+                            {{ item.label }}
+                        </span>
+                    </li>
+                </ol>
+
+                <p class="sr-only" aria-live="polite">Step {{ step + 1 }} of {{ steps.length }}: {{ steps[step].label }}</p>
+
+                <Transition
+                    mode="out-in"
+                    enter-active-class="transition duration-150 ease-out"
+                    enter-from-class="translate-x-2 opacity-0"
+                    leave-active-class="transition duration-100 ease-in"
+                    leave-to-class="-translate-x-2 opacity-0"
+                >
+                    <div :key="step" class="flex min-h-[210px] flex-col gap-4">
+                        <p class="text-[13.5px] text-hh-ink2">{{ steps[step].hint }}</p>
+
+                        <template v-if="steps[step].key === 'days'">
+                            <p v-if="aiUnavailable" class="rounded-xl bg-hh-soft px-3 py-2 text-[12.5px] text-hh-ink2">
+                                {{ aiUnavailable }} You can still plan the week from your saved recipes.
+                            </p>
+
+                            <div class="flex flex-col gap-1.5">
+                                <span class="hh-label">Which days?</span>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <button
+                                        v-for="(day, index) in days"
+                                        :key="day.date"
+                                        type="button"
+                                        class="rounded-lg border px-2.5 py-1.5 text-[12.5px] font-semibold"
+                                        :class="
+                                            selectedDays.includes(index)
+                                                ? 'border-hh-ink bg-hh-ink text-hh-shell'
+                                                : 'border-hh-line bg-hh-card text-hh-ink2'
+                                        "
+                                        :aria-pressed="selectedDays.includes(index)"
+                                        @click="toggleDay(index)"
+                                    >
+                                        {{ day.dayLabel }}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div v-if="!aiUnavailable" class="flex flex-col gap-1.5">
+                                <label for="ai_people" class="hh-label">People</label>
+                                <input id="ai_people" v-model.number="form.people" type="number" min="1" max="12" class="hh-input w-28" />
+                                <p v-if="fieldError('people')" class="text-[12.5px] text-hh-coral">{{ fieldError('people') }}</p>
+                            </div>
+                        </template>
+
+                        <template v-else-if="steps[step].key === 'food'">
+                            <div class="flex flex-col gap-1.5">
+                                <span class="hh-label">Diets</span>
+                                <div class="flex flex-wrap gap-x-3 gap-y-1.5">
+                                    <label v-for="diet in aiOptions.diets" :key="diet" class="flex items-center gap-1.5 text-[12.5px] text-hh-ink2">
+                                        <input v-model="form.diets" type="checkbox" :value="diet" class="h-3.5 w-3.5 accent-hh-coral" />
+                                        {{ diet }}
+                                    </label>
+                                </div>
+                                <p v-if="fieldError('diets')" class="text-[12.5px] text-hh-coral">{{ fieldError('diets') }}</p>
+                            </div>
+
+                            <div class="flex flex-col gap-1.5">
+                                <label for="ai_avoid" class="hh-label">Avoid</label>
+                                <input id="ai_avoid" v-model="form.avoid" type="text" class="hh-input" placeholder="e.g. mushrooms, shellfish" />
+                                <p v-if="fieldError('avoid')" class="text-[12.5px] text-hh-coral">{{ fieldError('avoid') }}</p>
+                            </div>
+
+                            <div v-if="!aiUnavailable" class="flex flex-col gap-1.5">
+                                <label for="ai_use_up" class="hh-label">Anything to use up?</label>
+                                <input
+                                    id="ai_use_up"
+                                    v-model="form.use_up"
+                                    type="text"
+                                    class="hh-input"
+                                    placeholder="e.g. half a butternut squash, chickpeas"
+                                />
+                                <p v-if="fieldError('use_up')" class="text-[12.5px] text-hh-coral">{{ fieldError('use_up') }}</p>
+                            </div>
+                        </template>
+
+                        <template v-else-if="steps[step].key === 'kitchen'">
+                            <div class="flex flex-col gap-1.5">
+                                <span class="hh-label">Kitchen equipment</span>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <button
+                                        v-for="item in aiOptions.equipment"
+                                        :key="item"
+                                        type="button"
+                                        class="rounded-lg border px-2.5 py-1.5 text-[12.5px] font-semibold"
+                                        :class="
+                                            form.equipment.includes(item)
+                                                ? 'border-hh-ink bg-hh-ink text-hh-shell'
+                                                : 'border-hh-line bg-hh-card text-hh-ink2'
+                                        "
+                                        :aria-pressed="form.equipment.includes(item)"
+                                        @click="toggleEquipment(item)"
+                                    >
+                                        {{ item }}
+                                    </button>
+                                </div>
+                                <p v-if="fieldError('equipment')" class="text-[12.5px] text-hh-coral">{{ fieldError('equipment') }}</p>
+                            </div>
+
+                            <div class="flex flex-col gap-1.5">
+                                <span class="hh-label">Cooking confidence</span>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <button
+                                        v-for="level in aiOptions.confidence"
+                                        :key="level.value"
+                                        type="button"
+                                        class="rounded-lg border px-2.5 py-1.5 text-[12.5px] font-semibold"
+                                        :class="
+                                            form.confidence === level.value
+                                                ? 'border-hh-ink bg-hh-ink text-hh-shell'
+                                                : 'border-hh-line bg-hh-card text-hh-ink2'
+                                        "
+                                        :aria-pressed="form.confidence === level.value"
+                                        @click="form.confidence = level.value"
+                                    >
+                                        {{ level.label }}
+                                    </button>
+                                </div>
+                                <p v-if="fieldError('confidence')" class="text-[12.5px] text-hh-coral">{{ fieldError('confidence') }}</p>
+                            </div>
+                        </template>
+
+                        <template v-else>
+                            <div class="flex flex-col gap-1.5">
+                                <label for="ai_budget" class="hh-label">Weekly budget (£)</label>
+                                <input
+                                    id="ai_budget"
+                                    v-model="form.budget"
+                                    type="text"
+                                    inputmode="decimal"
+                                    class="hh-input w-36"
+                                    placeholder="Optional"
+                                />
+                                <p v-if="fieldError('budget')" class="text-[12.5px] text-hh-coral">{{ fieldError('budget') }}</p>
+                            </div>
+
+                            <div class="flex flex-col gap-1.5">
+                                <span class="hh-label">Goals</span>
+                                <div class="flex flex-wrap gap-x-3 gap-y-1.5">
+                                    <label v-for="goal in aiOptions.goals" :key="goal" class="flex items-center gap-1.5 text-[12.5px] text-hh-ink2">
+                                        <input v-model="form.goals" type="checkbox" :value="goal" class="h-3.5 w-3.5 accent-hh-coral" />
+                                        {{ goal }}
+                                    </label>
+                                </div>
+                                <p v-if="fieldError('goals')" class="text-[12.5px] text-hh-coral">{{ fieldError('goals') }}</p>
+                            </div>
+
+                            <div class="flex flex-col gap-1.5">
+                                <label for="ai_notes" class="hh-label">Notes for the AI</label>
+                                <textarea
+                                    id="ai_notes"
+                                    v-model="form.notes"
+                                    rows="2"
+                                    maxlength="500"
+                                    class="hh-input min-h-[64px] resize-y"
+                                    placeholder="e.g. My wife is pescatarian but I eat meat — can we share meals with a different protein?"
+                                ></textarea>
+                                <p v-if="fieldError('notes')" class="text-[12.5px] text-hh-coral">{{ fieldError('notes') }}</p>
+                            </div>
+
+                            <div class="rounded-xl bg-hh-soft px-3 py-2 text-[12.5px] text-hh-ink2">
+                                <p class="font-semibold text-hh-ink">{{ summary }}</p>
+                                <p class="mt-1">
+                                    Your household gets one AI plan a week. Not keen on it? You can regenerate once for a completely different set of
+                                    meals, then swap any dinner you don't fancy. Planning from your saved recipes is free and unlimited.
+                                </p>
+                            </div>
+                        </template>
                     </div>
-                </div>
+                </Transition>
 
-                <div class="flex flex-col gap-1.5">
-                    <label for="ai_use_up" class="hh-label">Anything to use up?</label>
-                    <input id="ai_use_up" v-model="form.use_up" type="text" class="hh-input" placeholder="e.g. half a butternut squash, chickpeas" />
-                </div>
+                <p v-if="isLastStep && page.props.errors.ai" class="text-[12.5px] text-hh-coral">{{ page.props.errors.ai }}</p>
 
-                <div class="flex flex-col gap-1.5">
-                    <label for="ai_avoid" class="hh-label">Avoid</label>
-                    <input id="ai_avoid" v-model="form.avoid" type="text" class="hh-input" placeholder="e.g. mushrooms, shellfish" />
-                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button v-if="step > 0" type="button" class="hh-btn w-auto bg-hh-soft text-hh-ink" :disabled="form.processing" @click="back">
+                        Back
+                    </button>
+                    <button v-else type="button" class="hh-btn w-auto bg-hh-soft text-hh-ink" @click="emit('update:open', false)">Cancel</button>
 
-                <div class="flex flex-col gap-1.5">
-                    <label for="ai_notes" class="hh-label">Notes for the AI</label>
-                    <textarea
-                        id="ai_notes"
-                        v-model="form.notes"
-                        rows="2"
-                        maxlength="500"
-                        class="hh-input min-h-[64px] resize-y"
-                        placeholder="e.g. My wife is pescatarian but I eat meat — can we share meals with a different protein?"
-                    ></textarea>
-                </div>
-
-                <div class="flex flex-col gap-1.5">
-                    <span class="hh-label">Goals</span>
-                    <div class="flex flex-wrap gap-x-3 gap-y-1.5">
-                        <label v-for="goal in aiOptions.goals" :key="goal" class="flex items-center gap-1.5 text-[12.5px] text-hh-ink2">
-                            <input v-model="form.goals" type="checkbox" :value="goal" class="h-3.5 w-3.5 accent-hh-coral" />
-                            {{ goal }}
-                        </label>
+                    <div class="ml-auto flex flex-wrap justify-end gap-2">
+                        <button v-if="!isLastStep" type="submit" class="hh-btn w-auto bg-hh-coral text-white" :disabled="!canContinue">Next</button>
+                        <button
+                            v-else-if="aiUnavailable"
+                            type="submit"
+                            class="hh-btn w-auto bg-hh-coral text-white"
+                            :disabled="selectedDays.length === 0 || form.processing"
+                        >
+                            Use my recipes
+                        </button>
+                        <template v-else>
+                            <button
+                                type="button"
+                                class="hh-btn w-auto bg-hh-soft text-hh-ink"
+                                :disabled="selectedDays.length === 0 || form.processing"
+                                @click="planFromLibrary"
+                            >
+                                Use my recipes
+                            </button>
+                            <button
+                                type="submit"
+                                class="hh-btn w-auto bg-hh-coral text-white"
+                                :disabled="selectedDays.length === 0 || form.processing"
+                            >
+                                Generate my week
+                            </button>
+                        </template>
                     </div>
-                </div>
-
-                <p class="rounded-xl bg-hh-soft px-3 py-2 text-[12.5px] text-hh-ink2">
-                    Your household gets one AI plan a week. Not keen on it? You can regenerate once for a completely different set of meals, then swap
-                    any dinner you don't fancy. Planning from your saved recipes is free and unlimited.
-                </p>
-
-                <p v-if="page.props.errors.ai" class="text-[12.5px] text-hh-coral">{{ page.props.errors.ai }}</p>
-
-                <div class="flex items-center gap-2">
-                    <button
-                        type="submit"
-                        class="hh-btn w-auto bg-hh-coral text-white"
-                        :disabled="aiUnavailable !== null || selectedDays.length === 0 || form.processing"
-                    >
-                        Generate my week
-                    </button>
-                    <button
-                        type="button"
-                        class="hh-btn w-auto bg-hh-soft text-hh-ink"
-                        :disabled="selectedDays.length === 0 || form.processing"
-                        @click="planFromLibrary"
-                    >
-                        Use my recipes
-                    </button>
-                    <button type="button" class="hh-btn ml-auto w-auto bg-hh-soft text-hh-ink" @click="emit('update:open', false)">Cancel</button>
                 </div>
             </form>
 
-            <div v-else-if="stage === 'loading'" class="flex flex-col items-center gap-3 py-8 text-[13.5px] text-hh-ink2">
-                <span class="h-6 w-6 animate-spin rounded-full border-2 border-hh-line border-t-hh-coral"></span>
-                Thinking about your week…
+            <div v-else-if="stage === 'loading'" class="flex flex-col gap-4 py-1">
+                <div class="flex items-center gap-3">
+                    <span class="bg-hh-coral/10 grid h-10 w-10 flex-none place-items-center rounded-full text-hh-coral">
+                        <Sparkles class="h-5 w-5 motion-safe:animate-pulse" :stroke-width="2.25" />
+                    </span>
+                    <div class="min-w-0">
+                        <p class="text-[14px] font-extrabold text-hh-ink">Planning your week</p>
+                        <p class="text-[12.5px] text-hh-ink2">This usually takes 30–60 seconds. Keep this window open.</p>
+                    </div>
+                </div>
+
+                <div class="h-1.5 overflow-hidden rounded-full bg-hh-soft" aria-hidden="true">
+                    <div
+                        class="h-full rounded-full bg-hh-coral transition-[width] duration-500 ease-linear"
+                        :style="{ width: `${loadingProgress}%` }"
+                    ></div>
+                </div>
+
+                <ol class="flex flex-col gap-2">
+                    <li
+                        v-for="(text, index) in loadingSteps"
+                        :key="text"
+                        class="flex items-center gap-2.5 text-[13px] transition-colors duration-300"
+                        :class="index <= currentLoadingStep ? 'text-hh-ink' : 'text-hh-ink3'"
+                    >
+                        <span class="grid h-5 w-5 flex-none place-items-center">
+                            <Check v-if="index < currentLoadingStep" class="h-4 w-4 text-hh-coral" :stroke-width="3" />
+                            <span
+                                v-else-if="index === currentLoadingStep"
+                                class="h-4 w-4 rounded-full border-2 border-hh-line border-t-hh-coral motion-safe:animate-spin"
+                            ></span>
+                            <span v-else class="h-1.5 w-1.5 rounded-full bg-hh-line"></span>
+                        </span>
+                        <span class="min-w-0 truncate">{{ text }}</span>
+                    </li>
+                </ol>
+
+                <p v-if="elapsed >= 60" class="text-[12.5px] text-hh-ink2">Still working. A busy week can take a little longer.</p>
+                <p class="sr-only" role="status">{{ loadingSteps[currentLoadingStep] }}</p>
             </div>
 
             <div v-else class="flex flex-col gap-4">

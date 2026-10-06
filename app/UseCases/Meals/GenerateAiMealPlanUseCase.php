@@ -34,6 +34,7 @@ class GenerateAiMealPlanUseCase
     /**
      * @param  list<string>  $diets
      * @param  list<string>  $goals
+     * @param  list<string>  $equipment
      * @return list<array{name: string, description: string, duration_label: string, difficulty: string, estimated_cost: float, tags: list<string>, ingredients: list<array{name: string, quantity: string}>}>
      */
     public function execute(
@@ -44,6 +45,7 @@ class GenerateAiMealPlanUseCase
         string $avoid,
         array $goals,
         CookingConfidence $confidence,
+        array $equipment,
         string $useUp,
         string $notes,
     ): array {
@@ -80,6 +82,7 @@ class GenerateAiMealPlanUseCase
                 $goals,
                 $this->recentRecipeNames($household),
                 $confidence,
+                $equipment,
                 $this->splitList($useUp),
                 trim($notes),
             );
