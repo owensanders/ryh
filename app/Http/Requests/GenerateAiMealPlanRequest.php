@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Enums\CookingConfidence;
+use App\Enums\KitchenEquipment;
 use App\Enums\MealDiet;
 use App\Enums\MealGoal;
 use Illuminate\Foundation\Http\FormRequest;
@@ -24,6 +25,8 @@ class GenerateAiMealPlanRequest extends FormRequest
             'goals' => ['array', 'max:'.count(MealGoal::cases())],
             'goals.*' => ['string', 'distinct', Rule::enum(MealGoal::class)],
             'confidence' => ['required', Rule::enum(CookingConfidence::class)],
+            'equipment' => ['array', 'max:'.count(KitchenEquipment::cases())],
+            'equipment.*' => ['string', 'distinct', Rule::enum(KitchenEquipment::class)],
             'use_up' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:500'],
         ];

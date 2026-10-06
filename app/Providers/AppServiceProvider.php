@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Ai\Fakes\E2eMealPlan;
 use App\Models\Household;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -26,5 +27,9 @@ class AppServiceProvider extends ServiceProvider
         Password::defaults(fn () => Password::min(10));
 
         Cashier::useCustomerModel(Household::class);
+
+        if ($this->app->environment('e2e')) {
+            E2eMealPlan::register();
+        }
     }
 }

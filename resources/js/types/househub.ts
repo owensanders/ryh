@@ -125,6 +125,7 @@ export interface AiPlannerOptions {
     diets: string[];
     goals: string[];
     confidence: TagOption[];
+    equipment: string[];
 }
 
 export interface TagOption {

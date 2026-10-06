@@ -78,9 +78,26 @@ class MealPlanAgentTest extends TestCase
         $this->assertSame(1234, $this->agent(CookingConfidence::Comfortable, [])->maxTokens());
     }
 
-    /** @param  list<string>  $useUp */
-    private function agent(CookingConfidence $confidence, array $useUp, string $notes = ''): MealPlanAgent
+    #[Test]
+    public function itLimitsRecipesToTheHouseholdsKitchenEquipment(): void
     {
-        return new MealPlanAgent(4, 85.0, [], [], [], [], $confidence, $useUp, $notes);
+        $instructions = (string) $this->agent(CookingConfidence::Comfortable, [], equipment: ['Hob', 'Air fryer'])->instructions();
+
+        $this->assertStringContainsString("The household's kitchen has only: Hob, Air fryer.", $instructions);
+    }
+
+    #[Test]
+    public function itLeavesEquipmentOutWhenNoneIsGiven(): void
+    {
+        $this->assertStringNotContainsString('kitchen has only', (string) $this->agent(CookingConfidence::Comfortable, [])->instructions());
+    }
+
+    /**
+     * @param  list<string>  $useUp
+     * @param  list<string>  $equipment
+     */
+    private function agent(CookingConfidence $confidence, array $useUp, string $notes = '', array $equipment = []): MealPlanAgent
+    {
+        return new MealPlanAgent(4, 85.0, [], [], [], [], $confidence, $equipment, $useUp, $notes);
     }
 }

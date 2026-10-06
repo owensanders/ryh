@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Ai\Agents\MealPlanAgent;
 use App\Ai\AiConfig;
 use App\Enums\HouseholdRole;
+use App\Enums\KitchenEquipment;
 use App\Models\BudgetCategory;
 use App\Models\Household;
 use App\Models\PlannedMeal;
@@ -490,6 +491,16 @@ class MealPlannerTest extends TestCase
     }
 
     #[Test]
+    public function itOffersKitchenEquipmentToChooseFrom(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/meals')
+            ->assertInertia(fn ($page) => $page->where('aiOptions.equipment', KitchenEquipment::values()));
+    }
+
+    #[Test]
     public function itRejectsDietsAndGoalsThatArentOffered(): void
     {
         config(['ai.providers.anthropic.key' => 'test-key']);
@@ -732,9 +743,34 @@ class MealPlannerTest extends TestCase
         MealPlanAgent::assertPrompted(fn ($prompt) => str_contains((string) $prompt->agent->instructions(), 'My wife is pescatarian but I eat meat'));
     }
 
+    #[Test]
+    public function itPassesKitchenEquipmentToTheAi(): void
+    {
+        config(['ai.providers.anthropic.key' => 'test-key']);
+        MealPlanAgent::fake([['meals' => []]]);
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/meals/ai-plan', [...$this->aiPlanPayload(), 'equipment' => ['Air fryer', 'Hob']]);
+
+        MealPlanAgent::assertPrompted(fn ($prompt) => str_contains((string) $prompt->agent->instructions(), 'kitchen has only: Air fryer, Hob'));
+    }
+
+    #[Test]
+    public function itRejectsUnknownKitchenEquipment(): void
+    {
+        config(['ai.providers.anthropic.key' => 'test-key']);
+        MealPlanAgent::fake()->preventStrayPrompts();
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/meals/ai-plan', [...$this->aiPlanPayload(), 'equipment' => ['Teleporter']])
+            ->assertSessionHasErrors('equipment.0');
+    }
+
     /** @return array<string, mixed> */
     private function aiPlanPayload(): array
     {
-        return ['people' => 4, 'budget' => null, 'diets' => [], 'avoid' => '', 'goals' => [], 'confidence' => 'comfortable', 'use_up' => ''];
+        return ['people' => 4, 'budget' => null, 'diets' => [], 'avoid' => '', 'goals' => [], 'confidence' => 'comfortable', 'equipment' => [], 'use_up' => ''];
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\CookingConfidence;
+use App\Enums\KitchenEquipment;
 use App\Enums\MealDiet;
 use App\Enums\MealGoal;
 use App\Enums\RecipeTag;
@@ -53,6 +54,7 @@ class MealPlannerController extends Controller
                 'diets' => MealDiet::values(),
                 'goals' => MealGoal::values(),
                 'confidence' => CookingConfidence::options(),
+                'equipment' => KitchenEquipment::values(),
             ],
         ]);
     }
@@ -106,6 +108,7 @@ class MealPlannerController extends Controller
                 (string) $request->validated('avoid', ''),
                 $request->validated('goals', []),
                 CookingConfidence::from($request->validated('confidence')),
+                $request->validated('equipment', []),
                 (string) $request->validated('use_up', ''),
                 (string) $request->validated('notes', ''),
             );
