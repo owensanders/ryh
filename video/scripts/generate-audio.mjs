@@ -193,7 +193,10 @@ console.log('Sound effects');
 // ---------------------------------------------------------------------------
 console.log('Music');
 // 120 BPM, one bar = 2s = 60 video frames. F major: F – C – Dm – B♭.
-const BPM = 120, BEAT = 60 / BPM, BAR = BEAT * 4, BARS = 33;
+// The video is 41 bars: the outro (pricing) starts at bar 35 and its logo
+// lands on the final chord three bars later. Keep these in step with the
+// scene lengths in src/HouseHubPromo.tsx.
+const BPM = 120, BEAT = 60 / BPM, BAR = BEAT * 4, BARS = 41, OUTRO_BAR = 35, HIT_BAR = 38;
 const LEN = BARS * BAR + 3;
 const L = buf(LEN), R = buf(LEN);
 const chords = [
@@ -205,10 +208,10 @@ const chords = [
 const roots = [41, 36, 38, 34];
 
 // Section map: what plays in each bar. Drop at bar 5 (dashboard reveal),
-// breakdown at 29 (pricing), final hit at 30 (logo).
+// breakdown through the pricing, final hit on the logo.
 const has = (bar, part) => {
-    if (bar >= 30) return false;
-    if (bar === 29) return ['pad', 'pluck'].includes(part);
+    if (bar >= HIT_BAR) return false;
+    if (bar >= OUTRO_BAR) return ['pad', 'pluck'].includes(part);
     if (bar < 2) return part === 'pad';
     if (bar < 5) return ['pad', 'pluck', 'hat'].includes(part);
     return true;
@@ -290,7 +293,7 @@ for (let bar = 0; bar < BARS; bar++) {
     if (has(bar, 'pad')) {
         padChord(t, chords[c], BAR + 0.3, bar < 2 ? 0.5 + bar * 0.25 : 0.8);
     }
-    if (bar === 30) { kick(t, 1.3); bassNote(t, roots[0], BAR * 1.5); }
+    if (bar === HIT_BAR) { kick(t, 1.3); bassNote(t, roots[0], BAR * 1.5); }
     if (has(bar, 'kick')) for (let b = 0; b < 4; b++) kick(t + b * BEAT);
     if (has(bar, 'clap')) { clap(t + BEAT); clap(t + 3 * BEAT); }
     if (has(bar, 'hat')) for (let e = 0; e < 8; e++) {
@@ -306,8 +309,8 @@ for (let bar = 0; bar < BARS; bar++) {
     }
 }
 // Hold the final F chord on the logo and let it ring out.
-padChord(30 * BAR, chords[0], BAR * 3 - 0.2, 1);
-[65, 69, 72, 77].forEach((n, k) => pluck(30 * BAR + k * 0.06, n + 12, 0.1, k % 2 ? 0.4 : -0.4));
+padChord(HIT_BAR * BAR, chords[0], BAR * 3 - 0.2, 1);
+[65, 69, 72, 77].forEach((n, k) => pluck(HIT_BAR * BAR + k * 0.06, n + 12, 0.1, k % 2 ? 0.4 : -0.4));
 
 // Master: gentle glue + soft clip, then a fade on the last second.
 const master = (ch) => {

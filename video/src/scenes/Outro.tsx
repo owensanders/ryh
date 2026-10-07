@@ -4,10 +4,14 @@ import { prog, range, spr, springs } from '../anim';
 import { Confetti, Cursor, HeroBg, LogoMark, Sfx } from '../components/ui';
 import { brand, fonts } from '../theme';
 
-const HIT = 60; // bar 30 of the track — the final chord
-const CLICK = 150;
+// The price holds for six seconds so it can be read properly, then the logo
+// lands on the track's final chord (three bars into this scene).
+const HIT = 180;
+const CTA = HIT + 44;
+const CLICK = HIT + 90;
+const END = HIT + 180;
 
-// 240 frames: price, then the logo lands on the last big chord, then the CTA.
+// 360 frames: price, then the logo on the last big chord, then the CTA.
 export const Outro: React.FC = () => {
     const f = useCurrentFrame();
 
@@ -17,9 +21,11 @@ export const Outro: React.FC = () => {
 
     const logo = spr(f, HIT, springs.bouncy);
     const word = spr(f, HIT + 6, springs.snappy);
-    const cta = spr(f, 104, springs.pop);
+    const cta = spr(f, CTA, springs.pop);
     const press = range(f, [CLICK - 2, CLICK, CLICK + 8], [0, 1, 0]);
-    const fadeOut = prog(f, 226, 240);
+    const fadeOut = prog(f, END - 14, END);
+    // A slow push-in while the price is held, so it never looks frozen.
+    const hold = prog(f, 40, HIT, (t) => t);
 
     return (
         <AbsoluteFill style={{ fontFamily: fonts.sans }}>
@@ -32,7 +38,7 @@ export const Outro: React.FC = () => {
             ))}
             <Sfx at={HIT} name="impact" volume={0.8} />
             <Sfx at={HIT + 4} name="sparkle" volume={0.4} />
-            <Sfx at={104} name="pop" volume={0.5} rate={0.85} />
+            <Sfx at={CTA} name="pop" volume={0.5} rate={0.85} />
             <Sfx at={CLICK} name="click" volume={0.7} />
             <Sfx at={CLICK + 1} name="sparkle" volume={0.55} />
 
@@ -44,7 +50,7 @@ export const Outro: React.FC = () => {
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
-                            transform: `scale(${(0.6 + priceIn * 0.4) * (1 - priceOut * 0.6)}) translateY(${priceOut * -200}px)`,
+                            transform: `scale(${(0.6 + priceIn * 0.4) * (1 + hold * 0.04) * (1 - priceOut * 0.6)}) translateY(${priceOut * -200}px)`,
                             opacity: Math.min(1, priceIn * 2) * (1 - priceOut),
                             filter: `blur(${priceOut * 20}px)`,
                         }}
@@ -71,7 +77,7 @@ export const Outro: React.FC = () => {
                             or £39.99 a year · one subscription for the whole house
                         </div>
                         <div style={{ display: 'flex', gap: 14, marginTop: 36 }}>
-                            {['No card needed', 'Unlimited members', 'Cancel anytime'].map((c, i) => {
+                            {['No card needed', 'Up to 8 people', 'Cancel anytime'].map((c, i) => {
                                 const p = spr(f, 40 + i * 5, springs.pop);
                                 return (
                                     <span
@@ -175,7 +181,7 @@ export const Outro: React.FC = () => {
                     >
                         Start your free month <span style={{ transform: `translateX(${Math.sin(f / 6) * 6}px)`, display: 'inline-block' }}>→</span>
                     </div>
-                    <div style={{ position: 'absolute', top: 850, fontSize: 26, fontWeight: 600, color: brand.onhero2, opacity: prog(f, 118, 134) }}>
+                    <div style={{ position: 'absolute', top: 850, fontSize: 26, fontWeight: 600, color: brand.onhero2, opacity: prog(f, CTA + 14, CTA + 30) }}>
                         Set it up before the kettle boils.
                     </div>
                 </AbsoluteFill>
@@ -183,12 +189,12 @@ export const Outro: React.FC = () => {
 
             <Confetti at={CLICK} x={960} y={752} count={120} />
             <Cursor
-                show={[118, 200]}
+                show={[CTA + 14, CLICK + 50]}
                 clicks={[CLICK]}
                 keys={[
-                    { f: 118, x: 1500, y: 1040 },
+                    { f: CTA + 14, x: 1500, y: 1040 },
                     { f: CLICK - 4, x: 1150, y: 760 },
-                    { f: 200, x: 1300, y: 900 },
+                    { f: CLICK + 50, x: 1300, y: 900 },
                 ]}
             />
             <AbsoluteFill style={{ background: '#000', opacity: fadeOut }} />

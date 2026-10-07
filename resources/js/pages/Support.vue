@@ -60,6 +60,14 @@ const faqs = computed(() => [
         a: 'Owners manage the household and billing. Adults run meals, lists, chores and the calendar. Teens can add calendar events and tick things off. Children see and tick off what is assigned to them.',
     },
     {
+        q: 'Is there a phone app?',
+        a: "Yes — add HouseHub to your home screen straight from your browser, no app store needed. On iPhone and iPad, open it in Safari, tap Share, then Add to Home Screen. On Android, open it in Chrome and tap Install on the card that appears (or choose Install app from Chrome's ⋮ menu). There's a step-by-step guide on our home page.",
+    },
+    {
+        q: 'How do I get notifications on my phone?',
+        a: 'Open HouseHub on your phone, go to Settings → Notifications and tap Turn on, then allow notifications when your phone asks. You can choose which kinds you get — chores, calendar or meals. On iPhone and iPad, add HouseHub to your Home Screen first: notifications only work from there.',
+    },
+    {
         q: 'Can I get a copy of my data, or have it deleted?',
         a: 'Yes. Email our privacy contact and we will respond within one month. You can delete your account yourself at any time from Settings → Profile.',
     },
