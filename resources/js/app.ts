@@ -6,7 +6,9 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
+import OfflineBanner from './components/OfflineBanner.vue';
 import { initializeTheme } from './composables/useAppearance';
+import { initOfflineDetection } from './lib/offline';
 import { initPwa } from './lib/pwa';
 
 configureEcho({
@@ -19,7 +21,8 @@ createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) => resolvePageComponent(`./pages/${name}.vue`, import.meta.glob<DefineComponent>('./pages/**/*.vue')),
     setup({ el, App, props, plugin }) {
-        createApp({ render: () => h(App, props) })
+        // The offline banner sits beside every page, sign-in screens included.
+        createApp({ render: () => [h(App, props), h(OfflineBanner)] })
             .use(plugin)
             .use(ZiggyVue)
             .mount(el);
@@ -34,3 +37,4 @@ initializeTheme();
 
 // Install prompt, service worker and refresh-on-resume for the installed app.
 initPwa();
+initOfflineDetection();

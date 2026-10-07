@@ -23,3 +23,37 @@ test('offline, a page load shows the offline page, then recovers when back onlin
     await expect(page.getByRole('heading', { name: "You're offline" })).toBeHidden();
     await expect(page.getByRole('link', { name: 'Chores', exact: true })).toHaveAttribute('aria-current', 'page');
 });
+
+// Moving around inside the app is a background request, not a page load, so
+// the offline page never appears; the banner explains why nothing happens.
+test('offline, tapping around the app shows the offline banner until the connection returns', async ({ page, context }) => {
+    await page.goto('/dashboard');
+    const banner = page.getByRole('status').filter({ hasText: "You're offline" });
+    await expect(banner).toBeHidden();
+
+    await context.setOffline(true);
+    await page.getByRole('link', { name: 'Chores', exact: true }).click();
+    await expect(banner).toBeVisible();
+    await expect(page).toHaveURL(/\/dashboard$/);
+
+    await context.setOffline(false);
+    await expect(banner).toBeHidden();
+    await page.getByRole('link', { name: 'Chores', exact: true }).click();
+    await expect(page).toHaveURL(/\/chores$/);
+});
+
+// Connected to Wi-Fi with no internet: the browser still says it's online, so
+// the failed request itself has to raise the banner.
+test('a request that fails for lack of connection shows the banner too', async ({ page }) => {
+    await page.goto('/dashboard');
+    await page.route('**/chores', (route) => route.abort('internetdisconnected'));
+
+    await page.getByRole('link', { name: 'Chores', exact: true }).click();
+    const banner = page.getByRole('status').filter({ hasText: "You're offline" });
+    await expect(banner).toBeVisible();
+
+    await page.unroute('**/chores');
+    await page.getByRole('link', { name: 'Chores', exact: true }).click();
+    await expect(page).toHaveURL(/\/chores$/);
+    await expect(banner).toBeHidden();
+});
