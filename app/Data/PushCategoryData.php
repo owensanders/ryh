@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Data;
+
+use App\Enums\NotificationCategory;
+use App\Models\User;
+use Spatie\LaravelData\Data;
+
+/** One "What to send" toggle on Settings → Notifications. */
+class PushCategoryData extends Data
+{
+    public function __construct(
+        public string $value,
+        public string $label,
+        public string $description,
+        public bool $enabled,
+    ) {}
+
+    public static function fromCategory(NotificationCategory $category, User $user): self
+    {
+        return new self($category->value, $category->label(), $category->description(), $user->wantsPushFor($category));
+    }
+}

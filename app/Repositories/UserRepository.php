@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Contracts\Repositories\UserRepositoryInterface;
+use App\Enums\NotificationCategory;
 use App\Models\User;
 use Illuminate\Support\Str;
 
@@ -58,5 +59,28 @@ class UserRepository implements UserRepositoryInterface
     public function delete(User $user): void
     {
         $user->delete();
+    }
+
+    public function savePushSubscription(User $user, string $endpoint, string $publicKey, string $authToken, ?string $contentEncoding): void
+    {
+        $user->updatePushSubscription($endpoint, $publicKey, $authToken, $contentEncoding);
+    }
+
+    public function deletePushSubscription(User $user, string $endpoint): void
+    {
+        $user->pushSubscriptions()->where('endpoint', $endpoint)->delete();
+    }
+
+    public function deleteAllPushSubscriptions(User $user): void
+    {
+        $user->pushSubscriptions()->delete();
+    }
+
+    /** @param list<NotificationCategory> $optOuts */
+    public function setPushOptOuts(User $user, array $optOuts): User
+    {
+        $user->update(['push_opt_outs' => array_map(fn (NotificationCategory $category) => $category->value, $optOuts)]);
+
+        return $user->refresh();
     }
 }

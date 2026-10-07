@@ -5,6 +5,7 @@ const tabs = [
     { label: 'Profile', route: 'profile.edit' },
     { label: 'Password', route: 'password.edit' },
     { label: 'Appearance', route: 'appearance' },
+    { label: 'Notifications', route: 'notifications.edit' },
     { label: 'Households', route: 'households.edit' },
 ];
 </script>

@@ -4,6 +4,7 @@ import NotificationBell from '@/components/househub/NotificationBell.vue';
 import Toast from '@/components/househub/Toast.vue';
 import { useAppearance } from '@/composables/useAppearance';
 import { useHouseholdRole } from '@/composables/useHouseholdRole';
+import { logout } from '@/lib/logout';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { House, LogOut } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
@@ -132,16 +133,14 @@ function toggleTheme(): void {
                         <span class="hidden text-[13px] font-semibold sm:block">{{ user?.name?.split(' ')[0] }}</span>
                     </Link>
 
-                    <Link
-                        :href="route('logout')"
-                        method="post"
-                        as="button"
+                    <button
                         type="button"
                         title="Logout"
                         class="hidden h-[38px] w-[38px] place-items-center rounded-xl bg-hh-soft text-sm transition-colors hover:bg-hh-line sm:grid"
+                        @click="logout"
                     >
                         <LogOut class="h-4 w-4" />
-                    </Link>
+                    </button>
                 </header>
 
                 <div class="flex-1 overflow-y-auto px-4 pb-28 pt-5 sm:px-[30px] sm:pb-10 sm:pt-6">
@@ -227,16 +226,14 @@ function toggleTheme(): void {
                     <span class="w-6 text-center" aria-hidden="true">{{ isDark ? '☀️' : '🌙' }}</span>
                     {{ isDark ? 'Light mode' : 'Dark mode' }}
                 </button>
-                <Link
-                    :href="route('logout')"
-                    method="post"
-                    as="button"
+                <button
                     type="button"
                     class="flex min-h-[48px] w-full items-center gap-3 rounded-2xl px-3 text-[15px] font-medium text-hh-ink2"
+                    @click="logout"
                 >
                     <LogOut class="mx-1 h-4 w-4" />
                     Log out
-                </Link>
+                </button>
             </div>
         </Transition>
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\HouseholdRole;
+use App\Enums\NotificationCategory;
 use App\Enums\Palette;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use NotificationChannels\WebPush\HasPushSubscriptions;
 
 /**
  * @property int $id
@@ -29,6 +31,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $email_verified_at
  * @property Carbon|null $terms_accepted_at
  * @property string|null $terms_version
+ * @property list<string>|null $push_opt_outs NotificationCategory values this person has turned push off for.
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read HouseholdUser|null $pivot Present when loaded through a `Household::members()`/`User::households()` query.
@@ -36,7 +39,7 @@ use Illuminate\Support\Carbon;
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, HasPushSubscriptions, Notifiable;
 
     /** @var list<string> */
     protected $fillable = [
@@ -50,6 +53,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'trial_claimed_at',
         'terms_accepted_at',
         'terms_version',
+        'push_opt_outs',
     ];
 
     /** @var list<string> */
@@ -66,6 +70,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'trial_claimed_at' => 'datetime',
             'terms_accepted_at' => 'datetime',
             'colour' => Palette::class,
+            'push_opt_outs' => 'array',
         ];
     }
 
@@ -130,6 +135,12 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->membershipMemo = null;
 
         return parent::refresh();
+    }
+
+    /** Every category pushes unless this person has turned it off. */
+    public function wantsPushFor(NotificationCategory $category): bool
+    {
+        return ! in_array($category->value, $this->push_opt_outs ?? [], true);
     }
 
     public function currentRole(): ?HouseholdRole

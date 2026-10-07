@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { formatPlanPrice } from '@/lib/househub';
+import { logout } from '@/lib/logout';
 import type { Plan } from '@/types/househub';
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import { House } from 'lucide-vue-next';
 import { ref } from 'vue';
 
@@ -93,14 +94,13 @@ function subscribe(): void {
                 </p>
             </template>
 
-            <Link
-                :href="route('logout')"
-                method="post"
-                as="button"
+            <button
+                type="button"
                 class="mt-4 flex h-[44px] w-full items-center justify-center rounded-[14px] bg-hh-soft text-[14px] font-semibold text-hh-ink2 transition-colors hover:bg-hh-line"
+                @click="logout"
             >
                 Log out
-            </Link>
+            </button>
         </div>
     </div>
 </template>

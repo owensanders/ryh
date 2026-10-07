@@ -390,3 +390,10 @@ export interface PlatformStatus {
     /** ISO 8601. */
     checkedAt: string;
 }
+
+export interface PushCategory {
+    value: 'chores' | 'calendar' | 'meals';
+    label: string;
+    description: string;
+    enabled: boolean;
+}
