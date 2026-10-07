@@ -179,6 +179,17 @@ html {
         @apply flex h-[42px] w-full items-center justify-center gap-2 whitespace-nowrap rounded-[13px] px-5 text-[13.5px] font-bold transition hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-50;
     }
 
+    /* iOS Safari zooms the page in whenever a field under 16px gets focus, and
+       leaves it zoomed. Fields there use 16px; everywhere else keeps the design's
+       sizes. */
+    @supports (-webkit-touch-callout: none) {
+        input:not([type='checkbox']):not([type='radio']):not([type='range']),
+        select,
+        textarea {
+            font-size: 16px !important;
+        }
+    }
+
     /* Native date inputs render a hard-coded light calendar icon regardless of theme;
        colour-scheme swaps in the matching dark asset instead of a near-invisible one. */
     input[type='date'] {

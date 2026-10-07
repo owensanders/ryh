@@ -77,8 +77,40 @@ The app runs locally without these, but they gate specific features:
 | `ANTHROPIC_API_KEY` | AI meal plan generation (Claude Haiku 4.5; override with `ANTHROPIC_TEXT_MODEL`) |
 | `AI_MEAL_PLAN_DAILY_CAP`, `AI_ALERT_EMAIL` | App-wide daily cap on AI meal plans (default 50), and the address alerted when AI credit runs out — AI pauses itself; `php artisan ai:resume` after topping up |
 | `AWS_*` | Document storage on S3 (defaults to the local disk otherwise) |
+| `TRUSTED_PROXIES` | Proxies whose `X-Forwarded-*` headers are trusted (`*` or IPs) — needed behind a load balancer, and `*` locally for the phone-testing tunnel |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Push notifications — generate the keys with `sail artisan webpush:vapid`; without them Settings → Notifications says push isn't set up |
 | `LEGAL_*`, `SUPPORT_EMAIL`, `PRIVACY_EMAIL` | Business and contact details quoted on `/terms`, `/privacy` and `/support` (`config/legal.php`) — unset ones show as a highlighted "[… to be confirmed]"; fill them all in before launch |
+
+### Testing on a phone
+
+Installing the app and receiving push notifications need HTTPS, so a phone
+can't use `http://localhost`. `scripts/tunnel.sh` opens a temporary public
+HTTPS address for your local app through a Cloudflare quick tunnel (a
+`cloudflared` container: no account or install needed).
+
+1. Add `TRUSTED_PROXIES=*` to `.env` (once), so links through the tunnel come
+   out as `https://` on its address.
+2. Stop the Vite dev server (`npm run dev`) and run `./vendor/bin/sail npm run build`.
+   The phone needs the production build, which also turns the service worker on.
+3. `./scripts/tunnel.sh` prints the address. Open it on the phone and sign in.
+4. `./scripts/tunnel.sh stop` when you're done, then `sail npm run dev` again.
+
+The address changes every time, and anyone who has it can reach your local app
+while the tunnel is open. Live updates (Reverb) don't go through the tunnel, so
+the bell only refreshes when a page loads. Push notifications still arrive.
+
+Things to check on the phone:
+
+- **Android (Chrome):** the "Get the HouseHub app" card installs the app.
+- **iPhone (Safari):** the card shows the Add to Home Screen steps.
+  Notifications only work from the installed app.
+- **Installed app:** after signing out, "Remember me" is already ticked on the
+  sign-in form. Coming back after 30+ seconds away shows fresh data.
+- **Settings → Notifications:** "Turn on", then "Send a test". Tapping the
+  notification opens HouseHub. Assign yourself a chore from another account:
+  the push says who did it, under the household's name.
+- **Offline:** with no connection, any page shows "You're offline". It reloads
+  by itself when the connection comes back.
 
 ## Checks
 

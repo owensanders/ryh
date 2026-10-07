@@ -93,7 +93,9 @@ const sections = [
         </div>
 
         <h2 id="local-storage">Storage on your device</h2>
-        <p>We also save one setting in your browser's local storage. Unlike a cookie, it is never sent to us — it stays on your device.</p>
+        <p>
+            We also save a couple of settings in your browser's local storage. Unlike cookies, they are never sent to us — they stay on your device.
+        </p>
         <div class="legal-table">
             <table>
                 <thead>
@@ -109,9 +111,23 @@ const sections = [
                         <td>Remembers whether you chose light or dark mode. It is only saved when you use the theme switch.</td>
                         <td>Until you clear your browser's site data</td>
                     </tr>
+                    <tr>
+                        <td><code>pwa-install-dismissed-at</code></td>
+                        <td>
+                            Remembers that you tapped <strong>Not now</strong> on the "Get the HouseHub app" card, so it doesn't keep appearing. It is
+                            only saved when you dismiss the card.
+                        </td>
+                        <td>The card stays hidden for 30 days; the setting stays until you clear your browser's site data</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
+        <p>
+            Our <strong>service worker</strong> — a small script that lets {{ legal.tradingName }} be installed on your home screen — keeps a copy of
+            the app's own code, styles and a "You're offline" page in your browser's cache, so pages load quickly and something sensible shows when
+            you lose your connection. It holds none of your household's information. If you turn on push notifications, your browser also keeps the
+            subscription it uses to receive them; you can turn that off in Settings → Notifications, and signing out turns it off too.
+        </p>
 
         <h2 id="third-parties">Other companies</h2>
         <ul>
@@ -130,8 +146,9 @@ const sections = [
         <h2 id="consent">Why we don’t ask for consent</h2>
         <p>
             Under the Privacy and Electronic Communications Regulations, a website must ask before setting cookies — unless they are strictly
-            necessary to provide a service you've asked for. Every cookie we use falls into that exemption, and the theme setting is only saved when
-            you choose it. That's why you won't see a cookie banner here.
+            necessary to provide a service you've asked for. Every cookie we use falls into that exemption, the service worker's copy of the app is
+            needed for the app to work as you'd expect, and the settings above are only saved when you choose them. Push notifications are only turned
+            on when you ask, and your browser asks for your permission first. That's why you won't see a cookie banner here.
         </p>
         <p>If we ever want to use a cookie that isn't strictly necessary, we'll update this policy and ask for your consent before setting it.</p>
 
@@ -139,7 +156,7 @@ const sections = [
         <p>
             You can see, block and delete cookies in your browser's settings. If you block or delete ours, you'll be signed out and won't be able to
             sign in again until you allow them — they're what make signing in work. Signing out removes the "Remember me" cookie, and clearing your
-            browser's site data removes everything above.
+            browser's site data (or uninstalling the app) removes everything above, including the service worker and its cache.
         </p>
         <p>
             Your browser's help pages explain how:
