@@ -82,6 +82,7 @@ const sections = [
         <ul>
             <li>In-app notifications about activity in your household (for example, a chore assigned to you).</li>
             <li>Records of when your account was created, when you verified your email, and which version of our Terms you accepted.</li>
+            <li>For Teen and Child members, a record of which adult confirmed they are the child's parent or guardian, and when.</li>
             <li>
                 Technical information needed to keep you signed in and secure — your IP address, browser and device type (user agent), and session
                 identifiers. We also briefly use IP addresses to limit repeated sign-in attempts and other abuse.
@@ -166,9 +167,11 @@ const sections = [
 
         <h2 id="children">Children</h2>
         <p>
-            Accounts can only be created by people aged 18 or over, except that a child or teenager may join a household when invited by a parent or
-            guardian, who takes responsibility for their use of {{ legal.tradingName }} and agrees to our Terms on their behalf. We designed the Teen
-            and Child roles so that younger members can see and tick off what's relevant to them while adults manage the household.
+            Accounts can only be created by people aged 18 or over, except that a child or teenager may join a household as a Teen or Child member
+            when invited by an adult. Before a Teen or Child is added, that adult must confirm they are the child's parent or guardian (or have their
+            permission), take responsibility for the child's use of {{ legal.tradingName }}, and agree to our Terms on the child's behalf. We keep a
+            record of that confirmation for as long as the child is a member. We designed the Teen and Child roles so that younger members can see and
+            tick off what's relevant to them while adults manage the household.
         </p>
         <p>In line with the ICO's Age Appropriate Design Code (the Children's Code), for every member, including children:</p>
         <ul>

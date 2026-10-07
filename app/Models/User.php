@@ -90,7 +90,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsToMany(Household::class)
             ->using(HouseholdUser::class)
-            ->withPivot(['role', 'pending', 'pending_reason'])
+            ->withPivot(['role', 'pending', 'pending_reason', 'guardian_confirmed_by', 'guardian_confirmed_at'])
             ->withTimestamps();
     }
 

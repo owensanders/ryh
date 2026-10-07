@@ -47,6 +47,20 @@ class HouseholdRepository implements HouseholdRepositoryInterface
         return $household->members()->wherePivot('pending', false)->get();
     }
 
+    public function findByStripeCustomer(string $customerId): ?Household
+    {
+        return Household::where('stripe_id', $customerId)->first();
+    }
+
+    /** @return Collection<int, User> */
+    public function activeOwners(Household $household): Collection
+    {
+        return $household->members()
+            ->wherePivot('pending', false)
+            ->wherePivot('role', HouseholdRole::Owner->value)
+            ->get();
+    }
+
     public function isSoleOwner(Household $household, User $member): bool
     {
         return $this->members($household)

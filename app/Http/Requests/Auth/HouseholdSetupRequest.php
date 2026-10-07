@@ -7,6 +7,7 @@ namespace App\Http\Requests\Auth;
 use App\Enums\HouseholdRole;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class HouseholdSetupRequest extends FormRequest
 {
@@ -20,6 +21,26 @@ class HouseholdSetupRequest extends FormRequest
             'invites' => ['array', 'max:'.(config('plans.max_members') - 1)],
             'invites.*.email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
             'invites.*.role' => ['required', Rule::enum(HouseholdRole::class)],
+            'guardian_confirmed' => ['boolean'],
+        ];
+    }
+
+    /**
+     * Under-18s join only with a parent or guardian's agreement (Terms of Service).
+     *
+     * @return list<callable(Validator): void>
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                $invitesMinors = collect($this->array('invites'))
+                    ->contains(fn ($invite) => HouseholdRole::tryFrom((string) ($invite['role'] ?? ''))?->isForMinors() === true);
+
+                if ($invitesMinors && ! $this->boolean('guardian_confirmed')) {
+                    $validator->errors()->add('guardian_confirmed', 'Confirm you\'re their parent or guardian, or have their permission, to add someone as a Teen or Child.');
+                }
+            },
         ];
     }
 

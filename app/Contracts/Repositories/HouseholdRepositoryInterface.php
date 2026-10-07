@@ -22,6 +22,9 @@ interface HouseholdRepositoryInterface
 
     public function findByJoinCode(string $joinCode): ?Household;
 
+    /** The household billed under this Stripe customer ID, as named in webhook payloads. */
+    public function findByStripeCustomer(string $customerId): ?Household;
+
     /** @return Collection<int, User> */
     public function members(Household $household): Collection;
 
@@ -34,6 +37,9 @@ interface HouseholdRepositoryInterface
 
     /** True if `$member` is the only Owner-role member of `$household`. */
     public function isSoleOwner(Household $household, User $member): bool;
+
+    /** @return Collection<int, User> Owners who have joined (not pending) — who billing emails go to. */
+    public function activeOwners(Household $household): Collection;
 
     /** @return Collection<int, CalendarEvent> */
     public function eventsBetween(Household $household, CarbonImmutable $from, CarbonImmutable $to): Collection;

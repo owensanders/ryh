@@ -47,7 +47,7 @@ class CreateHouseholdUseCase
             $this->inviteMember->execute($household, [
                 'email' => $invite['email'],
                 'role' => $invite['role'],
-            ]);
+            ], invitedBy: $owner);
         }
 
         return $household;

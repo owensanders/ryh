@@ -625,6 +625,12 @@ function accept(): void {
                                     placeholder="e.g. My wife is pescatarian but I eat meat — can we share meals with a different protein?"
                                 ></textarea>
                                 <p v-if="fieldError('notes')" class="text-[12.5px] text-hh-coral">{{ fieldError('notes') }}</p>
+                                <p class="text-[12px] text-hh-ink3">
+                                    Leave out names and anything personal — your answers are sent to our AI provider to write the plan. See our
+                                    <a :href="route('privacy') + '#ai-meal-plans'" target="_blank" class="font-semibold underline underline-offset-2"
+                                        >Privacy Policy</a
+                                    >.
+                                </p>
                             </div>
 
                             <div class="rounded-xl bg-hh-soft px-3 py-2 text-[12.5px] text-hh-ink2">
@@ -720,6 +726,10 @@ function accept(): void {
 
             <div v-else class="flex flex-col gap-4">
                 <p class="rounded-xl bg-hh-soft px-3 py-2 text-[12.5px] text-hh-ink2">{{ planHint }}</p>
+                <p v-if="source === 'ai'" role="note" class="rounded-xl border border-hh-sun px-3 py-2 text-[12.5px] text-hh-ink2">
+                    <span class="font-bold text-hh-ink">Check before you cook.</span> AI suggestions can get things wrong — always check ingredients
+                    for allergies, intolerances and dietary needs yourself.
+                </p>
 
                 <div class="flex flex-col gap-2">
                     <div v-for="entry in assignment" :key="entry.day.date" class="rounded-2xl border border-hh-line bg-hh-panel p-3">

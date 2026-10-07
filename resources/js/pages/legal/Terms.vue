@@ -68,10 +68,11 @@ const sections = [
         <ol>
             <li>You must be 18 or over and live in the UK to create an account or a household.</li>
             <li>
-                A child or teenager under 18 may only use {{ legal.tradingName }} by joining a household when invited by an adult member. By inviting
-                someone under 18, or approving their request to join, you confirm that you are their parent or guardian, or have that person's
-                permission; that you agree to these terms on the child's behalf; and that you are responsible for their use of
-                {{ legal.tradingName }}, including choosing a role appropriate to their age.
+                A child or teenager under 18 may only use {{ legal.tradingName }} by joining a household when invited by an adult member, and must
+                have the Teen or Child role — never Owner or Adult. Before anyone is added as a Teen or Child, whether by an invitation or by changing
+                a member's role, the adult adding them must confirm that they are the child's parent or guardian, or have that person's permission;
+                that they agree to these terms on the child's behalf; and that they are responsible for the child's use of {{ legal.tradingName }}. We
+                record who gave that confirmation and when.
             </li>
             <li>{{ legal.tradingName }} is for personal and household use, not for business or commercial use.</li>
             <li>
@@ -116,8 +117,9 @@ const sections = [
                 until you cancel. For annual subscriptions, we'll email you a reminder before each renewal, telling you the price and how to cancel.
             </li>
             <li>
-                <strong>Payment.</strong> Payments are taken by our payment provider, Stripe. If a payment fails, we'll let you know and Stripe will
-                retry it; if it still can't be taken, the household's access may be paused until the payment details are updated.
+                <strong>Payment.</strong> Payments are taken by our payment provider, Stripe. If a renewal payment fails, we'll email the household's
+                Owners and Stripe will retry it; if it still can't be taken, the household's access may be paused until the payment details are
+                updated.
             </li>
             <li>
                 <strong>Price changes.</strong> We may change the subscription price. We will tell you at least 30 days before a new price applies to
