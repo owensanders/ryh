@@ -46,8 +46,8 @@ export function addMembers(ownerEmail: string, count: number): void {
 
 /**
  * A verified account in no household, for journeys that invite an existing user.
- * Use this rather than a seeded user: cancelling an invite deletes the invitee's
- * whole account (RemoveMemberUseCase), which would break later journeys.
+ * Use this rather than a seeded user, so the invites a journey sends (and often
+ * leaves pending) never tie the shared Parkers' members to other households.
  */
 export function createAccount(name: string): string {
     const email = `${uniqueName(name).replace(/\s/g, '-').toLowerCase()}@example.test`;

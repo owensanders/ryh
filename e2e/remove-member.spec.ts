@@ -1,19 +1,8 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { logInAndLand } from './support/auth';
+import { ownerOfNewHousehold } from './support/households';
 import { registerNewUser, verifyEmail } from './support/register';
 import { uniqueName, users } from './support/users';
-
-/** Signs a brand-new, verified user up as owner of their own household, leaving them on the House page. */
-async function ownerOfNewHousehold(page: Page, firstName: string, lastName: string): Promise<void> {
-    const email = await registerNewUser(page, firstName, lastName);
-
-    await page.getByLabel('Household name').fill(uniqueName(`The ${lastName}s`));
-    await page.getByRole('button', { name: 'Create household' }).click();
-    await expect(page.getByRole('heading', { name: 'Your household is live' })).toBeVisible();
-
-    await verifyEmail(page, email);
-    await page.goto('/house');
-}
 
 test("cancelling an invite to someone else's account leaves their account and household alone", async ({ page, browser }) => {
     // A stranger invites James, who already belongs to the Parkers, then cancels.
