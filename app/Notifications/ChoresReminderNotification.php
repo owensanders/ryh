@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Enums\NotificationCategory;
 use App\Models\Household;
 use App\Models\User;
 
@@ -28,6 +29,11 @@ class ChoresReminderNotification extends HouseholdNotification
             'body' => "You have {$this->outstandingCount} outstanding {$chore}",
             'url' => route('chores.index'),
         ];
+    }
+
+    public function category(): NotificationCategory
+    {
+        return NotificationCategory::Chores;
     }
 
     protected function householdId(): int

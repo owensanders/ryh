@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logout } from '@/lib/logout';
 import { Link } from '@inertiajs/vue3';
 import { House } from 'lucide-vue-next';
 
@@ -72,9 +73,7 @@ const steps = [
                     </template>
                     <template v-else>
                         <span class="hidden text-[13px] text-hh-ink3 sm:inline">Not you?</span>
-                        <Link :href="route('logout')" method="post" as="button" class="text-[13.5px] font-semibold text-hh-coral hover:opacity-75">
-                            Log out
-                        </Link>
+                        <button type="button" class="text-[13.5px] font-semibold text-hh-coral hover:opacity-75" @click="logout">Log out</button>
                     </template>
                 </header>
 

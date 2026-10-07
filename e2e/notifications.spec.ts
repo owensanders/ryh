@@ -40,3 +40,24 @@ test('assigning a chore notifies the assignee, and opening it marks it read', as
 
     await james.close();
 });
+
+test('Settings → Notifications remembers which categories to push', async ({ browser }) => {
+    const mia = await browser.newPage({ storageState: storageState('teen') });
+    await mia.goto('/dashboard');
+    await mia.getByRole('link', { name: 'Settings' }).first().click();
+    await mia.getByRole('link', { name: 'Notifications' }).click();
+    await expect(mia).toHaveURL(/\/settings\/notifications$/);
+
+    const meals = mia.getByRole('switch', { name: 'Meals' });
+    await expect(meals).toHaveAttribute('aria-checked', 'true');
+
+    await meals.click();
+    await expect(mia.getByText('Notification settings saved')).toBeVisible();
+    await mia.reload();
+    await expect(meals).toHaveAttribute('aria-checked', 'false');
+    await expect(mia.getByRole('switch', { name: 'Chores' })).toHaveAttribute('aria-checked', 'true');
+
+    // Put it back for the rest of the run's shared database.
+    await meals.click();
+    await expect(meals).toHaveAttribute('aria-checked', 'true');
+});

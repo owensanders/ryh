@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Enums\NotificationCategory;
 use App\Models\CalendarEvent;
 use App\Models\User;
 
@@ -27,6 +28,11 @@ class CalendarEventUpdatedNotification extends HouseholdNotification
             'body' => "{$this->actor->name} updated \"{$this->event->title}\"",
             'url' => route('calendar.index'),
         ];
+    }
+
+    public function category(): NotificationCategory
+    {
+        return NotificationCategory::Calendar;
     }
 
     protected function householdId(): int

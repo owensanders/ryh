@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AuthLayout from '@/layouts/AuthLayout.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { logout } from '@/lib/logout';
+import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
 
 defineProps<{
@@ -30,7 +31,7 @@ const submit = () => {
         </form>
 
         <p class="mt-6 text-center text-[13px] text-hh-ink3">
-            <Link :href="route('logout')" method="post" as="button" class="font-semibold text-hh-coral hover:opacity-75">Log out</Link>
+            <button type="button" class="font-semibold text-hh-coral hover:opacity-75" @click="logout">Log out</button>
         </p>
     </AuthLayout>
 </template>

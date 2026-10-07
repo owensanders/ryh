@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Toast from '@/components/househub/Toast.vue';
+import { logout } from '@/lib/logout';
 import type { SharedData } from '@/types';
 import type { HouseholdOption } from '@/types/househub';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
@@ -100,14 +101,13 @@ function submit(): void {
                 </div>
 
                 <div class="flex-1"></div>
-                <Link
-                    :href="route('logout')"
-                    method="post"
-                    as="button"
+                <button
+                    type="button"
                     class="relative self-start rounded-[13px] border border-hh-heroline bg-hh-herofilm px-4 py-2.5 text-[13.5px] font-bold text-hh-onhero transition-colors hover:bg-hh-heroline"
+                    @click="logout"
                 >
                     Sign out
-                </Link>
+                </button>
             </aside>
 
             <main class="flex min-w-0 flex-1 flex-col overflow-y-auto p-8">

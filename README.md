@@ -21,6 +21,11 @@ Built from the HouseHub design (`HouseHub.dc.html`) as a Laravel 12 + Inertia 2
 - **Live notifications** — a bell in the header shows assignment, edit and
   delete activity on chores, calendar events and meals in real time via
   Laravel Reverb (WebSockets), backed by Laravel's database notifications.
+- **Push notifications** — the same notifications as Web Push to any device
+  someone turns on in Settings → Notifications (on iOS, only in the installed
+  app), with a per-category opt-out (chores, calendar, meals). Pushes go out
+  through the queue (`home-hub-queue`); signing out turns push off for that
+  device.
 - **Installable app** — a PWA: add HouseHub to a phone's home screen (an
   install card offers it on Android and walks iOS users through "Add to Home
   Screen"). `public/sw.js` is registered in production builds only and shows
@@ -72,6 +77,7 @@ The app runs locally without these, but they gate specific features:
 | `ANTHROPIC_API_KEY` | AI meal plan generation (Claude Haiku 4.5; override with `ANTHROPIC_TEXT_MODEL`) |
 | `AI_MEAL_PLAN_DAILY_CAP`, `AI_ALERT_EMAIL` | App-wide daily cap on AI meal plans (default 50), and the address alerted when AI credit runs out — AI pauses itself; `php artisan ai:resume` after topping up |
 | `AWS_*` | Document storage on S3 (defaults to the local disk otherwise) |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Push notifications — generate the keys with `sail artisan webpush:vapid`; without them Settings → Notifications says push isn't set up |
 | `LEGAL_*`, `SUPPORT_EMAIL`, `PRIVACY_EMAIL` | Business and contact details quoted on `/terms`, `/privacy` and `/support` (`config/legal.php`) — unset ones show as a highlighted "[… to be confirmed]"; fill them all in before launch |
 
 ## Checks

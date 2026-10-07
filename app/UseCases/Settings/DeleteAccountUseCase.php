@@ -29,6 +29,8 @@ class DeleteAccountUseCase
 
         Auth::logout();
 
+        // push_subscriptions is polymorphic, so nothing cascades from users.
+        $this->users->deleteAllPushSubscriptions($user);
         $this->users->delete($user);
 
         session()->invalidate();

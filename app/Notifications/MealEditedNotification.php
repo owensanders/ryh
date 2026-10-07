@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Enums\NotificationCategory;
 use App\Models\PlannedMeal;
 use App\Models\User;
 
@@ -27,6 +28,11 @@ class MealEditedNotification extends HouseholdNotification
             'body' => "{$this->actor->name} updated \"{$this->meal->recipe->name}\"",
             'url' => route('meals.index'),
         ];
+    }
+
+    public function category(): NotificationCategory
+    {
+        return NotificationCategory::Meals;
     }
 
     protected function householdId(): int
