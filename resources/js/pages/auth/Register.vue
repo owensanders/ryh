@@ -7,6 +7,7 @@ import { computed, ref } from 'vue';
 
 const props = defineProps<{
     email?: string;
+    invited?: boolean;
 }>();
 
 const firstName = ref('');
@@ -117,22 +118,38 @@ const submit = () => {
                     <InputError :message="form.errors.password" />
                 </div>
 
-                <button
-                    type="button"
-                    class="flex items-start gap-3 rounded-[14px] border border-hh-line p-3.5 text-left transition-colors hover:bg-hh-soft"
-                    role="checkbox"
-                    :aria-checked="acceptedTerms"
+                <div
+                    class="flex items-start gap-3 rounded-[14px] border border-hh-line p-3.5 transition-colors hover:bg-hh-soft"
                     :class="acceptedTerms ? 'bg-hh-card' : 'bg-transparent'"
-                    @click="acceptedTerms = !acceptedTerms"
                 >
-                    <span
+                    <button
+                        type="button"
+                        role="checkbox"
+                        :aria-checked="acceptedTerms"
+                        aria-labelledby="terms-label"
                         class="mt-0.5 grid h-[21px] w-[21px] flex-none place-items-center rounded-[7px] border-[1.5px] text-[11px] font-extrabold text-[#0E1A2B] transition-colors"
                         :class="acceptedTerms ? 'border-hh-mint bg-hh-mint' : 'border-hh-line bg-transparent'"
+                        @click="acceptedTerms = !acceptedTerms"
                     >
                         {{ acceptedTerms ? '✓' : '' }}
+                    </button>
+                    <span
+                        id="terms-label"
+                        class="flex-1 cursor-pointer text-[13.5px] leading-relaxed text-hh-ink2"
+                        @click="acceptedTerms = !acceptedTerms"
+                    >
+                        <template v-if="props.invited">I agree to the </template>
+                        <template v-else>I'm 18 or over, and I agree to the </template>
+                        <a :href="route('terms')" target="_blank" class="font-semibold text-hh-ink underline underline-offset-2" @click.stop
+                            >Terms of Service</a
+                        >
+                        and
+                        <a :href="route('privacy')" target="_blank" class="font-semibold text-hh-ink underline underline-offset-2" @click.stop
+                            >Privacy Policy</a
+                        >.
+                        <template v-if="props.invited"> If I'm under 18, the parent or guardian who invited me has agreed to them for me.</template>
                     </span>
-                    <span class="flex-1 text-[13.5px] leading-relaxed text-hh-ink2"> I agree to the terms of service and privacy policy. </span>
-                </button>
+                </div>
                 <InputError :message="form.errors.terms" />
 
                 <div class="mt-2 flex items-center gap-3.5">

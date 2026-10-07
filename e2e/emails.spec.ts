@@ -65,7 +65,7 @@ test('the owner invites someone new by email, and they sign up from the link int
     await invitee.getByLabel('First name').fill('Aunt');
     await invitee.getByLabel('Last name').fill('Parker');
     await invitee.getByLabel('Password', { exact: true }).fill('Correct-Horse-42!');
-    await invitee.getByRole('checkbox', { name: /terms of service/ }).click();
+    await invitee.getByRole('checkbox', { name: /terms of service/i }).click();
     await invitee.getByRole('button', { name: 'Continue' }).click();
 
     await verifyEmail(invitee, email);

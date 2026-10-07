@@ -51,6 +51,51 @@ class RegistrationTest extends TestCase
     }
 
     #[Test]
+    public function itRecordsWhichTermsVersionTheUserAccepted(): void
+    {
+        // The column stores whole seconds.
+        $this->freezeSecond();
+
+        $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'a-very-strong-password',
+            'terms' => true,
+        ]);
+
+        $user = User::where('email', 'test@example.com')->firstOrFail();
+        $this->assertSame(config('legal.terms_version'), $user->terms_version);
+        $this->assertTrue($user->terms_accepted_at?->equalTo(now()));
+    }
+
+    #[Test]
+    public function itRejectsRegistrationWithoutAcceptingTheTerms(): void
+    {
+        $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'a-very-strong-password',
+        ])->assertSessionHasErrors('terms');
+
+        $this->assertGuest();
+    }
+
+    #[Test]
+    public function itTellsTheFormWhetherTheVisitorWasInvited(): void
+    {
+        $this->get('/register')
+            ->assertInertia(fn (AssertableInertia $page) => $page->where('invited', false));
+
+        $inviteUrl = URL::temporarySignedRoute('register', now()->addDays(7), [
+            'invite_household' => Household::factory()->create()->id,
+            'invite_role' => 'child',
+        ]);
+
+        $this->get($inviteUrl)
+            ->assertInertia(fn (AssertableInertia $page) => $page->where('invited', true));
+    }
+
+    #[Test]
     public function registeringViaASignedInviteLinkJoinsTheHouseholdAndReachesTheDashboard(): void
     {
         $household = Household::factory()->create();

@@ -82,7 +82,7 @@ test('an invite link to a household that has since filled up explains why they w
     await invitee.getByLabel('First name').fill('Too');
     await invitee.getByLabel('Last name').fill('Late');
     await invitee.getByLabel('Password', { exact: true }).fill('Correct-Horse-42!');
-    await invitee.getByRole('checkbox', { name: /terms of service/ }).click();
+    await invitee.getByRole('checkbox', { name: /terms of service/i }).click();
     await invitee.getByRole('button', { name: 'Continue' }).click();
 
     await expect(invitee).toHaveURL(/\/household\/setup$/);

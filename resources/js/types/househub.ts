@@ -344,3 +344,39 @@ export interface Dashboard {
     agenda: AgendaGroup[];
     budget: BudgetSummary;
 }
+
+/** Business and contact details for the Terms, Privacy and Support pages. Nulls are details not yet confirmed. */
+export interface Legal {
+    tradingName: string;
+    entityName: string | null;
+    entityType: 'sole_trader' | 'limited_company' | null;
+    companyNumber: string | null;
+    address: string | null;
+    icoRegistration: string | null;
+    supportEmail: string | null;
+    privacyEmail: string | null;
+    hostingProvider: string | null;
+    mailProvider: string | null;
+    backupRetentionDays: number;
+    supportResponse: string;
+    termsVersion: string;
+    termsUpdatedLabel: string;
+    privacyVersion: string;
+    privacyUpdatedLabel: string;
+}
+
+export type ServiceState = 'operational' | 'degraded' | 'down';
+
+export interface ServiceStatus {
+    name: string;
+    description: string;
+    state: ServiceState;
+    stateLabel: string;
+}
+
+export interface PlatformStatus {
+    overall: ServiceState;
+    services: ServiceStatus[];
+    /** ISO 8601. */
+    checkedAt: string;
+}

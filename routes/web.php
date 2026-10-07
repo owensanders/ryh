@@ -12,14 +12,21 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\HouseController;
 use App\Http\Controllers\HouseholdInviteController;
 use App\Http\Controllers\IncomeSourceController;
+use App\Http\Controllers\LegalController;
 use App\Http\Controllers\MealPlannerController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RecipeController;
 use App\Http\Controllers\ShoppingListController;
+use App\Http\Controllers\StatusController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', fn () => Inertia::render('Welcome', ['plan' => PlanData::current()]))->name('home');
+
+Route::get('privacy', [LegalController::class, 'privacy'])->name('privacy');
+Route::get('terms', [LegalController::class, 'terms'])->name('terms');
+Route::get('support', [LegalController::class, 'support'])->name('support');
+Route::get('status', StatusController::class)->middleware('throttle:30,1')->name('status');
 
 Route::get('household-invites/accept', [HouseholdInviteController::class, 'accept'])
     ->middleware(['auth', 'signed'])

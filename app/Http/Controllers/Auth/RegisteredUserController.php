@@ -34,6 +34,9 @@ class RegisteredUserController extends Controller
 
         return Inertia::render('auth/Register', [
             'email' => is_string($email) ? $email : '',
+            // Invited members may be children joining a parent's household, so
+            // the terms box words its age statement differently for them.
+            'invited' => $request->session()->has('pendingInvite'),
         ]);
     }
 

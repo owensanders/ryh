@@ -11,7 +11,7 @@ export async function registerNewUser(page: Page, firstName: string, lastName: s
     await page.getByLabel('Last name').fill(lastName);
     await page.getByLabel('Email address').fill(email);
     await page.getByLabel('Password', { exact: true }).fill('Correct-Horse-42!');
-    await page.getByRole('checkbox', { name: /terms of service/ }).click();
+    await page.getByRole('checkbox', { name: /terms of service/i }).click();
     await page.getByRole('button', { name: 'Continue' }).click();
 
     await expect(page).toHaveURL(/\/household\/setup$/);
