@@ -71,6 +71,10 @@ jobs:
       - name: Build Assets
         run: npm run build
 
+      # Here rather than in the frontend job: app.ts imports Ziggy from vendor/.
+      - name: Type-check Frontend
+        run: npx vue-tsc --noEmit
+
       - name: Tests
         run: ./vendor/bin/phpunit
 

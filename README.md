@@ -118,7 +118,7 @@ Things to check on the phone:
 ./vendor/bin/sail artisan test
 ./vendor/bin/sail bin phpstan analyse                # clean
 ./vendor/bin/sail npm run lint
-./vendor/bin/sail npx vue-tsc --noEmit               # see caveat below
+./vendor/bin/sail npx vue-tsc --noEmit               # clean; CI checks it too
 ```
 
 ### End-to-end tests
@@ -162,9 +162,3 @@ Design tokens live as `--hh-*` custom properties in `resources/css/app.css`
 and are surfaced as Tailwind `hh-*` colours. They key off the same `.dark`
 class the starter kit's appearance switcher already toggles, so the design's
 dark theme comes for free.
-
-## Known rough edges
-
-- `vue-tsc` reports a handful of pre-existing type errors around
-  Inertia form error bags (`DeleteUser`, `LeaveHousehold`, `HouseholdSetup`,
-  `Register`) where the error keys involve nested/dynamic field names.
