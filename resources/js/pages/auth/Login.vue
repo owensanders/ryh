@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import AuthBase from '@/layouts/AuthLayout.vue';
+import { isStandalone } from '@/lib/pwa';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
 
@@ -12,7 +13,8 @@ defineProps<{
 const form = useForm({
     email: '',
     password: '',
-    remember: false,
+    // The installed app is a personal device's home-screen app, so stay signed in by default.
+    remember: isStandalone(),
 });
 
 const submit = () => {

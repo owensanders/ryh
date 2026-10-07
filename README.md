@@ -21,6 +21,11 @@ Built from the HouseHub design (`HouseHub.dc.html`) as a Laravel 12 + Inertia 2
 - **Live notifications** — a bell in the header shows assignment, edit and
   delete activity on chores, calendar events and meals in real time via
   Laravel Reverb (WebSockets), backed by Laravel's database notifications.
+- **Installable app** — a PWA: add HouseHub to a phone's home screen (an
+  install card offers it on Android and walks iOS users through "Add to Home
+  Screen"). `public/sw.js` is registered in production builds only and shows
+  `public/offline.html` when there's no connection. Icons are rendered from
+  `public/icons/*.svg` by `node scripts/generate-pwa-icons.mjs`.
 - **Households** — multiple households per login, role-based access (Owner,
   Adult, Teen, Child), invites and join codes.
 - **Billing** — Stripe-backed subscription (via `laravel/cashier`), billed per

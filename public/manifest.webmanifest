@@ -1,0 +1,18 @@
+{
+    "id": "/dashboard",
+    "name": "HouseHub",
+    "short_name": "HouseHub",
+    "description": "The home, organised — chores, meals, shopping, calendar and more for the whole household.",
+    "start_url": "/dashboard",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#eeeae3",
+    "theme_color": "#fcfaf7",
+    "icons": [
+        { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+        { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    ]
+}

@@ -7,6 +7,7 @@ import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { initializeTheme } from './composables/useAppearance';
+import { initPwa } from './lib/pwa';
 
 configureEcho({
     broadcaster: 'reverb',
@@ -30,3 +31,6 @@ createInertiaApp({
 
 // This will set light / dark mode on page load...
 initializeTheme();
+
+// Install prompt, service worker and refresh-on-resume for the installed app.
+initPwa();

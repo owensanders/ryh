@@ -3,12 +3,11 @@ import { onMounted, ref } from 'vue';
 type Appearance = 'light' | 'dark' | 'system';
 
 export function updateTheme(value: Appearance) {
-    if (value === 'system') {
-        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        document.documentElement.classList.toggle('dark', systemTheme === 'dark');
-    } else {
-        document.documentElement.classList.toggle('dark', value === 'dark');
-    }
+    const dark = value === 'system' ? window.matchMedia('(prefers-color-scheme: dark)').matches : value === 'dark';
+    document.documentElement.classList.toggle('dark', dark);
+
+    // Match the phone's status bar (installed app) to the chosen theme, not just the OS one.
+    document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => meta.setAttribute('content', dark ? '#0e1119' : '#fcfaf7'));
 }
 
 const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
