@@ -29,8 +29,8 @@ const initial: (Meal | null)[] = [
 ];
 const aiMeals: Record<number, Meal> = {
     2: { name: 'Chickpea curry', tag: 'Vegetarian', tint: 4, cook: family.mia },
-    5: { name: 'BBQ burgers', tag: 'Weekend', tint: 0, cook: family.james },
-    6: { name: 'Roast chicken', tag: 'Sunday', tint: 1, cook: family.sarah },
+    5: { name: 'BBQ burgers', tag: 'Kid-friendly', tint: 0, cook: family.james },
+    6: { name: 'Roast chicken', tag: 'Comfort food', tint: 1, cook: family.sarah },
 };
 
 const MealCard: React.FC<{ meal: Meal; style?: React.CSSProperties; glow?: number }> = ({ meal, style, glow = 0 }) => (

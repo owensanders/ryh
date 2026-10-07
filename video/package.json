@@ -5,7 +5,8 @@
   "scripts": {
     "audio": "node scripts/generate-audio.mjs",
     "studio": "npm run audio && remotion studio src/index.ts",
-    "render": "npm run audio && remotion render src/index.ts HouseHubPromo out/househub-promo.mp4"
+    "render": "npm run audio && remotion render src/index.ts HouseHubPromo out/househub-promo.mp4 && npm run compress",
+    "compress": "remotion ffmpeg -y -i out/househub-promo.mp4 -c:v libx264 -preset slow -crf 27 -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart out/househub-promo-web.mp4"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.531",

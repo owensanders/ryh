@@ -147,30 +147,30 @@ const Roles: React.FC<TileProps> = ({ d }) => {
 
 const Invites: React.FC<TileProps> = ({ d }) => {
     const f = useCurrentFrame() - d;
-    const code = 'HX7-24Q';
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const code = 'THEPARKE-7KQ2XM'; // Household::generateJoinCode() for "The Parkers"
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     const email = 'gran@parkers.family';
     const typed = email.slice(0, Math.floor(range(f, [44, 70], [0, email.length])));
     return (
         <div>
             <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: light.ink3 }}>Join code</div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
                 {code.split('').map((c, i) => {
-                    const settle = 18 + i * 4;
+                    const settle = 18 + i * 2;
                     const shown = c === '-' || f >= settle ? c : chars[Math.floor((f + i * 7) * 1.7) % chars.length];
                     return (
                         <span
                             key={i}
                             style={{
-                                width: c === '-' ? 22 : 54,
-                                height: 68,
-                                borderRadius: 14,
+                                width: c === '-' ? 14 : 30,
+                                height: 50,
+                                borderRadius: 9,
                                 background: c === '-' ? 'transparent' : f >= settle ? light.ink : light.soft,
                                 color: f >= settle ? light.shell : light.ink3,
                                 display: 'grid',
                                 placeItems: 'center',
                                 fontFamily: fonts.mono,
-                                fontSize: 34,
+                                fontSize: 22,
                                 fontWeight: 500,
                                 transform: `scale(${f >= settle && c !== '-' ? 1 + (1 - spr(f, settle, springs.pop)) * 0.3 : 1})`,
                             }}
@@ -236,7 +236,7 @@ const Recipes: React.FC<TileProps> = ({ d }) => {
     const cards = [
         { n: 'Katsu curry', t: 2, tag: '30 min' },
         { n: 'Veg lasagne', t: 3, tag: 'Vegetarian' },
-        { n: 'Sticky toffee pud', t: 0, tag: 'Desserts' },
+        { n: 'Sticky toffee pud', t: 0, tag: 'Comfort food' },
     ];
     return (
         <div style={{ position: 'relative', height: 200 }}>

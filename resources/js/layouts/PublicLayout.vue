@@ -21,6 +21,7 @@ const menuOpen = ref(false);
 const navLinks = [
     { label: 'Daily rhythm', href: '/#daily' },
     { label: 'Features', href: '/#features' },
+    { label: 'App', href: '/#phone' },
     { label: 'Pricing', href: '/#pricing' },
     { label: 'Promises', href: '/#promises' },
 ];

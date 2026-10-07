@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import InstallGuide from '@/components/landing/InstallGuide.vue';
+import PhoneMockup from '@/components/landing/PhoneMockup.vue';
 import PublicLayout from '@/layouts/PublicLayout.vue';
 import { formatPlanPrice, tint } from '@/lib/househub';
 import type { Plan } from '@/types/househub';
@@ -65,7 +67,11 @@ const secondary = [
     { icon: '📖', title: 'Recipe library', body: 'Family favourites with ingredients, tags and cook times, ready to plan.' },
     { icon: '✨', title: 'AI meal plans', body: "Say who's eating and what to avoid, and get a week of dinners." },
     { icon: '✅', title: 'Chores', body: "Assign jobs, see who's pulling their weight, and nudge everyone in one tap." },
-    { icon: '🔔', title: 'Live notifications', body: 'Know the moment a chore, meal or event is assigned to you, changed or cancelled.' },
+    {
+        icon: '🔔',
+        title: 'Live notifications',
+        body: 'Know the moment a chore, meal or event is assigned to you, changed or cancelled — in the app and on your phone.',
+    },
     { icon: '💰', title: 'Budgeting', body: 'Income and planned spending by category, month to month.' },
     { icon: '📂', title: 'Documents', body: 'Insurance, MOTs and tenancy paperwork in folders, tagged and searchable.' },
     { icon: '👪', title: 'Family roles', body: 'Owner, Adult, Teen and Child access, so kids tick off and grown-ups manage.' },
@@ -75,6 +81,13 @@ const secondary = [
         title: 'Multiple homes',
         body: 'Two households, or helping run a parent’s? Switch between them under one login — each home has its own subscription.',
     },
+];
+
+const appPerks = [
+    { icon: '📲', title: 'On your home screen', body: 'Its own icon, opening full screen like any other app.' },
+    { icon: '🔔', title: 'Notifications on your phone', body: 'Chores, meals and events, the moment they change. Pick which ones you get.' },
+    { icon: '🚫', title: 'No app store', body: 'Nothing to download or update — it’s always the latest version.' },
+    { icon: '📱', title: 'iPhone, iPad and Android', body: 'Plus any computer, all signed in to the same household.' },
 ];
 
 const promises = [
@@ -250,6 +263,42 @@ function startRegistration(): void {
                         <div class="text-[19px]" aria-hidden="true">{{ feature.icon }}</div>
                         <div class="mt-3 text-[15px] font-extrabold tracking-tight">{{ feature.title }}</div>
                         <div class="mt-1.5 text-[13px] leading-normal text-hh-onhero2">{{ feature.body }}</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- On your phone -->
+        <section id="phone" class="px-5 pt-[76px] sm:px-8 lg:px-14">
+            <div class="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-14">
+                <div class="order-2 lg:sticky lg:top-8 lg:order-1">
+                    <PhoneMockup />
+                </div>
+
+                <div class="order-1 lg:order-2">
+                    <div
+                        class="inline-flex h-[30px] items-center gap-2 rounded-[9px] bg-hh-soft px-[13px] text-xs font-bold uppercase tracking-[0.05em] text-hh-ink2"
+                    >
+                        📱 On your phone
+                    </div>
+                    <h2 class="mt-4 text-[30px] font-black leading-tight tracking-[-0.03em] sm:text-4xl">HouseHub lives on your home screen</h2>
+                    <p class="mt-3.5 max-w-[560px] text-pretty text-base leading-relaxed text-hh-ink2">
+                        Add it straight from your browser — no app store, no download. It opens like any other app, and tells you the moment a chore,
+                        meal or event needs you.
+                    </p>
+
+                    <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div v-for="perk in appPerks" :key="perk.title" class="flex gap-3 rounded-[18px] border border-hh-line bg-hh-panel p-4">
+                            <span class="text-[19px]" aria-hidden="true">{{ perk.icon }}</span>
+                            <div>
+                                <div class="text-[14.5px] font-extrabold tracking-tight">{{ perk.title }}</div>
+                                <div class="mt-0.5 text-[13px] leading-normal text-hh-ink2">{{ perk.body }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <InstallGuide />
                     </div>
                 </div>
             </div>

@@ -6,13 +6,15 @@ import { brand, family, fonts, light, Person } from '../theme';
 
 type Toast = { at: number; who: Person; title: string; body: string; x: number; y: number; side: 1 | -1 };
 
+// Each title is the exact text the app sends (app/Notifications/*); the line
+// underneath is its area, as on Settings → Notifications.
 const toasts: Toast[] = [
-    { at: 8, who: family.sarah, title: 'Chore reminder', body: "Noah, you've got 2 chores left today", x: 110, y: 380, side: -1 },
-    { at: 18, who: family.mia, title: 'Mia completed a chore', body: 'Feed the cat ✓', x: 1290, y: 360, side: 1 },
-    { at: 28, who: family.james, title: 'James is cooking Tuesday', body: 'Lemon chicken traybake', x: 150, y: 580, side: -1 },
-    { at: 38, who: family.sarah, title: 'Event updated', body: 'Swim club pickup moved to 16:30', x: 1250, y: 560, side: 1 },
-    { at: 48, who: family.sarah, title: 'New chore for you', body: 'Hoover upstairs — from Sarah', x: 190, y: 780, side: -1 },
-    { at: 58, who: family.james, title: 'Assigned to you', body: 'Parents’ evening · Thu 18:00', x: 1210, y: 760, side: 1 },
+    { at: 8, who: family.sarah, title: 'You have 2 outstanding chores', body: 'Chores · reminder from Sarah', x: 110, y: 380, side: -1 },
+    { at: 18, who: family.mia, title: 'Mia Parker completed “Feed the cat”', body: 'Chores', x: 1290, y: 360, side: 1 },
+    { at: 28, who: family.sarah, title: 'Sarah Parker assigned you to cook “Lemon chicken traybake”', body: 'Meals', x: 150, y: 580, side: -1 },
+    { at: 38, who: family.james, title: 'James Parker updated “Swim club pickup”', body: 'Calendar', x: 1250, y: 560, side: 1 },
+    { at: 48, who: family.sarah, title: 'Sarah Parker assigned you “Hoover upstairs”', body: 'Chores', x: 190, y: 780, side: -1 },
+    { at: 58, who: family.james, title: 'James Parker added you to “Parents’ evening”', body: 'Calendar', x: 1210, y: 760, side: 1 },
 ];
 
 // 120 frames.
@@ -125,7 +127,7 @@ export const Notifications: React.FC = () => {
                         >
                             <Avatar person={t.who} size={52} radius={16} />
                             <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontSize: 20, fontWeight: 800 }}>{t.title}</div>
+                                <div style={{ fontSize: 19, fontWeight: 800, lineHeight: 1.25 }}>{t.title}</div>
                                 <div style={{ fontSize: 17, color: light.ink2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.body}</div>
                             </div>
                             <span style={{ fontSize: 14, fontWeight: 700, color: brand.coral, alignSelf: 'flex-start' }}>now</span>

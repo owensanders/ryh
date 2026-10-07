@@ -10,6 +10,7 @@ import { MealPlanner } from './scenes/MealPlanner';
 import { Montage } from './scenes/Montage';
 import { Notifications } from './scenes/Notifications';
 import { Outro } from './scenes/Outro';
+import { Phone } from './scenes/Phone';
 import { Shopping } from './scenes/Shopping';
 
 // Scene lengths are whole bars of the 120 BPM track (1 bar = 60 frames), so
@@ -23,8 +24,10 @@ const scenes: { id: string; frames: number; Component: React.FC }[] = [
     { id: 'Calendar', frames: 180, Component: Calendar },
     { id: 'Chores', frames: 240, Component: Chores },
     { id: 'Notifications', frames: 120, Component: Notifications },
+    { id: 'Phone', frames: 240, Component: Phone },
     { id: 'Montage', frames: 240, Component: Montage },
-    { id: 'Outro', frames: 240, Component: Outro },
+    // Six bars: the price holds for three, the logo lands on the final chord.
+    { id: 'Outro', frames: 360, Component: Outro },
 ];
 
 export const TOTAL_FRAMES = scenes.reduce((a, s) => a + s.frames, 0);

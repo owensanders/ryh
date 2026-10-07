@@ -96,7 +96,7 @@ export const Chores: React.FC = () => {
                                 transform: `scale(${1 - range(f, [NOTIFY - 2, NOTIFY, NOTIFY + 6], [0, 0.08, 0])})`,
                             }}
                         >
-                            {sent ? '✓ Reminder sent' : '🔔 Notify chores'}
+                            {sent ? '✓ Reminders sent' : '🔔 Notify Chores'}
                         </div>
                     </div>
 
