@@ -81,6 +81,10 @@ const sections = [
         <h3>Information created as you use the service</h3>
         <ul>
             <li>In-app notifications about activity in your household (for example, a chore assigned to you).</li>
+            <li>
+                If you turn on push notifications on a device, the push address your browser gives us for that device and the keys used to encrypt
+                messages to it, plus which kinds of notification (chores, calendar, meals) you've turned off.
+            </li>
             <li>Records of when your account was created, when you verified your email, and which version of our Terms you accepted.</li>
             <li>For Teen and Child members, a record of which adult confirmed they are the child's parent or guardian, and when.</li>
             <li>
@@ -115,6 +119,13 @@ const sections = [
                         <td>
                             Send emails you need — email verification, password resets, household invitations, billing and subscription notices, and
                             important changes to the service or these terms.
+                        </td>
+                        <td>Performance of our contract with you</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Send push notifications to the devices you've turned them on for. You choose to turn them on, your browser asks your
+                            permission first, and you can turn them off at any time.
                         </td>
                         <td>Performance of our contract with you</td>
                     </tr>
@@ -252,6 +263,12 @@ const sections = [
             </table>
         </div>
         <p>
+            <strong>Push notifications</strong> are delivered through the push service run by your browser or phone's maker — Google for Chrome and
+            Android, Apple for Safari and iPhone, Mozilla for Firefox and Microsoft for Edge. Your browser chooses the service, not us. Each message
+            is encrypted on our servers so that only your device can read it; the push service sees only that a message was sent to your device's push
+            address, and when.
+        </p>
+        <p>
             We may also disclose information if the law requires it, to protect someone's safety, or to a buyer or successor if
             {{ legal.tradingName }} is sold or reorganised — in which case this policy would continue to apply to your information, and we would tell
             you.
@@ -283,6 +300,10 @@ const sections = [
                 as UK tax law requires. Stripe keeps its own records under its own policy.
             </li>
             <li><strong>Sign-in sessions</strong> — expire after a period of inactivity, or when you sign out.</li>
+            <li>
+                <strong>Push notification addresses</strong> — kept until you turn notifications off on that device, sign out on it, or delete your
+                account, or until the push service tells us the address no longer works.
+            </li>
             <li><strong>Support emails</strong> — kept for up to two years after your query is resolved, unless they relate to a dispute.</li>
         </ul>
         <p>
@@ -301,6 +322,7 @@ const sections = [
             <li><strong>object</strong> to our use of your information where we rely on legitimate interests; and</li>
             <li><strong>withdraw consent</strong> at any time, where we rely on consent.</li>
         </ul>
+        <p>You can turn push notifications on or off, for each device and each kind of notification, in Settings → Notifications.</p>
         <p>
             To exercise any of these rights, email <Tbc :value="legal.privacyEmail" label="Privacy email" />. We'll reply within one month (extendable
             by two months for complex requests, in which case we'll tell you why). It's free, unless a request is clearly unfounded or excessive. We
@@ -313,8 +335,9 @@ const sections = [
 
         <h2 id="cookies">Cookies and local storage</h2>
         <p>
-            We use only the cookies that are strictly necessary to sign you in and keep your account secure, plus one setting saved on your device to
-            remember light or dark mode. We do not use analytics, advertising or tracking cookies. Our
+            We use only the cookies that are strictly necessary to sign you in and keep your account secure, plus a couple of settings saved on your
+            device (light or dark mode, and whether you've dismissed the "Get the app" card) and a copy of the app's own files so it loads quickly and
+            can show a page when you're offline. We do not use analytics, advertising or tracking cookies. Our
             <Link :href="route('cookies')">Cookie Policy</Link> lists each one, what it does and how long it lasts.
         </p>
 
