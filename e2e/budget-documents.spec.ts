@@ -24,6 +24,9 @@ test('the owner makes a folder, uploads a document into it and downloads it agai
     await page.getByLabel('New folder').fill(folder);
     await page.getByRole('button', { name: 'Add folder' }).click();
     await page.getByRole('link', { name: new RegExp(folder) }).click();
+    // Wait for the folder to open: uploading straight away aborts that visit
+    // (Inertia runs one at a time) and the file lands in the previous folder.
+    await expect(page).toHaveURL(/\/documents\/\d+$/);
 
     const filename = `${uniqueName('receipt').replace(/\s/g, '-')}.pdf`;
     await page.getByLabel('Upload files').setInputFiles({
