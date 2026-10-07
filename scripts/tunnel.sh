@@ -26,7 +26,9 @@ if [ -f public/hot ]; then
     exit 1
 fi
 
-./vendor/bin/sail up -d tunnel >/dev/null 2>&1
+# A fresh container each time: a restarted one keeps its old logs, which
+# hold the previous (dead) address.
+./vendor/bin/sail up -d --force-recreate tunnel >/dev/null 2>&1
 
 printf 'Waiting for the tunnel'
 for _ in $(seq 1 30); do
