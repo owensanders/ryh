@@ -210,7 +210,7 @@ class HouseTest extends TestCase
         $member = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRole::Adult]);
 
         $this->actingAs($owner)
-            ->patch("/house/members/{$member->id}/role", ['role' => 'teen'])
+            ->patch("/house/members/{$member->id}/role", ['role' => 'teen', 'guardian_confirmed' => true])
             ->assertRedirect()
             ->assertSessionHas('toast', "{$member->name} is now Teen");
 
@@ -388,7 +388,7 @@ class HouseTest extends TestCase
         $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
         $stranger = User::factory()->create();
 
-        $this->actingAs($owner)->patch("/house/members/{$stranger->id}/role", ['role' => 'teen'])->assertNotFound();
+        $this->actingAs($owner)->patch("/house/members/{$stranger->id}/role", ['role' => 'teen', 'guardian_confirmed' => true])->assertNotFound();
         $this->actingAs($owner)->delete("/house/members/{$stranger->id}")->assertNotFound();
 
         $this->assertDatabaseHas('users', ['id' => $stranger->id]);

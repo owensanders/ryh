@@ -22,6 +22,15 @@ enum HouseholdRole: string
         };
     }
 
+    /**
+     * Teen and Child are for under-18s, who may only join with a parent or
+     * guardian's agreement (see the Terms of Service).
+     */
+    public function isForMinors(): bool
+    {
+        return $this === self::Teen || $this === self::Child;
+    }
+
     public function colour(): Palette
     {
         return match ($this) {

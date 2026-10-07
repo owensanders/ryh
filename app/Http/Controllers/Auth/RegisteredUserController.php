@@ -10,6 +10,7 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Household;
 use App\UseCases\Auth\JoinHouseholdFromInviteUseCase;
 use App\UseCases\Auth\RegisterUserUseCase;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -29,11 +30,17 @@ class RegisteredUserController extends Controller
             $request->session()->put('pendingInvite', [
                 'household_id' => (int) $request->query('invite_household'),
                 'role' => (string) $request->query('invite_role'),
+                // Set when the inviter confirmed they're a Teen or Child's parent or guardian.
+                'guardian_id' => $request->query('invite_guardian') !== null ? (int) $request->query('invite_guardian') : null,
+                'guardian_at' => $request->query('invite_guardian_at') !== null ? (int) $request->query('invite_guardian_at') : null,
             ]);
         }
 
         return Inertia::render('auth/Register', [
             'email' => is_string($email) ? $email : '',
+            // Invited members may be children joining a parent's household, so
+            // the terms box words its age statement differently for them.
+            'invited' => $request->session()->has('pendingInvite'),
         ]);
     }
 
@@ -48,12 +55,22 @@ class RegisteredUserController extends Controller
             $request->validated('password'),
         );
 
-        /** @var array{household_id: int, role: string}|null $invite */
+        /** @var array{household_id: int, role: string, guardian_id?: int|null, guardian_at?: int|null}|null $invite */
         $invite = $request->session()->pull('pendingInvite');
         $household = $invite !== null ? Household::find($invite['household_id']) : null;
 
         if ($household !== null) {
-            if ($joinFromInvite->execute($user, $household, HouseholdRole::from($invite['role']))) {
+            $role = HouseholdRole::from($invite['role']);
+            $guardianId = $invite['guardian_id'] ?? null;
+
+            // Links sent before guardians had to confirm can't add a Teen or Child.
+            if ($role->isForMinors() && $guardianId === null) {
+                return to_route('household.setup')->with('reinviteHousehold', $household->name);
+            }
+
+            $guardianAt = isset($invite['guardian_at']) ? CarbonImmutable::createFromTimestamp($invite['guardian_at']) : null;
+
+            if ($joinFromInvite->execute($user, $household, $role, $guardianId, $guardianAt)) {
                 return to_route('dashboard');
             }
 

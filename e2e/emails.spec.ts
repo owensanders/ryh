@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { logIn } from './support/auth';
+import { ownerOfNewHousehold } from './support/households';
 import { emailHtmlUrl, waitForEmail } from './support/mailpit';
 import { registerNewUser, verifyEmail } from './support/register';
 import { storageState, uniqueName } from './support/users';
@@ -65,7 +66,7 @@ test('the owner invites someone new by email, and they sign up from the link int
     await invitee.getByLabel('First name').fill('Aunt');
     await invitee.getByLabel('Last name').fill('Parker');
     await invitee.getByLabel('Password', { exact: true }).fill('Correct-Horse-42!');
-    await invitee.getByRole('checkbox', { name: /terms of service/ }).click();
+    await invitee.getByRole('checkbox', { name: /terms of service/i }).click();
     await invitee.getByRole('button', { name: 'Continue' }).click();
 
     await verifyEmail(invitee, email);
@@ -92,4 +93,40 @@ test('the owner invites someone who already has an account, and they accept from
     await expect(invitee.getByText('Here is your household')).toBeVisible();
     await expect(invitee.getByRole('heading', { name: "You're all set" })).toBeVisible();
     await expect(invitee.getByRole('button', { name: 'Open The Parkers' })).toBeVisible();
+});
+
+// A fresh household, so the new member doesn't crowd the shared seeded Parkers.
+test('the owner invites a child by email after confirming they are their parent or guardian', async ({ browser }) => {
+    const owner = await browser.newPage();
+    const { householdName } = await ownerOfNewHousehold(owner, 'Gwen', 'Guardian');
+    const email = `${uniqueName('kid').replace(/\s/g, '-')}@example.test`;
+
+    await owner.getByLabel('Email', { exact: true }).fill(email);
+    await owner.getByLabel('Role', { exact: true }).selectOption({ label: 'Child' });
+
+    // A Child can't be invited until the owner vouches for being their parent or guardian.
+    const send = owner.getByRole('button', { name: 'Send invite' });
+    await expect(send).toBeDisabled();
+    await owner.getByRole('checkbox', { name: /parent or guardian/ }).click();
+    await send.click();
+    await expect(owner.getByLabel('Email', { exact: true })).toHaveValue('');
+
+    const invitee = await browser.newPage();
+    const registerUrl = await openBrandedEmail(invitee, email, /Join /, `Join ${householdName} on HouseHub`, 'Create your account');
+
+    await invitee.goto(registerUrl);
+    // Invited members aren't asked to say they're 18 or over.
+    await expect(invitee.getByText('the parent or guardian who invited me has agreed to them for me')).toBeVisible();
+    await expect(invitee.getByText("I'm 18 or over")).toHaveCount(0);
+    await invitee.getByLabel('First name').fill('Kid');
+    await invitee.getByLabel('Last name').fill('Parker');
+    await invitee.getByLabel('Password', { exact: true }).fill('Correct-Horse-42!');
+    await invitee.getByRole('checkbox', { name: /terms of service/i }).click();
+    await invitee.getByRole('button', { name: 'Continue' }).click();
+
+    await verifyEmail(invitee, email);
+
+    await expect(invitee).toHaveURL(/\/dashboard/);
+    // A Child gets the simplified view.
+    await expect(invitee.getByRole('link', { name: 'Budget', exact: true })).toHaveCount(0);
 });

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
+import GuardianConfirm from '@/components/househub/GuardianConfirm.vue';
 import AuthWizardLayout from '@/layouts/auth/AuthWizardLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
@@ -12,6 +13,8 @@ const props = defineProps<{
     trialAvailable: boolean;
     /** Name of the household an invite link couldn't add them to because it had filled up. */
     fullHousehold: string | null;
+    /** Name of the household whose Teen/Child invite link needs re-sending with a guardian's confirmation. */
+    reinviteHousehold: string | null;
     maxMembers: number;
 }>();
 
@@ -24,11 +27,15 @@ const createForm = useForm<{
     name: string;
     size: string;
     invites: { email: string; role: InviteRole }[];
+    guardian_confirmed: boolean;
 }>({
     name: '',
     size: sizes[3],
     invites: [],
+    guardian_confirmed: false,
 });
+
+const invitesMinors = computed(() => createForm.invites.some((invite) => invite.role !== 'adult'));
 
 // Laravel reports invite errors per row (`invites.1.email`), which Inertia's
 // form types don't know about — show whichever comes first.
@@ -86,6 +93,16 @@ function submitJoin(): void {
                 <span class="font-bold">{{ props.fullHousehold }} is full.</span>
                 A household holds up to {{ props.maxMembers }} people, so you couldn't be added. Ask the owner to make room and send a new invite, or
                 set up your own household below.
+            </div>
+
+            <div
+                v-if="props.reinviteHousehold"
+                role="alert"
+                class="mt-5 rounded-2xl border border-hh-coral bg-hh-card px-4 py-3.5 text-[13.5px] leading-relaxed"
+            >
+                <span class="font-bold">Your invite to {{ props.reinviteHousehold }} needs re-sending.</span>
+                Your parent or guardian now confirms they're happy for you to join when they invite you. Ask them to send you a new invite from their
+                House page.
             </div>
 
             <div class="mt-6 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
@@ -187,13 +204,18 @@ function submitJoin(): void {
                         </button>
                     </div>
                     <InputError :message="inviteError" />
+
+                    <div v-if="invitesMinors" class="mt-3">
+                        <GuardianConfirm id="setup-guardian" v-model="createForm.guardian_confirmed" />
+                        <InputError :message="createForm.errors.guardian_confirmed" />
+                    </div>
                 </div>
 
                 <div class="mt-2 flex items-center gap-3.5">
                     <button
                         type="submit"
                         class="hh-btn bg-hh-coral px-6 text-white"
-                        :disabled="createForm.name.trim() === '' || createForm.processing"
+                        :disabled="createForm.name.trim() === '' || (invitesMinors && !createForm.guardian_confirmed) || createForm.processing"
                     >
                         <LoaderCircle v-if="createForm.processing" class="h-4 w-4 animate-spin" />
                         Create household

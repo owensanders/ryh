@@ -30,10 +30,21 @@ test('someone joins with the invite code, the owner approves them and gives them
     await owner.getByRole('button', { name: `Approve Gran ${surname}` }).click();
     await expect(owner.getByRole('button', { name: `Approve Gran ${surname}` })).toHaveCount(0);
 
-    // ...and makes them a Teen, which sticks.
+    // ...and makes them a Teen, which first asks the owner to confirm they're a parent or guardian.
     const role = owner.getByRole('combobox', { name: `Role for Gran ${surname}` });
-    const saved = owner.waitForResponse((response) => response.request().method() === 'PATCH' && response.url().endsWith('/role'));
+    const dialog = owner.getByRole('dialog');
+
+    // Cancelling leaves the role as it was.
     await role.selectOption({ label: 'Teen' });
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(role).toHaveValue('adult');
+
+    await role.selectOption({ label: 'Teen' });
+    await expect(dialog.getByRole('button', { name: 'Change role' })).toBeDisabled();
+    await dialog.getByRole('checkbox', { name: /parent or guardian/ }).click();
+    const saved = owner.waitForResponse((response) => response.request().method() === 'PATCH' && response.url().endsWith('/role'));
+    await dialog.getByRole('button', { name: 'Change role' }).click();
     await saved;
     await owner.reload();
     await expect(role).toHaveValue('teen');

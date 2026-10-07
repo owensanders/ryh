@@ -9,6 +9,7 @@ use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Enums\HouseholdRole;
 use App\Enums\Palette;
 use App\Models\Household;
+use App\Models\HouseholdUser;
 use App\Models\User;
 
 class JoinHouseholdFromInviteUseCase
@@ -22,7 +23,11 @@ class JoinHouseholdFromInviteUseCase
      * Invites to people without an account don't hold a place until they sign up,
      * so the household may have filled up since — false means they weren't added.
      */
-    public function execute(User $user, Household $household, HouseholdRole $role): bool
+    /**
+     * @param  int|null  $guardianId  For a Teen or Child, the adult who confirmed
+     *                                they're a parent or guardian when inviting them.
+     */
+    public function execute(User $user, Household $household, HouseholdRole $role, ?int $guardianId = null, ?\DateTimeInterface $guardianConfirmedAt = null): bool
     {
         if ($household->isFull()) {
             return false;
@@ -41,6 +46,7 @@ class JoinHouseholdFromInviteUseCase
             'role' => $role,
             'pending' => false,
             'pending_reason' => null,
+            ...HouseholdUser::guardianAttributes($role, $guardianId, $guardianConfirmedAt),
         ]);
 
         return true;

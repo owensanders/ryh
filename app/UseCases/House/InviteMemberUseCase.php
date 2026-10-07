@@ -9,6 +9,8 @@ use App\Enums\HouseholdRole;
 use App\Enums\PendingReason;
 use App\Mail\HouseholdInviteMail;
 use App\Models\Household;
+use App\Models\HouseholdUser;
+use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\ValidationException;
@@ -19,10 +21,17 @@ class InviteMemberUseCase
         private readonly UserRepositoryInterface $users,
     ) {}
 
-    /** @param  array{email: string, role: string}  $attributes */
-    public function execute(Household $household, array $attributes): void
+    /**
+     * Inviting someone as a Teen or Child is the inviter confirming they're the
+     * child's parent or guardian (or have their permission) — the caller must
+     * have had them tick that box first. It's recorded on the membership.
+     *
+     * @param  array{email: string, role: string}  $attributes
+     */
+    public function execute(Household $household, array $attributes, User $invitedBy): void
     {
         $email = $attributes['email'];
+        $role = HouseholdRole::from($attributes['role']);
 
         if ($household->members()->where('email', $email)->exists()) {
             throw ValidationException::withMessages(['email' => 'This person is already part of the household.']);
@@ -38,9 +47,10 @@ class InviteMemberUseCase
 
         if ($existing !== null) {
             $existing->households()->attach($household->id, [
-                'role' => HouseholdRole::from($attributes['role']),
+                'role' => $role,
                 'pending' => true,
                 'pending_reason' => PendingReason::Invited,
+                ...HouseholdUser::guardianAttributes($role, $invitedBy->id),
             ]);
 
             $actionUrl = URL::temporarySignedRoute('household-invites.accept', now()->addDays(7), [
@@ -53,10 +63,13 @@ class InviteMemberUseCase
             return;
         }
 
+        // No membership exists until they register, so the signed link carries
+        // the guardian's confirmation through to it.
         $actionUrl = URL::temporarySignedRoute('register', now()->addDays(7), [
             'invite_household' => $household->id,
-            'invite_role' => $attributes['role'],
+            'invite_role' => $role->value,
             'email' => $email,
+            ...($role->isForMinors() ? ['invite_guardian' => $invitedBy->id, 'invite_guardian_at' => now()->getTimestamp()] : []),
         ]);
 
         Mail::to($email)->queue(new HouseholdInviteMail($household, $actionUrl, hasAccount: false));

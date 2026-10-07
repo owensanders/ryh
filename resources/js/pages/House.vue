@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
+import GuardianConfirm from '@/components/househub/GuardianConfirm.vue';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
 import { formatPlanPrice } from '@/lib/househub';
 import type { House } from '@/types/househub';
@@ -8,7 +10,11 @@ import { computed, ref } from 'vue';
 
 const props = defineProps<{ house: House }>();
 
-const invite = useForm({ email: '', role: 'adult' });
+const invite = useForm({ email: '', role: 'adult', guardian_confirmed: false });
+
+// Teen and Child are for under-18s, who may only join with a parent or guardian's agreement.
+const forMinors = (role: string): boolean => role === 'teen' || role === 'child';
+const inviteNeedsGuardian = computed(() => forMinors(invite.role));
 // Pending invites and join requests hold a place too, so memberCount includes them.
 const isFull = computed(() => props.house.memberCount >= props.house.maxMembers);
 const page = usePage();
@@ -23,7 +29,7 @@ function manageBilling(): void {
 }
 
 function sendInvite(): void {
-    if (invite.email.trim() === '') {
+    if (invite.email.trim() === '' || (inviteNeedsGuardian.value && !invite.guardian_confirmed)) {
         return;
     }
 
@@ -33,8 +39,48 @@ function sendInvite(): void {
     });
 }
 
-function setRole(memberId: number, role: string): void {
+// Making someone a Teen or Child waits for the Owner to confirm they're a parent or guardian.
+const pendingRole = ref<{ memberId: number; name: string; role: string; label: string; select: HTMLSelectElement; previous: string } | null>(null);
+const pendingRoleConfirmed = ref(false);
+
+function setRole(memberId: number, role: string, event?: Event): void {
+    const member = props.house.members.find((candidate) => candidate.id === memberId);
+    const select = event?.target as HTMLSelectElement | undefined;
+
+    if (forMinors(role) && member && select) {
+        pendingRoleConfirmed.value = false;
+        pendingRole.value = {
+            memberId,
+            name: member.name,
+            role,
+            label: props.house.roleOptions.find((option) => option.value === role)?.label ?? role,
+            select,
+            previous: member.role,
+        };
+        return;
+    }
+
     router.patch(route('house.members.role', { member: memberId }), { role }, { preserveScroll: true });
+}
+
+function confirmPendingRole(): void {
+    if (!pendingRole.value || !pendingRoleConfirmed.value) {
+        return;
+    }
+
+    const { memberId, role } = pendingRole.value;
+    router.patch(route('house.members.role', { member: memberId }), { role, guardian_confirmed: true }, { preserveScroll: true });
+    pendingRole.value = null;
+}
+
+function cancelPendingRole(open: boolean): void {
+    if (open || !pendingRole.value) {
+        return;
+    }
+
+    // Put the select back to the role they still have.
+    pendingRole.value.select.value = pendingRole.value.previous;
+    pendingRole.value = null;
 }
 
 function removeMember(memberId: number): void {
@@ -123,7 +169,7 @@ function regenerateJoinCode(): void {
                                 :value="member.role"
                                 :aria-label="`Role for ${member.name}`"
                                 class="order-last ml-[58px] h-[38px] min-w-0 flex-1 rounded-[11px] border border-hh-line bg-hh-sunk px-2.5 text-[13px] font-semibold sm:order-none sm:ml-0 sm:w-[132px] sm:flex-none"
-                                @change="setRole(member.id, ($event.target as HTMLSelectElement).value)"
+                                @change="setRole(member.id, ($event.target as HTMLSelectElement).value, $event)"
                             >
                                 <option v-for="option in props.house.roleOptions" :key="option.value" :value="option.value">
                                     {{ option.label }}
@@ -167,6 +213,7 @@ function regenerateJoinCode(): void {
                             />
                             <select
                                 v-model="invite.role"
+                                aria-label="Role"
                                 class="h-[46px] w-full rounded-[13px] border border-hh-line bg-hh-sunk px-2.5 text-[13px] font-semibold sm:w-[132px]"
                             >
                                 <option v-for="option in props.house.roleOptions" :key="option.value" :value="option.value">
@@ -175,13 +222,17 @@ function regenerateJoinCode(): void {
                             </select>
                             <button
                                 type="submit"
-                                :disabled="invite.processing"
+                                :disabled="invite.processing || (inviteNeedsGuardian && !invite.guardian_confirmed)"
                                 class="h-[46px] rounded-[13px] bg-hh-coral px-5 text-sm font-bold text-white transition hover:-translate-y-0.5 disabled:opacity-50"
                             >
                                 Send invite
                             </button>
                         </form>
                         <InputError :message="invite.errors.email" />
+                        <div v-if="inviteNeedsGuardian" class="mt-2.5">
+                            <GuardianConfirm id="invite-guardian" v-model="invite.guardian_confirmed" who="the person I'm inviting" />
+                            <InputError :message="invite.errors.guardian_confirmed" />
+                        </div>
                         <div class="mt-2.5 text-[12.5px] text-hh-ink3">Invites expire after 7 days.</div>
 
                         <div class="my-4 flex items-center gap-3 text-[11.5px] font-semibold text-hh-ink3">
@@ -326,5 +377,25 @@ function regenerateJoinCode(): void {
                 </div>
             </div>
         </div>
+
+        <Dialog :open="pendingRole !== null" @update:open="cancelPendingRole">
+            <DialogContent class="rounded-[22px] border-hh-line bg-hh-card text-hh-ink sm:rounded-[22px]">
+                <DialogHeader>
+                    <DialogTitle class="text-[16px] font-extrabold tracking-tight"
+                        >Make {{ pendingRole?.name }} a {{ pendingRole?.label }}?</DialogTitle
+                    >
+                    <DialogDescription class="text-[13.5px] text-hh-ink2">
+                        Teen and Child are for under-18s, who can only be part of a household with a parent or guardian's agreement.
+                    </DialogDescription>
+                </DialogHeader>
+                <GuardianConfirm id="role-guardian" v-model="pendingRoleConfirmed" :who="pendingRole?.name" />
+                <div class="flex items-center gap-2">
+                    <button type="button" class="hh-btn w-auto bg-hh-coral text-white" :disabled="!pendingRoleConfirmed" @click="confirmPendingRole">
+                        Change role
+                    </button>
+                    <button type="button" class="hh-btn w-auto bg-hh-soft text-hh-ink" @click="cancelPendingRole(false)">Cancel</button>
+                </div>
+            </DialogContent>
+        </Dialog>
     </HouseHubLayout>
 </template>

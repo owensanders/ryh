@@ -27,6 +27,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $status_line
  * @property string $email
  * @property Carbon|null $email_verified_at
+ * @property Carbon|null $terms_accepted_at
+ * @property string|null $terms_version
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read HouseholdUser|null $pivot Present when loaded through a `Household::members()`/`User::households()` query.
@@ -46,6 +48,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'trial_claimed_at',
+        'terms_accepted_at',
+        'terms_version',
     ];
 
     /** @var list<string> */
@@ -60,6 +64,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'trial_claimed_at' => 'datetime',
+            'terms_accepted_at' => 'datetime',
             'colour' => Palette::class,
         ];
     }
@@ -85,7 +90,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsToMany(Household::class)
             ->using(HouseholdUser::class)
-            ->withPivot(['role', 'pending', 'pending_reason'])
+            ->withPivot(['role', 'pending', 'pending_reason', 'guardian_confirmed_by', 'guardian_confirmed_at'])
             ->withTimestamps();
     }
 

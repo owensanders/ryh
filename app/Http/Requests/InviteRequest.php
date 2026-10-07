@@ -16,6 +16,8 @@ class InviteRequest extends FormRequest
         return [
             'email' => ['required', 'email', 'max:255'],
             'role' => ['required', Rule::enum(HouseholdRole::class)],
+            // Under-18s join only with a parent or guardian's agreement (Terms of Service).
+            'guardian_confirmed' => ['accepted_if:role,teen,child'],
         ];
     }
 
@@ -24,6 +26,7 @@ class InviteRequest extends FormRequest
     {
         return [
             'email.required' => 'Add an email to invite someone',
+            'guardian_confirmed.accepted_if' => 'Confirm you\'re their parent or guardian, or have their permission, to add someone as a Teen or Child.',
         ];
     }
 

@@ -79,7 +79,7 @@ class Household extends Model
     {
         return $this->belongsToMany(User::class)
             ->using(HouseholdUser::class)
-            ->withPivot(['role', 'pending', 'pending_reason'])
+            ->withPivot(['role', 'pending', 'pending_reason', 'guardian_confirmed_by', 'guardian_confirmed_at'])
             ->withTimestamps()
             ->orderBy('users.id');
     }

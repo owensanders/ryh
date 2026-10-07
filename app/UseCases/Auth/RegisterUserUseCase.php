@@ -20,6 +20,9 @@ class RegisterUserUseCase
             'name' => $name,
             'email' => $email,
             'password' => Hash::make($password),
+            // Registration requires ticking the terms box, so record what was agreed to.
+            'terms_accepted_at' => now(),
+            'terms_version' => config('legal.terms_version'),
         ]);
 
         event(new Registered($user));

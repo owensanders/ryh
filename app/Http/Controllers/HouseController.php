@@ -41,7 +41,7 @@ class HouseController extends Controller
     public function invite(InviteRequest $request, InviteMemberUseCase $invite): RedirectResponse
     {
         $attributes = $request->inviteAttributes();
-        $invite->execute($this->household($request), $attributes);
+        $invite->execute($this->household($request), $attributes, $request->user());
 
         return back()->with('toast', "Invite sent to {$attributes['email']}");
     }
@@ -52,7 +52,7 @@ class HouseController extends Controller
         $this->assertOwned($member, $household);
 
         $role = HouseholdRole::from($request->validated('role'));
-        $updated = $change->execute($member, $household, $role);
+        $updated = $change->execute($member, $household, $role, $request->user());
 
         return back()->with('toast', "{$updated->name} is now {$role->label()}");
     }

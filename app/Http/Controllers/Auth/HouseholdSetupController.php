@@ -26,6 +26,8 @@ class HouseholdSetupController extends Controller
             'trialAvailable' => $request->user()->trial_claimed_at === null,
             // Set when an invite link couldn't add them because the household had filled up.
             'fullHousehold' => $request->session()->get('fullHousehold'),
+            // Set when a Teen or Child invite link predates guardian confirmation, so it can't add them.
+            'reinviteHousehold' => $request->session()->get('reinviteHousehold'),
             'maxMembers' => config('plans.max_members'),
         ]);
     }
