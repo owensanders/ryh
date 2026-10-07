@@ -3,10 +3,13 @@ import InputError from '@/components/InputError.vue';
 import GuardianConfirm from '@/components/househub/GuardianConfirm.vue';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
+import HouseHubShell from '@/layouts/HouseHubShell.vue';
 import { formatPlanPrice } from '@/lib/househub';
 import type { House } from '@/types/househub';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+
+defineOptions({ layout: HouseHubShell });
 
 const props = defineProps<{ house: House }>();
 

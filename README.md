@@ -156,7 +156,7 @@ Clean architecture, matching the conventions in `../CLAUDE.md`:
 | Repositories | `app/Repositories/**` | Behind `app/Contracts/Repositories/*Interface.php`, bound in `RepositoryServiceProvider` |
 | DTOs | `app/Data/**` | `spatie/laravel-data`; mirrored in `resources/js/types/househub.ts` |
 | Notifications | `app/Notifications/**` | Extend `HouseholdNotification`; broadcast on `household.{id}` and persist to the database |
-| Screens | `resources/js/pages/*.vue` | Wrapped in `layouts/HouseHubLayout.vue` |
+| Screens | `resources/js/pages/*.vue` | App screens use the persistent `layouts/HouseHubShell.vue` (`defineOptions({ layout: HouseHubShell })`), so the sidebar, header and tab bar stay mounted between screens; each sets its header title with `<HouseHubLayout title subtitle>` |
 
 Design tokens live as `--hh-*` custom properties in `resources/css/app.css`
 and are surfaced as Tailwind `hh-*` colours. They key off the same `.dark`

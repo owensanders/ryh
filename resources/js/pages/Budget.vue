@@ -2,11 +2,14 @@
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
+import HouseHubShell from '@/layouts/HouseHubShell.vue';
 import { donut } from '@/lib/househub';
 import type { BudgetCategory, BudgetMonthSummary, IncomeSource } from '@/types/househub';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { Pencil, Plus, Repeat, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+
+defineOptions({ layout: HouseHubShell });
 
 const props = defineProps<{
     month: string;

@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { useHouseholdRole } from '@/composables/useHouseholdRole';
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
+import HouseHubShell from '@/layouts/HouseHubShell.vue';
 import { dial, tickStyle } from '@/lib/househub';
 import type { Chore, Dashboard } from '@/types/househub';
 import { Link, router, useForm } from '@inertiajs/vue3';
+
+defineOptions({ layout: HouseHubShell });
 
 const props = defineProps<{ dashboard: Dashboard }>();
 

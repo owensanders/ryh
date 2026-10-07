@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
+import HouseHubShell from '@/layouts/HouseHubShell.vue';
 import type { Document, DocumentFolder } from '@/types/househub';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { Download, Plus, Search, Trash2, Upload } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+
+defineOptions({ layout: HouseHubShell });
 
 const props = defineProps<{
     folders: DocumentFolder[];

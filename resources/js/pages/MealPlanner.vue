@@ -5,11 +5,14 @@ import RecipeDetailFields from '@/components/househub/RecipeDetailFields.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useHouseholdRole } from '@/composables/useHouseholdRole';
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
+import HouseHubShell from '@/layouts/HouseHubShell.vue';
 import { tint } from '@/lib/househub';
 import type { AiPlannerOptions, Member, PlannedMeal, PlannerDay, Recipe, ShoppingList, TagOption } from '@/types/househub';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { Plus, Sparkles } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+
+defineOptions({ layout: HouseHubShell });
 
 const props = defineProps<{
     weekOf: string;

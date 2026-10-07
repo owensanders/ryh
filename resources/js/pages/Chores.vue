@@ -3,11 +3,14 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useHouseholdRole } from '@/composables/useHouseholdRole';
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
+import HouseHubShell from '@/layouts/HouseHubShell.vue';
 import { dial, tickStyle } from '@/lib/househub';
 import type { Chore, ChoreColumn, ChoreStatus, Member, MemberScore } from '@/types/househub';
 import { router, useForm } from '@inertiajs/vue3';
 import { Bell, Plus, X } from 'lucide-vue-next';
 import { computed, onUnmounted, ref } from 'vue';
+
+defineOptions({ layout: HouseHubShell });
 
 const props = defineProps<{
     columns: ChoreColumn[];
