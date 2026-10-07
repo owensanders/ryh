@@ -41,7 +41,11 @@ const shortcuts = computed(() => [
 const faqs = computed(() => [
     {
         q: 'How does the free trial work?',
-        a: `Every new household gets 30 days free, with no card needed. When it ends, an Owner can subscribe for ${formatPlanPrice(props.plan.priceMonthly)} a month or ${formatPlanPrice(props.plan.priceAnnual)} a year — nothing is charged automatically.`,
+        a: `The first household you create gets 30 days free, with no card needed. When it ends, an Owner can subscribe for ${formatPlanPrice(props.plan.priceMonthly)} a month or ${formatPlanPrice(props.plan.priceAnnual)} a year — nothing is charged automatically. The free month is once per person.`,
+    },
+    {
+        q: 'Does one subscription cover my whole family?',
+        a: `Yes — a subscription is per household, not per person, so everyone in the house (up to ${props.plan.maxMembers} people) is covered by one payment. If you run more than one household, such as your own and a parent's, each needs its own subscription.`,
     },
     {
         q: 'How do I cancel?',
