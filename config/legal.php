@@ -48,5 +48,6 @@ return [
     // terms version a user accepted.
     'terms_version' => '2026-10-07',
     'privacy_version' => '2026-10-07',
+    'cookies_version' => '2026-10-07',
 
 ];

@@ -27,6 +27,8 @@ class LegalData extends Data
         public string $termsUpdatedLabel,
         public string $privacyVersion,
         public string $privacyUpdatedLabel,
+        public string $cookiesVersion,
+        public string $cookiesUpdatedLabel,
     ) {}
 
     public static function current(): self
@@ -48,6 +50,8 @@ class LegalData extends Data
             termsUpdatedLabel: self::label(config('legal.terms_version')),
             privacyVersion: config('legal.privacy_version'),
             privacyUpdatedLabel: self::label(config('legal.privacy_version')),
+            cookiesVersion: config('legal.cookies_version'),
+            cookiesUpdatedLabel: self::label(config('legal.cookies_version')),
         );
     }
 

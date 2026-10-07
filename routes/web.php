@@ -25,6 +25,7 @@ Route::get('/', fn () => Inertia::render('Welcome', ['plan' => PlanData::current
 
 Route::get('privacy', [LegalController::class, 'privacy'])->name('privacy');
 Route::get('terms', [LegalController::class, 'terms'])->name('terms');
+Route::get('cookies', [LegalController::class, 'cookies'])->name('cookies');
 Route::get('support', [LegalController::class, 'support'])->name('support');
 Route::get('status', StatusController::class)->middleware('throttle:30,1')->name('status');
 

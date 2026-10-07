@@ -28,6 +28,7 @@ const navLinks = [
 const footerLinks = [
     { label: 'Privacy', href: route('privacy') },
     { label: 'Terms', href: route('terms') },
+    { label: 'Cookies', href: route('cookies') },
     { label: 'Support', href: route('support') },
     { label: 'Status', href: route('status') },
 ];

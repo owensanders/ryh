@@ -313,45 +313,9 @@ const sections = [
 
         <h2 id="cookies">Cookies and local storage</h2>
         <p>
-            We use only the cookies that are strictly necessary for {{ legal.tradingName }} to work, which the law allows without asking for consent.
-            We do not use analytics, advertising or tracking cookies of any kind.
-        </p>
-        <div class="legal-table">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Purpose</th>
-                        <th>Lasts</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><code>househub_session</code></td>
-                        <td>Keeps you signed in and remembers your place as you move between pages</td>
-                        <td>Until you sign out or after a period of inactivity</td>
-                    </tr>
-                    <tr>
-                        <td><code>XSRF-TOKEN</code></td>
-                        <td>Protects your forms from cross-site request forgery</td>
-                        <td>As above</td>
-                    </tr>
-                    <tr>
-                        <td><code>remember_web_…</code></td>
-                        <td>Keeps you signed in between visits — only set if you tick "Remember me"</td>
-                        <td>Until you sign out</td>
-                    </tr>
-                    <tr>
-                        <td><code>appearance</code> (local storage, not a cookie)</td>
-                        <td>Remembers whether you chose light or dark mode. It stays on your device and is never sent to us.</td>
-                        <td>Until you clear your browser's storage</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <p>
-            Stripe sets its own cookies on its payment pages, for fraud prevention — see Stripe's cookie policy. If we ever add a non-essential
-            cookie, we will ask for your consent before setting it.
+            We use only the cookies that are strictly necessary to sign you in and keep your account secure, plus one setting saved on your device to
+            remember light or dark mode. We do not use analytics, advertising or tracking cookies. Our
+            <Link :href="route('cookies')">Cookie Policy</Link> lists each one, what it does and how long it lasts.
         </p>
 
         <h2 id="security">Security</h2>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Auth\SessionGuard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -21,6 +22,7 @@ class LegalPagesTest extends TestCase
         return [
             'privacy' => ['/privacy', 'legal/Privacy'],
             'terms' => ['/terms', 'legal/Terms'],
+            'cookies' => ['/cookies', 'legal/Cookies'],
             'support' => ['/support', 'Support'],
         ];
     }
@@ -76,6 +78,32 @@ class LegalPagesTest extends TestCase
                 ->where('legal.companyNumber', '12345678')
                 ->where('legal.supportEmail', 'help@househub.test')
                 ->where('legal.privacyEmail', 'privacy@househub.test'));
+    }
+
+    #[Test]
+    public function theCookiePolicyDescribesTheCookiesTheAppActuallySets(): void
+    {
+        config(['session.cookie' => 'househub_session', 'session.lifetime' => 120, 'session.expire_on_close' => false]);
+
+        $this->get('/cookies')
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('cookies.sessionCookie', 'househub_session')
+                ->where('cookies.sessionLifetimeMinutes', 120)
+                ->where('cookies.expireOnClose', false)
+                ->where('cookies.rememberDays', 400)
+                ->where('legal.cookiesVersion', config('legal.cookies_version')));
+    }
+
+    #[Test]
+    public function theSessionCookieItDescribesIsTheOneSentToVisitors(): void
+    {
+        $this->get('/cookies')->assertCookie(config('session.cookie'))->assertCookie('XSRF-TOKEN');
+    }
+
+    #[Test]
+    public function theRememberMeCookieLastsAsLongAsThePolicySays(): void
+    {
+        $this->assertSame(400 * 24 * 60, (new \ReflectionProperty(SessionGuard::class, 'rememberDuration'))->getDefaultValue());
     }
 
     #[Test]

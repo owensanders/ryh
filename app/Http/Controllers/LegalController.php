@@ -25,6 +25,20 @@ class LegalController extends Controller
         ]);
     }
 
+    public function cookies(): Response
+    {
+        return Inertia::render('legal/Cookies', [
+            'legal' => LegalData::current(),
+            'cookies' => [
+                'sessionCookie' => config('session.cookie'),
+                'sessionLifetimeMinutes' => (int) config('session.lifetime'),
+                'expireOnClose' => (bool) config('session.expire_on_close'),
+                // Laravel's "Remember me" cookie lasts 400 days (SessionGuard::$rememberDuration).
+                'rememberDays' => 400,
+            ],
+        ]);
+    }
+
     public function support(): Response
     {
         return Inertia::render('Support', [

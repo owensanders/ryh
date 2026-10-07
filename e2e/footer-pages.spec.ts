@@ -5,6 +5,7 @@ test('the landing footer reaches every public page', async ({ page }) => {
     const pages = [
         { link: 'Privacy', url: /\/privacy$/, heading: 'Privacy Policy' },
         { link: 'Terms', url: /\/terms$/, heading: 'Terms of Service' },
+        { link: 'Cookies', url: /\/cookies$/, heading: 'Cookie Policy' },
         { link: 'Support', url: /\/support$/, heading: 'How can we help?' },
         { link: 'Status', url: /\/status$/, heading: 'Platform status' },
     ];

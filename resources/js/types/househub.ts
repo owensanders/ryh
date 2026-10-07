@@ -363,6 +363,16 @@ export interface Legal {
     termsUpdatedLabel: string;
     privacyVersion: string;
     privacyUpdatedLabel: string;
+    cookiesVersion: string;
+    cookiesUpdatedLabel: string;
+}
+
+/** The cookies the app sets, read from the live session config so the Cookie Policy can't drift from it. */
+export interface CookieSettings {
+    sessionCookie: string;
+    sessionLifetimeMinutes: number;
+    expireOnClose: boolean;
+    rememberDays: number;
 }
 
 export type ServiceState = 'operational' | 'degraded' | 'down';
