@@ -93,7 +93,21 @@
             <button type="button" onclick="location.reload()">Try again</button>
         </main>
         <script>
-            window.addEventListener('online', () => location.reload());
+            // Reload once the server is reachable again: on the browser's
+            // `online` event, and every few seconds in case that comes before
+            // the network really works (or never comes, on Wi-Fi with no internet).
+            async function reloadWhenReachable() {
+                try {
+                    const response = await fetch('/up', { cache: 'no-store' });
+                    if (response.ok) {
+                        location.reload();
+                    }
+                } catch {
+                    // Still offline; try again shortly.
+                }
+            }
+            window.addEventListener('online', reloadWhenReachable);
+            setInterval(reloadWhenReachable, 5000);
         </script>
     </body>
 </html>

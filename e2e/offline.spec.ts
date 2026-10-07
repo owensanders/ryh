@@ -18,9 +18,10 @@ test('offline, a page load shows the offline page, then recovers when back onlin
     await page.goto('/chores').catch(() => {});
     await expect(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
 
-    // The offline page reloads itself on the browser's `online` event.
+    // The offline page reloads itself once the server answers again (it checks
+    // on the `online` event and every 5 seconds).
     await context.setOffline(false);
-    await expect(page.getByRole('heading', { name: "You're offline" })).toBeHidden();
+    await expect(page.getByRole('heading', { name: "You're offline" })).toBeHidden({ timeout: 15_000 });
     await expect(page.getByRole('link', { name: 'Chores', exact: true })).toHaveAttribute('aria-current', 'page');
 });
 
@@ -56,4 +57,30 @@ test('a request that fails for lack of connection shows the banner too', async (
     await page.getByRole('link', { name: 'Chores', exact: true }).click();
     await expect(page).toHaveURL(/\/chores$/);
     await expect(banner).toBeHidden();
+});
+
+// The browser can report it's back online before requests actually get
+// through; the offline page keeps checking rather than giving up.
+test('the offline page waits until the server really answers before reloading', async ({ page, context }) => {
+    await page.goto('/dashboard');
+    await page.evaluate(async () => {
+        await navigator.serviceWorker.register('/sw.js');
+        await navigator.serviceWorker.ready;
+    });
+
+    await context.setOffline(true);
+    await page.goto('/chores').catch(() => {});
+    const offlinePage = page.getByRole('heading', { name: "You're offline" });
+    await expect(offlinePage).toBeVisible();
+
+    let serverReachable = false;
+    await context.route('**/up', (route) => (serverReachable ? route.continue() : route.abort('internetdisconnected')));
+    await context.setOffline(false);
+
+    await page.waitForTimeout(2_000);
+    await expect(offlinePage).toBeVisible();
+
+    serverReachable = true;
+    await expect(offlinePage).toBeHidden({ timeout: 15_000 });
+    await expect(page.getByRole('link', { name: 'Chores', exact: true })).toHaveAttribute('aria-current', 'page');
 });

@@ -13,7 +13,7 @@
  * Bump VERSION when this file or the precached files change; the old cache is
  * dropped when the new worker activates.
  */
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE = `househub-${VERSION}`;
 // Self-contained (inline styles and icon), so it renders with no network at all.
 const PRECACHE = ['/offline.html'];
