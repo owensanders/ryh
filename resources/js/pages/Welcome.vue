@@ -70,7 +70,11 @@ const secondary = [
     { icon: '📂', title: 'Documents', body: 'Insurance, MOTs and tenancy paperwork in folders, tagged and searchable.' },
     { icon: '👪', title: 'Family roles', body: 'Owner, Adult, Teen and Child access, so kids tick off and grown-ups manage.' },
     { icon: '✉️', title: 'Easy invites', body: 'Invite by email, or share a join code and approve who gets in.' },
-    { icon: '🏘', title: 'Multiple homes', body: 'Two households, or helping run a parent’s? Switch between them under one login.' },
+    {
+        icon: '🏘',
+        title: 'Multiple homes',
+        body: 'Two households, or helping run a parent’s? Switch between them under one login — each home has its own subscription.',
+    },
 ];
 
 const promises = [

@@ -23,9 +23,11 @@ Built from the HouseHub design (`HouseHub.dc.html`) as a Laravel 12 + Inertia 2
   Laravel Reverb (WebSockets), backed by Laravel's database notifications.
 - **Households** — multiple households per login, role-based access (Owner,
   Adult, Teen, Child), invites and join codes.
-- **Billing** — Stripe-backed subscription (via `laravel/cashier`) with a
-  30-day free trial; a household without an active subscription or trial is
-  routed to `/billing/required`.
+- **Billing** — Stripe-backed subscription (via `laravel/cashier`), billed per
+  household: one flat price covers everyone in it, and each extra household a
+  person runs has its own subscription. The 30-day free trial is once per
+  person; a household without an active subscription or trial is routed to
+  `/billing/required`.
 
 ## Running it
 

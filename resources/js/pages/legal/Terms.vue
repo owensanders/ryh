@@ -102,14 +102,15 @@ const sections = [
         <h2 id="trial-and-subscription">Free trial and subscription</h2>
         <ol>
             <li>
-                <strong>Free trial.</strong> Each new household gets a free trial of 30 days. You don't need to give card details to start, and you
-                won't be charged anything for the trial. Each person can claim one free trial. When the trial ends, the household can't be used until
-                an Owner subscribes; nothing is taken automatically.
+                <strong>Free trial.</strong> The first household you create gets a free trial of 30 days. You don't need to give card details to
+                start, and you won't be charged anything for the trial. Each person can claim one free trial only, so any further households you
+                create need a subscription from the start. When the trial ends, the household can't be used until an Owner subscribes; nothing is
+                taken automatically.
             </li>
             <li>
                 <strong>Price.</strong> A subscription to the {{ plan.name }} plan costs <strong>{{ monthly }} a month</strong> or
-                <strong>{{ annual }} a year</strong>, including any VAT that applies. One subscription covers everyone in the household. The price
-                you'll pay is shown before you confirm.
+                <strong>{{ annual }} a year</strong>, including any VAT that applies. A subscription is for one household and covers everyone in it;
+                if you belong to more than one household, each needs its own subscription. The price you'll pay is shown before you confirm.
             </li>
             <li>
                 <strong>Automatic renewal.</strong> Your subscription

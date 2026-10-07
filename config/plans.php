@@ -14,9 +14,12 @@ return [
     ],
     'trial_days' => 30,
     'max_members' => $maxMembers,
-    'sub' => 'Free for a month, then £3.99 a month (or £39.99 a year). One subscription covers everyone in the house.',
+    // Billing is per household (Household is the Cashier billable): one flat
+    // subscription covers everyone in it, and each extra household pays its own.
+    'sub' => 'Free for a month, then £3.99 a month (or £39.99 a year) per household. One subscription covers everyone in the house.',
     'cta' => 'Start your free month',
-    'note' => 'Cancel anytime. No card needed to start.',
+    // The free month is once per person (users.trial_claimed_at), not per household.
+    'note' => 'Cancel anytime. No card needed to start. One free month per person.',
     'features' => [
         'Meal planner and recipe library',
         'AI meal planning, a week at a time',
@@ -29,7 +32,7 @@ return [
         "Up to {$maxMembers} household members",
         'Family roles to manage access',
         'Invite by email or join code',
-        'Multiple houses under one login',
+        'Everyone in the house on one subscription',
     ],
 
 ];
