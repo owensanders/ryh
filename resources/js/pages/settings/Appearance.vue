@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import AppearanceTabs from '@/components/AppearanceTabs.vue';
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
+import HouseHubShell from '@/layouts/HouseHubShell.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
+
+defineOptions({ layout: HouseHubShell });
 </script>
 
 <template>

@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import LeaveHousehold from '@/components/LeaveHousehold.vue';
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
+import HouseHubShell from '@/layouts/HouseHubShell.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import type { HouseholdOption } from '@/types/househub';
 import { Link, router } from '@inertiajs/vue3';
 import { House } from 'lucide-vue-next';
+
+defineOptions({ layout: HouseHubShell });
 
 defineProps<{
     households: HouseholdOption[];

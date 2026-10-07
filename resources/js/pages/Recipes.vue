@@ -5,11 +5,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useAddIngredientsToShoppingList } from '@/composables/useAddIngredientsToShoppingList';
 import { useHouseholdRole } from '@/composables/useHouseholdRole';
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
+import HouseHubShell from '@/layouts/HouseHubShell.vue';
 import { tint } from '@/lib/househub';
 import type { Recipe, ShoppingList, TagOption } from '@/types/househub';
 import { router, useForm } from '@inertiajs/vue3';
 import { Plus, Star } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+
+defineOptions({ layout: HouseHubShell });
 
 const props = defineProps<{ recipes: Recipe[]; tagOptions: TagOption[]; shoppingLists: ShoppingList[] }>();
 

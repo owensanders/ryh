@@ -2,10 +2,13 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useHouseholdRole } from '@/composables/useHouseholdRole';
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
+import HouseHubShell from '@/layouts/HouseHubShell.vue';
 import type { CalendarDay, CalendarEvent, CalendarMonth } from '@/types/househub';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
 import { computed, nextTick, ref } from 'vue';
+
+defineOptions({ layout: HouseHubShell });
 
 const props = defineProps<{ calendar: CalendarMonth }>();
 

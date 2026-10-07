@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
+import HouseHubShell from '@/layouts/HouseHubShell.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { currentSubscription, disablePush, enablePush, pushSupport, type PushSupport } from '@/lib/push';
 import type { PushCategory } from '@/types/househub';
 import { router } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
 import { onMounted, ref } from 'vue';
+
+defineOptions({ layout: HouseHubShell });
 
 const props = defineProps<{
     categories: PushCategory[];

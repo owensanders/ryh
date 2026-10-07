@@ -54,3 +54,29 @@ test.describe('on an iPhone', () => {
         await expect(card).toBeHidden();
     });
 });
+
+// The frame is a persistent layout: moving between screens swaps only the
+// content, so the tab bar and header aren't rebuilt (which felt like a reload).
+test('moving between screens keeps the tab bar and header, and starts each screen at the top', async ({ page }) => {
+    await page.goto('/dashboard');
+    const tabs = page.getByRole('navigation', { name: 'Main' });
+    await tabs.evaluate((nav) => (nav.dataset.original = 'yes'));
+    await page.locator('header').evaluate((header) => (header.dataset.original = 'yes'));
+    await page.evaluate(() => window.scrollTo(0, 600));
+    // Inertia records the scroll position for Back shortly after scrolling stops.
+    await expect.poll(() => page.evaluate(() => history.state?.documentScrollPosition?.top ?? 0)).toBeGreaterThan(500);
+
+    await tabs.getByRole('link', { name: 'Chores' }).click();
+    await expect(page).toHaveURL(/\/chores$/);
+    await expect(page.locator('header')).toContainText('Chores');
+    await expect(page).toHaveTitle(/^Chores/);
+
+    await expect(tabs).toHaveAttribute('data-original', 'yes');
+    await expect(page.locator('header')).toHaveAttribute('data-original', 'yes');
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+
+    // Back returns to where you were.
+    await page.goBack();
+    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
+});

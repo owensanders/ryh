@@ -5,8 +5,11 @@ import { Link, useForm, usePage } from '@inertiajs/vue3';
 import DeleteUser from '@/components/DeleteUser.vue';
 import InputError from '@/components/InputError.vue';
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
+import HouseHubShell from '@/layouts/HouseHubShell.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { type SharedData, type User } from '@/types';
+
+defineOptions({ layout: HouseHubShell });
 
 interface Props {
     mustVerifyEmail: boolean;

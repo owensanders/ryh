@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
+import HouseHubShell from '@/layouts/HouseHubShell.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { TransitionRoot } from '@headlessui/vue';
 import { useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
+
+defineOptions({ layout: HouseHubShell });
 
 const passwordInput = ref<HTMLInputElement>();
 const currentPasswordInput = ref<HTMLInputElement>();
