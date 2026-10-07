@@ -24,7 +24,7 @@ const scenes: { id: string; frames: number; Component: React.FC }[] = [
     { id: 'Calendar', frames: 180, Component: Calendar },
     { id: 'Chores', frames: 240, Component: Chores },
     { id: 'Notifications', frames: 120, Component: Notifications },
-    { id: 'Phone', frames: 240, Component: Phone },
+    { id: 'Phone', frames: 360, Component: Phone },
     { id: 'Montage', frames: 240, Component: Montage },
     // Six bars: the price holds for three, the logo lands on the final chord.
     { id: 'Outro', frames: 360, Component: Outro },

@@ -193,10 +193,10 @@ console.log('Sound effects');
 // ---------------------------------------------------------------------------
 console.log('Music');
 // 120 BPM, one bar = 2s = 60 video frames. F major: F – C – Dm – B♭.
-// The video is 39 bars: the outro (pricing) starts at bar 33 and its logo
+// The video is 41 bars: the outro (pricing) starts at bar 35 and its logo
 // lands on the final chord three bars later. Keep these in step with the
 // scene lengths in src/HouseHubPromo.tsx.
-const BPM = 120, BEAT = 60 / BPM, BAR = BEAT * 4, BARS = 39, OUTRO_BAR = 33, HIT_BAR = 36;
+const BPM = 120, BEAT = 60 / BPM, BAR = BEAT * 4, BARS = 41, OUTRO_BAR = 35, HIT_BAR = 38;
 const LEN = BARS * BAR + 3;
 const L = buf(LEN), R = buf(LEN);
 const chords = [
