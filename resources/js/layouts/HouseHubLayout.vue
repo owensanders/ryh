@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import InstallPrompt from '@/components/househub/InstallPrompt.vue';
 import NotificationBell from '@/components/househub/NotificationBell.vue';
 import Toast from '@/components/househub/Toast.vue';
 import { useAppearance } from '@/composables/useAppearance';
@@ -239,6 +240,7 @@ function toggleTheme(): void {
             </div>
         </Transition>
 
+        <InstallPrompt />
         <Toast />
     </div>
 </template>
