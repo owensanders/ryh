@@ -30,7 +30,7 @@ class BudgetCategoryData extends Data
         return new self(
             id: $category->id,
             label: $category->label,
-            icon: $category->icon ?? '📌',
+            icon: $category->icon ?? '',
             colour: $category->colour->cssVar(),
             budgeted: Money::format($category->budgeted_pence),
             budgetedPence: $category->budgeted_pence,

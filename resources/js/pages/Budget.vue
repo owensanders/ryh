@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
+import RecurringIcon from '@/components/househub/RecurringIcon.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
 import HouseHubShell from '@/layouts/HouseHubShell.vue';
 import { donut } from '@/lib/househub';
 import type { BudgetCategory, BudgetMonthSummary, IncomeSource } from '@/types/househub';
 import { Link, router, useForm } from '@inertiajs/vue3';
-import { Pencil, Plus, Repeat, Trash2 } from 'lucide-vue-next';
+import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 defineOptions({ layout: HouseHubShell });
@@ -285,7 +286,7 @@ function addCategory(): void {
                             <div class="min-w-0 flex-1">
                                 <div class="flex items-center gap-1.5">
                                     <span class="text-[13.5px] font-semibold">{{ source.label }}</span>
-                                    <Repeat v-if="source.isRecurring" title="Repeats every month" class="h-3 w-3 flex-none text-hh-ink3" />
+                                    <RecurringIcon v-if="source.isRecurring" />
                                 </div>
                                 <div v-if="source.meta" class="mt-0.5 text-[11.5px] text-hh-ink3">{{ source.meta }}</div>
                             </div>
@@ -337,7 +338,7 @@ function addCategory(): void {
                                 <template v-else>
                                     <div class="flex items-center gap-2">
                                         <span class="min-w-0 truncate text-sm font-semibold">{{ category.label }}</span>
-                                        <Repeat v-if="category.isRecurring" title="Repeats every month" class="h-3 w-3 flex-none text-hh-ink3" />
+                                        <RecurringIcon v-if="category.isRecurring" />
                                         <span class="ml-auto font-mono text-[12.5px]">{{ category.budgeted }}</span>
                                     </div>
                                     <div class="mt-1.5 h-[7px] overflow-hidden rounded bg-hh-sunk">

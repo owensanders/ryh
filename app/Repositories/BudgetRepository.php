@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Contracts\Repositories\BudgetRepositoryInterface;
+use App\Enums\Palette;
 use App\Models\BudgetCategory;
 use App\Models\Household;
 use App\Models\IncomeSource;
@@ -24,19 +25,33 @@ class BudgetRepository implements BudgetRepositoryInterface
     /** @param array<string, mixed> $attributes */
     public function createCategory(Household $household, CarbonImmutable $month, array $attributes): BudgetCategory
     {
-        $position = (int) $household->budgetCategories()
-            ->whereDate('month', $month->startOfMonth()->toDateString())
-            ->max('position') + 1;
+        $existing = $this->categoriesFor($household, $month);
 
         $category = $household->budgetCategories()->create([
+            'colour' => $this->leastUsedColour($existing),
             ...$attributes,
             'month' => $month->startOfMonth(),
-            'position' => $position,
+            'position' => (int) $existing->max('position') + 1,
         ]);
 
         // create() doesn't hydrate DB-level defaults (e.g. `colour`) onto the
         // in-memory instance, so refresh before it's used to build a DTO.
         return $category->refresh();
+    }
+
+    /**
+     * The palette colour fewest of the month's categories use (palette order
+     * breaks ties), so each new category stands apart from the others.
+     *
+     * @param  Collection<int, BudgetCategory>  $categories
+     */
+    private function leastUsedColour(Collection $categories): Palette
+    {
+        $counts = $categories->countBy(fn (BudgetCategory $category) => $category->colour->value);
+
+        return collect(Palette::cases())
+            ->sortBy(fn (Palette $colour, int $index) => [$counts->get($colour->value, 0), $index])
+            ->first();
     }
 
     /** @param array<string, mixed> $attributes */
