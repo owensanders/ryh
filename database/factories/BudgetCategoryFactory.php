@@ -21,7 +21,7 @@ class BudgetCategoryFactory extends Factory
         return [
             'household_id' => Household::factory(),
             'label' => $this->faker->words(2, true),
-            'icon' => '📌',
+            'icon' => null,
             'colour' => Palette::Coral,
             'budgeted_pence' => 50000,
             'is_recurring' => false,

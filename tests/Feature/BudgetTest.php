@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\Palette;
 use App\Models\BudgetCategory;
 use App\Models\IncomeSource;
 use App\Models\User;
@@ -53,6 +54,34 @@ class BudgetTest extends TestCase
             'label' => 'Pets',
             'budgeted_pence' => 7500,
         ]);
+    }
+
+    #[Test]
+    public function itGivesEachNewCategoryTheLeastUsedColour(): void
+    {
+        $user = User::factory()->create();
+
+        foreach (['Food', 'Utilities', 'Fuel', 'Pets', 'Gifts', 'Holidays'] as $label) {
+            $this->actingAs($user)->post('/budget/categories', ['label' => $label, 'budgeted' => '50']);
+        }
+
+        $colours = BudgetCategory::query()->orderBy('position')->pluck('colour')->map->value->all();
+
+        $this->assertSame(['coral', 'mint', 'lilac', 'sun', 'sky', 'coral'], $colours);
+    }
+
+    #[Test]
+    public function itLeavesTheIconBlankWhenACategoryHasNone(): void
+    {
+        $user = User::factory()->create();
+        BudgetCategory::factory()->recurring()->create(['household_id' => $user->household_id]);
+
+        $this->actingAs($user)
+            ->get('/budget')
+            ->assertInertia(fn ($page) => $page
+                ->where('categories.0.icon', '')
+                ->where('categories.0.isRecurring', true)
+            );
     }
 
     #[Test]
@@ -305,6 +334,7 @@ class BudgetTest extends TestCase
         BudgetCategory::factory()->recurring()->create([
             'household_id' => $user->household_id,
             'label' => 'Rent',
+            'colour' => Palette::Sky,
             'budgeted_pence' => 90000,
             'month' => $thisMonth,
         ]);
@@ -319,6 +349,7 @@ class BudgetTest extends TestCase
         $this->assertDatabaseHas('budget_categories', [
             'household_id' => $user->household_id,
             'label' => 'Rent',
+            'colour' => 'sky',
             'budgeted_pence' => 90000,
             'is_recurring' => true,
             'month' => $nextMonth->toDateString(),
