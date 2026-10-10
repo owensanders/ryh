@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Database\Factories\ShoppingItemFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -21,7 +23,10 @@ use Illuminate\Support\Carbon;
 class ShoppingItem extends Model
 {
     /** @use HasFactory<ShoppingItemFactory> */
-    use HasFactory;
+    use HasFactory, MassPrunable;
+
+    /** How long a ticked-off item stays on its list before the nightly prune clears it. */
+    public const KEEP_COMPLETED_DAYS = 7;
 
     /** @var list<string> */
     protected $fillable = ['shopping_list_id', 'name', 'quantity', 'completed_at', 'position'];
@@ -31,6 +36,12 @@ class ShoppingItem extends Model
         return [
             'completed_at' => 'datetime',
         ];
+    }
+
+    /** @return Builder<static> */
+    public function prunable(): Builder
+    {
+        return static::query()->where('completed_at', '<', now()->subDays(self::KEEP_COMPLETED_DAYS));
     }
 
     public function isDone(): bool

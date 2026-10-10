@@ -112,6 +112,30 @@ class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function onS3ADownloadSendsTheBrowserStraightToTheBucket(): void
+    {
+        config(['documents.disk' => 's3']);
+        Storage::fake('s3');
+        Storage::disk('s3')->buildTemporaryUrlsUsing(
+            fn (string $path, \DateTimeInterface $expiration, array $options) => 'https://bucket.example/'.$path.'?disposition='.rawurlencode($options['ResponseContentDisposition']),
+        );
+
+        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $folder = DocumentFolder::create(['household_id' => $owner->household_id, 'name' => 'Property']);
+        $document = $folder->documents()->create([
+            'household_id' => $owner->household_id,
+            'name' => 'Deed.pdf',
+            'path' => 'documents/1/deed.pdf',
+            'extension' => 'pdf',
+            'size' => 1024,
+        ]);
+
+        $this->actingAs($owner)
+            ->get("/documents/{$document->id}/download")
+            ->assertRedirect('https://bucket.example/documents/1/deed.pdf?disposition='.rawurlencode('attachment; filename=Deed.pdf'));
+    }
+
+    #[Test]
     public function itMovesADocumentToAnotherFolder(): void
     {
         $owner = User::factory()->create(['role' => HouseholdRole::Owner]);

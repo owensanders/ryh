@@ -2,7 +2,9 @@
 
 use App\Ai\AiConfig;
 use Illuminate\Foundation\Inspiring;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -12,3 +14,21 @@ Artisan::command('ai:resume', function () {
     AiConfig::resume();
     $this->info('AI features resumed.');
 })->purpose('Resume AI features after topping up provider credit');
+
+Artisan::command('notifications:prune {--days=90}', function () {
+    $cutoff = now()->subDays((int) $this->option('days'));
+    $deleted = 0;
+
+    // In batches, so a big first prune never holds a long lock on the table.
+    do {
+        $batch = DatabaseNotification::query()->where('created_at', '<', $cutoff)->limit(1000)->delete();
+        $deleted += $batch;
+    } while ($batch > 0);
+
+    $this->info("Pruned {$deleted} notifications.");
+})->purpose('Delete bell notifications older than the given number of days');
+
+// Completed chores (Chore::KEEP_COMPLETED_DAYS) and ticked-off shopping items
+// (ShoppingItem::KEEP_COMPLETED_DAYS), then old notifications.
+Schedule::command('model:prune')->dailyAt('03:00')->onOneServer()->withoutOverlapping();
+Schedule::command('notifications:prune')->dailyAt('03:15')->onOneServer()->withoutOverlapping();

@@ -67,6 +67,26 @@ services:
         depends_on:
             - laravel.test
             - redis
+    # Runs the scheduler (routes/console.php): the nightly prunes. Production
+    # runs `php artisan schedule:run` every minute from cron instead.
+    scheduler:
+        container_name: ryh-scheduler
+        image: 'sail-8.4/app'
+        environment:
+            WWWUSER: '${WWWUSER}'
+            LARAVEL_SAIL: 1
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - sail
+        entrypoint:
+            - php
+            - artisan
+            - schedule:work
+        depends_on:
+            - laravel.test
+            - mysql
+            - redis
     mysql:
         container_name: ryh-mysql
         image: 'mysql:8.4'

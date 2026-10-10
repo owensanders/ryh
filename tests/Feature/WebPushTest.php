@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Notifications\CalendarEventAssignedNotification;
 use App\Notifications\CalendarEventDeletedNotification;
 use App\Notifications\CalendarEventUpdatedNotification;
+use App\Notifications\Channels\QueuedBroadcastChannel;
 use App\Notifications\Channels\QueuedWebPushChannel;
 use App\Notifications\ChoreActionedNotification;
 use App\Notifications\ChoreAssignedNotification;
@@ -51,7 +52,7 @@ class WebPushTest extends TestCase
         $this->subscribe($partner);
         $this->assertContains(QueuedWebPushChannel::class, $notification->via($partner));
         $this->assertContains('database', $notification->via($partner));
-        $this->assertContains('broadcast', $notification->via($partner));
+        $this->assertContains(QueuedBroadcastChannel::class, $notification->via($partner));
     }
 
     #[Test]
@@ -62,7 +63,7 @@ class WebPushTest extends TestCase
         $this->subscribe($partner);
         $chore = Chore::factory()->create(['household_id' => $owner->household_id]);
 
-        $this->assertSame(['database', 'broadcast'], (new ChoreAssignedNotification($chore, $owner))->via($partner));
+        $this->assertSame(['database', QueuedBroadcastChannel::class], (new ChoreAssignedNotification($chore, $owner))->via($partner));
     }
 
     #[Test]

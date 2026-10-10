@@ -21,14 +21,19 @@ use App\UseCases\Documents\UploadDocumentUseCase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class DocumentController extends Controller
 {
     use ResolvesHouseholdTrait;
     use ResolvesUserTrait;
+
+    /** How long an S3 download link works for — long enough to start the download, short enough not to be worth sharing. */
+    private const DOWNLOAD_LINK_MINUTES = 5;
 
     public function __construct(private readonly DocumentRepositoryInterface $documents) {}
 
@@ -86,7 +91,19 @@ class DocumentController extends Controller
     {
         $this->assertDocumentOwned($request, $document);
 
-        return Storage::disk(config('documents.disk'))->download($document->path, $document->name);
+        $disk = (string) config('documents.disk');
+
+        // On S3 the browser fetches the file straight from the bucket through a
+        // short-lived link, rather than a PHP worker relaying every byte.
+        if (config("filesystems.disks.{$disk}.driver") === 's3') {
+            return redirect()->away(Storage::disk($disk)->temporaryUrl(
+                $document->path,
+                now()->addMinutes(self::DOWNLOAD_LINK_MINUTES),
+                ['ResponseContentDisposition' => HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, $document->name, str_replace(['%', '/', '\\'], '', Str::ascii($document->name)))],
+            ));
+        }
+
+        return Storage::disk($disk)->download($document->path, $document->name);
     }
 
     public function destroy(Request $request, Document $document, DeleteDocumentUseCase $delete): RedirectResponse

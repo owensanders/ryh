@@ -20,7 +20,6 @@ interface LiveNotificationPayload {
     id: string;
     body: string;
     url: string;
-    user_id: number;
 }
 
 export const notifications = ref<AppNotification[]>([]);
@@ -29,10 +28,9 @@ export const latestToast = ref<string | null>(null);
 /** Loads existing notifications and starts listening for live ones. Call once, from the app layout. */
 export function subscribeToNotifications(): void {
     const page = usePage<SharedData>();
-    const householdId = page.props.household?.id;
     const userId = page.props.auth.user?.id;
 
-    if (householdId === undefined) {
+    if (page.props.household === null || userId === undefined) {
         return;
     }
 
@@ -42,11 +40,8 @@ export function subscribeToNotifications(): void {
             notifications.value = rows.map((row) => ({ id: row.id, body: row.data.body, url: row.data.url, read_at: row.read_at }));
         });
 
-    useEchoNotification<LiveNotificationPayload>(`household.${householdId}`, (notification) => {
-        if (notification.user_id !== userId) {
-            return;
-        }
-
+    // The server only sends someone their own notifications, on their own channel.
+    useEchoNotification<LiveNotificationPayload>(`App.Models.User.${userId}`, (notification) => {
         notifications.value.unshift({ id: notification.id, body: notification.body, url: notification.url, read_at: null });
         latestToast.value = notification.body;
     });

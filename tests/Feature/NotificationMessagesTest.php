@@ -118,10 +118,9 @@ class NotificationMessagesTest extends TestCase
         $this->assertSame(
             ['type' => $type, ...$ids, 'user_id' => $this->recipient->id, 'body' => $body, 'url' => route($route)],
             $notification->toArray($this->recipient),
-            "{$type} bell entry",
+            "{$type} bell entry (and, with its id, the live payload)",
         );
         $this->assertSame($category, $notification->category(), "{$type} category");
-        $this->assertSame($type, $notification->broadcastType(), "{$type} live type");
 
         $push = $notification->toPushMessage($this->recipient);
         $this->assertSame($this->actor->household->name, $push->title, "{$type} push title");

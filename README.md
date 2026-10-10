@@ -57,10 +57,10 @@ place.
 `php artisan reverb:start`) for live notifications — no separate step needed.
 
 Containers: `ryh-app` (PHP app + Vite), `ryh-websockets` (Reverb),
-`ryh-queue` (`queue:work`, e.g. invite emails), `ryh-mysql`,
+`ryh-queue` (`queue:work`, e.g. invite emails and live notifications), `ryh-scheduler` (`schedule:work`: nightly prunes of old notifications, chores completed over 30 days ago and shopping items ticked off over 7 days ago), `ryh-mysql`,
 `ryh-redis` (cache, sessions and queue), `ryh-mailpit` (catches all
 outgoing mail — inbox at <http://localhost:8025>). The Compose service names
-(`laravel.test`, `reverb`, `queue`, `mysql`, `redis`, `mailpit`) are unchanged — they're the in-network hostnames and
+(`laravel.test`, `reverb`, `queue`, `scheduler`, `mysql`, `redis`, `mailpit`) are unchanged — they're the in-network hostnames and
 what `sail` commands target.
 
 Ports are shifted off the defaults so they don't clash with the `~/docker`
@@ -155,7 +155,7 @@ Clean architecture, matching the conventions in `../CLAUDE.md`:
 | Use cases | `app/UseCases/**` | All business logic — one class per screen or action |
 | Repositories | `app/Repositories/**` | Behind `app/Contracts/Repositories/*Interface.php`, bound in `RepositoryServiceProvider` |
 | DTOs | `app/Data/**` | `spatie/laravel-data`; mirrored in `resources/js/types/ryh.ts` |
-| Notifications | `app/Notifications/**` | Extend `HouseholdNotification`; broadcast on `household.{id}` and persist to the database |
+| Notifications | `app/Notifications/**` | Extend `HouseholdNotification`; persist to the database, and go live to the recipient's own private channel (`App.Models.User.{id}`) through the queue |
 | Screens | `resources/js/pages/*.vue` | App screens use the persistent `layouts/RyhShell.vue` (`defineOptions({ layout: RyhShell })`), so the sidebar, header and tab bar stay mounted between screens; each sets its header title with `<RyhLayout title subtitle>` |
 
 Design tokens live as `--ryh-*` custom properties in `resources/css/app.css`
