@@ -10,7 +10,7 @@ use App\Ai\Agents\MealPlanAgent;
  * Stands in for the AI when the Playwright server runs (APP_ENV=e2e), so journeys
  * can walk the whole "Plan my week" flow without a paid call or a real key.
  */
-class E2eMealPlan
+class E2eMealPlanFake
 {
     // Long enough for the waiting screen to tick past its first step (6s each).
     private const int DELAY_SECONDS = 7;

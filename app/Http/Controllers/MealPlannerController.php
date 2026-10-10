@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Enums\CookingConfidence;
-use App\Enums\KitchenEquipment;
-use App\Enums\MealDiet;
-use App\Enums\MealGoal;
-use App\Enums\RecipeTag;
+use App\Enums\CookingConfidenceEnum;
+use App\Enums\KitchenEquipmentEnum;
+use App\Enums\MealDietEnum;
+use App\Enums\MealGoalEnum;
+use App\Enums\RecipeTagEnum;
 use App\Http\Requests\GenerateAiMealPlanRequest;
 use App\Http\Requests\IndexMealPlannerRequest;
 use App\Http\Requests\PlannedMealRequest;
@@ -51,12 +51,12 @@ class MealPlannerController extends Controller
                 $week !== null ? CarbonImmutable::createFromFormat('!Y-m-d', $week) ?? CarbonImmutable::now() : CarbonImmutable::now(),
             ),
             'shoppingLists' => $getShoppingLists->execute($household),
-            'tagOptions' => RecipeTag::options(),
+            'tagOptions' => RecipeTagEnum::options(),
             'aiOptions' => [
-                'diets' => MealDiet::values(),
-                'goals' => MealGoal::values(),
-                'confidence' => CookingConfidence::options(),
-                'equipment' => KitchenEquipment::values(),
+                'diets' => MealDietEnum::values(),
+                'goals' => MealGoalEnum::values(),
+                'confidence' => CookingConfidenceEnum::options(),
+                'equipment' => KitchenEquipmentEnum::values(),
             ],
         ]);
     }
@@ -109,7 +109,7 @@ class MealPlannerController extends Controller
                 $request->validated('diets', []),
                 (string) $request->validated('avoid', ''),
                 $request->validated('goals', []),
-                CookingConfidence::from($request->validated('confidence')),
+                CookingConfidenceEnum::from($request->validated('confidence')),
                 $request->validated('equipment', []),
                 (string) $request->validated('use_up', ''),
                 (string) $request->validated('notes', ''),

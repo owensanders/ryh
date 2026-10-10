@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Enums\MealSlot;
-use App\Enums\RecipeTag;
+use App\Enums\MealSlotEnum;
+use App\Enums\RecipeTagEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -32,7 +32,7 @@ class PlannedMealRequest extends FormRequest
             'new_recipe_duration_label' => ['nullable', 'string', 'max:40'],
             'new_recipe_difficulty' => ['nullable', 'string', 'max:40'],
             'new_recipe_tags' => ['array'],
-            'new_recipe_tags.*' => [Rule::enum(RecipeTag::class)],
+            'new_recipe_tags.*' => [Rule::enum(RecipeTagEnum::class)],
             'new_recipe_ingredients' => ['array'],
             'new_recipe_ingredients.*.name' => ['required', 'string', 'max:120'],
             'new_recipe_ingredients.*.quantity' => ['nullable', 'string', 'max:40'],
@@ -44,7 +44,7 @@ class PlannedMealRequest extends FormRequest
                 Rule::exists('shopping_lists', 'id')->where('household_id', $this->user()?->household_id),
             ],
             'planned_on' => ['required', 'date'],
-            'slot' => ['required', Rule::enum(MealSlot::class)],
+            'slot' => ['required', Rule::enum(MealSlotEnum::class)],
             'cook_id' => [
                 'nullable',
                 'integer',
@@ -92,7 +92,7 @@ class PlannedMealRequest extends FormRequest
             ...array_map(fn (callable $value) => $value(), $details),
             'new_recipe_shopping_list_id' => $this->validated('new_recipe_shopping_list_id'),
             'planned_on' => $this->validated('planned_on'),
-            'slot' => MealSlot::from($this->validated('slot')),
+            'slot' => MealSlotEnum::from($this->validated('slot')),
             'cook_id' => $this->validated('cook_id'),
         ];
     }

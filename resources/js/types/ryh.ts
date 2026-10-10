@@ -24,7 +24,7 @@ export interface ShoppingList {
     name: string;
     slug: string;
     colour: string;
-    /** The `Palette` case name, for the colour picker. */
+    /** The `PaletteEnum` case name, for the colour picker. */
     colourKey: string;
     remaining: number;
     total: number;
@@ -158,7 +158,7 @@ export interface CalendarEvent {
     location: string | null;
     notes: string | null;
     colour: string;
-    /** The `Palette` case name, for the colour picker. */
+    /** The `PaletteEnum` case name, for the colour picker. */
     colourKey: string;
     attendees: Member[];
     /** True on the day cell where the event actually starts/ends (for spanning-bar corner rounding). */
@@ -312,7 +312,7 @@ export interface DocumentFolder {
     name: string;
     icon: string;
     colour: string;
-    /** The `Palette` case name, for the colour picker. */
+    /** The `PaletteEnum` case name, for the colour picker. */
     colourKey: string;
     count: number;
 }

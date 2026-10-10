@@ -6,8 +6,8 @@ namespace App\UseCases\Auth;
 
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Contracts\Repositories\UserRepositoryInterface;
-use App\Enums\HouseholdRole;
-use App\Enums\Palette;
+use App\Enums\HouseholdRoleEnum;
+use App\Enums\PaletteEnum;
 use App\Models\Household;
 use App\Models\HouseholdUser;
 use App\Models\User;
@@ -27,13 +27,13 @@ class JoinHouseholdFromInviteUseCase
      * @param  int|null  $guardianId  For a Teen or Child, the adult who confirmed
      *                                they're a parent or guardian when inviting them.
      */
-    public function execute(User $user, Household $household, HouseholdRole $role, ?int $guardianId = null, ?\DateTimeInterface $guardianConfirmedAt = null): bool
+    public function execute(User $user, Household $household, HouseholdRoleEnum $role, ?int $guardianId = null, ?\DateTimeInterface $guardianConfirmedAt = null): bool
     {
         if ($household->isFull()) {
             return false;
         }
 
-        $colours = Palette::cases();
+        $colours = PaletteEnum::cases();
         $colour = $colours[$this->households->members($household)->count() % count($colours)];
 
         $this->users->update($user, [

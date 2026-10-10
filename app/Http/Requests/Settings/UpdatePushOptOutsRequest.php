@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Settings;
 
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationCategoryEnum;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -16,13 +16,13 @@ class UpdatePushOptOutsRequest extends FormRequest
     {
         return [
             'opt_outs' => ['present', 'array'],
-            'opt_outs.*' => ['distinct', Rule::enum(NotificationCategory::class)],
+            'opt_outs.*' => ['distinct', Rule::enum(NotificationCategoryEnum::class)],
         ];
     }
 
-    /** @return list<NotificationCategory> */
+    /** @return list<NotificationCategoryEnum> */
     public function optOuts(): array
     {
-        return array_values(array_map(NotificationCategory::from(...), $this->validated('opt_outs')));
+        return array_values(array_map(NotificationCategoryEnum::from(...), $this->validated('opt_outs')));
     }
 }

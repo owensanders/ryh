@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data;
 
-use App\Enums\ChoreStatus;
+use App\Enums\ChoreStatusEnum;
 use App\Models\Chore;
 use Spatie\LaravelData\Data;
 
@@ -24,7 +24,7 @@ class ChoreData extends Data
             id: $chore->id,
             name: $chore->name,
             status: $chore->status->value,
-            done: $chore->status === ChoreStatus::Done,
+            done: $chore->status === ChoreStatusEnum::Done,
             assignee: $chore->assignee !== null ? MemberData::fromModel($chore->assignee) : null,
         );
     }

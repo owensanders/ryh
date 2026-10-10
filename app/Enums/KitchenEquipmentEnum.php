@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-enum KitchenEquipment: string
+enum KitchenEquipmentEnum: string
 {
     case Oven = 'Oven';
     case Hob = 'Hob';

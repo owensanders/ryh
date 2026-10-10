@@ -10,12 +10,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Cashier\Subscription;
 use PHPUnit\Framework\Attributes\Test;
 use Stripe\Exception\ApiErrorException;
-use Tests\Support\FakesStripe;
+use Tests\Support\FakesStripeTrait;
 use Tests\TestCase;
 
 class CancelHouseholdSubscriptionUseCaseTest extends TestCase
 {
-    use FakesStripe;
+    use FakesStripeTrait;
     use RefreshDatabase;
 
     #[Test]

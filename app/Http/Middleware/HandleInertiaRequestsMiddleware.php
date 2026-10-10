@@ -8,7 +8,7 @@ use App\Data\AuthUserData;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
-class HandleInertiaRequests extends Middleware
+class HandleInertiaRequestsMiddleware extends Middleware
 {
     /**
      * @see https://inertiajs.com/server-side-setup#root-template

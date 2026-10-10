@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
-class RequireStripeWebhookSecret
+class RequireStripeWebhookSecretMiddleware
 {
     /**
      * Cashier only verifies webhook signatures when a secret is configured,

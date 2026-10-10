@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-enum MealSlot: string
+enum MealSlotEnum: string
 {
     case Breakfast = 'breakfast';
     case Lunch = 'lunch';

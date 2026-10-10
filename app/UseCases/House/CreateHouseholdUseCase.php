@@ -6,8 +6,8 @@ namespace App\UseCases\House;
 
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Contracts\Repositories\UserRepositoryInterface;
-use App\Enums\HouseholdRole;
-use App\Enums\Palette;
+use App\Enums\HouseholdRoleEnum;
+use App\Enums\PaletteEnum;
 use App\Models\Household;
 use App\Models\User;
 
@@ -38,10 +38,10 @@ class CreateHouseholdUseCase
             'current_household_id' => $household->id,
             'trial_claimed_at' => $owner->trial_claimed_at ?? now(),
             'initials' => mb_strtoupper(mb_substr(trim($owner->name), 0, 2)),
-            'colour' => Palette::cases()[0],
+            'colour' => PaletteEnum::cases()[0],
         ]);
 
-        $owner->households()->attach($household->id, ['role' => HouseholdRole::Owner, 'pending' => false]);
+        $owner->households()->attach($household->id, ['role' => HouseholdRoleEnum::Owner, 'pending' => false]);
 
         foreach ($attributes['invites'] ?? [] as $invite) {
             $this->inviteMember->execute($household, [

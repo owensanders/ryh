@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\Palette;
+use App\Enums\PaletteEnum;
 use App\Models\BudgetCategory;
 use App\Models\IncomeSource;
 use App\Models\User;
@@ -334,7 +334,7 @@ class BudgetTest extends TestCase
         BudgetCategory::factory()->recurring()->create([
             'household_id' => $user->household_id,
             'label' => 'Rent',
-            'colour' => Palette::Sky,
+            'colour' => PaletteEnum::Sky,
             'budgeted_pence' => 90000,
             'month' => $thisMonth,
         ]);

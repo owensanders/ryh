@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
-use App\Enums\HouseholdRole;
+use App\Enums\HouseholdRoleEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Household;
@@ -60,7 +60,7 @@ class RegisteredUserController extends Controller
         $household = $invite !== null ? Household::find($invite['household_id']) : null;
 
         if ($household !== null) {
-            $role = HouseholdRole::from($invite['role']);
+            $role = HouseholdRoleEnum::from($invite['role']);
             $guardianId = $invite['guardian_id'] ?? null;
 
             // Links sent before guardians had to confirm can't add a Teen or Child.

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Contracts\Repositories\MealPlanRepositoryInterface;
-use App\Enums\MealSlot;
+use App\Enums\MealSlotEnum;
 use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\Recipe;
@@ -28,7 +28,7 @@ class MealPlanRepository implements MealPlanRepositoryInterface
             ->get();
     }
 
-    public function forDay(Household $household, CarbonImmutable $day, MealSlot $slot): ?PlannedMeal
+    public function forDay(Household $household, CarbonImmutable $day, MealSlotEnum $slot): ?PlannedMeal
     {
         return $household->plannedMeals()
             ->with(['recipe', 'cook'])

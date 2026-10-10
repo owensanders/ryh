@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Auth;
 
-use App\Enums\HouseholdRole;
-use App\Enums\PendingReason;
+use App\Enums\HouseholdRoleEnum;
+use App\Enums\PendingReasonEnum;
 use App\Mail\HouseholdInviteMail;
 use App\Models\Household;
 use App\Models\User;
@@ -37,7 +37,7 @@ class HouseholdSetupTest extends TestCase
 
         $user->refresh();
         $this->assertNotNull($user->household_id);
-        $this->assertSame(HouseholdRole::Owner, $user->currentRole());
+        $this->assertSame(HouseholdRoleEnum::Owner, $user->currentRole());
 
         $household = $user->household;
         $this->assertSame('The Parker household', $household->name);
@@ -70,9 +70,9 @@ class HouseholdSetupTest extends TestCase
 
         $user->refresh();
         $this->assertSame($household->id, $user->household_id);
-        $this->assertSame(HouseholdRole::Adult, $user->currentRole());
+        $this->assertSame(HouseholdRoleEnum::Adult, $user->currentRole());
         $this->assertTrue($user->currentMembership()->pending);
-        $this->assertSame(PendingReason::Requested, $user->currentMembership()->pending_reason);
+        $this->assertSame(PendingReasonEnum::Requested, $user->currentMembership()->pending_reason);
     }
 
     #[Test]
@@ -156,7 +156,7 @@ class HouseholdSetupTest extends TestCase
     public function theOwnerIsNotMarkedPendingOnTheDoneScreen(): void
     {
         $household = Household::factory()->create();
-        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner, 'pending' => false]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner, 'pending' => false]);
 
         $this->actingAs($user)
             ->get('/household/done')

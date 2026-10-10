@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\ChoreStatus;
+use App\Enums\ChoreStatusEnum;
 use Database\Factories\ChoreFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,7 +19,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $assigned_to
  * @property int|null $created_by
  * @property string $name
- * @property ChoreStatus $status
+ * @property ChoreStatusEnum $status
  * @property Carbon|null $completed_at
  * @property int $position
  * @property User|null $assignee
@@ -39,7 +39,7 @@ class Chore extends Model
     protected function casts(): array
     {
         return [
-            'status' => ChoreStatus::class,
+            'status' => ChoreStatusEnum::class,
             'completed_at' => 'datetime',
         ];
     }
@@ -50,7 +50,7 @@ class Chore extends Model
         // into Completed — its completion time follows.
         static::saving(function (Chore $chore): void {
             if ($chore->isDirty('status') || ! $chore->exists) {
-                $chore->completed_at = $chore->status === ChoreStatus::Done
+                $chore->completed_at = $chore->status === ChoreStatusEnum::Done
                     ? ($chore->completed_at ?? now())
                     : null;
             }
@@ -61,7 +61,7 @@ class Chore extends Model
     public function prunable(): Builder
     {
         return static::query()
-            ->where('status', ChoreStatus::Done)
+            ->where('status', ChoreStatusEnum::Done)
             ->where('completed_at', '<', now()->subDays(self::KEEP_COMPLETED_DAYS));
     }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /** Groups household notifications so people can turn push off per area. */
-enum NotificationCategory: string
+enum NotificationCategoryEnum: string
 {
     case Chores = 'chores';
     case Calendar = 'calendar';

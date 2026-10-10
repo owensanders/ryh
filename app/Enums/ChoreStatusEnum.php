@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /** The two columns of the chore board. */
-enum ChoreStatus: string
+enum ChoreStatusEnum: string
 {
     case Today = 'today';
     case Done = 'done';

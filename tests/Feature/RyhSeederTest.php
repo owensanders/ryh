@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\RecipeTag;
+use App\Enums\RecipeTagEnum;
 use App\Models\Recipe;
 use Database\Seeders\RyhSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,9 +22,9 @@ class RyhSeederTest extends TestCase
 
         $invalid = Recipe::all()
             ->flatMap(fn (Recipe $recipe) => $recipe->tags ?? [])
-            ->reject(fn (string $tag) => RecipeTag::tryFrom($tag) !== null);
+            ->reject(fn (string $tag) => RecipeTagEnum::tryFrom($tag) !== null);
 
         $this->assertNotEmpty(Recipe::all());
-        $this->assertSame([], $invalid->values()->all(), 'Seeded tags must be RecipeTag values, or editing those recipes fails validation.');
+        $this->assertSame([], $invalid->values()->all(), 'Seeded tags must be RecipeTagEnum values, or editing those recipes fails validation.');
     }
 }

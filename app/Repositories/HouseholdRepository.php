@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
-use App\Enums\HouseholdRole;
+use App\Enums\HouseholdRoleEnum;
 use App\Models\BudgetCategory;
 use App\Models\CalendarEvent;
 use App\Models\Household;
@@ -57,14 +57,14 @@ class HouseholdRepository implements HouseholdRepositoryInterface
     {
         return $household->members()
             ->wherePivot('pending', false)
-            ->wherePivot('role', HouseholdRole::Owner->value)
+            ->wherePivot('role', HouseholdRoleEnum::Owner->value)
             ->get();
     }
 
     public function isSoleOwner(Household $household, User $member): bool
     {
         return $this->members($household)
-            ->where('pivot.role', HouseholdRole::Owner)
+            ->where('pivot.role', HouseholdRoleEnum::Owner)
             ->where('id', '!=', $member->id)
             ->isEmpty();
     }

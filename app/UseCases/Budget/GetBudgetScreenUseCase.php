@@ -10,7 +10,7 @@ use App\Data\BudgetMonthSummaryData;
 use App\Data\IncomeSourceData;
 use App\Models\BudgetCategory;
 use App\Models\Household;
-use App\Support\Money;
+use App\Support\MoneyHelper;
 use Carbon\CarbonImmutable;
 
 class GetBudgetScreenUseCase
@@ -57,13 +57,13 @@ class GetBudgetScreenUseCase
             'previousMonth' => $first->subMonth()->format('Y-m'),
             'nextMonth' => $first->addMonth()->format('Y-m'),
             'daysLeftLabel' => $daysLeft.' '.($daysLeft === 1 ? 'day' : 'days').' left',
-            'leftToSpend' => Money::format($leftToSpend),
-            'budgetedLabel' => Money::format($budgeted),
-            'perDay' => Money::format($daysLeft > 0 ? intdiv(max($leftToSpend, 0), $daysLeft) : 0),
+            'leftToSpend' => MoneyHelper::format($leftToSpend),
+            'budgetedLabel' => MoneyHelper::format($budgeted),
+            'perDay' => MoneyHelper::format($daysLeft > 0 ? intdiv(max($leftToSpend, 0), $daysLeft) : 0),
             'budgetedPence' => $budgeted,
             'incomeTotalPence' => $incomeTotal,
             'income' => $income->map(IncomeSourceData::fromModel(...))->values()->all(),
-            'incomeTotal' => Money::format($incomeTotal),
+            'incomeTotal' => MoneyHelper::format($incomeTotal),
             'categories' => $categories->map(fn (BudgetCategory $category) => BudgetCategoryData::fromModel($category, $budgeted))->values()->all(),
             'history' => $this->history($household, $first),
         ];
@@ -81,7 +81,7 @@ class GetBudgetScreenUseCase
             $months[] = new BudgetMonthSummaryData(
                 month: $cursor->format('Y-m'),
                 monthLabel: $cursor->format('M'),
-                total: Money::format($total),
+                total: MoneyHelper::format($total),
                 totalPence: $total,
             );
         }

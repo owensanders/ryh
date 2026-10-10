@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\Palette;
+use App\Enums\PaletteEnum;
 use App\Models\Household;
 use App\Models\ShoppingList;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -24,7 +24,7 @@ class ShoppingListFactory extends Factory
             'household_id' => Household::factory(),
             'name' => $name,
             'slug' => Str::slug($name),
-            'colour' => $this->faker->randomElement(Palette::cases()),
+            'colour' => $this->faker->randomElement(PaletteEnum::cases()),
             'position' => 0,
         ];
     }

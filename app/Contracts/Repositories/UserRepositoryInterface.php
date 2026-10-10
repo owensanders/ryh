@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Repositories;
 
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationCategoryEnum;
 use App\Models\User;
 
 interface UserRepositoryInterface
@@ -35,6 +35,6 @@ interface UserRepositoryInterface
 
     public function deleteAllPushSubscriptions(User $user): void;
 
-    /** @param list<NotificationCategory> $optOuts */
+    /** @param list<NotificationCategoryEnum> $optOuts */
     public function setPushOptOuts(User $user, array $optOuts): User;
 }

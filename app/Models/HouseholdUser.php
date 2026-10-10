@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\HouseholdRole;
-use App\Enums\PendingReason;
+use App\Enums\HouseholdRoleEnum;
+use App\Enums\PendingReasonEnum;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
 use LogicException;
@@ -13,9 +13,9 @@ use LogicException;
 /**
  * @property int $household_id
  * @property int $user_id
- * @property HouseholdRole $role
+ * @property HouseholdRoleEnum $role
  * @property bool $pending
- * @property PendingReason|null $pending_reason
+ * @property PendingReasonEnum|null $pending_reason
  * @property int|null $guardian_confirmed_by Who confirmed they're a Teen or Child member's parent or guardian.
  * @property Carbon|null $guardian_confirmed_at
  */
@@ -29,7 +29,7 @@ class HouseholdUser extends Pivot
      *
      * @return array{guardian_confirmed_by: int|null, guardian_confirmed_at: \DateTimeInterface|null}
      */
-    public static function guardianAttributes(HouseholdRole $role, ?int $guardianId, ?\DateTimeInterface $confirmedAt = null): array
+    public static function guardianAttributes(HouseholdRoleEnum $role, ?int $guardianId, ?\DateTimeInterface $confirmedAt = null): array
     {
         if (! $role->isForMinors()) {
             return ['guardian_confirmed_by' => null, 'guardian_confirmed_at' => null];
@@ -45,9 +45,9 @@ class HouseholdUser extends Pivot
     protected function casts(): array
     {
         return [
-            'role' => HouseholdRole::class,
+            'role' => HouseholdRoleEnum::class,
             'pending' => 'boolean',
-            'pending_reason' => PendingReason::class,
+            'pending_reason' => PendingReasonEnum::class,
             'guardian_confirmed_at' => 'datetime',
         ];
     }

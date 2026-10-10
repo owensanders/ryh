@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('label');
             $table->string('meta')->nullable();
             $table->string('colour')->default('mint');
-            // Money is stored in pence to keep the arithmetic exact.
+            // MoneyHelper is stored in pence to keep the arithmetic exact.
             $table->unsignedInteger('amount_pence');
             $table->unsignedInteger('position')->default(0);
             $table->timestamps();

@@ -28,7 +28,7 @@ return new class extends Migration
             $table->foreignId('household_id')->constrained()->cascadeOnDelete();
             $table->string('label');
             $table->string('colour')->default('coral');
-            // Money is stored in pence to keep the arithmetic exact.
+            // MoneyHelper is stored in pence to keep the arithmetic exact.
             $table->unsignedInteger('budgeted_pence');
             $table->unsignedInteger('spent_pence')->default(0);
             $table->date('month');

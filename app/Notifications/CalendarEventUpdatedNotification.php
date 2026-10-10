@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationCategoryEnum;
 use App\Models\CalendarEvent;
 use App\Models\User;
 
@@ -30,9 +30,9 @@ class CalendarEventUpdatedNotification extends HouseholdNotification
         ];
     }
 
-    public function category(): NotificationCategory
+    public function category(): NotificationCategoryEnum
     {
-        return NotificationCategory::Calendar;
+        return NotificationCategoryEnum::Calendar;
     }
 
     protected function householdId(): int

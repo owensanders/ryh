@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\UseCases\Meals;
 
-use App\Ai\AiConfig;
+use App\Ai\AiConfigService;
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Contracts\Repositories\MealPlanRepositoryInterface;
 use App\Data\MemberData;
@@ -81,8 +81,8 @@ class GetMealPlannerUseCase
                 ->map(MemberData::fromModel(...))
                 ->values()
                 ->all(),
-            'aiConfigured' => AiConfig::isConfigured(),
-            'aiPaused' => AiConfig::isPaused(),
+            'aiConfigured' => AiConfigService::isConfigured(),
+            'aiPaused' => AiConfigService::isPaused(),
             'aiAvailableFrom' => $household->canGenerateAiMealPlan()
                 ? null
                 : $household->ai_meal_plan_generated_at?->addWeek()->toDateString(),

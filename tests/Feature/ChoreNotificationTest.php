@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\ChoreStatus;
-use App\Enums\HouseholdRole;
+use App\Enums\ChoreStatusEnum;
+use App\Enums\HouseholdRoleEnum;
 use App\Models\Chore;
 use App\Models\User;
 use App\Notifications\ChoreActionedNotification;
@@ -70,12 +70,12 @@ class ChoreNotificationTest extends TestCase
 
         $creator = User::factory()->create();
         $assignee = User::factory()->create(['household_id' => $creator->household_id]);
-        $actor = User::factory()->create(['household_id' => $creator->household_id, 'role' => HouseholdRole::Adult]);
+        $actor = User::factory()->create(['household_id' => $creator->household_id, 'role' => HouseholdRoleEnum::Adult]);
         $chore = Chore::factory()->create([
             'household_id' => $creator->household_id,
             'assigned_to' => $assignee->id,
             'created_by' => $creator->id,
-            'status' => ChoreStatus::Today,
+            'status' => ChoreStatusEnum::Today,
         ]);
 
         $this->actingAs($actor)->patch("/chores/{$chore->id}/toggle");
@@ -95,7 +95,7 @@ class ChoreNotificationTest extends TestCase
             'household_id' => $owner->household_id,
             'assigned_to' => $owner->id,
             'created_by' => $owner->id,
-            'status' => ChoreStatus::Today,
+            'status' => ChoreStatusEnum::Today,
         ]);
 
         $this->actingAs($owner)->patch("/chores/{$chore->id}/toggle");
@@ -110,7 +110,7 @@ class ChoreNotificationTest extends TestCase
 
         $creator = User::factory()->create();
         $assignee = User::factory()->create(['household_id' => $creator->household_id]);
-        $actor = User::factory()->create(['household_id' => $creator->household_id, 'role' => HouseholdRole::Adult]);
+        $actor = User::factory()->create(['household_id' => $creator->household_id, 'role' => HouseholdRoleEnum::Adult]);
         $chore = Chore::factory()->create([
             'household_id' => $creator->household_id,
             'assigned_to' => $assignee->id,
@@ -148,7 +148,7 @@ class ChoreNotificationTest extends TestCase
 
         $creator = User::factory()->create();
         $assignee = User::factory()->create(['household_id' => $creator->household_id]);
-        $actor = User::factory()->create(['household_id' => $creator->household_id, 'role' => HouseholdRole::Adult]);
+        $actor = User::factory()->create(['household_id' => $creator->household_id, 'role' => HouseholdRoleEnum::Adult]);
         $chore = Chore::factory()->create([
             'household_id' => $creator->household_id,
             'assigned_to' => $assignee->id,

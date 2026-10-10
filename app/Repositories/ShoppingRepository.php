@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Contracts\Repositories\ShoppingRepositoryInterface;
-use App\Enums\Palette;
+use App\Enums\PaletteEnum;
 use App\Models\Household;
 use App\Models\ShoppingItem;
 use App\Models\ShoppingList;
@@ -33,7 +33,7 @@ class ShoppingRepository implements ShoppingRepositoryInterface
         return $lists->first(fn (ShoppingList $list) => $list->items->isNotEmpty());
     }
 
-    public function createList(Household $household, string $name, Palette $colour): ShoppingList
+    public function createList(Household $household, string $name, PaletteEnum $colour): ShoppingList
     {
         return $household->shoppingLists()->create([
             'name' => $name,
@@ -42,7 +42,7 @@ class ShoppingRepository implements ShoppingRepositoryInterface
         ]);
     }
 
-    public function updateList(ShoppingList $list, string $name, Palette $colour): ShoppingList
+    public function updateList(ShoppingList $list, string $name, PaletteEnum $colour): ShoppingList
     {
         $list->update(['name' => $name, 'colour' => $colour]);
 

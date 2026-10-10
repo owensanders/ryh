@@ -9,7 +9,7 @@ use App\UseCases\Billing\SendRenewalReminderUseCase;
 use Laravel\Cashier\Events\WebhookReceived;
 
 /** The billing emails the Terms of Service promise, sent from Stripe's webhooks. */
-class SendBillingNotices
+class SendBillingNoticesListener
 {
     public function __construct(
         private readonly SendRenewalReminderUseCase $renewalReminder,

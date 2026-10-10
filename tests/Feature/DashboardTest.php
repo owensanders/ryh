@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\ChoreStatus;
+use App\Enums\ChoreStatusEnum;
 use App\Models\Chore;
 use App\Models\Household;
 use App\Models\PlannedMeal;
@@ -74,8 +74,8 @@ class DashboardTest extends TestCase
         ShoppingItem::factory()->count(3)->create(['shopping_list_id' => $list->id]);
         ShoppingItem::factory()->done()->create(['shopping_list_id' => $list->id]);
 
-        Chore::factory()->count(2)->create(['household_id' => $household->id, 'status' => ChoreStatus::Today]);
-        Chore::factory()->create(['household_id' => $household->id, 'status' => ChoreStatus::Done]);
+        Chore::factory()->count(2)->create(['household_id' => $household->id, 'status' => ChoreStatusEnum::Today]);
+        Chore::factory()->create(['household_id' => $household->id, 'status' => ChoreStatusEnum::Done]);
 
         $this->actingAs($user)
             ->get('/dashboard')

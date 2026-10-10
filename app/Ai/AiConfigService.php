@@ -6,7 +6,7 @@ namespace App\Ai;
 
 use Illuminate\Support\Facades\Cache;
 
-class AiConfig
+class AiConfigService
 {
     private const string PAUSED_KEY = 'ai:paused';
 

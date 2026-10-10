@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationCategoryEnum;
 use App\Models\Household;
 use App\Models\User;
 
@@ -31,9 +31,9 @@ class ChoresReminderNotification extends HouseholdNotification
         ];
     }
 
-    public function category(): NotificationCategory
+    public function category(): NotificationCategoryEnum
     {
-        return NotificationCategory::Chores;
+        return NotificationCategoryEnum::Chores;
     }
 
     protected function householdId(): int

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\ChoreStatus;
+use App\Enums\ChoreStatusEnum;
 use App\Models\Chore;
 use App\Models\ShoppingItem;
 use App\Models\User;
@@ -35,7 +35,7 @@ class PruningTest extends TestCase
     #[Test]
     public function aChoreCreatedAlreadyCompletedIsStamped(): void
     {
-        $chore = Chore::factory()->create(['status' => ChoreStatus::Done]);
+        $chore = Chore::factory()->create(['status' => ChoreStatusEnum::Done]);
 
         $this->assertNotNull($chore->completed_at);
     }
@@ -44,11 +44,11 @@ class PruningTest extends TestCase
     public function theNightlyPruneClearsOnlyChoresCompletedOverThirtyDaysAgo(): void
     {
         $this->travel(-31)->days();
-        $old = Chore::factory()->create(['status' => ChoreStatus::Done]);
-        $stillToDo = Chore::factory()->create(['status' => ChoreStatus::Today]);
+        $old = Chore::factory()->create(['status' => ChoreStatusEnum::Done]);
+        $stillToDo = Chore::factory()->create(['status' => ChoreStatusEnum::Today]);
         $this->travelBack();
 
-        $recent = Chore::factory()->create(['status' => ChoreStatus::Done]);
+        $recent = Chore::factory()->create(['status' => ChoreStatusEnum::Done]);
 
         $this->artisan('model:prune', ['--model' => [Chore::class]])->assertSuccessful();
 

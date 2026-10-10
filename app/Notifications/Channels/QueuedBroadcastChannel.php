@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications\Channels;
 
-use App\Events\UserNotificationBroadcast;
+use App\Events\UserNotificationBroadcastEvent;
 use App\Models\User;
 use App\Notifications\HouseholdNotification;
 
@@ -16,7 +16,7 @@ class QueuedBroadcastChannel
 {
     public function send(User $notifiable, HouseholdNotification $notification): void
     {
-        event(new UserNotificationBroadcast($notifiable->id, [
+        event(new UserNotificationBroadcastEvent($notifiable->id, [
             ...$notification->toArray($notifiable),
             'id' => $notification->id,
         ]));

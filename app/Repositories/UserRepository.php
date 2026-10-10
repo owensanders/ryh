@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Contracts\Repositories\UserRepositoryInterface;
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationCategoryEnum;
 use App\Models\User;
 use Illuminate\Support\Str;
 
@@ -76,10 +76,10 @@ class UserRepository implements UserRepositoryInterface
         $user->pushSubscriptions()->delete();
     }
 
-    /** @param list<NotificationCategory> $optOuts */
+    /** @param list<NotificationCategoryEnum> $optOuts */
     public function setPushOptOuts(User $user, array $optOuts): User
     {
-        $user->update(['push_opt_outs' => array_map(fn (NotificationCategory $category) => $category->value, $optOuts)]);
+        $user->update(['push_opt_outs' => array_map(fn (NotificationCategoryEnum $category) => $category->value, $optOuts)]);
 
         return $user->refresh();
     }

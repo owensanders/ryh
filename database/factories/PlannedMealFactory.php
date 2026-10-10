@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\MealSlot;
+use App\Enums\MealSlotEnum;
 use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\Recipe;
@@ -24,7 +24,7 @@ class PlannedMealFactory extends Factory
             'recipe_id' => Recipe::factory(),
             'cook_id' => User::factory(),
             'planned_on' => now()->toDateString(),
-            'slot' => MealSlot::Dinner,
+            'slot' => MealSlotEnum::Dinner,
             'missing_ingredients' => 0,
         ];
     }

@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\HouseholdRole;
-use App\Enums\Palette;
+use App\Enums\HouseholdRoleEnum;
+use App\Enums\PaletteEnum;
 use App\Models\Household;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -31,7 +31,7 @@ class UserFactory extends Factory
         return [
             'name' => fake()->name(),
             'initials' => fake()->unique()->lexify('??'),
-            'colour' => fake()->randomElement(Palette::cases()),
+            'colour' => fake()->randomElement(PaletteEnum::cases()),
             'status_line' => fake()->sentence(3),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
@@ -67,7 +67,7 @@ class UserFactory extends Factory
 
         if ($householdId !== null) {
             $user->households()->attach($householdId, [
-                'role' => $membership->get('role', HouseholdRole::Adult),
+                'role' => $membership->get('role', HouseholdRoleEnum::Adult),
                 'pending' => $membership->get('pending', false),
                 'pending_reason' => $membership->get('pending_reason'),
             ]);

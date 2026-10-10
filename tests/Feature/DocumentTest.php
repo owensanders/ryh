@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\HouseholdRole;
+use App\Enums\HouseholdRoleEnum;
 use App\Models\Document;
 use App\Models\DocumentFolder;
 use App\Models\User;
@@ -21,7 +21,7 @@ class DocumentTest extends TestCase
     #[Test]
     public function itCreatesAFolder(): void
     {
-        $user = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $user = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($user)
             ->post('/document-folders', ['name' => 'Insurance'])
@@ -33,7 +33,7 @@ class DocumentTest extends TestCase
     #[Test]
     public function itRejectsAWhitespaceOnlyFolderName(): void
     {
-        $user = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $user = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($user)
             ->post('/document-folders', ['name' => '   '])
@@ -46,7 +46,7 @@ class DocumentTest extends TestCase
     public function itDeletesAFolderAndItsDocuments(): void
     {
         Storage::fake('local');
-        $user = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $user = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $folder = DocumentFolder::create(['household_id' => $user->household_id, 'name' => 'Property']);
         $document = $folder->documents()->create([
             'household_id' => $user->household_id,
@@ -70,7 +70,7 @@ class DocumentTest extends TestCase
     public function itUploadsAFileIntoAFolder(): void
     {
         Storage::fake('local');
-        $user = User::factory()->create(['role' => HouseholdRole::Adult]);
+        $user = User::factory()->create(['role' => HouseholdRoleEnum::Adult]);
         $folder = DocumentFolder::create(['household_id' => $user->household_id, 'name' => 'Property']);
 
         $this->actingAs($user)
@@ -90,7 +90,7 @@ class DocumentTest extends TestCase
     public function itDownloadsADocumentButNotAnotherHouseholdsDocument(): void
     {
         Storage::fake('local');
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $folder = DocumentFolder::create(['household_id' => $owner->household_id, 'name' => 'Property']);
         $document = $folder->documents()->create([
             'household_id' => $owner->household_id,
@@ -105,7 +105,7 @@ class DocumentTest extends TestCase
             ->get("/documents/{$document->id}/download")
             ->assertOk();
 
-        $stranger = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $stranger = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $this->actingAs($stranger)
             ->get("/documents/{$document->id}/download")
             ->assertNotFound();
@@ -120,7 +120,7 @@ class DocumentTest extends TestCase
             fn (string $path, \DateTimeInterface $expiration, array $options) => 'https://bucket.example/'.$path.'?disposition='.rawurlencode($options['ResponseContentDisposition']),
         );
 
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $folder = DocumentFolder::create(['household_id' => $owner->household_id, 'name' => 'Property']);
         $document = $folder->documents()->create([
             'household_id' => $owner->household_id,
@@ -138,7 +138,7 @@ class DocumentTest extends TestCase
     #[Test]
     public function itMovesADocumentToAnotherFolder(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $property = DocumentFolder::create(['household_id' => $owner->household_id, 'name' => 'Property']);
         $insurance = DocumentFolder::create(['household_id' => $owner->household_id, 'name' => 'Insurance']);
         $document = $this->documentIn($property, 'Policy.pdf');
@@ -154,11 +154,11 @@ class DocumentTest extends TestCase
     #[Test]
     public function itWontMoveADocumentIntoAnotherHouseholdsFolder(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $folder = DocumentFolder::create(['household_id' => $owner->household_id, 'name' => 'Property']);
         $document = $this->documentIn($folder, 'Deed.pdf');
 
-        $stranger = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $stranger = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $theirFolder = DocumentFolder::create(['household_id' => $stranger->household_id, 'name' => 'Theirs']);
 
         $this->actingAs($owner)
@@ -171,11 +171,11 @@ class DocumentTest extends TestCase
     #[Test]
     public function itWontMoveAnotherHouseholdsDocument(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $folder = DocumentFolder::create(['household_id' => $owner->household_id, 'name' => 'Property']);
         $document = $this->documentIn($folder, 'Deed.pdf');
 
-        $stranger = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $stranger = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $theirFolder = DocumentFolder::create(['household_id' => $stranger->household_id, 'name' => 'Theirs']);
 
         $this->actingAs($stranger)
@@ -188,7 +188,7 @@ class DocumentTest extends TestCase
     #[Test]
     public function movingADocumentNeedsAnExistingFolder(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $folder = DocumentFolder::create(['household_id' => $owner->household_id, 'name' => 'Property']);
         $document = $this->documentIn($folder, 'Deed.pdf');
 
@@ -202,7 +202,7 @@ class DocumentTest extends TestCase
     public function itDeletesADocument(): void
     {
         Storage::fake('local');
-        $user = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $user = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $folder = DocumentFolder::create(['household_id' => $user->household_id, 'name' => 'Property']);
         $document = $folder->documents()->create([
             'household_id' => $user->household_id,
@@ -224,7 +224,7 @@ class DocumentTest extends TestCase
     #[Test]
     public function itComputesTheStorageMeterFromTotalDocumentSize(): void
     {
-        $user = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $user = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $folder = DocumentFolder::create(['household_id' => $user->household_id, 'name' => 'Property']);
         $folder->documents()->create([
             'household_id' => $user->household_id,
@@ -241,7 +241,7 @@ class DocumentTest extends TestCase
     #[Test]
     public function itShowsTheStorageMeterInSmallerUnitsForSmallUploads(): void
     {
-        $user = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $user = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $folder = DocumentFolder::create(['household_id' => $user->household_id, 'name' => 'Property']);
         $folder->documents()->create([
             'household_id' => $user->household_id,
@@ -258,8 +258,8 @@ class DocumentTest extends TestCase
     #[Test]
     public function teenAndChildRolesAreForbiddenFromEveryDocumentsRoute(): void
     {
-        $teen = User::factory()->create(['role' => HouseholdRole::Teen]);
-        $child = User::factory()->create(['household_id' => $teen->household_id, 'role' => HouseholdRole::Child]);
+        $teen = User::factory()->create(['role' => HouseholdRoleEnum::Teen]);
+        $child = User::factory()->create(['household_id' => $teen->household_id, 'role' => HouseholdRoleEnum::Child]);
         $folder = DocumentFolder::create(['household_id' => $teen->household_id, 'name' => 'Property']);
         $document = $this->documentIn($folder, 'Deed.pdf');
 

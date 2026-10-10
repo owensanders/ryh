@@ -6,8 +6,8 @@ namespace App\UseCases\Status;
 
 use App\Data\PlatformStatusData;
 use App\Data\ServiceStatusData;
-use App\Enums\ServiceState;
-use App\Status\PlatformProbes;
+use App\Enums\ServiceStateEnum;
+use App\Status\PlatformProbesService;
 use Illuminate\Support\Facades\Cache;
 
 class GetPlatformStatusUseCase
@@ -17,7 +17,7 @@ class GetPlatformStatusUseCase
     /** Results are shared by every visitor for this long, so the page can't be used to hammer the database. */
     public const int CACHE_SECONDS = 60;
 
-    public function __construct(private readonly PlatformProbes $probes) {}
+    public function __construct(private readonly PlatformProbesService $probes) {}
 
     public function execute(): PlatformStatusData
     {
@@ -25,7 +25,7 @@ class GetPlatformStatusUseCase
         $result = Cache::remember(self::CACHE_KEY, self::CACHE_SECONDS, fn (): array => [
             'checkedAt' => now()->toIso8601String(),
             'states' => [
-                'app' => ServiceState::Operational->value,
+                'app' => ServiceStateEnum::Operational->value,
                 'database' => $this->probes->database()->value,
                 'cache' => $this->probes->cache()->value,
                 'queue' => $this->probes->queue()->value,
@@ -37,12 +37,12 @@ class GetPlatformStatusUseCase
 
         $services = [];
         foreach (self::descriptions() as $key => [$name, $description]) {
-            $services[] = ServiceStatusData::of($name, $description, ServiceState::from($result['states'][$key]));
+            $services[] = ServiceStatusData::of($name, $description, ServiceStateEnum::from($result['states'][$key]));
         }
 
         $overall = collect($services)
             ->map(fn (ServiceStatusData $service) => $service->state)
-            ->sortByDesc(fn (ServiceState $state) => $state->severity())
+            ->sortByDesc(fn (ServiceStateEnum $state) => $state->severity())
             ->firstOrFail();
 
         return new PlatformStatusData($overall, $services, $result['checkedAt']);

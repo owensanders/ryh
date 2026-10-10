@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\HouseholdRole;
+use App\Enums\HouseholdRoleEnum;
 use App\Mail\PaymentFailedMail;
 use App\Mail\RenewalReminderMail;
 use App\Models\Household;
@@ -35,7 +35,7 @@ class BillingNoticesTest extends TestCase
         Mail::fake();
         config(['plans.intervals.annual.stripe_price' => 'price_annual', 'plans.intervals.monthly.stripe_price' => 'price_monthly']);
 
-        $this->owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $this->owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $this->household = $this->owner->household;
         $this->household->forceFill(['stripe_id' => 'cus_test123'])->save();
     }
@@ -86,7 +86,7 @@ class BillingNoticesTest extends TestCase
     public function ownersAreRemindedBeforeAnAnnualRenewal(): void
     {
         $this->subscribe('price_annual');
-        $adult = User::factory()->create(['household_id' => $this->household->id, 'role' => HouseholdRole::Adult]);
+        $adult = User::factory()->create(['household_id' => $this->household->id, 'role' => HouseholdRoleEnum::Adult]);
 
         $this->postSigned('invoice.upcoming', $this->upcomingInvoice())->assertOk();
 

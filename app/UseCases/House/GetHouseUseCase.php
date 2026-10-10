@@ -10,7 +10,7 @@ use App\Data\HouseMemberData;
 use App\Data\PlanStatusData;
 use App\Data\RoleSummaryData;
 use App\Data\StatData;
-use App\Enums\HouseholdRole;
+use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
 use App\Models\User;
 
@@ -40,18 +40,18 @@ class GetHouseUseCase
             memberCount: $members->count(),
             maxMembers: config('plans.max_members'),
             roleOptions: array_map(
-                fn (HouseholdRole $role) => ['value' => $role->value, 'label' => $role->label()],
-                HouseholdRole::cases(),
+                fn (HouseholdRoleEnum $role) => ['value' => $role->value, 'label' => $role->label()],
+                HouseholdRoleEnum::cases(),
             ),
             members: $members->map(fn (User $user) => HouseMemberData::fromModel($user, $viewerId))->values()->all(),
             roles: array_map(
-                fn (HouseholdRole $role) => new RoleSummaryData(
+                fn (HouseholdRoleEnum $role) => new RoleSummaryData(
                     name: $role->label(),
                     colour: $role->colour()->cssVar(),
                     body: $role->description(),
                     count: $members->where('pivot.role', $role)->count(),
                 ),
-                HouseholdRole::cases(),
+                HouseholdRoleEnum::cases(),
             ),
             planStatus: $planStatus,
         );

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Enums\RecipeTag;
+use App\Enums\RecipeTagEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -24,7 +24,7 @@ class RecipeRequest extends FormRequest
             'duration_label' => ['nullable', 'string', 'max:40'],
             'difficulty' => ['nullable', 'string', 'max:40'],
             'tags' => ['array'],
-            'tags.*' => [Rule::enum(RecipeTag::class)],
+            'tags.*' => [Rule::enum(RecipeTagEnum::class)],
             'ingredients' => ['array'],
             'ingredients.*.name' => ['required', 'string', 'max:120'],
             'ingredients.*.quantity' => ['nullable', 'string', 'max:40'],

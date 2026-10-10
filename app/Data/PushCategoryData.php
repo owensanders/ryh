@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data;
 
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationCategoryEnum;
 use App\Models\User;
 use Spatie\LaravelData\Data;
 
@@ -18,7 +18,7 @@ class PushCategoryData extends Data
         public bool $enabled,
     ) {}
 
-    public static function fromCategory(NotificationCategory $category, User $user): self
+    public static function fromCategory(NotificationCategoryEnum $category, User $user): self
     {
         return new self($category->value, $category->label(), $category->description(), $user->wantsPushFor($category));
     }

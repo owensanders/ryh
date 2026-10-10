@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\HouseholdRole;
-use App\Enums\PendingReason;
+use App\Enums\HouseholdRoleEnum;
+use App\Enums\PendingReasonEnum;
 use App\Mail\HouseholdInviteMail;
 use App\Models\CalendarEvent;
 use App\Models\Chore;
@@ -30,9 +30,9 @@ class HouseTest extends TestCase
             'name' => 'The Parkers', 'location' => 'Bristol', 'streak_days' => 12,
             'trial_ends_at' => now()->addDays(30),
         ]);
-        $owner = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
-        User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Adult]);
-        User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Adult, 'pending' => true]);
+        $owner = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
+        User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Adult]);
+        User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Adult, 'pending' => true]);
 
         $this->actingAs($owner)
             ->get('/house')
@@ -55,7 +55,7 @@ class HouseTest extends TestCase
     {
         config(['plans.intervals.annual.stripe_price' => 'price_home_annual_test']);
 
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         Subscription::create([
             'household_id' => $owner->household->id,
             'type' => 'default',
@@ -79,7 +79,7 @@ class HouseTest extends TestCase
     {
         config(['plans.intervals.annual.stripe_price' => null]);
 
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         Subscription::create([
             'household_id' => $owner->household->id,
             'type' => 'default',
@@ -100,7 +100,7 @@ class HouseTest extends TestCase
     #[Test]
     public function itRefusesToStartCheckoutWhenBillingIsNotConfigured(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $owner->household->update(['trial_ends_at' => now()->addDays(30)]);
 
         $this->actingAs($owner)
@@ -113,7 +113,7 @@ class HouseTest extends TestCase
     {
         Mail::fake();
 
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($owner)
             ->post('/house/invite', ['email' => 'margaret@parkerhouse.co.uk', 'role' => 'adult'])
@@ -132,7 +132,7 @@ class HouseTest extends TestCase
     {
         Mail::fake();
 
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $existing = User::factory()->create(['email' => 'margaret@parkerhouse.co.uk']);
 
         $this->actingAs($owner)
@@ -154,7 +154,7 @@ class HouseTest extends TestCase
     #[Test]
     public function itRejectsInvitingSomeoneAlreadyInTheHousehold(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $member = User::factory()->create(['household_id' => $owner->household_id]);
 
         $this->actingAs($owner)
@@ -165,11 +165,11 @@ class HouseTest extends TestCase
     #[Test]
     public function itApprovesAMemberWhoRequestedToJoin(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $requester = User::factory()->create([
             'household_id' => $owner->household_id,
             'pending' => true,
-            'pending_reason' => PendingReason::Requested,
+            'pending_reason' => PendingReasonEnum::Requested,
         ]);
 
         $this->actingAs($owner)
@@ -185,8 +185,8 @@ class HouseTest extends TestCase
     #[Test]
     public function itDoesNotApproveAnotherHouseholdsMember(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
-        $stranger = User::factory()->create(['pending' => true, 'pending_reason' => PendingReason::Requested]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
+        $stranger = User::factory()->create(['pending' => true, 'pending_reason' => PendingReasonEnum::Requested]);
 
         $this->actingAs($owner)->patch("/house/members/{$stranger->id}/approve")->assertNotFound();
 
@@ -196,7 +196,7 @@ class HouseTest extends TestCase
     #[Test]
     public function itRejectsAnInviteWithMissingFields(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($owner)
             ->post('/house/invite', ['email' => '', 'role' => 'adult'])
@@ -206,47 +206,47 @@ class HouseTest extends TestCase
     #[Test]
     public function itChangesAMembersRole(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
-        $member = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRole::Adult]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
+        $member = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRoleEnum::Adult]);
 
         $this->actingAs($owner)
             ->patch("/house/members/{$member->id}/role", ['role' => 'teen', 'guardian_confirmed' => true])
             ->assertRedirect()
             ->assertSessionHas('toast', "{$member->name} is now Teen");
 
-        $this->assertSame(HouseholdRole::Teen, $member->refresh()->currentRole());
+        $this->assertSame(HouseholdRoleEnum::Teen, $member->refresh()->currentRole());
     }
 
     #[Test]
     public function itRefusesToDemoteTheSoleOwner(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($owner)
             ->patch("/house/members/{$owner->id}/role", ['role' => 'adult'])
             ->assertSessionHasErrors('role');
 
-        $this->assertSame(HouseholdRole::Owner, $owner->refresh()->currentRole());
+        $this->assertSame(HouseholdRoleEnum::Owner, $owner->refresh()->currentRole());
     }
 
     #[Test]
     public function itAllowsDemotingAnOwnerWhenAnotherOwnerRemains(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
-        User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
+        User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($owner)
             ->patch("/house/members/{$owner->id}/role", ['role' => 'adult'])
             ->assertRedirect()
             ->assertSessionHasNoErrors();
 
-        $this->assertSame(HouseholdRole::Adult, $owner->refresh()->currentRole());
+        $this->assertSame(HouseholdRoleEnum::Adult, $owner->refresh()->currentRole());
     }
 
     #[Test]
     public function itRemovesAMember(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $member = User::factory()->create(['household_id' => $owner->household_id, 'name' => 'James Parker']);
 
         $this->actingAs($owner)
@@ -262,7 +262,7 @@ class HouseTest extends TestCase
     #[Test]
     public function itRefusesToRemoveTheSoleOwner(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($owner)
             ->delete("/house/members/{$owner->id}")
@@ -274,7 +274,7 @@ class HouseTest extends TestCase
     #[Test]
     public function itCancelsAPendingInvite(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $invitee = User::factory()->create(['household_id' => $owner->household_id, 'name' => 'Margaret Parker', 'pending' => true]);
 
         $this->actingAs($owner)
@@ -289,7 +289,7 @@ class HouseTest extends TestCase
     #[Test]
     public function itDeletesChoresAssignedToTheRemovedMember(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $member = User::factory()->create(['household_id' => $owner->household_id]);
         $chore = Chore::factory()->create(['household_id' => $owner->household_id, 'assigned_to' => $member->id]);
 
@@ -301,7 +301,7 @@ class HouseTest extends TestCase
     #[Test]
     public function itDeletesAnEventWhenTheRemovedMemberWasItsOnlyAttendee(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $member = User::factory()->create(['household_id' => $owner->household_id]);
         $event = CalendarEvent::factory()->create(['household_id' => $owner->household_id]);
         $event->attendees()->attach($member->id);
@@ -314,7 +314,7 @@ class HouseTest extends TestCase
     #[Test]
     public function itOnlyDetachesTheRemovedMemberFromAnEventWithOtherAttendees(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $member = User::factory()->create(['household_id' => $owner->household_id]);
         $event = CalendarEvent::factory()->create(['household_id' => $owner->household_id]);
         $event->attendees()->attach([$member->id, $owner->id]);
@@ -329,7 +329,7 @@ class HouseTest extends TestCase
     #[Test]
     public function itUnassignsPlannedMealsCookedByTheRemovedMember(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $member = User::factory()->create(['household_id' => $owner->household_id]);
         $recipe = Recipe::factory()->create(['household_id' => $owner->household_id]);
         $meal = PlannedMeal::factory()->create([
@@ -344,7 +344,7 @@ class HouseTest extends TestCase
     #[Test]
     public function itTogglesTheInviteCodeOff(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($owner)
             ->patch('/house/join-code', ['enabled' => false])
@@ -357,7 +357,7 @@ class HouseTest extends TestCase
     #[Test]
     public function itTogglesTheInviteCodeBackOn(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $owner->household->update(['join_code_enabled' => false]);
 
         $this->actingAs($owner)
@@ -371,7 +371,7 @@ class HouseTest extends TestCase
     #[Test]
     public function itRegeneratesTheInviteCode(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $originalCode = $owner->household->join_code;
 
         $this->actingAs($owner)
@@ -385,7 +385,7 @@ class HouseTest extends TestCase
     #[Test]
     public function itDoesNotTouchAnotherHouseholdsMembers(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $stranger = User::factory()->create();
 
         $this->actingAs($owner)->patch("/house/members/{$stranger->id}/role", ['role' => 'teen', 'guardian_confirmed' => true])->assertNotFound();

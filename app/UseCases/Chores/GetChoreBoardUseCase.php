@@ -10,7 +10,7 @@ use App\Data\ChoreColumnData;
 use App\Data\ChoreData;
 use App\Data\MemberData;
 use App\Data\MemberScoreData;
-use App\Enums\ChoreStatus;
+use App\Enums\ChoreStatusEnum;
 use App\Models\Household;
 use App\Models\User;
 
@@ -27,13 +27,13 @@ class GetChoreBoardUseCase
         $chores = $this->chores->allFor($household);
 
         $columns = array_map(
-            fn (ChoreStatus $status) => new ChoreColumnData(
+            fn (ChoreStatusEnum $status) => new ChoreColumnData(
                 status: $status->value,
                 title: $status->label(),
                 count: $chores->where('status', $status)->count(),
                 items: $chores->where('status', $status)->map(ChoreData::fromModel(...))->values()->all(),
             ),
-            ChoreStatus::cases(),
+            ChoreStatusEnum::cases(),
         );
 
         return [
@@ -41,7 +41,7 @@ class GetChoreBoardUseCase
             'scores' => $this->households->activeMembers($household)
                 ->map(fn (User $member) => MemberScoreData::make(
                     member: MemberData::fromModel($member),
-                    done: $chores->where('assigned_to', $member->id)->where('status', ChoreStatus::Done)->count(),
+                    done: $chores->where('assigned_to', $member->id)->where('status', ChoreStatusEnum::Done)->count(),
                     total: $chores->where('assigned_to', $member->id)->count(),
                 ))
                 ->values()

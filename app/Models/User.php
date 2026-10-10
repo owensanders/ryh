@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\HouseholdRole;
-use App\Enums\NotificationCategory;
-use App\Enums\Palette;
+use App\Enums\HouseholdRoleEnum;
+use App\Enums\NotificationCategoryEnum;
+use App\Enums\PaletteEnum;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -25,13 +25,13 @@ use NotificationChannels\WebPush\HasPushSubscriptions;
  * @property-read int|null $household_id Alias for `current_household_id` — see `householdId()` below.
  * @property string $name
  * @property string|null $initials
- * @property Palette $colour
+ * @property PaletteEnum $colour
  * @property string|null $status_line
  * @property string $email
  * @property Carbon|null $email_verified_at
  * @property Carbon|null $terms_accepted_at
  * @property string|null $terms_version
- * @property list<string>|null $push_opt_outs NotificationCategory values this person has turned push off for.
+ * @property list<string>|null $push_opt_outs NotificationCategoryEnum values this person has turned push off for.
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read HouseholdUser|null $pivot Present when loaded through a `Household::members()`/`User::households()` query.
@@ -69,7 +69,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'trial_claimed_at' => 'datetime',
             'terms_accepted_at' => 'datetime',
-            'colour' => Palette::class,
+            'colour' => PaletteEnum::class,
             'push_opt_outs' => 'array',
         ];
     }
@@ -138,12 +138,12 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /** Every category pushes unless this person has turned it off. */
-    public function wantsPushFor(NotificationCategory $category): bool
+    public function wantsPushFor(NotificationCategoryEnum $category): bool
     {
         return ! in_array($category->value, $this->push_opt_outs ?? [], true);
     }
 
-    public function currentRole(): ?HouseholdRole
+    public function currentRole(): ?HouseholdRoleEnum
     {
         return $this->currentMembership()?->role;
     }

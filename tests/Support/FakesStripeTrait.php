@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\After;
 use Stripe\ApiRequestor;
 use Stripe\HttpClient\CurlClient;
 
-trait FakesStripe
+trait FakesStripeTrait
 {
     protected function fakeStripe(): FakeStripeClient
     {

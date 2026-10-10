@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Ai\AiConfig;
-use App\Enums\ServiceState;
-use App\Jobs\QueueHeartbeat;
-use App\Status\PlatformProbes;
+use App\Ai\AiConfigService;
+use App\Enums\ServiceStateEnum;
+use App\Jobs\QueueHeartbeatJob;
+use App\Status\PlatformProbesService;
 use App\UseCases\Status\GetPlatformStatusUseCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -23,12 +23,12 @@ class StatusTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @param  array<string, ServiceState>  $overrides */
+    /** @param  array<string, ServiceStateEnum>  $overrides */
     private function probesReturning(array $overrides = []): MockInterface
     {
-        return $this->mock(PlatformProbes::class, function (MockInterface $mock) use ($overrides): void {
+        return $this->mock(PlatformProbesService::class, function (MockInterface $mock) use ($overrides): void {
             foreach (['database', 'cache', 'queue', 'realtime', 'ai', 'documents'] as $probe) {
-                $mock->allows([$probe => $overrides[$probe] ?? ServiceState::Operational]);
+                $mock->allows([$probe => $overrides[$probe] ?? ServiceStateEnum::Operational]);
             }
         });
     }
@@ -51,7 +51,7 @@ class StatusTest extends TestCase
     #[Test]
     public function theOverallStateIsTheWorstService(): void
     {
-        $this->probesReturning(['database' => ServiceState::Down, 'ai' => ServiceState::Degraded]);
+        $this->probesReturning(['database' => ServiceStateEnum::Down, 'ai' => ServiceStateEnum::Degraded]);
 
         $this->get('/status')
             ->assertInertia(fn (AssertableInertia $page) => $page
@@ -65,7 +65,7 @@ class StatusTest extends TestCase
     #[Test]
     public function aDegradedServiceMakesTheOverallStateDegraded(): void
     {
-        $this->probesReturning(['queue' => ServiceState::Degraded]);
+        $this->probesReturning(['queue' => ServiceStateEnum::Degraded]);
 
         $this->get('/status')->assertInertia(fn (AssertableInertia $page) => $page->where('status.overall', 'degraded'));
     }
@@ -73,18 +73,18 @@ class StatusTest extends TestCase
     #[Test]
     public function resultsAreCachedSoVisitorsCantHammerTheChecks(): void
     {
-        $probes = new class extends PlatformProbes
+        $probes = new class extends PlatformProbesService
         {
             public int $databaseChecks = 0;
 
-            public function database(): ServiceState
+            public function database(): ServiceStateEnum
             {
                 $this->databaseChecks++;
 
-                return ServiceState::Operational;
+                return ServiceStateEnum::Operational;
             }
         };
-        $this->instance(PlatformProbes::class, $probes);
+        $this->instance(PlatformProbesService::class, $probes);
 
         $this->get('/status')->assertOk();
         $this->get('/status')->assertOk();
@@ -100,13 +100,13 @@ class StatusTest extends TestCase
     {
         DB::shouldReceive('select')->andThrow(new RuntimeException('SQLSTATE[HY000] secret-db-host:3306'));
 
-        $this->assertSame(ServiceState::Down, app(PlatformProbes::class)->database());
+        $this->assertSame(ServiceStateEnum::Down, app(PlatformProbesService::class)->database());
     }
 
     #[Test]
     public function thePageNeverIncludesErrorDetails(): void
     {
-        $this->probesReturning(['database' => ServiceState::Down]);
+        $this->probesReturning(['database' => ServiceStateEnum::Down]);
 
         $this->get('/status')->assertDontSee('SQLSTATE')->assertDontSee('secret');
     }
@@ -115,53 +115,53 @@ class StatusTest extends TestCase
     public function theQueueIsOperationalOnceAWorkerAnswersTheHeartbeat(): void
     {
         // The test queue is synchronous, so the heartbeat is handled immediately.
-        $probes = app(PlatformProbes::class);
+        $probes = app(PlatformProbesService::class);
 
-        $this->assertSame(ServiceState::Operational, $probes->queue());
-        $this->assertNotNull(Cache::get(QueueHeartbeat::CACHE_KEY));
-        $this->assertSame(ServiceState::Operational, $probes->queue());
+        $this->assertSame(ServiceStateEnum::Operational, $probes->queue());
+        $this->assertNotNull(Cache::get(QueueHeartbeatJob::CACHE_KEY));
+        $this->assertSame(ServiceStateEnum::Operational, $probes->queue());
     }
 
     #[Test]
     public function theQueueIsDegradedWhenNoWorkerPicksUpTheHeartbeat(): void
     {
         Queue::fake();
-        $probes = app(PlatformProbes::class);
+        $probes = app(PlatformProbesService::class);
 
-        $this->assertSame(ServiceState::Operational, $probes->queue());
-        Queue::assertPushed(QueueHeartbeat::class, 1);
+        $this->assertSame(ServiceStateEnum::Operational, $probes->queue());
+        Queue::assertPushed(QueueHeartbeatJob::class, 1);
 
-        $this->travel(PlatformProbes::QUEUE_GRACE_SECONDS + 1)->seconds();
+        $this->travel(PlatformProbesService::QUEUE_GRACE_SECONDS + 1)->seconds();
 
-        $this->assertSame(ServiceState::Degraded, $probes->queue());
+        $this->assertSame(ServiceStateEnum::Degraded, $probes->queue());
         // Still only the one heartbeat in flight — a stuck worker doesn't build a backlog.
-        Queue::assertPushed(QueueHeartbeat::class, 1);
+        Queue::assertPushed(QueueHeartbeatJob::class, 1);
     }
 
     #[Test]
     public function aiIsDegradedWhilePausedOrNotSetUp(): void
     {
-        $probes = app(PlatformProbes::class);
+        $probes = app(PlatformProbesService::class);
 
         config(['ai.providers.'.config('ai.default').'.key' => null]);
-        $this->assertSame(ServiceState::Degraded, $probes->ai());
+        $this->assertSame(ServiceStateEnum::Degraded, $probes->ai());
 
         config(['ai.providers.'.config('ai.default').'.key' => 'test-key']);
-        $this->assertSame(ServiceState::Operational, $probes->ai());
+        $this->assertSame(ServiceStateEnum::Operational, $probes->ai());
 
-        AiConfig::pause();
-        $this->assertSame(ServiceState::Degraded, $probes->ai());
+        AiConfigService::pause();
+        $this->assertSame(ServiceStateEnum::Degraded, $probes->ai());
     }
 
     #[Test]
     public function liveNotificationsAreDownWhenTheRealtimeServerIsUnreachable(): void
     {
         config(['broadcasting.connections.reverb.options.host' => null]);
-        $this->assertSame(ServiceState::Down, app(PlatformProbes::class)->realtime());
+        $this->assertSame(ServiceStateEnum::Down, app(PlatformProbesService::class)->realtime());
 
         // Nothing listens on port 1 locally, so the connection is refused straight away.
         config(['broadcasting.connections.reverb.options.host' => '127.0.0.1', 'broadcasting.connections.reverb.options.port' => 1]);
-        $this->assertSame(ServiceState::Down, app(PlatformProbes::class)->realtime());
+        $this->assertSame(ServiceStateEnum::Down, app(PlatformProbesService::class)->realtime());
     }
 
     #[Test]
@@ -169,8 +169,8 @@ class StatusTest extends TestCase
     {
         $this->freezeTime();
 
-        (new QueueHeartbeat)->handle();
+        (new QueueHeartbeatJob)->handle();
 
-        $this->assertSame(now()->getTimestamp(), Cache::get(QueueHeartbeat::CACHE_KEY));
+        $this->assertSame(now()->getTimestamp(), Cache::get(QueueHeartbeatJob::CACHE_KEY));
     }
 }

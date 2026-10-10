@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Enums\CookingConfidence;
-use App\Enums\KitchenEquipment;
-use App\Enums\MealDiet;
-use App\Enums\MealGoal;
+use App\Enums\CookingConfidenceEnum;
+use App\Enums\KitchenEquipmentEnum;
+use App\Enums\MealDietEnum;
+use App\Enums\MealGoalEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -19,14 +19,14 @@ class GenerateAiMealPlanRequest extends FormRequest
         return [
             'people' => ['required', 'integer', 'min:1', 'max:12'],
             'budget' => ['nullable', 'numeric', 'min:0', 'max:10000'],
-            'diets' => ['array', 'max:'.count(MealDiet::cases())],
-            'diets.*' => ['string', 'distinct', Rule::enum(MealDiet::class)],
+            'diets' => ['array', 'max:'.count(MealDietEnum::cases())],
+            'diets.*' => ['string', 'distinct', Rule::enum(MealDietEnum::class)],
             'avoid' => ['nullable', 'string', 'max:255'],
-            'goals' => ['array', 'max:'.count(MealGoal::cases())],
-            'goals.*' => ['string', 'distinct', Rule::enum(MealGoal::class)],
-            'confidence' => ['required', Rule::enum(CookingConfidence::class)],
-            'equipment' => ['array', 'max:'.count(KitchenEquipment::cases())],
-            'equipment.*' => ['string', 'distinct', Rule::enum(KitchenEquipment::class)],
+            'goals' => ['array', 'max:'.count(MealGoalEnum::cases())],
+            'goals.*' => ['string', 'distinct', Rule::enum(MealGoalEnum::class)],
+            'confidence' => ['required', Rule::enum(CookingConfidenceEnum::class)],
+            'equipment' => ['array', 'max:'.count(KitchenEquipmentEnum::cases())],
+            'equipment.*' => ['string', 'distinct', Rule::enum(KitchenEquipmentEnum::class)],
             'use_up' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:500'],
         ];

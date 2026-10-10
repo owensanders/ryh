@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Contracts\Repositories\DocumentRepositoryInterface;
-use App\Enums\Palette;
+use App\Enums\PaletteEnum;
 use App\Models\Document;
 use App\Models\DocumentFolder;
 use App\Models\Household;
@@ -35,7 +35,7 @@ class DocumentRepository implements DocumentRepositoryInterface
         return $household->documentFolders()->create([
             'name' => $name,
             'icon' => '📁',
-            'colour' => Palette::Mint,
+            'colour' => PaletteEnum::Mint,
             'position' => $position,
         ]);
     }

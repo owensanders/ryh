@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\ChoreStatus;
+use App\Enums\ChoreStatusEnum;
 use App\Models\Chore;
 use App\Models\Household;
 use App\Models\User;
@@ -22,7 +22,7 @@ class ChoreFactory extends Factory
             'household_id' => Household::factory(),
             'assigned_to' => User::factory(),
             'name' => $this->faker->sentence(3),
-            'status' => ChoreStatus::Today,
+            'status' => ChoreStatusEnum::Today,
             'position' => 0,
         ];
     }

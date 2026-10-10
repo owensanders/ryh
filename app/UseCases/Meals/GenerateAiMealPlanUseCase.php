@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\UseCases\Meals;
 
 use App\Ai\Agents\MealPlanAgent;
-use App\Ai\AiConfig;
+use App\Ai\AiConfigService;
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Contracts\Repositories\MealPlanRepositoryInterface;
-use App\Enums\CookingConfidence;
+use App\Enums\CookingConfidenceEnum;
 use App\Models\Household;
 use App\Models\Recipe;
 use App\Notifications\AiCreditsExhaustedNotification;
@@ -46,16 +46,16 @@ class GenerateAiMealPlanUseCase
         array $diets,
         string $avoid,
         array $goals,
-        CookingConfidence $confidence,
+        CookingConfidenceEnum $confidence,
         array $equipment,
         string $useUp,
         string $notes,
     ): array {
-        if (! AiConfig::isConfigured()) {
+        if (! AiConfigService::isConfigured()) {
             throw new RuntimeException('AI meal planning is not set up yet.');
         }
 
-        if (AiConfig::isPaused()) {
+        if (AiConfigService::isPaused()) {
             throw new RuntimeException('AI meal planning is taking a break — you can still plan meals by hand.');
         }
 
@@ -139,7 +139,7 @@ class GenerateAiMealPlanUseCase
 
     private function pauseForMissingCredit(InsufficientCreditsException $e): void
     {
-        $firstAlert = AiConfig::pause();
+        $firstAlert = AiConfigService::pause();
 
         if (! $firstAlert) {
             return;

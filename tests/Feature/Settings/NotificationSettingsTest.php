@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Enums\HouseholdRole;
+use App\Enums\HouseholdRoleEnum;
 use App\Models\User;
 use App\Notifications\PushNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -170,7 +170,7 @@ class NotificationSettingsTest extends TestCase
     #[Test]
     public function deletingYourAccountRemovesYourSubscriptions(): void
     {
-        $user = User::factory()->create(['household_id' => null, 'role' => HouseholdRole::Adult]);
+        $user = User::factory()->create(['household_id' => null, 'role' => HouseholdRoleEnum::Adult]);
         $user->updatePushSubscription(self::ENDPOINT, 'public-key', 'auth-token');
 
         $this->actingAs($user)->delete('/settings/profile', ['password' => 'password']);

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Status;
 
-use App\Ai\AiConfig;
-use App\Enums\ServiceState;
-use App\Jobs\QueueHeartbeat;
+use App\Ai\AiConfigService;
+use App\Enums\ServiceStateEnum;
+use App\Jobs\QueueHeartbeatJob;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -17,7 +17,7 @@ use Throwable;
  * its own failure — a probe reports a state, never an exception — so nothing
  * about the infrastructure can leak onto the public status page.
  */
-class PlatformProbes
+class PlatformProbesService
 {
     /** Jobs the worker hasn't picked up within this long mean the queue is stuck. */
     public const int QUEUE_GRACE_SECONDS = 120;
@@ -26,12 +26,12 @@ class PlatformProbes
 
     private const int REALTIME_TIMEOUT_SECONDS = 2;
 
-    public function database(): ServiceState
+    public function database(): ServiceStateEnum
     {
         return $this->attempt(fn () => DB::select('select 1'));
     }
 
-    public function cache(): ServiceState
+    public function cache(): ServiceStateEnum
     {
         return $this->attempt(function (): void {
             $token = bin2hex(random_bytes(8));
@@ -48,73 +48,73 @@ class PlatformProbes
      * the previous one came back. Jobs still flow while this is degraded, just
      * late — invite emails and notifications arrive once the worker catches up.
      */
-    public function queue(): ServiceState
+    public function queue(): ServiceStateEnum
     {
         try {
             $now = now()->getTimestamp();
             $probe = Cache::get(self::QUEUE_PROBE_KEY);
-            $heartbeat = Cache::get(QueueHeartbeat::CACHE_KEY);
+            $heartbeat = Cache::get(QueueHeartbeatJob::CACHE_KEY);
             $answered = $probe !== null && $heartbeat !== null && $heartbeat >= $probe;
 
             $state = $probe !== null && ! $answered && $now - $probe > self::QUEUE_GRACE_SECONDS
-                ? ServiceState::Degraded
-                : ServiceState::Operational;
+                ? ServiceStateEnum::Degraded
+                : ServiceStateEnum::Operational;
 
             // Only one heartbeat in flight at a time, so a stuck worker doesn't
             // pile up a backlog of them.
             if ($probe === null || $answered) {
                 Cache::put(self::QUEUE_PROBE_KEY, $now, now()->addDay());
-                QueueHeartbeat::dispatch();
+                QueueHeartbeatJob::dispatch();
             }
 
             return $state;
         } catch (Throwable) {
-            return ServiceState::Down;
+            return ServiceStateEnum::Down;
         }
     }
 
     /** Live notifications: can we open a connection to the Reverb server? */
-    public function realtime(): ServiceState
+    public function realtime(): ServiceStateEnum
     {
         $host = config('broadcasting.connections.reverb.options.host');
         $port = (int) config('broadcasting.connections.reverb.options.port');
 
         if (blank($host) || $port === 0) {
-            return ServiceState::Down;
+            return ServiceStateEnum::Down;
         }
 
         $socket = @fsockopen($host, $port, $errorCode, $errorMessage, self::REALTIME_TIMEOUT_SECONDS);
 
         if ($socket === false) {
-            return ServiceState::Down;
+            return ServiceStateEnum::Down;
         }
 
         fclose($socket);
 
-        return ServiceState::Operational;
+        return ServiceStateEnum::Operational;
     }
 
     /** AI meal plans pause themselves app-wide when the provider runs out of credit. */
-    public function ai(): ServiceState
+    public function ai(): ServiceStateEnum
     {
-        return AiConfig::isConfigured() && ! AiConfig::isPaused()
-            ? ServiceState::Operational
-            : ServiceState::Degraded;
+        return AiConfigService::isConfigured() && ! AiConfigService::isPaused()
+            ? ServiceStateEnum::Operational
+            : ServiceStateEnum::Degraded;
     }
 
-    public function documents(): ServiceState
+    public function documents(): ServiceStateEnum
     {
         return $this->attempt(fn () => Storage::disk(config('documents.disk'))->exists('.status-probe'));
     }
 
-    private function attempt(callable $check): ServiceState
+    private function attempt(callable $check): ServiceStateEnum
     {
         try {
             $check();
 
-            return ServiceState::Operational;
+            return ServiceStateEnum::Operational;
         } catch (Throwable) {
-            return ServiceState::Down;
+            return ServiceStateEnum::Down;
         }
     }
 }

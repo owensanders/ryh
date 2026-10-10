@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Enums\Palette;
+use App\Enums\PaletteEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,7 +21,7 @@ class CalendarEventRequest extends FormRequest
             'is_all_day' => ['boolean'],
             'location' => ['nullable', 'string', 'max:120'],
             'notes' => ['nullable', 'string', 'max:2000'],
-            'colour' => ['nullable', Rule::enum(Palette::class)],
+            'colour' => ['nullable', Rule::enum(PaletteEnum::class)],
             'attendees' => ['array'],
             // Scoped to the household so an event can't be pinned on an outsider.
             'attendees.*' => [
@@ -58,7 +58,7 @@ class CalendarEventRequest extends FormRequest
             'is_all_day' => $isAllDay,
             'location' => $this->validated('location'),
             'notes' => $this->validated('notes'),
-            'colour' => Palette::tryFrom((string) $this->validated('colour')) ?? Palette::Mint,
+            'colour' => PaletteEnum::tryFrom((string) $this->validated('colour')) ?? PaletteEnum::Mint,
         ];
     }
 

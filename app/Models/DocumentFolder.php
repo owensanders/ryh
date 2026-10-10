@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\Palette;
+use App\Enums\PaletteEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $household_id
  * @property string $name
  * @property string $icon
- * @property Palette $colour
+ * @property PaletteEnum $colour
  * @property int $position
  */
 class DocumentFolder extends Model
@@ -24,7 +24,7 @@ class DocumentFolder extends Model
 
     protected function casts(): array
     {
-        return ['colour' => Palette::class];
+        return ['colour' => PaletteEnum::class];
     }
 
     /** @return BelongsTo<Household, $this> */
