@@ -22,7 +22,7 @@ class HouseholdMemberCapTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const FULL_INVITE_ERROR = 'Your household is full — it can have up to 8 members, including pending invites.';
+    private const string FULL_INVITE_ERROR = 'Your household is full — it can have up to 8 members, including pending invites.';
 
     #[Test]
     public function theCapIsEightMembers(): void

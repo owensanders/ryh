@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Cache;
 
 class AiConfig
 {
-    private const PAUSED_KEY = 'ai:paused';
+    private const string PAUSED_KEY = 'ai:paused';
 
-    private const ALERTED_KEY = 'ai:credits-alerted';
+    private const string ALERTED_KEY = 'ai:credits-alerted';
 
     /** True if the default AI provider has an API key set. */
     public static function isConfigured(): bool

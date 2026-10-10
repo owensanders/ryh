@@ -17,7 +17,7 @@ class MealPlanAgent implements Agent, HasStructuredOutput
 
     // Two weeks' worth: the first seven dinners are the plan, the rest back
     // the one free "regenerate" and per-day swaps without another API call.
-    private const POOL_SIZE = 14;
+    private const int POOL_SIZE = 14;
 
     /**
      * @param  array<int, string>  $diets

@@ -32,7 +32,7 @@ use Illuminate\Support\Str;
 class GetDashboardUseCase
 {
     /** How many days of the calendar the "Coming up" card shows. */
-    private const AGENDA_DAYS = 3;
+    private const int AGENDA_DAYS = 3;
 
     public function __construct(
         private readonly HouseholdRepositoryInterface $households,

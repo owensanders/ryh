@@ -17,7 +17,7 @@ class NotificationSettingsTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const ENDPOINT = 'https://push.example.test/sub/123';
+    private const string ENDPOINT = 'https://push.example.test/sub/123';
 
     /** @return array<string, mixed> */
     private function subscription(string $endpoint = self::ENDPOINT): array

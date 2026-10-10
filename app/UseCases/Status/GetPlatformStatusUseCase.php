@@ -12,10 +12,10 @@ use Illuminate\Support\Facades\Cache;
 
 class GetPlatformStatusUseCase
 {
-    public const CACHE_KEY = 'status:platform';
+    public const string CACHE_KEY = 'status:platform';
 
     /** Results are shared by every visitor for this long, so the page can't be used to hammer the database. */
-    public const CACHE_SECONDS = 60;
+    public const int CACHE_SECONDS = 60;
 
     public function __construct(private readonly PlatformProbes $probes) {}
 

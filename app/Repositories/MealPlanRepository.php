@@ -44,7 +44,7 @@ class MealPlanRepository implements MealPlanRepositoryInterface
         return $meal->refresh();
     }
 
-    private const NEW_RECIPE_KEYS = [
+    private const array NEW_RECIPE_KEYS = [
         'new_recipe_name', 'new_recipe_description', 'new_recipe_duration_label',
         'new_recipe_difficulty', 'new_recipe_tags', 'new_recipe_ingredients',
         'new_recipe_tint', 'new_recipe_is_favourite', 'new_recipe_shopping_list_id',
@@ -131,7 +131,7 @@ class MealPlanRepository implements MealPlanRepositoryInterface
     }
 
     /** Recipe column => planned-meal attribute carrying it, with its default for a new recipe. */
-    private const RECIPE_DETAILS = [
+    private const array RECIPE_DETAILS = [
         'description' => ['new_recipe_description', null],
         'duration_label' => ['new_recipe_duration_label', null],
         'difficulty' => ['new_recipe_difficulty', null],

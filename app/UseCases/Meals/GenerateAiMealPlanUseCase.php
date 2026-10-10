@@ -24,9 +24,9 @@ use RuntimeException;
 
 class GenerateAiMealPlanUseCase
 {
-    private const RECENT_RECIPES = 10;
+    private const int RECENT_RECIPES = 10;
 
-    private const LOCK_SECONDS = 120;
+    private const int LOCK_SECONDS = 120;
 
     public function __construct(
         private readonly MealPlanRepositoryInterface $meals,

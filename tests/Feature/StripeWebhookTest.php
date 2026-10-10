@@ -18,7 +18,7 @@ class StripeWebhookTest extends TestCase
     use FakesStripe;
     use RefreshDatabase;
 
-    private const SECRET = 'whsec_test';
+    private const string SECRET = 'whsec_test';
 
     #[Test]
     public function webhooksAreRefusedWhenNoSigningSecretIsConfigured(): void

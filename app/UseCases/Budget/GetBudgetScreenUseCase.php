@@ -15,7 +15,7 @@ use Carbon\CarbonImmutable;
 
 class GetBudgetScreenUseCase
 {
-    private const HISTORY_MONTHS = 3;
+    private const int HISTORY_MONTHS = 3;
 
     public function __construct(
         private readonly BudgetRepositoryInterface $budget,

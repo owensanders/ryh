@@ -13,9 +13,9 @@ use App\Ai\Agents\MealPlanAgent;
 class E2eMealPlan
 {
     // Long enough for the waiting screen to tick past its first step (6s each).
-    private const DELAY_SECONDS = 7;
+    private const int DELAY_SECONDS = 7;
 
-    private const NAMES = [
+    private const array NAMES = [
         'Lemon chicken traybake', 'Air-fryer fish fingers', 'Bean chilli', 'Prawn laksa', 'Mushroom risotto',
         'Harissa lamb flatbreads', 'Teriyaki salmon', 'Veg-packed lasagne', 'Chickpea curry', 'Pork stir-fry',
         'Sausage and lentil stew', 'Halloumi fajitas', 'Tuna pasta bake', 'Sweet potato dhal',
