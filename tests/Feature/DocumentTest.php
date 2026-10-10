@@ -112,6 +112,69 @@ class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function itMovesADocumentToAnotherFolder(): void
+    {
+        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $property = DocumentFolder::create(['household_id' => $owner->household_id, 'name' => 'Property']);
+        $insurance = DocumentFolder::create(['household_id' => $owner->household_id, 'name' => 'Insurance']);
+        $document = $this->documentIn($property, 'Policy.pdf');
+
+        $this->actingAs($owner)
+            ->patch("/documents/{$document->id}/move", ['folder_id' => $insurance->id])
+            ->assertRedirect()
+            ->assertSessionHas('toast', '“Policy.pdf” moved to Insurance');
+
+        $this->assertSame($insurance->id, $document->fresh()->document_folder_id);
+    }
+
+    #[Test]
+    public function itWontMoveADocumentIntoAnotherHouseholdsFolder(): void
+    {
+        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $folder = DocumentFolder::create(['household_id' => $owner->household_id, 'name' => 'Property']);
+        $document = $this->documentIn($folder, 'Deed.pdf');
+
+        $stranger = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $theirFolder = DocumentFolder::create(['household_id' => $stranger->household_id, 'name' => 'Theirs']);
+
+        $this->actingAs($owner)
+            ->patch("/documents/{$document->id}/move", ['folder_id' => $theirFolder->id])
+            ->assertNotFound();
+
+        $this->assertSame($folder->id, $document->fresh()->document_folder_id);
+    }
+
+    #[Test]
+    public function itWontMoveAnotherHouseholdsDocument(): void
+    {
+        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $folder = DocumentFolder::create(['household_id' => $owner->household_id, 'name' => 'Property']);
+        $document = $this->documentIn($folder, 'Deed.pdf');
+
+        $stranger = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $theirFolder = DocumentFolder::create(['household_id' => $stranger->household_id, 'name' => 'Theirs']);
+
+        $this->actingAs($stranger)
+            ->patch("/documents/{$document->id}/move", ['folder_id' => $theirFolder->id])
+            ->assertNotFound();
+
+        $this->assertSame($folder->id, $document->fresh()->document_folder_id);
+    }
+
+    #[Test]
+    public function movingADocumentNeedsAnExistingFolder(): void
+    {
+        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $folder = DocumentFolder::create(['household_id' => $owner->household_id, 'name' => 'Property']);
+        $document = $this->documentIn($folder, 'Deed.pdf');
+
+        $this->actingAs($owner)->patch("/documents/{$document->id}/move", [])->assertSessionHasErrors('folder_id');
+        $this->actingAs($owner)->patch("/documents/{$document->id}/move", ['folder_id' => 999999])->assertSessionHasErrors('folder_id');
+
+        $this->assertSame($folder->id, $document->fresh()->document_folder_id);
+    }
+
+    #[Test]
     public function itDeletesADocument(): void
     {
         Storage::fake('local');
@@ -174,11 +237,24 @@ class DocumentTest extends TestCase
         $teen = User::factory()->create(['role' => HouseholdRole::Teen]);
         $child = User::factory()->create(['household_id' => $teen->household_id, 'role' => HouseholdRole::Child]);
         $folder = DocumentFolder::create(['household_id' => $teen->household_id, 'name' => 'Property']);
+        $document = $this->documentIn($folder, 'Deed.pdf');
 
         foreach ([$teen, $child] as $user) {
             $this->actingAs($user)->get('/documents')->assertForbidden();
             $this->actingAs($user)->post('/document-folders', ['name' => 'Nope'])->assertForbidden();
             $this->actingAs($user)->delete("/document-folders/{$folder->id}")->assertForbidden();
+            $this->actingAs($user)->patch("/documents/{$document->id}/move", ['folder_id' => $folder->id])->assertForbidden();
         }
+    }
+
+    private function documentIn(DocumentFolder $folder, string $name): Document
+    {
+        return $folder->documents()->create([
+            'household_id' => $folder->household_id,
+            'name' => $name,
+            'path' => "documents/{$folder->household_id}/{$name}",
+            'extension' => 'pdf',
+            'size' => 1024,
+        ]);
     }
 }
