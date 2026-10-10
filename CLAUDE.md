@@ -42,12 +42,15 @@ repository. Each layer only talks to the one below it.
 Use cases, controllers, policies, middleware and listeners never query the
 database directly. That means no `Model::where(...)`, no `$model->update(...)`,
 and no relation methods like `$household->members()`. Enforced by
-`RepositoryBoundaryTest`. Two exceptions:
+`RepositoryBoundaryTest`. One exception: **route model binding**. Those models
+arrive ready, and reading their attributes is fine.
 
-- **Route model binding**: those models arrive ready, and reading their
-  attributes is fine.
-- **Lazy-loaded relation properties** (`$chore->assignee`) are tolerated for
-  now. Prefer eager-loading in the repository.
+**Relations are eager-loaded in the repository** that fetches the models,
+for example `->with('assignee')`. `Model::preventLazyLoading()` is on
+(`AppServiceProvider`), so lazy-loading a relation across a collection, the
+N+1 case, throws in local, test and e2e. In production it logs a warning
+instead, so a miss never breaks a page. A single model loading its own
+relation isn't flagged.
 
 Policies and middleware may *read* through repositories
 (`MembershipRepository` is the usual one).
