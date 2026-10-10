@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
-import GuardianConfirm from '@/components/househub/GuardianConfirm.vue';
+import GuardianConfirm from '@/components/ryh/GuardianConfirm.vue';
 import AuthWizardLayout from '@/layouts/auth/AuthWizardLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
@@ -81,14 +81,14 @@ function submitJoin(): void {
 
         <div class="max-w-[760px]">
             <h1 class="text-[32px] font-black tracking-[-0.035em] sm:text-[38px]">Create or join a household</h1>
-            <p class="mt-3 text-[15.5px] leading-relaxed text-hh-ink2">
+            <p class="mt-3 text-[15.5px] leading-relaxed text-ryh-ink2">
                 A household is the shared space your meals, lists, chores and documents live in. Most people only ever need one.
             </p>
 
             <div
                 v-if="props.fullHousehold"
                 role="alert"
-                class="mt-5 rounded-2xl border border-hh-coral bg-hh-card px-4 py-3.5 text-[13.5px] leading-relaxed"
+                class="mt-5 rounded-2xl border border-ryh-coral bg-ryh-card px-4 py-3.5 text-[13.5px] leading-relaxed"
             >
                 <span class="font-bold">{{ props.fullHousehold }} is full.</span>
                 A household holds up to {{ props.maxMembers }} people, so you couldn't be added. Ask the owner to make room and send a new invite, or
@@ -98,7 +98,7 @@ function submitJoin(): void {
             <div
                 v-if="props.reinviteHousehold"
                 role="alert"
-                class="mt-5 rounded-2xl border border-hh-coral bg-hh-card px-4 py-3.5 text-[13.5px] leading-relaxed"
+                class="mt-5 rounded-2xl border border-ryh-coral bg-ryh-card px-4 py-3.5 text-[13.5px] leading-relaxed"
             >
                 <span class="font-bold">Your invite to {{ props.reinviteHousehold }} needs re-sending.</span>
                 Your parent or guardian now confirms they're happy for you to join when they invite you. Ask them to send you a new invite from their
@@ -109,68 +109,68 @@ function submitJoin(): void {
                 <button
                     type="button"
                     class="flex flex-col items-start gap-2.5 rounded-[20px] border-[1.5px] p-5 text-left transition-transform hover:-translate-y-0.5"
-                    :class="mode === 'create' ? 'border-hh-coral bg-hh-card' : 'border-hh-line bg-transparent'"
+                    :class="mode === 'create' ? 'border-ryh-coral bg-ryh-card' : 'border-ryh-line bg-transparent'"
                     @click="mode = 'create'"
                 >
-                    <span class="grid h-[42px] w-[42px] place-items-center rounded-[14px] text-lg" style="background: var(--hh-t1)">🏡</span>
+                    <span class="grid h-[42px] w-[42px] place-items-center rounded-[14px] text-lg" style="background: var(--ryh-t1)">🏡</span>
                     <span class="text-[17px] font-extrabold tracking-[-0.02em]">Create a household</span>
-                    <span class="text-[13.5px] leading-relaxed text-hh-ink2">
+                    <span class="text-[13.5px] leading-relaxed text-ryh-ink2">
                         You are the first one in. You become the owner and invite everyone else.
                     </span>
                 </button>
                 <button
                     type="button"
                     class="flex flex-col items-start gap-2.5 rounded-[20px] border-[1.5px] p-5 text-left transition-transform hover:-translate-y-0.5"
-                    :class="mode === 'join' ? 'border-hh-coral bg-hh-card' : 'border-hh-line bg-transparent'"
+                    :class="mode === 'join' ? 'border-ryh-coral bg-ryh-card' : 'border-ryh-line bg-transparent'"
                     @click="mode = 'join'"
                 >
-                    <span class="grid h-[42px] w-[42px] place-items-center rounded-[14px] text-lg" style="background: var(--hh-t3)">🔑</span>
+                    <span class="grid h-[42px] w-[42px] place-items-center rounded-[14px] text-lg" style="background: var(--ryh-t3)">🔑</span>
                     <span class="text-[17px] font-extrabold tracking-[-0.02em]">Join with a code</span>
-                    <span class="text-[13.5px] leading-relaxed text-hh-ink2"> Someone already set your home up. Paste the code they sent you. </span>
+                    <span class="text-[13.5px] leading-relaxed text-ryh-ink2"> Someone already set your home up. Paste the code they sent you. </span>
                 </button>
             </div>
 
             <form
                 v-if="mode === 'create'"
-                class="mt-5 flex flex-col gap-3.5 rounded-[20px] border border-hh-line bg-hh-card p-6"
+                class="mt-5 flex flex-col gap-3.5 rounded-[20px] border border-ryh-line bg-ryh-card p-6"
                 @submit.prevent="submitCreate"
             >
                 <div class="flex flex-col gap-1.5">
-                    <label for="householdName" class="hh-label">Household name</label>
-                    <input id="householdName" v-model="createForm.name" type="text" class="hh-input" placeholder="The Doe household" />
+                    <label for="householdName" class="ryh-label">Household name</label>
+                    <input id="householdName" v-model="createForm.name" type="text" class="ryh-input" placeholder="The Doe household" />
                     <InputError :message="createForm.errors.name" />
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                    <label for="householdSize" class="hh-label">Household size</label>
-                    <select id="householdSize" v-model="createForm.size" class="hh-input font-semibold">
+                    <label for="householdSize" class="ryh-label">Household size</label>
+                    <select id="householdSize" v-model="createForm.size" class="ryh-input font-semibold">
                         <option v-for="option in sizes" :key="option" :value="option">{{ option }}</option>
                     </select>
                 </div>
 
-                <div class="rounded-[16px] bg-hh-soft px-4 py-3 text-[13px] leading-relaxed text-hh-ink2">
+                <div class="rounded-[16px] bg-ryh-soft px-4 py-3 text-[13px] leading-relaxed text-ryh-ink2">
                     <template v-if="props.trialAvailable">
                         Your household gets a free month, then £3.99/month (or £39.99/year) — no card needed today.
                     </template>
                     <template v-else>You've already had your free month, so this household starts at £3.99/month (or £39.99/year).</template>
                 </div>
 
-                <div class="border-t border-hh-line pt-4">
+                <div class="border-t border-ryh-line pt-4">
                     <div class="text-[13px] font-bold">
-                        Invite the rest of the house <span class="font-medium text-hh-ink3">— you can do this later</span>
+                        Invite the rest of the house <span class="font-medium text-ryh-ink3">— you can do this later</span>
                     </div>
 
                     <div v-if="createForm.invites.length" class="mt-2.5 flex flex-col gap-2">
                         <div
                             v-for="(invite, index) in createForm.invites"
                             :key="invite.email"
-                            class="flex items-center gap-2.5 rounded-2xl bg-hh-sunk px-3 py-2.5"
+                            class="flex items-center gap-2.5 rounded-2xl bg-ryh-sunk px-3 py-2.5"
                         >
                             <span class="flex-1 text-[13.5px] font-semibold">{{ invite.email }}</span>
-                            <span class="text-xs font-bold text-hh-ink3">{{ invite.role }}</span>
+                            <span class="text-xs font-bold text-ryh-ink3">{{ invite.role }}</span>
                             <button
                                 type="button"
-                                class="grid h-[30px] w-[30px] flex-none place-items-center rounded-[9px] text-xs text-hh-ink3 transition-colors hover:bg-hh-card hover:text-hh-coral"
+                                class="grid h-[30px] w-[30px] flex-none place-items-center rounded-[9px] text-xs text-ryh-ink3 transition-colors hover:bg-ryh-card hover:text-ryh-coral"
                                 @click="removeInvite(index)"
                             >
                                 ✕
@@ -178,7 +178,7 @@ function submitJoin(): void {
                         </div>
                     </div>
 
-                    <div v-if="!canAddInvite" class="mt-2.5 text-[12.5px] text-hh-ink3">
+                    <div v-if="!canAddInvite" class="mt-2.5 text-[12.5px] text-ryh-ink3">
                         That's everyone — a household holds {{ props.maxMembers }} people, including you.
                     </div>
                     <div v-else class="mt-2.5 flex gap-2">
@@ -186,18 +186,18 @@ function submitJoin(): void {
                             v-model="inviteEmail"
                             type="email"
                             placeholder="their@email.co.uk"
-                            class="h-[46px] min-w-0 flex-1 rounded-[13px] border border-hh-line bg-hh-sunk px-3.5 text-sm placeholder:text-hh-ink3"
+                            class="h-[46px] min-w-0 flex-1 rounded-[13px] border border-ryh-line bg-ryh-sunk px-3.5 text-sm placeholder:text-ryh-ink3"
                             @keydown.enter.prevent="addInvite"
                         />
                         <select
                             v-model="inviteRole"
-                            class="h-[46px] w-[130px] rounded-[13px] border border-hh-line bg-hh-sunk px-2.5 text-[13px] font-semibold"
+                            class="h-[46px] w-[130px] rounded-[13px] border border-ryh-line bg-ryh-sunk px-2.5 text-[13px] font-semibold"
                         >
                             <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
                         </select>
                         <button
                             type="button"
-                            class="h-[46px] rounded-[13px] border border-hh-line px-4 text-[13.5px] font-bold transition-colors hover:bg-hh-soft"
+                            class="h-[46px] rounded-[13px] border border-ryh-line px-4 text-[13.5px] font-bold transition-colors hover:bg-ryh-soft"
                             @click="addInvite"
                         >
                             Add
@@ -214,7 +214,7 @@ function submitJoin(): void {
                 <div class="mt-2 flex items-center gap-3.5">
                     <button
                         type="submit"
-                        class="hh-btn bg-hh-coral px-6 text-white"
+                        class="ryh-btn bg-ryh-coral px-6 text-white"
                         :disabled="createForm.name.trim() === '' || (invitesMinors && !createForm.guardian_confirmed) || createForm.processing"
                     >
                         <LoaderCircle v-if="createForm.processing" class="h-4 w-4 animate-spin" />
@@ -223,28 +223,28 @@ function submitJoin(): void {
                 </div>
             </form>
 
-            <form v-else class="mt-5 flex flex-col gap-3.5 rounded-[20px] border border-hh-line bg-hh-card p-6" @submit.prevent="submitJoin">
+            <form v-else class="mt-5 flex flex-col gap-3.5 rounded-[20px] border border-ryh-line bg-ryh-card p-6" @submit.prevent="submitJoin">
                 <div class="flex flex-col gap-1.5">
-                    <label for="joinCode" class="hh-label">Invite code</label>
+                    <label for="joinCode" class="ryh-label">Invite code</label>
                     <input
                         id="joinCode"
                         v-model="joinForm.code"
                         type="text"
-                        class="hh-input font-mono text-lg uppercase tracking-[0.12em]"
+                        class="ryh-input font-mono text-lg uppercase tracking-[0.12em]"
                         placeholder="DOE-4Q72KD"
                     />
-                    <span class="text-[12.5px] text-hh-ink3">Ask whoever set the household up to send you the code.</span>
+                    <span class="text-[12.5px] text-ryh-ink3">Ask whoever set the household up to send you the code.</span>
                     <InputError :message="joinForm.errors.code" />
                 </div>
 
                 <div class="mt-2 flex items-center gap-3.5">
-                    <button type="submit" class="hh-btn bg-hh-coral px-6 text-white" :disabled="!codeLooksValid || joinForm.processing">
+                    <button type="submit" class="ryh-btn bg-ryh-coral px-6 text-white" :disabled="!codeLooksValid || joinForm.processing">
                         <LoaderCircle v-if="joinForm.processing" class="h-4 w-4 animate-spin" />
                         Request to join
                     </button>
                 </div>
 
-                <div class="text-[13px] leading-relaxed text-hh-ink3">Owners must approve new members before you get access.</div>
+                <div class="text-[13px] leading-relaxed text-ryh-ink3">Owners must approve new members before you get access.</div>
             </form>
         </div>
     </AuthWizardLayout>

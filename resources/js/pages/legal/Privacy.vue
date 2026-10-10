@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import LegalDocument from '@/components/legal/LegalDocument.vue';
 import Tbc from '@/components/legal/Tbc.vue';
-import type { Legal } from '@/types/househub';
+import type { Legal } from '@/types/ryh';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 

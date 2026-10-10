@@ -3,7 +3,7 @@ import { useCurrentFrame } from 'remotion';
 import { spr, springs } from '../anim';
 import { family } from '../theme';
 import { brand, fonts, light, Palette } from '../theme';
-import { Avatar, LogoMark } from './ui';
+import { Avatar, Lockup } from './ui';
 
 const nav = [
     { icon: '🏠', label: 'Dashboard' },
@@ -17,7 +17,7 @@ const nav = [
     { icon: '⚙', label: 'Settings' },
 ];
 
-/** Browser chrome + the HouseHubLayout sidebar and header. */
+/** Browser chrome + the RyhLayout sidebar and header. */
 export const AppWindow: React.FC<{
     width: number;
     height: number;
@@ -65,15 +65,14 @@ export const AppWindow: React.FC<{
                         placeItems: 'center',
                     }}
                 >
-                    househub.app/{active.toLowerCase().split(' ')[0]}
+                    ryh.app/{active.toLowerCase().split(' ')[0]}
                 </div>
             </div>
 
             <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
                 <div style={{ width: 262, flex: 'none', padding: '26px 18px', borderRight: `1.5px solid ${palette.line}`, display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 8px 22px' }}>
-                        <LogoMark size={40} radius={13} />
-                        <span style={{ fontWeight: 800, fontSize: 21, letterSpacing: '-0.02em' }}>HouseHub</span>
+                    <div style={{ padding: '2px 8px 24px' }}>
+                        <Lockup height={40} color={palette.ink} />
                     </div>
                     {nav.map((item, i) => {
                         const p = spr(f, navDelay + i * 2, springs.snappy);

@@ -22,9 +22,9 @@ use Illuminate\Support\Str;
 use Laravel\Cashier\Subscription;
 
 /**
- * The Parker household — the demo data the HouseHub design was drawn against.
+ * The Parker household — the demo data the RYH design was drawn against.
  */
-class HouseHubSeeder extends Seeder
+class RyhSeeder extends Seeder
 {
     public function run(): void
     {
@@ -84,7 +84,7 @@ class HouseHubSeeder extends Seeder
                 'initials' => $initials,
                 'colour' => $colour,
                 'status_line' => $status,
-                'email' => "{$key}@househub.test",
+                'email' => "{$key}@ryh.test",
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
             ]);

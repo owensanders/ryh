@@ -23,12 +23,12 @@ const submit = () => {
 
         <form class="flex flex-col gap-4" @submit.prevent="submit">
             <div class="flex flex-col gap-1.5">
-                <label for="password" class="hh-label">Password</label>
+                <label for="password" class="ryh-label">Password</label>
                 <input
                     id="password"
                     v-model="form.password"
                     type="password"
-                    class="hh-input"
+                    class="ryh-input"
                     required
                     autocomplete="current-password"
                     autofocus
@@ -37,7 +37,7 @@ const submit = () => {
                 <InputError :message="form.errors.password" />
             </div>
 
-            <button type="submit" class="hh-btn mt-2 bg-hh-coral text-white" :disabled="form.processing">
+            <button type="submit" class="ryh-btn mt-2 bg-ryh-coral text-white" :disabled="form.processing">
                 <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                 Confirm password
             </button>

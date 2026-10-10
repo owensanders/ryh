@@ -3,7 +3,7 @@ import { storageState } from './support/users';
 
 test.use({ storageState: storageState('owner') });
 
-// HouseHub is online-only: without a connection, any page shows the service
+// RYH is online-only: without a connection, any page shows the service
 // worker's offline page, which comes back by itself once the connection does.
 test('offline, a page load shows the offline page, then recovers when back online', async ({ page, context }) => {
     await page.goto('/dashboard');

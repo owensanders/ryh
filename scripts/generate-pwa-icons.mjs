@@ -1,6 +1,7 @@
-// Renders the PWA icons in public/icons/*.png and public/favicon.ico from the
-// SVG sources beside them, using Playwright's Chromium (already installed for
-// the e2e suite). Re-run after changing an SVG:
+// Renders the PWA icons in public/icons/*.png, public/favicon.ico and the
+// email header logos (public/images/email/logo*.png) from their SVG sources,
+// using Playwright's Chromium (already installed for the e2e suite). Re-run
+// after changing an SVG:
 //
 //   node scripts/generate-pwa-icons.mjs
 import { chromium } from '@playwright/test';
@@ -26,6 +27,23 @@ for (const [source, output, size] of targets) {
     await page.setViewportSize({ width: size, height: size });
     await page.setContent(`<style>html,body{margin:0;background:transparent}svg{display:block;width:${size}px;height:${size}px}</style>${svg}`);
     await writeFile(new URL(output, dir), await page.locator('svg').screenshot({ omitBackground: true }));
+}
+
+// The email header logo (the horizontal lockup) at 3x, as PNGs because email
+// clients don't render SVG: one for light mode and, with light ink, one for
+// mail apps in dark mode. Its wordmark is set in Figtree, fetched here.
+const logo = await readFile(new URL('../images/email/logo.svg', dir), 'utf8');
+await page.setViewportSize({ width: 585, height: 108 });
+for (const [output, svg] of [
+    ['logo.png', logo],
+    ['logo-dark.png', logo.replaceAll('#0e1a2b', '#f2f5f9')],
+]) {
+    await page.setContent(
+        `<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@800&display=block" rel="stylesheet"><style>html,body{margin:0;background:transparent}svg{display:block;width:585px;height:108px}</style>${svg}`,
+        { waitUntil: 'networkidle' },
+    );
+    await page.evaluate(() => document.fonts.load('800 100px Figtree'));
+    await writeFile(new URL(`../images/email/${output}`, dir), await page.locator('svg').screenshot({ omitBackground: true }));
 }
 
 await browser.close();

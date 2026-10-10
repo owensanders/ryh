@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { SharedData } from '@/types';
-import type { AiMealSuggestion, AiPlannerOptions, PlannerDay, ShoppingList } from '@/types/househub';
+import type { AiMealSuggestion, AiPlannerOptions, PlannerDay, ShoppingList } from '@/types/ryh';
 import type { RequestPayload } from '@inertiajs/core';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { ArrowLeftRight, Check, Sparkles } from 'lucide-vue-next';
@@ -427,7 +427,7 @@ function accept(): void {
 
 <template>
     <Dialog :open="open" @update:open="emit('update:open', $event)">
-        <DialogContent class="max-w-lg rounded-[22px] border-hh-line bg-hh-card text-hh-ink sm:rounded-[22px]">
+        <DialogContent class="max-w-lg rounded-[22px] border-ryh-line bg-ryh-card text-ryh-ink sm:rounded-[22px]">
             <DialogHeader>
                 <DialogTitle class="text-[16px] font-extrabold tracking-tight">
                     {{ stage === 'result' ? 'Your week, ready to go' : 'Plan my week' }}
@@ -440,7 +440,7 @@ function accept(): void {
                         <span
                             v-if="index > 0"
                             class="absolute right-1/2 top-[13px] h-0.5 w-full transition-colors"
-                            :class="index <= step ? 'bg-hh-ink' : 'bg-hh-line'"
+                            :class="index <= step ? 'bg-ryh-ink' : 'bg-ryh-line'"
                             aria-hidden="true"
                         ></span>
                         <button
@@ -448,10 +448,10 @@ function accept(): void {
                             class="relative z-10 grid h-7 w-7 place-items-center rounded-full text-[12px] font-extrabold transition"
                             :class="
                                 index < step
-                                    ? 'bg-hh-ink text-hh-shell'
+                                    ? 'bg-ryh-ink text-ryh-shell'
                                     : index === step
-                                      ? 'border-2 border-hh-coral bg-hh-card text-hh-coral'
-                                      : 'border border-hh-line bg-hh-soft text-hh-ink3'
+                                      ? 'border-2 border-ryh-coral bg-ryh-card text-ryh-coral'
+                                      : 'border border-ryh-line bg-ryh-soft text-ryh-ink3'
                             "
                             :disabled="index >= step"
                             :aria-current="index === step ? 'step' : undefined"
@@ -461,7 +461,7 @@ function accept(): void {
                             <Check v-if="index < step" class="h-3.5 w-3.5" :stroke-width="3" />
                             <template v-else>{{ index + 1 }}</template>
                         </button>
-                        <span class="text-center text-[11px] font-semibold" :class="index === step ? 'text-hh-ink' : 'text-hh-ink3'">
+                        <span class="text-center text-[11px] font-semibold" :class="index === step ? 'text-ryh-ink' : 'text-ryh-ink3'">
                             {{ item.label }}
                         </span>
                     </li>
@@ -477,15 +477,15 @@ function accept(): void {
                     leave-to-class="-translate-x-2 opacity-0"
                 >
                     <div :key="step" class="flex min-h-[210px] flex-col gap-4">
-                        <p class="text-[13.5px] text-hh-ink2">{{ steps[step].hint }}</p>
+                        <p class="text-[13.5px] text-ryh-ink2">{{ steps[step].hint }}</p>
 
                         <template v-if="steps[step].key === 'days'">
-                            <p v-if="aiUnavailable" class="rounded-xl bg-hh-soft px-3 py-2 text-[12.5px] text-hh-ink2">
+                            <p v-if="aiUnavailable" class="rounded-xl bg-ryh-soft px-3 py-2 text-[12.5px] text-ryh-ink2">
                                 {{ aiUnavailable }} You can still plan the week from your saved recipes.
                             </p>
 
                             <div class="flex flex-col gap-1.5">
-                                <span class="hh-label">Which days?</span>
+                                <span class="ryh-label">Which days?</span>
                                 <div class="flex flex-wrap gap-1.5">
                                     <button
                                         v-for="(day, index) in days"
@@ -494,8 +494,8 @@ function accept(): void {
                                         class="rounded-lg border px-2.5 py-1.5 text-[12.5px] font-semibold"
                                         :class="
                                             selectedDays.includes(index)
-                                                ? 'border-hh-ink bg-hh-ink text-hh-shell'
-                                                : 'border-hh-line bg-hh-card text-hh-ink2'
+                                                ? 'border-ryh-ink bg-ryh-ink text-ryh-shell'
+                                                : 'border-ryh-line bg-ryh-card text-ryh-ink2'
                                         "
                                         :aria-pressed="selectedDays.includes(index)"
                                         @click="toggleDay(index)"
@@ -506,46 +506,46 @@ function accept(): void {
                             </div>
 
                             <div v-if="!aiUnavailable" class="flex flex-col gap-1.5">
-                                <label for="ai_people" class="hh-label">People</label>
-                                <input id="ai_people" v-model.number="form.people" type="number" min="1" max="12" class="hh-input w-28" />
-                                <p v-if="fieldError('people')" class="text-[12.5px] text-hh-coral">{{ fieldError('people') }}</p>
+                                <label for="ai_people" class="ryh-label">People</label>
+                                <input id="ai_people" v-model.number="form.people" type="number" min="1" max="12" class="ryh-input w-28" />
+                                <p v-if="fieldError('people')" class="text-[12.5px] text-ryh-coral">{{ fieldError('people') }}</p>
                             </div>
                         </template>
 
                         <template v-else-if="steps[step].key === 'food'">
                             <div class="flex flex-col gap-1.5">
-                                <span class="hh-label">Diets</span>
+                                <span class="ryh-label">Diets</span>
                                 <div class="flex flex-wrap gap-x-3 gap-y-1.5">
-                                    <label v-for="diet in aiOptions.diets" :key="diet" class="flex items-center gap-1.5 text-[12.5px] text-hh-ink2">
-                                        <input v-model="form.diets" type="checkbox" :value="diet" class="h-3.5 w-3.5 accent-hh-coral" />
+                                    <label v-for="diet in aiOptions.diets" :key="diet" class="flex items-center gap-1.5 text-[12.5px] text-ryh-ink2">
+                                        <input v-model="form.diets" type="checkbox" :value="diet" class="h-3.5 w-3.5 accent-ryh-coral" />
                                         {{ diet }}
                                     </label>
                                 </div>
-                                <p v-if="fieldError('diets')" class="text-[12.5px] text-hh-coral">{{ fieldError('diets') }}</p>
+                                <p v-if="fieldError('diets')" class="text-[12.5px] text-ryh-coral">{{ fieldError('diets') }}</p>
                             </div>
 
                             <div class="flex flex-col gap-1.5">
-                                <label for="ai_avoid" class="hh-label">Avoid</label>
-                                <input id="ai_avoid" v-model="form.avoid" type="text" class="hh-input" placeholder="e.g. mushrooms, shellfish" />
-                                <p v-if="fieldError('avoid')" class="text-[12.5px] text-hh-coral">{{ fieldError('avoid') }}</p>
+                                <label for="ai_avoid" class="ryh-label">Avoid</label>
+                                <input id="ai_avoid" v-model="form.avoid" type="text" class="ryh-input" placeholder="e.g. mushrooms, shellfish" />
+                                <p v-if="fieldError('avoid')" class="text-[12.5px] text-ryh-coral">{{ fieldError('avoid') }}</p>
                             </div>
 
                             <div v-if="!aiUnavailable" class="flex flex-col gap-1.5">
-                                <label for="ai_use_up" class="hh-label">Anything to use up?</label>
+                                <label for="ai_use_up" class="ryh-label">Anything to use up?</label>
                                 <input
                                     id="ai_use_up"
                                     v-model="form.use_up"
                                     type="text"
-                                    class="hh-input"
+                                    class="ryh-input"
                                     placeholder="e.g. half a butternut squash, chickpeas"
                                 />
-                                <p v-if="fieldError('use_up')" class="text-[12.5px] text-hh-coral">{{ fieldError('use_up') }}</p>
+                                <p v-if="fieldError('use_up')" class="text-[12.5px] text-ryh-coral">{{ fieldError('use_up') }}</p>
                             </div>
                         </template>
 
                         <template v-else-if="steps[step].key === 'kitchen'">
                             <div class="flex flex-col gap-1.5">
-                                <span class="hh-label">Kitchen equipment</span>
+                                <span class="ryh-label">Kitchen equipment</span>
                                 <div class="flex flex-wrap gap-1.5">
                                     <button
                                         v-for="item in aiOptions.equipment"
@@ -554,8 +554,8 @@ function accept(): void {
                                         class="rounded-lg border px-2.5 py-1.5 text-[12.5px] font-semibold"
                                         :class="
                                             form.equipment.includes(item)
-                                                ? 'border-hh-ink bg-hh-ink text-hh-shell'
-                                                : 'border-hh-line bg-hh-card text-hh-ink2'
+                                                ? 'border-ryh-ink bg-ryh-ink text-ryh-shell'
+                                                : 'border-ryh-line bg-ryh-card text-ryh-ink2'
                                         "
                                         :aria-pressed="form.equipment.includes(item)"
                                         @click="toggleEquipment(item)"
@@ -563,11 +563,11 @@ function accept(): void {
                                         {{ item }}
                                     </button>
                                 </div>
-                                <p v-if="fieldError('equipment')" class="text-[12.5px] text-hh-coral">{{ fieldError('equipment') }}</p>
+                                <p v-if="fieldError('equipment')" class="text-[12.5px] text-ryh-coral">{{ fieldError('equipment') }}</p>
                             </div>
 
                             <div class="flex flex-col gap-1.5">
-                                <span class="hh-label">Cooking confidence</span>
+                                <span class="ryh-label">Cooking confidence</span>
                                 <div class="flex flex-wrap gap-1.5">
                                     <button
                                         v-for="level in aiOptions.confidence"
@@ -576,8 +576,8 @@ function accept(): void {
                                         class="rounded-lg border px-2.5 py-1.5 text-[12.5px] font-semibold"
                                         :class="
                                             form.confidence === level.value
-                                                ? 'border-hh-ink bg-hh-ink text-hh-shell'
-                                                : 'border-hh-line bg-hh-card text-hh-ink2'
+                                                ? 'border-ryh-ink bg-ryh-ink text-ryh-shell'
+                                                : 'border-ryh-line bg-ryh-card text-ryh-ink2'
                                         "
                                         :aria-pressed="form.confidence === level.value"
                                         @click="form.confidence = level.value"
@@ -585,47 +585,47 @@ function accept(): void {
                                         {{ level.label }}
                                     </button>
                                 </div>
-                                <p v-if="fieldError('confidence')" class="text-[12.5px] text-hh-coral">{{ fieldError('confidence') }}</p>
+                                <p v-if="fieldError('confidence')" class="text-[12.5px] text-ryh-coral">{{ fieldError('confidence') }}</p>
                             </div>
                         </template>
 
                         <template v-else>
                             <div class="flex flex-col gap-1.5">
-                                <label for="ai_budget" class="hh-label">Weekly budget (£)</label>
+                                <label for="ai_budget" class="ryh-label">Weekly budget (£)</label>
                                 <input
                                     id="ai_budget"
                                     v-model="form.budget"
                                     type="text"
                                     inputmode="decimal"
-                                    class="hh-input w-36"
+                                    class="ryh-input w-36"
                                     placeholder="Optional"
                                 />
-                                <p v-if="fieldError('budget')" class="text-[12.5px] text-hh-coral">{{ fieldError('budget') }}</p>
+                                <p v-if="fieldError('budget')" class="text-[12.5px] text-ryh-coral">{{ fieldError('budget') }}</p>
                             </div>
 
                             <div class="flex flex-col gap-1.5">
-                                <span class="hh-label">Goals</span>
+                                <span class="ryh-label">Goals</span>
                                 <div class="flex flex-wrap gap-x-3 gap-y-1.5">
-                                    <label v-for="goal in aiOptions.goals" :key="goal" class="flex items-center gap-1.5 text-[12.5px] text-hh-ink2">
-                                        <input v-model="form.goals" type="checkbox" :value="goal" class="h-3.5 w-3.5 accent-hh-coral" />
+                                    <label v-for="goal in aiOptions.goals" :key="goal" class="flex items-center gap-1.5 text-[12.5px] text-ryh-ink2">
+                                        <input v-model="form.goals" type="checkbox" :value="goal" class="h-3.5 w-3.5 accent-ryh-coral" />
                                         {{ goal }}
                                     </label>
                                 </div>
-                                <p v-if="fieldError('goals')" class="text-[12.5px] text-hh-coral">{{ fieldError('goals') }}</p>
+                                <p v-if="fieldError('goals')" class="text-[12.5px] text-ryh-coral">{{ fieldError('goals') }}</p>
                             </div>
 
                             <div class="flex flex-col gap-1.5">
-                                <label for="ai_notes" class="hh-label">Notes for the AI</label>
+                                <label for="ai_notes" class="ryh-label">Notes for the AI</label>
                                 <textarea
                                     id="ai_notes"
                                     v-model="form.notes"
                                     rows="2"
                                     maxlength="500"
-                                    class="hh-input min-h-[64px] resize-y"
+                                    class="ryh-input min-h-[64px] resize-y"
                                     placeholder="e.g. My wife is pescatarian but I eat meat — can we share meals with a different protein?"
                                 ></textarea>
-                                <p v-if="fieldError('notes')" class="text-[12.5px] text-hh-coral">{{ fieldError('notes') }}</p>
-                                <p class="text-[12px] text-hh-ink3">
+                                <p v-if="fieldError('notes')" class="text-[12.5px] text-ryh-coral">{{ fieldError('notes') }}</p>
+                                <p class="text-[12px] text-ryh-ink3">
                                     Leave out names and anything personal — your answers are sent to our AI provider to write the plan. See our
                                     <a :href="route('privacy') + '#ai-meal-plans'" target="_blank" class="font-semibold underline underline-offset-2"
                                         >Privacy Policy</a
@@ -633,8 +633,8 @@ function accept(): void {
                                 </p>
                             </div>
 
-                            <div class="rounded-xl bg-hh-soft px-3 py-2 text-[12.5px] text-hh-ink2">
-                                <p class="font-semibold text-hh-ink">{{ summary }}</p>
+                            <div class="rounded-xl bg-ryh-soft px-3 py-2 text-[12.5px] text-ryh-ink2">
+                                <p class="font-semibold text-ryh-ink">{{ summary }}</p>
                                 <p class="mt-1">
                                     Your household gets one AI plan a week. Not keen on it? You can regenerate once for a completely different set of
                                     meals, then swap any dinner you don't fancy. Planning from your saved recipes is free and unlimited.
@@ -644,20 +644,20 @@ function accept(): void {
                     </div>
                 </Transition>
 
-                <p v-if="isLastStep && page.props.errors.ai" class="text-[12.5px] text-hh-coral">{{ page.props.errors.ai }}</p>
+                <p v-if="isLastStep && page.props.errors.ai" class="text-[12.5px] text-ryh-coral">{{ page.props.errors.ai }}</p>
 
                 <div class="flex flex-wrap items-center gap-2">
-                    <button v-if="step > 0" type="button" class="hh-btn w-auto bg-hh-soft text-hh-ink" :disabled="form.processing" @click="back">
+                    <button v-if="step > 0" type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" :disabled="form.processing" @click="back">
                         Back
                     </button>
-                    <button v-else type="button" class="hh-btn w-auto bg-hh-soft text-hh-ink" @click="emit('update:open', false)">Cancel</button>
+                    <button v-else type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="emit('update:open', false)">Cancel</button>
 
                     <div class="ml-auto flex flex-wrap justify-end gap-2">
-                        <button v-if="!isLastStep" type="submit" class="hh-btn w-auto bg-hh-coral text-white" :disabled="!canContinue">Next</button>
+                        <button v-if="!isLastStep" type="submit" class="ryh-btn w-auto bg-ryh-coral text-white" :disabled="!canContinue">Next</button>
                         <button
                             v-else-if="aiUnavailable"
                             type="submit"
-                            class="hh-btn w-auto bg-hh-coral text-white"
+                            class="ryh-btn w-auto bg-ryh-coral text-white"
                             :disabled="selectedDays.length === 0 || form.processing"
                         >
                             Use my recipes
@@ -665,7 +665,7 @@ function accept(): void {
                         <template v-else>
                             <button
                                 type="button"
-                                class="hh-btn w-auto bg-hh-soft text-hh-ink"
+                                class="ryh-btn w-auto bg-ryh-soft text-ryh-ink"
                                 :disabled="selectedDays.length === 0 || form.processing"
                                 @click="planFromLibrary"
                             >
@@ -673,7 +673,7 @@ function accept(): void {
                             </button>
                             <button
                                 type="submit"
-                                class="hh-btn w-auto bg-hh-coral text-white"
+                                class="ryh-btn w-auto bg-ryh-coral text-white"
                                 :disabled="selectedDays.length === 0 || form.processing"
                             >
                                 Generate my week
@@ -685,18 +685,18 @@ function accept(): void {
 
             <div v-else-if="stage === 'loading'" class="flex flex-col gap-4 py-1">
                 <div class="flex items-center gap-3">
-                    <span class="bg-hh-coral/10 grid h-10 w-10 flex-none place-items-center rounded-full text-hh-coral">
+                    <span class="bg-ryh-coral/10 grid h-10 w-10 flex-none place-items-center rounded-full text-ryh-coral">
                         <Sparkles class="h-5 w-5 motion-safe:animate-pulse" :stroke-width="2.25" />
                     </span>
                     <div class="min-w-0">
-                        <p class="text-[14px] font-extrabold text-hh-ink">Planning your week</p>
-                        <p class="text-[12.5px] text-hh-ink2">This usually takes 30–60 seconds. Keep this window open.</p>
+                        <p class="text-[14px] font-extrabold text-ryh-ink">Planning your week</p>
+                        <p class="text-[12.5px] text-ryh-ink2">This usually takes 30–60 seconds. Keep this window open.</p>
                     </div>
                 </div>
 
-                <div class="h-1.5 overflow-hidden rounded-full bg-hh-soft" aria-hidden="true">
+                <div class="h-1.5 overflow-hidden rounded-full bg-ryh-soft" aria-hidden="true">
                     <div
-                        class="h-full rounded-full bg-hh-coral transition-[width] duration-500 ease-linear"
+                        class="h-full rounded-full bg-ryh-coral transition-[width] duration-500 ease-linear"
                         :style="{ width: `${loadingProgress}%` }"
                     ></div>
                 </div>
@@ -706,33 +706,33 @@ function accept(): void {
                         v-for="(text, index) in loadingSteps"
                         :key="text"
                         class="flex items-center gap-2.5 text-[13px] transition-colors duration-300"
-                        :class="index <= currentLoadingStep ? 'text-hh-ink' : 'text-hh-ink3'"
+                        :class="index <= currentLoadingStep ? 'text-ryh-ink' : 'text-ryh-ink3'"
                     >
                         <span class="grid h-5 w-5 flex-none place-items-center">
-                            <Check v-if="index < currentLoadingStep" class="h-4 w-4 text-hh-coral" :stroke-width="3" />
+                            <Check v-if="index < currentLoadingStep" class="h-4 w-4 text-ryh-coral" :stroke-width="3" />
                             <span
                                 v-else-if="index === currentLoadingStep"
-                                class="h-4 w-4 rounded-full border-2 border-hh-line border-t-hh-coral motion-safe:animate-spin"
+                                class="h-4 w-4 rounded-full border-2 border-ryh-line border-t-ryh-coral motion-safe:animate-spin"
                             ></span>
-                            <span v-else class="h-1.5 w-1.5 rounded-full bg-hh-line"></span>
+                            <span v-else class="h-1.5 w-1.5 rounded-full bg-ryh-line"></span>
                         </span>
                         <span class="min-w-0 truncate">{{ text }}</span>
                     </li>
                 </ol>
 
-                <p v-if="elapsed >= 60" class="text-[12.5px] text-hh-ink2">Still working. A busy week can take a little longer.</p>
+                <p v-if="elapsed >= 60" class="text-[12.5px] text-ryh-ink2">Still working. A busy week can take a little longer.</p>
                 <p class="sr-only" role="status">{{ loadingSteps[currentLoadingStep] }}</p>
             </div>
 
             <div v-else class="flex flex-col gap-4">
-                <p class="rounded-xl bg-hh-soft px-3 py-2 text-[12.5px] text-hh-ink2">{{ planHint }}</p>
-                <p v-if="source === 'ai'" role="note" class="rounded-xl border border-hh-sun px-3 py-2 text-[12.5px] text-hh-ink2">
-                    <span class="font-bold text-hh-ink">Check before you cook.</span> AI suggestions can get things wrong — always check ingredients
+                <p class="rounded-xl bg-ryh-soft px-3 py-2 text-[12.5px] text-ryh-ink2">{{ planHint }}</p>
+                <p v-if="source === 'ai'" role="note" class="rounded-xl border border-ryh-sun px-3 py-2 text-[12.5px] text-ryh-ink2">
+                    <span class="font-bold text-ryh-ink">Check before you cook.</span> AI suggestions can get things wrong — always check ingredients
                     for allergies, intolerances and dietary needs yourself.
                 </p>
 
                 <div class="flex flex-col gap-2">
-                    <div v-for="entry in assignment" :key="entry.day.date" class="rounded-2xl border border-hh-line bg-hh-panel p-3">
+                    <div v-for="entry in assignment" :key="entry.day.date" class="rounded-2xl border border-ryh-line bg-ryh-panel p-3">
                         <div class="flex items-start gap-1.5">
                             <span class="pt-[3px] text-[12px] font-extrabold">{{ entry.day.dayLabel }}</span>
                             <span class="mr-auto text-[15px] font-extrabold tracking-tight">{{ entry.suggestion.name }}</span>
@@ -742,8 +742,8 @@ function accept(): void {
                                 class="ml-auto flex-none rounded-md border px-2 py-1 text-[11px] font-semibold transition"
                                 :class="
                                     marked.includes(entry.position)
-                                        ? 'border-hh-coral bg-hh-coral text-white'
-                                        : 'border-hh-line bg-hh-card text-hh-ink2'
+                                        ? 'border-ryh-coral bg-ryh-coral text-white'
+                                        : 'border-ryh-line bg-ryh-card text-ryh-ink2'
                                 "
                                 :aria-pressed="marked.includes(entry.position)"
                                 :aria-label="`Replace ${entry.day.dayLabel}'s dinner when regenerating`"
@@ -755,7 +755,7 @@ function accept(): void {
                             <button
                                 v-if="canSwap"
                                 type="button"
-                                class="grid h-7 w-7 flex-none place-items-center rounded-md text-hh-ink3 transition hover:bg-hh-soft hover:text-hh-ink"
+                                class="grid h-7 w-7 flex-none place-items-center rounded-md text-ryh-ink3 transition hover:bg-ryh-soft hover:text-ryh-ink"
                                 :aria-label="`Swap ${entry.day.dayLabel}'s dinner`"
                                 title="Swap this dinner"
                                 :disabled="accepting"
@@ -764,23 +764,23 @@ function accept(): void {
                                 <ArrowLeftRight class="h-3.5 w-3.5" :stroke-width="2.5" />
                             </button>
                         </div>
-                        <p v-if="entry.suggestion.description" class="mt-1 text-[12.5px] text-hh-ink2">{{ entry.suggestion.description }}</p>
+                        <p v-if="entry.suggestion.description" class="mt-1 text-[12.5px] text-ryh-ink2">{{ entry.suggestion.description }}</p>
                         <div class="mt-1.5 flex flex-wrap gap-1.5">
                             <span
                                 v-if="entry.suggestion.duration_label"
-                                class="rounded-md bg-hh-soft px-1.5 py-[3px] font-mono text-[10.5px] text-hh-ink2"
+                                class="rounded-md bg-ryh-soft px-1.5 py-[3px] font-mono text-[10.5px] text-ryh-ink2"
                             >
                                 {{ entry.suggestion.duration_label }}
                             </span>
                             <span
                                 v-if="entry.suggestion.difficulty"
-                                class="rounded-md bg-hh-soft px-1.5 py-[3px] text-[10.5px] font-semibold text-hh-ink2"
+                                class="rounded-md bg-ryh-soft px-1.5 py-[3px] text-[10.5px] font-semibold text-ryh-ink2"
                             >
                                 {{ entry.suggestion.difficulty }}
                             </span>
                             <span
                                 v-if="entry.suggestion.estimated_cost"
-                                class="rounded-md bg-hh-soft px-1.5 py-[3px] font-mono text-[10.5px] text-hh-ink2"
+                                class="rounded-md bg-ryh-soft px-1.5 py-[3px] font-mono text-[10.5px] text-ryh-ink2"
                             >
                                 ~{{ pounds(entry.suggestion.estimated_cost) }}
                             </span>
@@ -788,38 +788,44 @@ function accept(): void {
                     </div>
                 </div>
 
-                <p v-if="estimatedTotal > 0" class="text-[12.5px] text-hh-ink2">
+                <p v-if="estimatedTotal > 0" class="text-[12.5px] text-ryh-ink2">
                     Estimated
-                    <span class="font-bold" :class="overBudget ? 'text-hh-coral' : 'text-hh-ink'">{{ pounds(estimatedTotal) }}</span>
+                    <span class="font-bold" :class="overBudget ? 'text-ryh-coral' : 'text-ryh-ink'">{{ pounds(estimatedTotal) }}</span>
                     {{ costSummary }}
                 </p>
 
-                <div v-if="shoppingLists.length > 0" class="flex flex-col gap-1.5 border-t border-hh-line pt-4">
-                    <label for="ai_shopping_list" class="hh-label">Add missing ingredients to</label>
-                    <select id="ai_shopping_list" v-model="targetListId" class="hh-input">
+                <div v-if="shoppingLists.length > 0" class="flex flex-col gap-1.5 border-t border-ryh-line pt-4">
+                    <label for="ai_shopping_list" class="ryh-label">Add missing ingredients to</label>
+                    <select id="ai_shopping_list" v-model="targetListId" class="ryh-input">
                         <option :value="null">Don't add</option>
                         <option v-for="list in shoppingLists" :key="list.id" :value="list.id">{{ list.name }}</option>
                     </select>
                 </div>
 
-                <p v-if="acceptFailures.length > 0" class="text-[12.5px] text-hh-coral">{{ acceptFailureMessage }}</p>
+                <p v-if="acceptFailures.length > 0" class="text-[12.5px] text-ryh-coral">{{ acceptFailureMessage }}</p>
 
                 <div class="flex items-center gap-2">
                     <button
                         v-if="acceptFailures.length === 0"
                         type="button"
-                        class="hh-btn w-auto bg-hh-coral text-white"
+                        class="ryh-btn w-auto bg-ryh-coral text-white"
                         :disabled="accepting"
                         @click="accept"
                     >
                         {{ accepting ? `Adding ${acceptIndex + 1} of ${assignment.length}…` : 'Accept this week' }}
                     </button>
-                    <button v-if="canRegenerate" type="button" class="hh-btn w-auto bg-hh-soft text-hh-ink" :disabled="accepting" @click="regenerate">
+                    <button
+                        v-if="canRegenerate"
+                        type="button"
+                        class="ryh-btn w-auto bg-ryh-soft text-ryh-ink"
+                        :disabled="accepting"
+                        @click="regenerate"
+                    >
                         {{ regenerateLabel }}
                     </button>
                     <button
                         type="button"
-                        class="hh-btn ml-auto w-auto bg-hh-soft text-hh-ink"
+                        class="ryh-btn ml-auto w-auto bg-ryh-soft text-ryh-ink"
                         :disabled="accepting"
                         @click="emit('update:open', false)"
                     >

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import LegalDocument from '@/components/legal/LegalDocument.vue';
 import Tbc from '@/components/legal/Tbc.vue';
-import { formatPlanPrice } from '@/lib/househub';
-import type { Legal, Plan } from '@/types/househub';
+import { formatPlanPrice } from '@/lib/ryh';
+import type { Legal, Plan } from '@/types/ryh';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
@@ -21,7 +21,7 @@ const annual = computed(() => formatPlanPrice(props.plan.priceAnnual));
 
 const sections = [
     { id: 'about', title: 'About us and these terms' },
-    { id: 'eligibility', title: 'Who can use HouseHub' },
+    { id: 'eligibility', title: 'Who can use RYH' },
     { id: 'households', title: 'Households, roles and members' },
     { id: 'trial-and-subscription', title: 'Free trial and subscription' },
     { id: 'cancelling', title: 'Cancelling and refunds' },
@@ -64,7 +64,7 @@ const sections = [
             version you accepted. These terms are available in English only, and you can save or print this page at any time.
         </p>
 
-        <h2 id="eligibility">Who can use HouseHub</h2>
+        <h2 id="eligibility">Who can use RYH</h2>
         <ol>
             <li>You must be 18 or over and live in the UK to create an account or a household.</li>
             <li>

@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
-import AiMealPlanDialog from '@/components/househub/AiMealPlanDialog.vue';
-import RecipeDetailFields from '@/components/househub/RecipeDetailFields.vue';
+import AiMealPlanDialog from '@/components/ryh/AiMealPlanDialog.vue';
+import RecipeDetailFields from '@/components/ryh/RecipeDetailFields.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useHouseholdRole } from '@/composables/useHouseholdRole';
-import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
-import HouseHubShell from '@/layouts/HouseHubShell.vue';
-import { tint } from '@/lib/househub';
-import type { AiPlannerOptions, Member, PlannedMeal, PlannerDay, Recipe, ShoppingList, TagOption } from '@/types/househub';
+import RyhLayout from '@/layouts/RyhLayout.vue';
+import RyhShell from '@/layouts/RyhShell.vue';
+import { tint } from '@/lib/ryh';
+import type { AiPlannerOptions, Member, PlannedMeal, PlannerDay, Recipe, ShoppingList, TagOption } from '@/types/ryh';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { Plus, Sparkles } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
-defineOptions({ layout: HouseHubShell });
+defineOptions({ layout: RyhShell });
 
 const props = defineProps<{
     weekOf: string;
@@ -229,16 +229,16 @@ function drop(date: string): void {
 </script>
 
 <template>
-    <HouseHubLayout title="Meal Planner" :subtitle="`Week of ${weekOf}`">
-        <div class="flex animate-hh-rise flex-col gap-4">
+    <RyhLayout title="Meal Planner" :subtitle="`Week of ${weekOf}`">
+        <div class="flex animate-ryh-rise flex-col gap-4">
             <div v-if="canManage" class="flex flex-wrap items-center gap-3">
-                <div class="hidden min-w-0 flex-1 text-[13px] text-hh-ink3 [@media(hover:hover)]:block">
+                <div class="hidden min-w-0 flex-1 text-[13px] text-ryh-ink3 [@media(hover:hover)]:block">
                     Drag any meal card onto another day to reschedule, or click one to edit it.
                 </div>
-                <div class="min-w-0 flex-1 text-[13px] text-hh-ink3 [@media(hover:hover)]:hidden">
+                <div class="min-w-0 flex-1 text-[13px] text-ryh-ink3 [@media(hover:hover)]:hidden">
                     Tap a meal to edit it or move it to another day.
                 </div>
-                <button type="button" class="hh-btn ml-auto w-auto flex-none whitespace-nowrap bg-hh-ink text-hh-shell" @click="aiOpen = true">
+                <button type="button" class="ryh-btn ml-auto w-auto flex-none whitespace-nowrap bg-ryh-ink text-ryh-shell" @click="aiOpen = true">
                     <Sparkles class="mr-1.5 inline h-3.5 w-3.5" :stroke-width="2.5" />
                     Plan my week
                 </button>
@@ -250,8 +250,8 @@ function drop(date: string): void {
                     :key="day.date"
                     class="group flex min-h-[112px] flex-col gap-2.5 rounded-[18px] border border-dashed p-3 transition xl:min-h-[400px]"
                     :style="{
-                        borderColor: dropTarget === day.date ? 'var(--hh-mint)' : 'var(--hh-line)',
-                        background: dropTarget === day.date ? 'var(--hh-soft)' : day.isToday ? 'var(--hh-sunk)' : 'transparent',
+                        borderColor: dropTarget === day.date ? 'var(--ryh-mint)' : 'var(--ryh-line)',
+                        background: dropTarget === day.date ? 'var(--ryh-soft)' : day.isToday ? 'var(--ryh-sunk)' : 'transparent',
                     }"
                     @dragover.prevent="dropTarget = day.date"
                     @dragleave="dropTarget === day.date && (dropTarget = null)"
@@ -259,11 +259,11 @@ function drop(date: string): void {
                 >
                     <div class="flex items-baseline gap-1.5">
                         <span class="text-[13px] font-extrabold">{{ day.dayLabel }}</span>
-                        <span class="font-mono text-[11px] text-hh-ink3">{{ day.dateLabel }}</span>
+                        <span class="font-mono text-[11px] text-ryh-ink3">{{ day.dateLabel }}</span>
                         <button
                             v-if="canManage"
                             type="button"
-                            class="ml-auto grid h-8 w-8 place-items-center rounded-md text-hh-ink3 transition hover:bg-hh-soft hover:text-hh-ink [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:focus-visible:opacity-100 [@media(hover:hover)]:group-hover:opacity-100"
+                            class="ml-auto grid h-8 w-8 place-items-center rounded-md text-ryh-ink3 transition hover:bg-ryh-soft hover:text-ryh-ink [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:focus-visible:opacity-100 [@media(hover:hover)]:group-hover:opacity-100"
                             :aria-label="`Add a meal on ${day.dateLabel}`"
                             @click="openNew(day.date)"
                         >
@@ -276,7 +276,7 @@ function drop(date: string): void {
                         :key="meal.id"
                         type="button"
                         :draggable="canManage"
-                        class="overflow-hidden rounded-2xl border border-hh-line bg-hh-card text-left transition hover:-translate-y-[3px] hover:shadow-hh"
+                        class="overflow-hidden rounded-2xl border border-ryh-line bg-ryh-card text-left transition hover:-translate-y-[3px] hover:shadow-ryh"
                         :class="canManage ? 'cursor-grab' : ''"
                         :style="{ opacity: draggingId === meal.id ? 0.35 : 1 }"
                         @dragstart="startDrag($event, meal.id)"
@@ -284,11 +284,11 @@ function drop(date: string): void {
                         @click="canManage && openEdit(meal, day.date)"
                     >
                         <div class="flex min-h-[76px] flex-col justify-between gap-1 px-3 py-2.5" :style="{ background: tint(meal.tint) }">
-                            <span class="self-end text-[10px] font-extrabold uppercase tracking-[0.08em] text-hh-ontint opacity-60">
+                            <span class="self-end text-[10px] font-extrabold uppercase tracking-[0.08em] text-ryh-ontint opacity-60">
                                 {{ meal.slot }}
                             </span>
                             <span
-                                class="line-clamp-3 hyphens-auto break-words text-[14px] font-extrabold leading-[1.2] tracking-[-0.02em] text-hh-ontint"
+                                class="line-clamp-3 hyphens-auto break-words text-[14px] font-extrabold leading-[1.2] tracking-[-0.02em] text-ryh-ontint"
                                 :title="meal.name"
                             >
                                 {{ meal.name }}
@@ -296,10 +296,10 @@ function drop(date: string): void {
                         </div>
                         <div class="flex flex-col gap-[7px] px-3 py-2.5">
                             <div class="flex flex-wrap gap-1.5">
-                                <span class="rounded-md bg-hh-soft px-1.5 py-[3px] font-mono text-[10.5px] text-hh-ink2">
+                                <span class="rounded-md bg-ryh-soft px-1.5 py-[3px] font-mono text-[10.5px] text-ryh-ink2">
                                     {{ meal.duration }}
                                 </span>
-                                <span class="rounded-md bg-hh-soft px-1.5 py-[3px] text-[10.5px] font-semibold text-hh-ink2">
+                                <span class="rounded-md bg-ryh-soft px-1.5 py-[3px] text-[10.5px] font-semibold text-ryh-ink2">
                                     {{ meal.difficulty }}
                                 </span>
                             </div>
@@ -311,26 +311,26 @@ function drop(date: string): void {
                                 >
                                     {{ meal.cook.initials }}
                                 </span>
-                                <span class="text-[11px] text-hh-ink3">{{ meal.missingLabel }}</span>
+                                <span class="text-[11px] text-ryh-ink3">{{ meal.missingLabel }}</span>
                             </div>
                         </div>
                     </button>
                 </div>
             </div>
 
-            <div class="rounded-[22px] border border-hh-line bg-hh-panel p-4 sm:p-[22px]">
+            <div class="rounded-[22px] border border-ryh-line bg-ryh-panel p-4 sm:p-[22px]">
                 <div class="mb-3.5 flex items-baseline gap-2.5">
                     <h3 class="text-[15px] font-extrabold">Recipe library</h3>
-                    <span class="text-xs text-hh-ink3">Favourites · {{ recipeCount }} saved</span>
-                    <Link :href="route('recipes.index')" class="ml-auto text-[12.5px] font-semibold text-hh-coral hover:opacity-75">
+                    <span class="text-xs text-ryh-ink3">Favourites · {{ recipeCount }} saved</span>
+                    <Link :href="route('recipes.index')" class="ml-auto text-[12.5px] font-semibold text-ryh-coral hover:opacity-75">
                         Manage recipes
                     </Link>
                 </div>
                 <div class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-                    <div v-for="recipe in library" :key="recipe.id" class="rounded-2xl border border-hh-line bg-hh-card p-3.5">
+                    <div v-for="recipe in library" :key="recipe.id" class="rounded-2xl border border-ryh-line bg-ryh-card p-3.5">
                         <div class="mb-2.5 h-[58px] rounded-xl" :style="{ background: tint(recipe.tint) }"></div>
                         <div class="text-[13.5px] font-bold leading-tight">{{ recipe.name }}</div>
-                        <div class="mt-1.5 text-[11.5px] text-hh-ink3">{{ recipe.meta }}</div>
+                        <div class="mt-1.5 text-[11.5px] text-ryh-ink3">{{ recipe.meta }}</div>
                     </div>
                 </div>
             </div>
@@ -338,45 +338,45 @@ function drop(date: string): void {
 
         <!-- Add / edit meal -->
         <Dialog :open="open" @update:open="open = $event">
-            <DialogContent class="rounded-[22px] border-hh-line bg-hh-card text-hh-ink sm:rounded-[22px]">
+            <DialogContent class="rounded-[22px] border-ryh-line bg-ryh-card text-ryh-ink sm:rounded-[22px]">
                 <DialogHeader>
                     <DialogTitle class="text-[16px] font-extrabold tracking-tight">{{ dialogTitle }}</DialogTitle>
                 </DialogHeader>
 
                 <form class="flex flex-col gap-4" @submit.prevent="submit">
                     <div class="flex flex-col gap-1.5">
-                        <label for="recipe_id" class="hh-label">Recipe</label>
-                        <select id="recipe_id" v-model="form.recipe_id" class="hh-input" @change="onRecipeSelected">
+                        <label for="recipe_id" class="ryh-label">Recipe</label>
+                        <select id="recipe_id" v-model="form.recipe_id" class="ryh-input" @change="onRecipeSelected">
                             <option :value="null">— Choose from the library —</option>
                             <option v-for="recipe in recipes" :key="recipe.id" :value="recipe.id">{{ recipe.name }}</option>
                         </select>
-                        <p v-if="form.errors.recipe_id" class="text-[12.5px] text-hh-coral">{{ form.errors.recipe_id }}</p>
+                        <p v-if="form.errors.recipe_id" class="text-[12.5px] text-ryh-coral">{{ form.errors.recipe_id }}</p>
                     </div>
 
                     <div class="flex flex-col gap-1.5">
-                        <label for="new_recipe_name" class="hh-label">…or add a new recipe</label>
+                        <label for="new_recipe_name" class="ryh-label">…or add a new recipe</label>
                         <input
                             id="new_recipe_name"
                             v-model="form.new_recipe_name"
                             type="text"
-                            class="hh-input"
+                            class="ryh-input"
                             placeholder="Recipe name"
                             @input="onNewRecipeNameInput"
                         />
-                        <p v-if="form.errors.new_recipe_name" class="text-[12.5px] text-hh-coral">{{ form.errors.new_recipe_name }}</p>
+                        <p v-if="form.errors.new_recipe_name" class="text-[12.5px] text-ryh-coral">{{ form.errors.new_recipe_name }}</p>
                     </div>
 
                     <div v-if="showRecipeDetails" class="flex flex-col gap-1.5">
-                        <label for="new_recipe_description" class="hh-label">Notes</label>
+                        <label for="new_recipe_description" class="ryh-label">Notes</label>
                         <textarea
                             id="new_recipe_description"
                             v-model="form.new_recipe_description"
                             rows="2"
                             maxlength="2000"
-                            class="hh-input h-auto py-2.5"
+                            class="ryh-input h-auto py-2.5"
                             placeholder="Optional"
                         ></textarea>
-                        <p v-if="form.errors.new_recipe_description" class="text-[12.5px] text-hh-coral">
+                        <p v-if="form.errors.new_recipe_description" class="text-[12.5px] text-ryh-coral">
                             {{ form.errors.new_recipe_description }}
                         </p>
 
@@ -393,22 +393,22 @@ function drop(date: string): void {
 
                     <div class="grid grid-cols-2 gap-3">
                         <div class="flex flex-col gap-1.5">
-                            <label for="planned_on" class="hh-label">Day</label>
-                            <input id="planned_on" v-model="form.planned_on" type="date" class="hh-input" required />
-                            <p v-if="form.errors.planned_on" class="text-[12.5px] text-hh-coral">{{ form.errors.planned_on }}</p>
+                            <label for="planned_on" class="ryh-label">Day</label>
+                            <input id="planned_on" v-model="form.planned_on" type="date" class="ryh-input" required />
+                            <p v-if="form.errors.planned_on" class="text-[12.5px] text-ryh-coral">{{ form.errors.planned_on }}</p>
                         </div>
 
                         <div class="flex flex-col gap-1.5">
-                            <label for="slot" class="hh-label">Slot</label>
-                            <select id="slot" v-model="form.slot" class="hh-input">
+                            <label for="slot" class="ryh-label">Slot</label>
+                            <select id="slot" v-model="form.slot" class="ryh-input">
                                 <option v-for="slot in SLOTS" :key="slot" :value="slot">{{ slot }}</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-1.5">
-                        <label for="cook_id" class="hh-label">Cook</label>
-                        <select id="cook_id" v-model="form.cook_id" class="hh-input">
+                        <label for="cook_id" class="ryh-label">Cook</label>
+                        <select id="cook_id" v-model="form.cook_id" class="ryh-input">
                             <option :value="null">Unassigned</option>
                             <option v-for="member in members" :key="member.id" :value="member.id">{{ member.name }}</option>
                         </select>
@@ -416,23 +416,25 @@ function drop(date: string): void {
 
                     <div
                         v-if="showRecipeDetails && form.new_recipe_ingredients.some((i) => i.name.trim() !== '')"
-                        class="flex flex-col gap-1.5 border-t border-hh-line pt-4"
+                        class="flex flex-col gap-1.5 border-t border-ryh-line pt-4"
                     >
-                        <label for="new_recipe_shopping_list_id" class="hh-label">Also add ingredients to a shopping list</label>
-                        <select id="new_recipe_shopping_list_id" v-model="form.new_recipe_shopping_list_id" class="hh-input">
+                        <label for="new_recipe_shopping_list_id" class="ryh-label">Also add ingredients to a shopping list</label>
+                        <select id="new_recipe_shopping_list_id" v-model="form.new_recipe_shopping_list_id" class="ryh-input">
                             <option :value="null">Don't add</option>
                             <option v-for="list in shoppingLists" :key="list.id" :value="list.id">{{ list.name }}</option>
                         </select>
                     </div>
 
-                    <p v-if="hasUnhandledErrors" class="text-[12.5px] text-hh-coral">Couldn't save — check the recipe details above.</p>
+                    <p v-if="hasUnhandledErrors" class="text-[12.5px] text-ryh-coral">Couldn't save — check the recipe details above.</p>
 
                     <div class="flex items-center gap-2">
-                        <button type="submit" class="hh-btn w-auto bg-hh-coral text-white" :disabled="form.processing">
+                        <button type="submit" class="ryh-btn w-auto bg-ryh-coral text-white" :disabled="form.processing">
                             {{ editing ? 'Save changes' : 'Add meal' }}
                         </button>
-                        <button type="button" class="hh-btn w-auto bg-hh-soft text-hh-ink" @click="open = false">Cancel</button>
-                        <button v-if="editing" type="button" class="hh-btn ml-auto w-auto bg-hh-soft text-hh-coral" @click="destroy">Remove</button>
+                        <button type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="open = false">Cancel</button>
+                        <button v-if="editing" type="button" class="ryh-btn ml-auto w-auto bg-ryh-soft text-ryh-coral" @click="destroy">
+                            Remove
+                        </button>
                     </div>
                 </form>
             </DialogContent>
@@ -451,5 +453,5 @@ function drop(date: string): void {
             :shopping-lists="shoppingLists"
             @update:open="aiOpen = $event"
         />
-    </HouseHubLayout>
+    </RyhLayout>
 </template>

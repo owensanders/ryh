@@ -5,8 +5,8 @@ import { watchEffect } from 'vue';
 
 /**
  * A screen's title and subtitle. The frame around it (sidebar, header, tab
- * bar) is the persistent HouseHubShell layout, which each app screen opts
- * into with `defineOptions({ layout: HouseHubShell })` so moving between
+ * bar) is the persistent RyhShell layout, which each app screen opts
+ * into with `defineOptions({ layout: RyhShell })` so moving between
  * screens swaps only the content instead of rebuilding the whole page.
  */
 const props = defineProps<{

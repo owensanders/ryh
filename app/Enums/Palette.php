@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /**
- * Accent tokens from the HouseHub design. The value is the CSS custom property
+ * Accent tokens from the RYH design. The value is the CSS custom property
  * name so the client can render `var(--mint)` and stay theme-aware.
  */
 enum Palette: string
@@ -18,6 +18,6 @@ enum Palette: string
 
     public function cssVar(): string
     {
-        return "var(--hh-{$this->value})";
+        return "var(--ryh-{$this->value})";
     }
 }

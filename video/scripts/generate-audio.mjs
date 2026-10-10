@@ -195,7 +195,7 @@ console.log('Music');
 // 120 BPM, one bar = 2s = 60 video frames. F major: F – C – Dm – B♭.
 // The video is 41 bars: the outro (pricing) starts at bar 35 and its logo
 // lands on the final chord three bars later. Keep these in step with the
-// scene lengths in src/HouseHubPromo.tsx.
+// scene lengths in src/RyhPromo.tsx.
 const BPM = 120, BEAT = 60 / BPM, BAR = BEAT * 4, BARS = 41, OUTRO_BAR = 35, HIT_BAR = 38;
 const LEN = BARS * BAR + 3;
 const L = buf(LEN), R = buf(LEN);

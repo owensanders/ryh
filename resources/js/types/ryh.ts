@@ -7,7 +7,7 @@ export interface Member {
     id: number;
     name: string;
     initials: string;
-    /** A `var(--hh-*)` reference, so it follows the active theme. */
+    /** A `var(--ryh-*)` reference, so it follows the active theme. */
     colour: string;
     status: string | null;
 }
@@ -74,7 +74,7 @@ export interface PlannedMeal {
     difficulty: string | null;
     description: string | null;
     tags: string[];
-    /** Index into the `--hh-t1` … `--hh-t5` gradient tokens. */
+    /** Index into the `--ryh-t1` … `--ryh-t5` gradient tokens. */
     tint: number;
     missingIngredients: number;
     missingLabel: string;

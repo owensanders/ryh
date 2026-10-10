@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { House } from 'lucide-vue-next';
-
 const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
 
-// A lock screen with HouseHub push notifications on it, worded exactly as the
+// A lock screen with RYH push notifications on it, worded exactly as the
 // app sends them (app/Notifications/*). Drawn in CSS so it stays sharp, themes
 // with the page and needs no screenshot to keep current.
 const notifications = [
@@ -15,7 +13,7 @@ const notifications = [
 
 <template>
     <div class="relative mx-auto w-[280px] sm:w-[300px]" aria-hidden="true">
-        <div class="absolute -inset-10 rounded-full bg-hh-coral opacity-[0.18] blur-[60px]"></div>
+        <div class="absolute -inset-10 rounded-full bg-ryh-coral opacity-[0.18] blur-[60px]"></div>
 
         <div class="relative rounded-[46px] bg-[#0b0e15] p-[11px] shadow-[0_40px_80px_-30px_rgba(14,26,43,0.7)] ring-1 ring-white/10">
             <div
@@ -38,12 +36,10 @@ const notifications = [
                     <div
                         v-for="(notification, index) in notifications"
                         :key="index"
-                        class="flex animate-hh-rise gap-2.5 rounded-[18px] bg-white/[0.82] p-2.5 text-[#0e1a2b] backdrop-blur"
+                        class="flex animate-ryh-rise gap-2.5 rounded-[18px] bg-white/[0.82] p-2.5 text-[#0e1a2b] backdrop-blur"
                         :style="{ animationDelay: `${index * 120}ms`, animationFillMode: 'backwards' }"
                     >
-                        <div class="grid h-[30px] w-[30px] flex-none place-items-center rounded-[9px] bg-hh-coral text-white">
-                            <House class="h-4 w-4" :stroke-width="2.5" />
-                        </div>
+                        <img src="/icons/icon.svg" alt="" class="h-[30px] w-[30px] flex-none rounded-[9px]" />
                         <div class="min-w-0 flex-1 leading-snug">
                             <div class="flex items-baseline justify-between gap-2">
                                 <span class="truncate text-[12px] font-bold">{{ notification.household }}</span>

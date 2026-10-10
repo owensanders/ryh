@@ -45,22 +45,22 @@ const closeModal = () => {
 </script>
 
 <template>
-    <section class="rounded-[22px] border border-hh-line bg-hh-card p-[22px]">
+    <section class="rounded-[22px] border border-ryh-line bg-ryh-card p-[22px]">
         <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">Delete account</h3>
-        <p class="mt-1 text-[13px] text-hh-ink3">Delete your account and all of its resources.</p>
+        <p class="mt-1 text-[13px] text-ryh-ink3">Delete your account and all of its resources.</p>
 
-        <!-- hh-* tokens are bare `var(...)`, so Tailwind can't apply an opacity modifier to them. -->
-        <div class="mt-5 rounded-[13px] bg-[color-mix(in_srgb,var(--hh-coral)_10%,transparent)] p-3.5">
-            <p class="text-[13px] font-bold text-hh-coral">Warning</p>
-            <p class="mt-0.5 text-[13px] text-hh-ink2">Please proceed with caution, this cannot be undone.</p>
+        <!-- ryh-* tokens are bare `var(...)`, so Tailwind can't apply an opacity modifier to them. -->
+        <div class="mt-5 rounded-[13px] bg-[color-mix(in_srgb,var(--ryh-coral)_10%,transparent)] p-3.5">
+            <p class="text-[13px] font-bold text-ryh-coral">Warning</p>
+            <p class="mt-0.5 text-[13px] text-ryh-ink2">Please proceed with caution, this cannot be undone.</p>
 
             <Dialog>
-                <DialogTrigger class="hh-btn mt-3.5 w-auto bg-hh-coral text-white"> Delete account </DialogTrigger>
-                <DialogContent class="rounded-[22px] border-hh-line bg-hh-card text-hh-ink sm:rounded-[22px]">
+                <DialogTrigger class="ryh-btn mt-3.5 w-auto bg-ryh-coral text-white"> Delete account </DialogTrigger>
+                <DialogContent class="rounded-[22px] border-ryh-line bg-ryh-card text-ryh-ink sm:rounded-[22px]">
                     <form class="flex flex-col gap-5" @submit="deleteUser">
                         <DialogHeader class="space-y-2">
                             <DialogTitle class="text-[16px] font-extrabold tracking-tight">Are you sure you want to delete your account?</DialogTitle>
-                            <DialogDescription class="text-[13px] text-hh-ink3">
+                            <DialogDescription class="text-[13px] text-ryh-ink3">
                                 Once your account is deleted, all of its resources and data will also be permanently deleted. Please enter your
                                 password to confirm you would like to permanently delete your account.
                             </DialogDescription>
@@ -74,7 +74,7 @@ const closeModal = () => {
                                 v-model="form.password"
                                 type="password"
                                 name="password"
-                                class="hh-input"
+                                class="ryh-input"
                                 required
                                 autocomplete="current-password"
                                 placeholder="Password"
@@ -82,23 +82,23 @@ const closeModal = () => {
                             <InputError :message="form.errors.password" />
                         </div>
 
-                        <div v-if="householdError" class="rounded-[13px] bg-[color-mix(in_srgb,var(--hh-coral)_10%,transparent)] p-3.5">
-                            <p class="text-[13px] text-hh-ink2">{{ householdError }}</p>
-                            <a :href="route('house.index')" class="mt-1.5 inline-block text-[13px] font-bold text-hh-coral underline">
+                        <div v-if="householdError" class="rounded-[13px] bg-[color-mix(in_srgb,var(--ryh-coral)_10%,transparent)] p-3.5">
+                            <p class="text-[13px] text-ryh-ink2">{{ householdError }}</p>
+                            <a :href="route('house.index')" class="mt-1.5 inline-block text-[13px] font-bold text-ryh-coral underline">
                                 Go promote another member to Owner instead
                             </a>
-                            <label class="mt-3 flex items-start gap-2 text-[13px] text-hh-ink2">
+                            <label class="mt-3 flex items-start gap-2 text-[13px] text-ryh-ink2">
                                 <input v-model="form.confirm_household_deletion" type="checkbox" class="mt-0.5" />
                                 I understand — delete my household and all its data
                             </label>
                         </div>
 
                         <DialogFooter class="gap-2">
-                            <DialogClose class="hh-btn w-auto bg-hh-soft text-hh-ink" @click="closeModal"> Cancel </DialogClose>
+                            <DialogClose class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="closeModal"> Cancel </DialogClose>
 
                             <button
                                 type="submit"
-                                class="hh-btn w-auto bg-hh-coral text-white"
+                                class="ryh-btn w-auto bg-ryh-coral text-white"
                                 :disabled="form.processing || (!!householdError && !form.confirm_household_deletion)"
                             >
                                 Delete account

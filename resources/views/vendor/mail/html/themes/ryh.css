@@ -1,4 +1,4 @@
-/* HouseHub mail theme — mirrors the `--hh-*` light tokens in resources/css/app.css.
+/* RYH mail theme — mirrors the `--ryh-*` light tokens in resources/css/app.css.
    Email clients can't read CSS variables or reliably blend rgba, so the ink
    shades are pre-blended against the card (#ffffff) as solid hex:
    ink #0e1a2b, ink2 #787f88, ink3 #9fa3aa, line #e9eaec.
@@ -167,27 +167,7 @@ img {
     border: 0;
     display: block;
     height: 36px;
-    width: 36px;
-}
-
-.brand-cell {
-    padding-left: 12px;
-}
-
-.brand-name {
-    color: #0e1a2b;
-    display: block;
-    font-size: 16.5px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-}
-
-.brand-tagline {
-    color: #9fa3aa;
-    display: block;
-    font-size: 11px;
-    line-height: 1.4;
+    width: 195px;
 }
 
 /* Subcopy */
@@ -263,7 +243,7 @@ img {
     padding: 10px 0;
 }
 
-/* Buttons — .hh-btn: 42px tall, 13px radius, 13.5px bold. Borders (not padding)
+/* Buttons — .ryh-btn: 42px tall, 13px radius, 13.5px bold. Borders (not padding)
    give the size so Outlook renders it too. */
 
 .action {

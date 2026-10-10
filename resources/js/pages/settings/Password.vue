@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
-import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
-import HouseHubShell from '@/layouts/HouseHubShell.vue';
+import RyhLayout from '@/layouts/RyhLayout.vue';
+import RyhShell from '@/layouts/RyhShell.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { TransitionRoot } from '@headlessui/vue';
 import { useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
-defineOptions({ layout: HouseHubShell });
+defineOptions({ layout: RyhShell });
 
 const passwordInput = ref<HTMLInputElement>();
 const currentPasswordInput = ref<HTMLInputElement>();
@@ -40,21 +40,21 @@ const updatePassword = () => {
 </script>
 
 <template>
-    <HouseHubLayout title="Settings" subtitle="Manage your profile and account">
+    <RyhLayout title="Settings" subtitle="Manage your profile and account">
         <SettingsLayout>
-            <section class="rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
+            <section class="rounded-[22px] border border-ryh-line bg-ryh-card p-4 sm:p-[22px]">
                 <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">Update password</h3>
-                <p class="mt-1 text-[13px] text-hh-ink3">Use a long, random password to keep the account secure.</p>
+                <p class="mt-1 text-[13px] text-ryh-ink3">Use a long, random password to keep the account secure.</p>
 
                 <form class="mt-5 flex flex-col gap-4" @submit.prevent="updatePassword">
                     <div class="flex flex-col gap-1.5">
-                        <label for="current_password" class="hh-label">Current password</label>
+                        <label for="current_password" class="ryh-label">Current password</label>
                         <input
                             id="current_password"
                             ref="currentPasswordInput"
                             v-model="form.current_password"
                             type="password"
-                            class="hh-input"
+                            class="ryh-input"
                             required
                             autocomplete="current-password"
                             placeholder="••••••••"
@@ -63,13 +63,13 @@ const updatePassword = () => {
                     </div>
 
                     <div class="flex flex-col gap-1.5">
-                        <label for="password" class="hh-label">New password</label>
+                        <label for="password" class="ryh-label">New password</label>
                         <input
                             id="password"
                             ref="passwordInput"
                             v-model="form.password"
                             type="password"
-                            class="hh-input"
+                            class="ryh-input"
                             required
                             autocomplete="new-password"
                             placeholder="••••••••"
@@ -78,12 +78,12 @@ const updatePassword = () => {
                     </div>
 
                     <div class="flex flex-col gap-1.5">
-                        <label for="password_confirmation" class="hh-label">Confirm password</label>
+                        <label for="password_confirmation" class="ryh-label">Confirm password</label>
                         <input
                             id="password_confirmation"
                             v-model="form.password_confirmation"
                             type="password"
-                            class="hh-input"
+                            class="ryh-input"
                             required
                             autocomplete="new-password"
                             placeholder="••••••••"
@@ -92,7 +92,7 @@ const updatePassword = () => {
                     </div>
 
                     <div class="flex items-center gap-4">
-                        <button type="submit" class="hh-btn w-auto bg-hh-coral text-white" :disabled="form.processing">Save password</button>
+                        <button type="submit" class="ryh-btn w-auto bg-ryh-coral text-white" :disabled="form.processing">Save password</button>
 
                         <TransitionRoot
                             :show="form.recentlySuccessful"
@@ -101,11 +101,11 @@ const updatePassword = () => {
                             leave="transition ease-in-out"
                             leave-to="opacity-0"
                         >
-                            <p class="text-[13px] font-semibold text-hh-mint">Saved.</p>
+                            <p class="text-[13px] font-semibold text-ryh-mint">Saved.</p>
                         </TransitionRoot>
                     </div>
                 </form>
             </section>
         </SettingsLayout>
-    </HouseHubLayout>
+    </RyhLayout>
 </template>

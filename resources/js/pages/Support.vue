@@ -2,8 +2,8 @@
 import Tbc from '@/components/legal/Tbc.vue';
 import { useHouseholdRole } from '@/composables/useHouseholdRole';
 import PublicLayout from '@/layouts/PublicLayout.vue';
-import { formatPlanPrice } from '@/lib/househub';
-import type { Legal, Plan } from '@/types/househub';
+import { formatPlanPrice } from '@/lib/ryh';
+import type { Legal, Plan } from '@/types/ryh';
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
@@ -35,7 +35,7 @@ const shortcuts = computed(() => [
         body: 'Settings → Profile. If you are the only Owner, the household is deleted too.',
         href: route(user.value ? 'profile.edit' : 'login'),
     },
-    { icon: '🟢', title: 'Is something down?', body: 'Check the live status of HouseHub before getting in touch.', href: route('status') },
+    { icon: '🟢', title: 'Is something down?', body: 'Check the live status of RYH before getting in touch.', href: route('status') },
 ]);
 
 const faqs = computed(() => [
@@ -61,11 +61,11 @@ const faqs = computed(() => [
     },
     {
         q: 'Is there a phone app?',
-        a: "Yes — add HouseHub to your home screen straight from your browser, no app store needed. On iPhone and iPad, open it in Safari, tap Share, then Add to Home Screen. On Android, open it in Chrome and tap Install on the card that appears (or choose Install app from Chrome's ⋮ menu). There's a step-by-step guide on our home page.",
+        a: "Yes — add RYH to your home screen straight from your browser, no app store needed. On iPhone and iPad, open it in Safari, tap Share, then Add to Home Screen. On Android, open it in Chrome and tap Install on the card that appears (or choose Install app from Chrome's ⋮ menu). There's a step-by-step guide on our home page.",
     },
     {
         q: 'How do I get notifications on my phone?',
-        a: 'Open HouseHub on your phone, go to Settings → Notifications and tap Turn on, then allow notifications when your phone asks. You can choose which kinds you get — chores, calendar or meals. On iPhone and iPad, add HouseHub to your Home Screen first: notifications only work from there.',
+        a: 'Open RYH on your phone, go to Settings → Notifications and tap Turn on, then allow notifications when your phone asks. You can choose which kinds you get — chores, calendar or meals. On iPhone and iPad, add RYH to your Home Screen first: notifications only work from there.',
     },
     {
         q: 'Can I get a copy of my data, or have it deleted?',
@@ -80,13 +80,13 @@ const faqs = computed(() => [
     <PublicLayout>
         <div class="mx-auto max-w-[860px] px-5 pb-20 pt-12 sm:px-8 lg:pt-16">
             <h1 class="text-[34px] font-black leading-[1.05] tracking-[-0.035em] sm:text-[44px]">How can we help?</h1>
-            <p class="mt-3 max-w-[600px] text-[16.5px] leading-relaxed text-hh-ink2">
+            <p class="mt-3 max-w-[600px] text-[16.5px] leading-relaxed text-ryh-ink2">
                 {{ legal.tradingName }} is built by a small team, and every message is read by a person who works on it.
             </p>
 
-            <section class="mt-8 rounded-[22px] border border-hh-line bg-hh-panel p-6 sm:p-8">
+            <section class="mt-8 rounded-[22px] border border-ryh-line bg-ryh-panel p-6 sm:p-8">
                 <h2 class="text-xl font-extrabold tracking-tight">Email us</h2>
-                <p class="mt-2 text-[15px] leading-relaxed text-hh-ink2">
+                <p class="mt-2 text-[15px] leading-relaxed text-ryh-ink2">
                     We reply {{ legal.supportResponse }}. To help us sort things quickly, tell us your household's name, what you were trying to do,
                     what happened instead, and which device and browser you were using.
                 </p>
@@ -94,15 +94,15 @@ const faqs = computed(() => [
                     <a
                         v-if="mailto"
                         :href="mailto"
-                        class="flex h-11 items-center rounded-[13px] bg-hh-coral px-5 text-sm font-bold text-white transition hover:-translate-y-0.5"
+                        class="flex h-11 items-center rounded-[13px] bg-ryh-coral px-5 text-sm font-bold text-white transition hover:-translate-y-0.5"
                     >
                         {{ legal.supportEmail }}
                     </a>
                     <Tbc v-else :value="null" label="Support email" />
                 </div>
-                <p class="mt-4 text-[13.5px] text-hh-ink3">
+                <p class="mt-4 text-[13.5px] text-ryh-ink3">
                     Privacy or data requests: <Tbc :value="legal.privacyEmail" label="Privacy email" />. See our
-                    <Link :href="route('privacy')" class="font-semibold text-hh-ink underline underline-offset-2">Privacy Policy</Link>.
+                    <Link :href="route('privacy')" class="font-semibold text-ryh-ink underline underline-offset-2">Privacy Policy</Link>.
                 </p>
             </section>
 
@@ -111,23 +111,23 @@ const faqs = computed(() => [
                     v-for="shortcut in shortcuts"
                     :key="shortcut.title"
                     :href="shortcut.href"
-                    class="rounded-[18px] border border-hh-line bg-hh-card p-5 transition hover:-translate-y-0.5 hover:shadow-hh"
+                    class="rounded-[18px] border border-ryh-line bg-ryh-card p-5 transition hover:-translate-y-0.5 hover:shadow-ryh"
                 >
                     <div class="text-lg" aria-hidden="true">{{ shortcut.icon }}</div>
                     <div class="mt-2 font-extrabold tracking-tight">{{ shortcut.title }}</div>
-                    <p class="mt-1 text-sm leading-relaxed text-hh-ink2">{{ shortcut.body }}</p>
+                    <p class="mt-1 text-sm leading-relaxed text-ryh-ink2">{{ shortcut.body }}</p>
                 </Link>
             </section>
 
             <section class="mt-12">
                 <h2 class="text-2xl font-black tracking-[-0.02em]">Common questions</h2>
-                <div class="mt-4 divide-y divide-hh-line border-y border-hh-line">
+                <div class="mt-4 divide-y divide-ryh-line border-y border-ryh-line">
                     <details v-for="faq in faqs" :key="faq.q" class="group py-4">
                         <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-bold">
                             {{ faq.q }}
-                            <span class="text-hh-ink3 transition group-open:rotate-45" aria-hidden="true">+</span>
+                            <span class="text-ryh-ink3 transition group-open:rotate-45" aria-hidden="true">+</span>
                         </summary>
-                        <p class="mt-2 text-[15px] leading-relaxed text-hh-ink2">{{ faq.a }}</p>
+                        <p class="mt-2 text-[15px] leading-relaxed text-ryh-ink2">{{ faq.a }}</p>
                     </details>
                 </div>
             </section>

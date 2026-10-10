@@ -1,7 +1,7 @@
 {
     "id": "/dashboard",
-    "name": "HouseHub",
-    "short_name": "HouseHub",
+    "name": "RYH",
+    "short_name": "RYH",
     "description": "The home, organised — chores, meals, shopping, calendar and more for the whole household.",
     "start_url": "/dashboard",
     "scope": "/",

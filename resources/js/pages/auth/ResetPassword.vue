@@ -33,19 +33,19 @@ const submit = () => {
 
         <form class="flex flex-col gap-4" @submit.prevent="submit">
             <div class="flex flex-col gap-1.5">
-                <label for="email" class="hh-label">Email</label>
-                <input id="email" v-model="form.email" type="email" name="email" class="hh-input" autocomplete="email" readonly />
+                <label for="email" class="ryh-label">Email</label>
+                <input id="email" v-model="form.email" type="email" name="email" class="ryh-input" autocomplete="email" readonly />
                 <InputError :message="form.errors.email" />
             </div>
 
             <div class="flex flex-col gap-1.5">
-                <label for="password" class="hh-label">Password</label>
+                <label for="password" class="ryh-label">Password</label>
                 <input
                     id="password"
                     v-model="form.password"
                     type="password"
                     name="password"
-                    class="hh-input"
+                    class="ryh-input"
                     required
                     autocomplete="new-password"
                     autofocus
@@ -55,13 +55,13 @@ const submit = () => {
             </div>
 
             <div class="flex flex-col gap-1.5">
-                <label for="password_confirmation" class="hh-label">Confirm password</label>
+                <label for="password_confirmation" class="ryh-label">Confirm password</label>
                 <input
                     id="password_confirmation"
                     v-model="form.password_confirmation"
                     type="password"
                     name="password_confirmation"
-                    class="hh-input"
+                    class="ryh-input"
                     required
                     autocomplete="new-password"
                     placeholder="••••••••"
@@ -69,7 +69,7 @@ const submit = () => {
                 <InputError :message="form.errors.password_confirmation" />
             </div>
 
-            <button type="submit" class="hh-btn mt-2 bg-hh-coral text-white" :disabled="form.processing">
+            <button type="submit" class="ryh-btn mt-2 bg-ryh-coral text-white" :disabled="form.processing">
                 <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                 Reset password
             </button>

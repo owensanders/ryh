@@ -1,7 +1,7 @@
 <x-mail::message>
 # We couldn't take your payment
 
-We tried to renew the HouseHub subscription for "{{ $householdName }}", but the payment didn't go through. This usually means the card has expired or been replaced.
+We tried to renew the RYH subscription for "{{ $householdName }}", but the payment didn't go through. This usually means the card has expired or been replaced.
 
 We'll try again over the next few days. To keep your household running without interruption, please update the card from Manage billing on the House page.
 

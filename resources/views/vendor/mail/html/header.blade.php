@@ -5,11 +5,8 @@
 <table cellpadding="0" cellspacing="0" role="presentation">
 <tr>
 <td>
-<img src="{{ asset('images/email/logo.png') }}" class="logo" width="36" height="36" alt="">
-</td>
-<td class="brand-cell">
-<span class="brand-name">{{ config('app.name') }}</span>
-<span class="brand-tagline">The home, organised.</span>
+<img src="{{ asset('images/email/logo.png') }}" class="logo logo-light" width="195" height="36" alt="Run Your Home">
+<!--[if !mso]><!--><img src="{{ asset('images/email/logo-dark.png') }}" class="logo logo-dark" width="195" height="36" alt="Run Your Home" style="display: none;"><!--<![endif]-->
 </td>
 </tr>
 </table>

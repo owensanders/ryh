@@ -119,12 +119,12 @@ return [
     |--------------------------------------------------------------------------
     |
     | Notification and markdown emails render through the published views in
-    | resources/views/vendor/mail, styled by the "househub" theme there.
+    | resources/views/vendor/mail, styled by the "ryh" theme there.
     |
     */
 
     'markdown' => [
-        'theme' => env('MAIL_MARKDOWN_THEME', 'househub'),
+        'theme' => env('MAIL_MARKDOWN_THEME', 'ryh'),
 
         'paths' => [
             resource_path('views/vendor/mail'),

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use App\Models\Household;
-use Database\Seeders\HouseHubSeeder;
+use Database\Seeders\RyhSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Cashier\Subscription;
 use PHPUnit\Framework\Attributes\Test;
@@ -69,7 +69,7 @@ class HouseholdPlanTest extends TestCase
     {
         $this->app->detectEnvironment(fn () => 'production');
 
-        $this->artisan('db:seed', ['--class' => HouseHubSeeder::class, '--force' => true])
+        $this->artisan('db:seed', ['--class' => RyhSeeder::class, '--force' => true])
             ->expectsOutputToContain('Refusing to seed demo data in production.')
             ->assertSuccessful();
 

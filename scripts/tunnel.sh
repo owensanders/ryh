@@ -12,7 +12,7 @@
 set -e
 
 if [ "$1" = "stop" ]; then
-    docker stop home-hub-tunnel >/dev/null && echo "Tunnel closed."
+    docker stop ryh-tunnel >/dev/null && echo "Tunnel closed."
     exit 0
 fi
 
@@ -32,7 +32,7 @@ fi
 
 printf 'Waiting for the tunnel'
 for _ in $(seq 1 30); do
-    url=$(docker logs home-hub-tunnel 2>&1 | grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' | tail -1)
+    url=$(docker logs ryh-tunnel 2>&1 | grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' | tail -1)
     if [ -n "$url" ]; then
         printf '\n\nOpen this on your phone:\n\n    %s\n\n' "$url"
         exit 0
@@ -41,5 +41,5 @@ for _ in $(seq 1 30); do
     sleep 1
 done
 
-echo "\nNo address yet — check \`docker logs home-hub-tunnel\`." >&2
+echo "\nNo address yet — check \`docker logs ryh-tunnel\`." >&2
 exit 1

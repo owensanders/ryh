@@ -26,8 +26,8 @@ class HouseholdInviteMail extends Mailable implements ShouldQueue
     {
         return new Envelope(
             subject: $this->hasAccount
-                ? "You're invited to join {$this->household->name} on HouseHub"
-                : "Join {$this->household->name} on HouseHub — get started",
+                ? "You're invited to join {$this->household->name} on RYH"
+                : "Join {$this->household->name} on RYH — get started",
         );
     }
 

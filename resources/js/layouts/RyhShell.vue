@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import InstallPrompt from '@/components/househub/InstallPrompt.vue';
-import NotificationBell from '@/components/househub/NotificationBell.vue';
-import Toast from '@/components/househub/Toast.vue';
+import InstallPrompt from '@/components/ryh/InstallPrompt.vue';
+import NotificationBell from '@/components/ryh/NotificationBell.vue';
+import RyhLogo from '@/components/ryh/RyhLogo.vue';
+import Toast from '@/components/ryh/Toast.vue';
 import { useAppearance } from '@/composables/useAppearance';
 import { useHouseholdRole } from '@/composables/useHouseholdRole';
 import { logout } from '@/lib/logout';
 import { pageHeading } from '@/lib/pageHeading';
 import { Link, usePage } from '@inertiajs/vue3';
-import { House, LogOut } from 'lucide-vue-next';
+import { LogOut } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 const page = usePage();
@@ -66,21 +67,18 @@ function toggleTheme(): void {
 <!--
     The app's frame — sidebar, header, phone tab bar, bell. It's a persistent
     Inertia layout, so it stays mounted between screens and only the slot
-    (the page) changes. Screens set the header's title via HouseHubLayout.
+    (the page) changes. Screens set the header's title via RyhLayout.
 -->
 <template>
-    <div class="min-h-screen bg-hh-bg text-hh-ink transition-colors sm:p-7">
-        <div class="mx-auto flex min-h-screen max-w-[1440px] overflow-hidden bg-hh-shell sm:min-h-[calc(100vh-3.5rem)] sm:rounded-3xl sm:shadow-hh">
+    <div class="min-h-screen bg-ryh-bg text-ryh-ink transition-colors sm:p-7">
+        <div class="mx-auto flex min-h-screen max-w-[1440px] overflow-hidden bg-ryh-shell sm:min-h-[calc(100vh-3.5rem)] sm:rounded-3xl sm:shadow-ryh">
             <!-- Full sidebar from `lg`, an icon rail from `sm`, and the bottom tab bar below that. -->
-            <aside class="hidden w-[68px] flex-none flex-col gap-[3px] border-r border-hh-line bg-hh-panel px-[14px] py-[22px] sm:flex lg:w-[252px]">
-                <div class="flex items-center gap-3 px-2 pb-5 pt-1">
-                    <div class="grid h-9 w-9 flex-none place-items-center rounded-xl bg-hh-coral text-white">
-                        <House class="h-[19px] w-[19px]" :stroke-width="2.5" />
-                    </div>
-                    <div class="hidden flex-col gap-px lg:flex">
-                        <span class="text-[16.5px] font-extrabold tracking-tight">HouseHub</span>
-                        <span class="text-[11px] text-hh-ink3">The home, organised.</span>
-                    </div>
+            <aside
+                class="hidden w-[68px] flex-none flex-col gap-[3px] border-r border-ryh-line bg-ryh-panel px-[14px] py-[22px] sm:flex lg:w-[252px]"
+            >
+                <div class="flex h-11 items-center justify-center pb-5 pt-1 lg:justify-start lg:px-2">
+                    <RyhLogo variant="mark" class="h-[14px] lg:hidden" />
+                    <RyhLogo class="hidden h-9 lg:block" />
                 </div>
 
                 <Link
@@ -89,23 +87,21 @@ function toggleTheme(): void {
                     :href="route(item.route)"
                     :aria-label="item.label"
                     :aria-current="isActive(item) ? 'page' : undefined"
-                    class="flex min-h-[44px] w-full items-center gap-3 rounded-[13px] px-3 text-sm transition-colors hover:bg-hh-soft"
-                    :class="isActive(item) ? 'bg-hh-card font-bold text-hh-ink' : 'font-medium text-hh-ink2'"
+                    class="flex min-h-[44px] w-full items-center gap-3 rounded-[13px] px-3 text-sm transition-colors hover:bg-ryh-soft"
+                    :class="isActive(item) ? 'bg-ryh-card font-bold text-ryh-ink' : 'font-medium text-ryh-ink2'"
                 >
                     <span class="w-5 flex-none text-center text-sm" aria-hidden="true">{{ item.icon }}</span>
                     <span class="hidden flex-1 lg:block">{{ item.label }}</span>
                 </Link>
             </aside>
 
-            <main class="flex min-w-0 flex-1 flex-col bg-hh-shell">
-                <header class="flex h-[64px] flex-none items-center gap-3 border-b border-hh-line px-4 sm:h-[72px] sm:gap-4 sm:px-[30px]">
-                    <div class="grid h-8 w-8 flex-none place-items-center rounded-[10px] bg-hh-coral text-white sm:hidden">
-                        <House class="h-4 w-4" :stroke-width="2.5" />
-                    </div>
+            <main class="flex min-w-0 flex-1 flex-col bg-ryh-shell">
+                <header class="flex h-[64px] flex-none items-center gap-3 border-b border-ryh-line px-4 sm:h-[72px] sm:gap-4 sm:px-[30px]">
+                    <RyhLogo variant="mark" class="h-4 sm:hidden" />
                     <div class="min-w-0">
                         <div class="truncate text-[19px] font-extrabold tracking-tight">{{ pageHeading.title }}</div>
                     </div>
-                    <div v-if="pageHeading.subtitle" class="hidden truncate text-[13px] text-hh-ink3 sm:block">
+                    <div v-if="pageHeading.subtitle" class="hidden truncate text-[13px] text-ryh-ink3 sm:block">
                         {{ pageHeading.subtitle }}
                     </div>
                     <div class="flex-1"></div>
@@ -113,7 +109,7 @@ function toggleTheme(): void {
                     <button
                         type="button"
                         :title="isDark ? 'Light mode' : 'Dark mode'"
-                        class="hidden h-[38px] w-[38px] rounded-xl bg-hh-soft text-sm transition-colors hover:bg-hh-line sm:block"
+                        class="hidden h-[38px] w-[38px] rounded-xl bg-ryh-soft text-sm transition-colors hover:bg-ryh-line sm:block"
                         @click="toggleTheme"
                     >
                         {{ isDark ? '☀️' : '🌙' }}
@@ -124,9 +120,9 @@ function toggleTheme(): void {
                     <Link
                         :href="route('profile.edit')"
                         title="Settings"
-                        class="flex h-[38px] items-center gap-2 rounded-xl bg-hh-soft p-[3px_12px_3px_3px] transition-colors hover:bg-hh-line"
+                        class="flex h-[38px] items-center gap-2 rounded-xl bg-ryh-soft p-[3px_12px_3px_3px] transition-colors hover:bg-ryh-line"
                     >
-                        <div class="grid h-8 w-8 place-items-center rounded-[10px] bg-hh-mint text-xs font-extrabold text-[#0E1A2B]">
+                        <div class="grid h-8 w-8 place-items-center rounded-[10px] bg-ryh-mint text-xs font-extrabold text-[#0E1A2B]">
                             {{ initials }}
                         </div>
                         <span class="hidden text-[13px] font-semibold sm:block">{{ user?.name?.split(' ')[0] }}</span>
@@ -135,7 +131,7 @@ function toggleTheme(): void {
                     <button
                         type="button"
                         title="Logout"
-                        class="hidden h-[38px] w-[38px] place-items-center rounded-xl bg-hh-soft text-sm transition-colors hover:bg-hh-line sm:grid"
+                        class="hidden h-[38px] w-[38px] place-items-center rounded-xl bg-ryh-soft text-sm transition-colors hover:bg-ryh-line sm:grid"
                         @click="logout"
                     >
                         <LogOut class="h-4 w-4" />
@@ -151,7 +147,7 @@ function toggleTheme(): void {
 
         <!-- Phone navigation -->
         <nav
-            class="bg-hh-shell/95 fixed inset-x-0 bottom-0 z-40 flex border-t border-hh-line px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
+            class="bg-ryh-shell/95 fixed inset-x-0 bottom-0 z-40 flex border-t border-ryh-line px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
             aria-label="Main"
         >
             <Link
@@ -159,12 +155,12 @@ function toggleTheme(): void {
                 :key="item.route"
                 :href="route(item.route)"
                 class="flex h-[62px] min-w-0 flex-1 flex-col items-center justify-center gap-1 text-[10.5px]"
-                :class="isActive(item) ? 'font-bold text-hh-ink' : 'font-medium text-hh-ink3'"
+                :class="isActive(item) ? 'font-bold text-ryh-ink' : 'font-medium text-ryh-ink3'"
                 :aria-current="isActive(item) ? 'page' : undefined"
             >
                 <span
                     class="grid h-7 w-11 place-items-center rounded-full text-[15px] transition-colors"
-                    :class="isActive(item) ? 'bg-hh-soft' : ''"
+                    :class="isActive(item) ? 'bg-ryh-soft' : ''"
                     aria-hidden="true"
                     >{{ item.icon }}</span
                 >
@@ -173,14 +169,14 @@ function toggleTheme(): void {
             <button
                 type="button"
                 class="flex h-[62px] min-w-0 flex-1 flex-col items-center justify-center gap-1 text-[10.5px]"
-                :class="moreActive || moreOpen ? 'font-bold text-hh-ink' : 'font-medium text-hh-ink3'"
+                :class="moreActive || moreOpen ? 'font-bold text-ryh-ink' : 'font-medium text-ryh-ink3'"
                 :aria-expanded="moreOpen"
                 aria-controls="more-sheet"
                 @click="moreOpen = !moreOpen"
             >
                 <span
                     class="grid h-7 w-11 place-items-center rounded-full text-[15px] transition-colors"
-                    :class="moreActive || moreOpen ? 'bg-hh-soft' : ''"
+                    :class="moreActive || moreOpen ? 'bg-ryh-soft' : ''"
                     aria-hidden="true"
                     >☰</span
                 >
@@ -205,22 +201,22 @@ function toggleTheme(): void {
             <div
                 v-if="moreOpen"
                 id="more-sheet"
-                class="fixed inset-x-3 bottom-[calc(74px+env(safe-area-inset-bottom))] z-40 rounded-3xl border border-hh-line bg-hh-card p-2 shadow-hh sm:hidden"
+                class="fixed inset-x-3 bottom-[calc(74px+env(safe-area-inset-bottom))] z-40 rounded-3xl border border-ryh-line bg-ryh-card p-2 shadow-ryh sm:hidden"
             >
                 <Link
                     v-for="item in moreItems"
                     :key="item.route"
                     :href="route(item.route)"
                     class="flex min-h-[48px] items-center gap-3 rounded-2xl px-3 text-[15px]"
-                    :class="isActive(item) ? 'bg-hh-soft font-bold' : 'font-medium text-hh-ink2'"
+                    :class="isActive(item) ? 'bg-ryh-soft font-bold' : 'font-medium text-ryh-ink2'"
                 >
                     <span class="w-6 text-center" aria-hidden="true">{{ item.icon }}</span>
                     {{ item.label }}
                 </Link>
-                <div class="my-1 border-t border-hh-line"></div>
+                <div class="my-1 border-t border-ryh-line"></div>
                 <button
                     type="button"
-                    class="flex min-h-[48px] w-full items-center gap-3 rounded-2xl px-3 text-[15px] font-medium text-hh-ink2"
+                    class="flex min-h-[48px] w-full items-center gap-3 rounded-2xl px-3 text-[15px] font-medium text-ryh-ink2"
                     @click="toggleTheme"
                 >
                     <span class="w-6 text-center" aria-hidden="true">{{ isDark ? '☀️' : '🌙' }}</span>
@@ -228,7 +224,7 @@ function toggleTheme(): void {
                 </button>
                 <button
                     type="button"
-                    class="flex min-h-[48px] w-full items-center gap-3 rounded-2xl px-3 text-[15px] font-medium text-hh-ink2"
+                    class="flex min-h-[48px] w-full items-center gap-3 rounded-2xl px-3 text-[15px] font-medium text-ryh-ink2"
                     @click="logout"
                 >
                     <LogOut class="mx-1 h-4 w-4" />

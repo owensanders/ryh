@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-// Who stands behind HouseHub, as named in the Terms and Privacy Policy and on
+// Who stands behind RYH, as named in the Terms and Privacy Policy and on
 // the Support page. Anything left null renders as a visible "[to be confirmed]"
 // marker on those pages, so a missing detail is obvious before launch rather
 // than silently blank.
@@ -10,10 +10,10 @@ declare(strict_types=1);
 return [
 
     // The trading name customers see.
-    'trading_name' => env('LEGAL_TRADING_NAME', 'HouseHub'),
+    'trading_name' => env('LEGAL_TRADING_NAME', 'RYH'),
 
     // The person or company that is the trader and the data controller, e.g.
-    // "Owen Sanders" (sole trader) or "HouseHub Ltd" (limited company).
+    // "Owen Sanders" (sole trader) or "RYH Ltd" (limited company).
     'entity_name' => env('LEGAL_ENTITY_NAME'),
 
     // 'sole_trader' or 'limited_company'.

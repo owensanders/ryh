@@ -88,7 +88,7 @@ export const Hook: React.FC = () => {
             {f >= answer - 2 && (
                 <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center', transform: `scale(${range(f, [answer, 170], [1.08, 1])})` }}>
                     <Headline
-                        segments={['HouseHub answers', { accent: 'all three.' }]}
+                        segments={['RYH answers', { accent: 'all three.' }]}
                         delay={answer}
                         size={150}
                         stagger={4}

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import PublicLayout from '@/layouts/PublicLayout.vue';
-import type { PlatformStatus, ServiceState } from '@/types/househub';
+import type { PlatformStatus, ServiceState } from '@/types/ryh';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted } from 'vue';
 
@@ -10,20 +10,20 @@ const props = defineProps<{ status: PlatformStatus }>();
 const REFRESH_MS = 60_000;
 
 const dot: Record<ServiceState, string> = {
-    operational: 'var(--hh-mint)',
-    degraded: 'var(--hh-sun)',
-    down: 'var(--hh-coral)',
+    operational: 'var(--ryh-mint)',
+    degraded: 'var(--ryh-sun)',
+    down: 'var(--ryh-coral)',
 };
 
 const headline: Record<ServiceState, { title: string; body: string }> = {
-    operational: { title: 'All systems operational', body: 'Everything in HouseHub is running normally.' },
+    operational: { title: 'All systems operational', body: 'Everything in RYH is running normally.' },
     degraded: {
         title: 'Some features are degraded',
-        body: "HouseHub is up, but part of it is slow or unavailable. We're on it — your household's information is safe.",
+        body: "RYH is up, but part of it is slow or unavailable. We're on it — your household's information is safe.",
     },
     down: {
         title: 'Some features are down',
-        body: "Part of HouseHub isn't working right now. We're working to restore it — your household's information is safe.",
+        body: "Part of RYH isn't working right now. We're working to restore it — your household's information is safe.",
     },
 };
 
@@ -48,7 +48,7 @@ onUnmounted(() => clearInterval(timer));
             <h1 class="text-[34px] font-black leading-[1.05] tracking-[-0.035em] sm:text-[44px]">Platform status</h1>
 
             <section
-                class="mt-8 flex items-start gap-4 rounded-[22px] border border-hh-line bg-hh-panel p-6 sm:p-7"
+                class="mt-8 flex items-start gap-4 rounded-[22px] border border-ryh-line bg-ryh-panel p-6 sm:p-7"
                 role="status"
                 aria-live="polite"
                 :data-overall="status.overall"
@@ -56,11 +56,11 @@ onUnmounted(() => clearInterval(timer));
                 <span class="mt-1.5 h-3.5 w-3.5 flex-none rounded-full" :style="{ background: dot[status.overall] }" aria-hidden="true"></span>
                 <div>
                     <h2 class="text-xl font-extrabold tracking-tight">{{ headline[status.overall].title }}</h2>
-                    <p class="mt-1 text-[15px] leading-relaxed text-hh-ink2">{{ headline[status.overall].body }}</p>
+                    <p class="mt-1 text-[15px] leading-relaxed text-ryh-ink2">{{ headline[status.overall].body }}</p>
                 </div>
             </section>
 
-            <ul class="mt-6 divide-y divide-hh-line rounded-[22px] border border-hh-line bg-hh-card">
+            <ul class="mt-6 divide-y divide-ryh-line rounded-[22px] border border-ryh-line bg-ryh-card">
                 <li
                     v-for="service in status.services"
                     :key="service.name"
@@ -69,7 +69,7 @@ onUnmounted(() => clearInterval(timer));
                 >
                     <div class="min-w-0 flex-1">
                         <div class="font-bold">{{ service.name }}</div>
-                        <div class="text-[13.5px] text-hh-ink3">{{ service.description }}</div>
+                        <div class="text-[13.5px] text-ryh-ink3">{{ service.description }}</div>
                     </div>
                     <span class="flex flex-none items-center gap-2 text-sm font-semibold">
                         <span class="h-2.5 w-2.5 rounded-full" :style="{ background: dot[service.state] }" aria-hidden="true"></span>
@@ -78,9 +78,9 @@ onUnmounted(() => clearInterval(timer));
                 </li>
             </ul>
 
-            <p class="mt-4 text-[13px] text-hh-ink3">
+            <p class="mt-4 text-[13px] text-ryh-ink3">
                 Last checked at {{ checkedAt }}. This page refreshes itself every minute. Still having trouble?
-                <Link :href="route('support')" class="font-semibold text-hh-ink underline underline-offset-2">Contact support</Link>.
+                <Link :href="route('support')" class="font-semibold text-ryh-ink underline underline-offset-2">Contact support</Link>.
             </p>
         </div>
     </PublicLayout>
