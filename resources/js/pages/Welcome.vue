@@ -21,9 +21,12 @@ const faces = [
 ];
 
 // The hero's product tour autoplays muted (browsers block autoplay with sound),
-// unless the visitor has asked for reduced motion.
+// unless the visitor has asked for reduced motion. It plays once and holds on
+// its closing frame (the logo and "Start your free month") rather than looping
+// back to the intro; a button then offers to watch it again with sound.
 const tourVideo = ref<HTMLVideoElement | null>(null);
 const tourMuted = ref(true);
+const tourEnded = ref(false);
 
 onMounted(() => {
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -40,6 +43,7 @@ function watchWithSound(): void {
     video.currentTime = 0;
     video.play().catch(() => {});
     tourMuted.value = false;
+    tourEnded.value = false;
 }
 
 const pillars = [
@@ -114,7 +118,7 @@ function startRegistration(): void {
 </script>
 
 <template>
-    <Head title="RYH — the home, organised" />
+    <Head title="RYH — your home, organised" />
 
     <PublicLayout>
         <!-- Hero -->
@@ -174,23 +178,23 @@ function startRegistration(): void {
                         poster="/videos/ryh-promo-poster.jpg"
                         aria-label="RYH product tour"
                         muted
-                        loop
                         playsinline
                         preload="metadata"
-                        :controls="!tourMuted"
+                        :controls="!tourMuted && !tourEnded"
+                        @ended="tourEnded = true"
                     ></video>
 
                     <button
-                        v-if="tourMuted"
+                        v-if="tourMuted || tourEnded"
                         type="button"
                         class="group absolute inset-0 flex items-end p-4"
-                        aria-label="Watch the product tour with sound"
+                        :aria-label="tourEnded ? 'Watch the product tour again with sound' : 'Watch the product tour with sound'"
                         @click="watchWithSound"
                     >
                         <span
                             class="flex h-11 items-center gap-2 rounded-[13px] bg-ryh-coral px-4 text-sm font-bold text-white shadow-ryh transition group-hover:-translate-y-0.5"
                         >
-                            <span aria-hidden="true">▶</span> Watch with sound
+                            <span aria-hidden="true">{{ tourEnded ? '↻' : '▶' }}</span> {{ tourEnded ? 'Replay' : 'Watch with sound' }}
                         </span>
                     </button>
                 </div>
