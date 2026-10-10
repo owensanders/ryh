@@ -18,9 +18,9 @@ class GetDocumentsScreenUseCase
 
     /**
      * @return array{
-     *     folders: list<DocumentFolderData>,
+     *     folders: array<int, DocumentFolderData>,
      *     active: ?DocumentFolderData,
-     *     documents: list<DocumentData>,
+     *     documents: array<int, DocumentData>,
      *     storageLabel: string,
      *     storagePct: int,
      * }
@@ -39,9 +39,10 @@ class GetDocumentsScreenUseCase
         return [
             'folders' => $folders
                 ->map(fn (DocumentFolder $folder) => DocumentFolderData::fromModel($folder, $folder->documents_count))
+                ->values()
                 ->all(),
             'active' => $active !== null ? DocumentFolderData::fromModel($active, $activeDocuments->count()) : null,
-            'documents' => $activeDocuments->map(DocumentData::fromModel(...))->all(),
+            'documents' => $activeDocuments->map(DocumentData::fromModel(...))->values()->all(),
             'storageLabel' => $this->formatBytes($totalBytes).' of '.$this->formatBytes($quotaBytes),
             'storagePct' => $quotaBytes > 0 ? max(2, (int) round($totalBytes / $quotaBytes * 100)) : 0,
         ];

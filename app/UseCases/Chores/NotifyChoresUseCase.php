@@ -20,7 +20,7 @@ class NotifyChoresUseCase
             ->groupBy('assigned_to');
 
         foreach ($outstanding as $chores) {
-            $chores->first()->assignee?->notify(new ChoresReminderNotification($household, $chores->count()));
+            $chores->first()?->assignee?->notify(new ChoresReminderNotification($household, $chores->count()));
         }
 
         $household->update(['last_chore_notification_sent_at' => now()]);

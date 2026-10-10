@@ -9,7 +9,7 @@ use Spatie\LaravelData\Data;
 
 class PlannedMealData extends Data
 {
-    /** @param list<string> $tags */
+    /** @param array<int, string> $tags */
     public function __construct(
         public int $id,
         public int $recipeId,

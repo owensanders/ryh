@@ -30,11 +30,11 @@ class GetMealPlannerUseCase
     /**
      * @return array{
      *     weekOf: string,
-     *     days: list<PlannerDayData>,
-     *     library: list<RecipeData>,
+     *     days: array<int, PlannerDayData>,
+     *     library: array<int, RecipeData>,
      *     recipeCount: int,
-     *     recipes: list<RecipeData>,
-     *     members: list<MemberData>,
+     *     recipes: array<int, RecipeData>,
+     *     members: array<int, MemberData>,
      *     aiConfigured: bool,
      *     aiPaused: bool,
      *     aiAvailableFrom: ?string,
@@ -85,7 +85,7 @@ class GetMealPlannerUseCase
             'aiPaused' => AiConfig::isPaused(),
             'aiAvailableFrom' => $household->canGenerateAiMealPlan()
                 ? null
-                : $household->ai_meal_plan_generated_at->addWeek()->toDateString(),
+                : $household->ai_meal_plan_generated_at?->addWeek()->toDateString(),
             'aiSuggestedBudget' => $this->suggestedWeeklyFoodBudget($household, $today),
         ];
     }

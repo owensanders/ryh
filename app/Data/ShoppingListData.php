@@ -9,7 +9,7 @@ use Spatie\LaravelData\Data;
 
 class ShoppingListData extends Data
 {
-    /** @param list<ShoppingItemData> $items */
+    /** @param array<int, ShoppingItemData> $items */
     public function __construct(
         public int $id,
         public string $name,
@@ -34,7 +34,7 @@ class ShoppingListData extends Data
             colourKey: $list->colour->value,
             remaining: $items->whereNull('completed_at')->count(),
             total: $items->count(),
-            items: $withItems ? $items->map(ShoppingItemData::fromModel(...))->all() : [],
+            items: $withItems ? $items->map(ShoppingItemData::fromModel(...))->values()->all() : [],
         );
     }
 }

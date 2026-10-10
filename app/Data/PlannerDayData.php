@@ -8,7 +8,7 @@ use Spatie\LaravelData\Data;
 
 class PlannerDayData extends Data
 {
-    /** @param list<PlannedMealData> $meals */
+    /** @param array<int, PlannedMealData> $meals */
     public function __construct(
         public string $date,
         public string $dayLabel,

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
@@ -7,20 +9,23 @@ use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class PasswordResetTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testResetPasswordLinkScreenCanBeRendered(): void
+    #[Test]
+    public function resetPasswordLinkScreenCanBeRendered(): void
     {
         $response = $this->get('/forgot-password');
 
         $response->assertStatus(200);
     }
 
-    public function testResetPasswordLinkCanBeRequested(): void
+    #[Test]
+    public function resetPasswordLinkCanBeRequested(): void
     {
         Notification::fake();
 
@@ -31,7 +36,8 @@ class PasswordResetTest extends TestCase
         Notification::assertSentTo($user, ResetPassword::class);
     }
 
-    public function testResetPasswordScreenCanBeRendered(): void
+    #[Test]
+    public function resetPasswordScreenCanBeRendered(): void
     {
         Notification::fake();
 
@@ -48,7 +54,8 @@ class PasswordResetTest extends TestCase
         });
     }
 
-    public function testPasswordCanBeResetWithValidToken(): void
+    #[Test]
+    public function passwordCanBeResetWithValidToken(): void
     {
         Notification::fake();
 
@@ -72,7 +79,8 @@ class PasswordResetTest extends TestCase
         });
     }
 
-    public function testPasswordCannotBeResetWithAnInvalidToken(): void
+    #[Test]
+    public function passwordCannotBeResetWithAnInvalidToken(): void
     {
         $user = User::factory()->create();
 

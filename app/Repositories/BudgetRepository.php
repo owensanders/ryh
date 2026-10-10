@@ -51,7 +51,7 @@ class BudgetRepository implements BudgetRepositoryInterface
 
         return collect(Palette::cases())
             ->sortBy(fn (Palette $colour, int $index) => [$counts->get($colour->value, 0), $index])
-            ->first();
+            ->firstOrFail();
     }
 
     /** @param array<string, mixed> $attributes */

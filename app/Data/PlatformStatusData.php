@@ -9,7 +9,7 @@ use Spatie\LaravelData\Data;
 
 class PlatformStatusData extends Data
 {
-    /** @param  list<ServiceStatusData>  $services */
+    /** @param  array<int, ServiceStatusData>  $services */
     public function __construct(
         public ServiceState $overall,
         public array $services,

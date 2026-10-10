@@ -9,9 +9,9 @@ use Spatie\LaravelData\Data;
 class CalendarMonthData extends Data
 {
     /**
-     * @param  list<string>  $weekdayLabels
-     * @param  list<CalendarDayData>  $days
-     * @param  list<MemberData>  $members
+     * @param  array<int, string>  $weekdayLabels
+     * @param  array<int, CalendarDayData>  $days
+     * @param  array<int, MemberData>  $members
      */
     public function __construct(
         public string $month,

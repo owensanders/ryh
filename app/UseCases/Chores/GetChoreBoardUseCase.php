@@ -21,7 +21,7 @@ class GetChoreBoardUseCase
         private readonly HouseholdRepositoryInterface $households,
     ) {}
 
-    /** @return array{columns: list<ChoreColumnData>, scores: list<MemberScoreData>} */
+    /** @return array{columns: array<int, ChoreColumnData>, scores: array<int, MemberScoreData>} */
     public function execute(Household $household): array
     {
         $chores = $this->chores->allFor($household);

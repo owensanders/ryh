@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\HouseholdSelectRequest;
 use App\Http\Requests\Settings\LeaveHouseholdRequest;
 use App\Models\Household;
+use App\Traits\ResolvesUserTrait;
 use App\UseCases\House\GetHouseholdOptionsUseCase;
 use App\UseCases\House\LeaveHouseholdUseCase;
 use App\UseCases\House\SwitchCurrentHouseholdUseCase;
@@ -18,29 +19,31 @@ use Inertia\Response;
 
 class HouseholdController extends Controller
 {
+    use ResolvesUserTrait;
+
     public function edit(Request $request, GetHouseholdOptionsUseCase $getOptions): Response
     {
         return Inertia::render('settings/Households', [
-            'households' => $getOptions->execute($request->user()),
-            'currentHouseholdId' => $request->user()->current_household_id,
+            'households' => $getOptions->execute($this->user($request)),
+            'currentHouseholdId' => $this->user($request)->current_household_id,
         ]);
     }
 
     public function switchCurrent(HouseholdSelectRequest $request, SwitchCurrentHouseholdUseCase $switch): RedirectResponse
     {
-        $switch->execute($request->user(), (int) $request->validated('household_id'));
+        $switch->execute($this->user($request), (int) $request->validated('household_id'));
 
         return to_route('dashboard');
     }
 
     public function leave(LeaveHouseholdRequest $request, LeaveHouseholdUseCase $leave): RedirectResponse
     {
-        $household = Household::findOrFail($request->validated('household_id'));
+        $household = Household::findOrFail((int) $request->validated('household_id'));
         $householdName = $household->name;
 
-        $leave->execute($request->user(), $household, $request->boolean('confirm_household_deletion'));
+        $leave->execute($this->user($request), $household, $request->boolean('confirm_household_deletion'));
 
-        if ($request->user()->households()->doesntExist()) {
+        if ($this->user($request)->households()->doesntExist()) {
             return to_route('household.setup');
         }
 

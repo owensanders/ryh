@@ -30,7 +30,7 @@ class BudgetController extends Controller
             $this->household($request),
             // `!` resets the unspecified day/time — without it PHP fills the day from
             // today, so on the 31st "2026-09" would roll over into October.
-            $month !== null ? CarbonImmutable::createFromFormat('!Y-m', $month) : CarbonImmutable::now(),
+            $month !== null ? CarbonImmutable::createFromFormat('!Y-m', $month) ?? CarbonImmutable::now() : CarbonImmutable::now(),
         ));
     }
 
@@ -40,7 +40,7 @@ class BudgetController extends Controller
 
         $category = $create->execute(
             $this->household($request),
-            $month !== null ? CarbonImmutable::createFromFormat('!Y-m', (string) $month) : CarbonImmutable::now(),
+            $month !== null ? CarbonImmutable::createFromFormat('!Y-m', (string) $month) ?? CarbonImmutable::now() : CarbonImmutable::now(),
             $request->categoryAttributes(),
         );
 

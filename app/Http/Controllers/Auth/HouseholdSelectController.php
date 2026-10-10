@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\HouseholdSelectRequest;
+use App\Traits\ResolvesUserTrait;
 use App\UseCases\House\GetHouseholdOptionsUseCase;
 use App\UseCases\House\SwitchCurrentHouseholdUseCase;
 use Illuminate\Http\RedirectResponse;
@@ -15,17 +16,19 @@ use Inertia\Response;
 
 class HouseholdSelectController extends Controller
 {
+    use ResolvesUserTrait;
+
     public function show(Request $request, GetHouseholdOptionsUseCase $getOptions): Response
     {
         return Inertia::render('auth/HouseholdSelect', [
-            'households' => $getOptions->execute($request->user()),
-            'currentHouseholdId' => $request->user()->current_household_id,
+            'households' => $getOptions->execute($this->user($request)),
+            'currentHouseholdId' => $this->user($request)->current_household_id,
         ]);
     }
 
     public function store(HouseholdSelectRequest $request, SwitchCurrentHouseholdUseCase $switch): RedirectResponse
     {
-        $switch->execute($request->user(), (int) $request->validated('household_id'));
+        $switch->execute($this->user($request), (int) $request->validated('household_id'));
 
         return to_route('dashboard');
     }

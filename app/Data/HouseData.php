@@ -9,10 +9,10 @@ use Spatie\LaravelData\Data;
 class HouseData extends Data
 {
     /**
-     * @param  list<StatData>  $houseStats
-     * @param  list<array{value: string, label: string}>  $roleOptions
-     * @param  list<HouseMemberData>  $members
-     * @param  list<RoleSummaryData>  $roles
+     * @param  array<int, StatData>  $houseStats
+     * @param  array<int, array{value: string, label: string}>  $roleOptions
+     * @param  array<int, HouseMemberData>  $members
+     * @param  array<int, RoleSummaryData>  $roles
      */
     public function __construct(
         public string $houseName,

@@ -157,7 +157,7 @@ class StripeWebhookTest extends TestCase
     {
         config(['cashier.webhook.secret' => self::SECRET]);
 
-        $payload = json_encode(['id' => 'evt_test', 'type' => $type, 'data' => ['object' => $object]]);
+        $payload = json_encode(['id' => 'evt_test', 'type' => $type, 'data' => ['object' => $object]], JSON_THROW_ON_ERROR);
         $timestamp = time();
         $signature = hash_hmac('sha256', "{$timestamp}.{$payload}", self::SECRET);
 

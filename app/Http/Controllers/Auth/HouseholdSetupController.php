@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\HouseholdJoinRequest;
 use App\Http\Requests\Auth\HouseholdSetupRequest;
+use App\Traits\ResolvesUserTrait;
 use App\UseCases\House\CreateHouseholdUseCase;
 use App\UseCases\House\JoinHouseholdUseCase;
 use Illuminate\Http\RedirectResponse;
@@ -16,14 +17,16 @@ use Inertia\Response;
 
 class HouseholdSetupController extends Controller
 {
+    use ResolvesUserTrait;
+
     public function create(Request $request): Response|RedirectResponse
     {
-        if ($request->user()->currentMembership()?->pending === true) {
+        if ($this->user($request)->currentMembership()?->pending === true) {
             return to_route('household.done');
         }
 
         return Inertia::render('auth/HouseholdSetup', [
-            'trialAvailable' => $request->user()->trial_claimed_at === null,
+            'trialAvailable' => $this->user($request)->trial_claimed_at === null,
             // Set when an invite link couldn't add them because the household had filled up.
             'fullHousehold' => $request->session()->get('fullHousehold'),
             // Set when a Teen or Child invite link predates guardian confirmation, so it can't add them.
@@ -34,11 +37,11 @@ class HouseholdSetupController extends Controller
 
     public function store(HouseholdSetupRequest $request, CreateHouseholdUseCase $createHousehold): RedirectResponse
     {
-        if ($request->user()->currentMembership()?->pending === true) {
+        if ($this->user($request)->currentMembership()?->pending === true) {
             return to_route('household.done');
         }
 
-        $household = $createHousehold->execute($request->user(), $request->householdAttributes());
+        $household = $createHousehold->execute($this->user($request), $request->householdAttributes());
 
         return to_route('household.done')->with('householdSetup', [
             'mode' => 'create',
@@ -49,11 +52,11 @@ class HouseholdSetupController extends Controller
 
     public function join(HouseholdJoinRequest $request, JoinHouseholdUseCase $joinHousehold): RedirectResponse
     {
-        if ($request->user()->currentMembership()?->pending === true) {
+        if ($this->user($request)->currentMembership()?->pending === true) {
             return to_route('household.done');
         }
 
-        $household = $joinHousehold->execute($request->user(), (string) $request->validated('code'));
+        $household = $joinHousehold->execute($this->user($request), (string) $request->validated('code'));
 
         return to_route('household.done')->with('householdSetup', [
             'mode' => 'join',
@@ -66,10 +69,10 @@ class HouseholdSetupController extends Controller
     {
         /** @var array{mode: string, householdName: string, inviteCount: int}|null $setup */
         $setup = $request->session()->get('householdSetup');
-        $user = $request->user();
-        $household = $user?->household;
+        $user = $this->user($request);
+        $household = $user->household;
 
-        $pending = $user?->currentMembership()?->pending === true;
+        $pending = $user->currentMembership()?->pending === true;
 
         return Inertia::render('auth/HouseholdDone', [
             'mode' => $setup['mode'] ?? ($pending ? 'join' : 'create'),

@@ -43,7 +43,7 @@ class GetPlatformStatusUseCase
         $overall = collect($services)
             ->map(fn (ServiceStatusData $service) => $service->state)
             ->sortByDesc(fn (ServiceState $state) => $state->severity())
-            ->first();
+            ->firstOrFail();
 
         return new PlatformStatusData($overall, $services, $result['checkedAt']);
     }

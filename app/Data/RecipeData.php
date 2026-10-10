@@ -10,8 +10,8 @@ use Spatie\LaravelData\Data;
 class RecipeData extends Data
 {
     /**
-     * @param  list<string>  $tags
-     * @param  list<array{name: string, quantity: string|null}>  $ingredients
+     * @param  array<int, string>  $tags
+     * @param  array<int, array{name: string, quantity: string|null}>  $ingredients
      */
     public function __construct(
         public int $id,

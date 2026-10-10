@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Data\PlanData;
 use App\Http\Requests\SubscribeRequest;
 use App\Traits\ResolvesHouseholdTrait;
+use App\Traits\ResolvesUserTrait;
 use App\UseCases\House\CompleteCheckoutUseCase;
 use App\UseCases\House\SubscribeHouseholdUseCase;
 use Illuminate\Http\RedirectResponse;
@@ -21,6 +22,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class BillingController extends Controller
 {
     use ResolvesHouseholdTrait;
+    use ResolvesUserTrait;
 
     public function required(Request $request): Response|RedirectResponse
     {
@@ -32,7 +34,7 @@ class BillingController extends Controller
 
         return Inertia::render('BillingRequired', [
             'plan' => PlanData::current(),
-            'isOwner' => $request->user()->currentRole()?->value === 'owner',
+            'isOwner' => $this->user($request)->currentRole()?->value === 'owner',
             'paymentIssue' => $household->hasPaymentIssue(),
             'billingConfigured' => filled(config('plans.intervals.monthly.stripe_price'))
                 && filled(config('plans.intervals.annual.stripe_price')),

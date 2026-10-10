@@ -1,16 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class PasswordConfirmationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testConfirmPasswordScreenCanBeRendered(): void
+    #[Test]
+    public function confirmPasswordScreenCanBeRendered(): void
     {
         $user = User::factory()->create();
 
@@ -19,7 +23,8 @@ class PasswordConfirmationTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function testPasswordCanBeConfirmed(): void
+    #[Test]
+    public function passwordCanBeConfirmed(): void
     {
         $user = User::factory()->create();
 
@@ -31,7 +36,8 @@ class PasswordConfirmationTest extends TestCase
         $response->assertSessionHasNoErrors();
     }
 
-    public function testPasswordIsNotConfirmedWithInvalidPassword(): void
+    #[Test]
+    public function passwordIsNotConfirmedWithInvalidPassword(): void
     {
         $user = User::factory()->create();
 

@@ -20,12 +20,12 @@ class MealPlanAgent implements Agent, HasStructuredOutput
     private const POOL_SIZE = 14;
 
     /**
-     * @param  list<string>  $diets
-     * @param  list<string>  $avoid
-     * @param  list<string>  $goals
-     * @param  list<string>  $recentRecipeNames
-     * @param  list<string>  $equipment
-     * @param  list<string>  $useUp
+     * @param  array<int, string>  $diets
+     * @param  array<int, string>  $avoid
+     * @param  array<int, string>  $goals
+     * @param  array<int, string>  $recentRecipeNames
+     * @param  array<int, string>  $equipment
+     * @param  array<int, string>  $useUp
      */
     public function __construct(
         private readonly int $people,

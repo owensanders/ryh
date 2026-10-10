@@ -1,18 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature\Settings;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class PasswordUpdateTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testPasswordPageIsDisplayed(): void
+    #[Test]
+    public function passwordPageIsDisplayed(): void
     {
         $this->actingAs(User::factory()->create())
             ->get('/settings/password')
@@ -20,7 +24,8 @@ class PasswordUpdateTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page->component('settings/Password'));
     }
 
-    public function testPasswordCanBeUpdated(): void
+    #[Test]
+    public function passwordCanBeUpdated(): void
     {
         $user = User::factory()->create();
 
@@ -40,7 +45,8 @@ class PasswordUpdateTest extends TestCase
         $this->assertTrue(Hash::check('new-password', $user->refresh()->password));
     }
 
-    public function testCorrectPasswordMustBeProvidedToUpdatePassword(): void
+    #[Test]
+    public function correctPasswordMustBeProvidedToUpdatePassword(): void
     {
         $user = User::factory()->create();
 

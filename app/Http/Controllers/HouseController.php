@@ -12,6 +12,7 @@ use App\Http\Requests\SubscribeRequest;
 use App\Models\Household;
 use App\Models\User;
 use App\Traits\ResolvesHouseholdTrait;
+use App\Traits\ResolvesUserTrait;
 use App\UseCases\House\ApproveMemberUseCase;
 use App\UseCases\House\ChangeMemberRoleUseCase;
 use App\UseCases\House\GetHouseUseCase;
@@ -30,18 +31,19 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class HouseController extends Controller
 {
     use ResolvesHouseholdTrait;
+    use ResolvesUserTrait;
 
     public function index(Request $request, GetHouseUseCase $getHouse): Response
     {
         return Inertia::render('House', [
-            'house' => $getHouse->execute($this->household($request), $request->user()->id),
+            'house' => $getHouse->execute($this->household($request), $this->user($request)->id),
         ]);
     }
 
     public function invite(InviteRequest $request, InviteMemberUseCase $invite): RedirectResponse
     {
         $attributes = $request->inviteAttributes();
-        $invite->execute($this->household($request), $attributes, $request->user());
+        $invite->execute($this->household($request), $attributes, $this->user($request));
 
         return back()->with('toast', "Invite sent to {$attributes['email']}");
     }
@@ -52,7 +54,7 @@ class HouseController extends Controller
         $this->assertOwned($member, $household);
 
         $role = HouseholdRole::from($request->validated('role'));
-        $updated = $change->execute($member, $household, $role, $request->user());
+        $updated = $change->execute($member, $household, $role, $this->user($request));
 
         return back()->with('toast', "{$updated->name} is now {$role->label()}");
     }

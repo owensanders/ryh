@@ -12,7 +12,7 @@ class GetShoppingListOptionsUseCase
 {
     public function __construct(private readonly ShoppingRepositoryInterface $shopping) {}
 
-    /** @return list<ShoppingListData> */
+    /** @return array<int, ShoppingListData> */
     public function execute(Household $household): array
     {
         return $this->shopping->listsFor($household)

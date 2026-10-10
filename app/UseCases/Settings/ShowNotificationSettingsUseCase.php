@@ -10,7 +10,7 @@ use App\Models\User;
 
 class ShowNotificationSettingsUseCase
 {
-    /** @return array{categories: list<PushCategoryData>, vapidPublicKey: string|null} */
+    /** @return array{categories: array<int, PushCategoryData>, vapidPublicKey: string|null} */
     public function execute(User $user): array
     {
         return [

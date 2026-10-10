@@ -2,7 +2,7 @@ includes:
     - vendor/larastan/larastan/extension.neon
 
 parameters:
-    level: 6
+    level: 8
     paths:
         - app
         - database
@@ -13,3 +13,19 @@ parameters:
     # back to `string`, so enum and date casts resolve correctly.
     databaseMigrationsPath:
         - database/migrations
+
+    # Tests run at the same level, minus "might be null" checks: in a test a
+    # null already fails loudly at the exact line, so guarding every
+    # `$user->household` or `$model->fresh()` would be noise, not safety.
+    ignoreErrors:
+        -
+            message: '#^(Cannot (call method|access property|access offset) .+ on .+\|null|Parameter .+ expects .+, .+\|null given|Offset .+ might not exist on .+\|null|Property .+ does not accept .+\|null)\.$#'
+            paths:
+                - tests/*
+        # `$this->artisan()` is typed PendingCommand|int, but with Laravel's test
+        # defaults (mocked console output) it's always the PendingCommand that
+        # its documented assertions chain on.
+        -
+            message: '#^Cannot call method \w+\(\) on Illuminate\\Testing\\PendingCommand\|int\.$#'
+            paths:
+                - tests/*

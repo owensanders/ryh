@@ -12,7 +12,7 @@ use Spatie\LaravelData\Data;
  */
 class CalendarDayData extends Data
 {
-    /** @param list<CalendarEventData> $events */
+    /** @param array<int, CalendarEventData> $events */
     public function __construct(
         public string $date,
         public string $dayLabel,

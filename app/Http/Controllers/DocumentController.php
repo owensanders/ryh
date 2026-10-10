@@ -11,6 +11,7 @@ use App\Http\Requests\DocumentUploadRequest;
 use App\Models\Document;
 use App\Models\DocumentFolder;
 use App\Traits\ResolvesHouseholdTrait;
+use App\Traits\ResolvesUserTrait;
 use App\UseCases\Documents\CreateDocumentFolderUseCase;
 use App\UseCases\Documents\DeleteDocumentFolderUseCase;
 use App\UseCases\Documents\DeleteDocumentUseCase;
@@ -27,6 +28,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class DocumentController extends Controller
 {
     use ResolvesHouseholdTrait;
+    use ResolvesUserTrait;
 
     public function __construct(private readonly DocumentRepositoryInterface $documents) {}
 
@@ -62,7 +64,7 @@ class DocumentController extends Controller
     {
         $this->assertFolderOwned($request, $folder);
 
-        $document = $upload->execute($folder, $request->uploadedFile(), $request->user());
+        $document = $upload->execute($folder, $request->uploadedFile(), $this->user($request));
 
         return back()->with('toast', "“{$document->name}” uploaded");
     }

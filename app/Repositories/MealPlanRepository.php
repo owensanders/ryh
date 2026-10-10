@@ -13,6 +13,7 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use LogicException;
 
 class MealPlanRepository implements MealPlanRepositoryInterface
 {
@@ -66,7 +67,8 @@ class MealPlanRepository implements MealPlanRepositoryInterface
     public function update(PlannedMeal $meal, array $attributes): PlannedMeal
     {
         return DB::transaction(function () use ($meal, $attributes) {
-            $attributes['recipe_id'] = $this->resolveRecipeId($meal->household, $attributes);
+            $household = $meal->household ?? throw new LogicException('A planned meal always belongs to a household.');
+            $attributes['recipe_id'] = $this->resolveRecipeId($household, $attributes);
             $attributes = array_diff_key($attributes, array_flip(self::NEW_RECIPE_KEYS));
 
             $meal->update($attributes);
@@ -156,7 +158,7 @@ class MealPlanRepository implements MealPlanRepositoryInterface
         }
 
         if (! empty($attributes['recipe_id'])) {
-            $recipe = $household->recipes()->findOrFail($attributes['recipe_id']);
+            $recipe = $household->recipes()->findOrFail((int) $attributes['recipe_id']);
 
             if ($provided !== []) {
                 $this->updateRecipe($recipe, $provided);
