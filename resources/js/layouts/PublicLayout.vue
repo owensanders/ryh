@@ -142,7 +142,7 @@ function toggleTheme(): void {
 
             <footer class="mx-5 mb-10 flex flex-wrap items-center gap-3.5 border-t border-ryh-line pt-[26px] sm:mx-8 lg:mx-14">
                 <RyhLogo class="h-7" />
-                <span class="text-[13px] text-ryh-ink3">The home, organised.</span>
+                <span class="text-[13px] text-ryh-ink3">Your home, organised.</span>
                 <div class="flex flex-wrap gap-5 sm:ml-auto">
                     <Link v-for="link in footerLinks" :key="link.label" :href="link.href" class="text-[13.5px] text-ryh-ink2 hover:opacity-75">{{
                         link.label

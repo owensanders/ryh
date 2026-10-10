@@ -75,7 +75,7 @@ export const Intro: React.FC = () => {
                         letterSpacing: '0.01em',
                     }}
                 >
-                    The home, <span style={{ color: brand.coral }}>organised.</span>
+                    Your home, <span style={{ color: brand.coral }}>organised.</span>
                 </div>
             </AbsoluteFill>
         </AbsoluteFill>

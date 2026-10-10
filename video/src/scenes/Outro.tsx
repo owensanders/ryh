@@ -9,9 +9,9 @@ import { brand, fonts } from '../theme';
 const HIT = 180;
 const CTA = HIT + 44;
 const CLICK = HIT + 90;
-const END = HIT + 180;
 
-// 360 frames: price, then the logo on the last big chord, then the CTA.
+// 360 frames: price, then the logo on the last big chord, then the CTA, which
+// the video ends and holds on (the landing page plays it once, no loop).
 export const Outro: React.FC = () => {
     const f = useCurrentFrame();
 
@@ -23,7 +23,6 @@ export const Outro: React.FC = () => {
     const word = spr(f, HIT + 6, springs.snappy);
     const cta = spr(f, CTA, springs.pop);
     const press = range(f, [CLICK - 2, CLICK, CLICK + 8], [0, 1, 0]);
-    const fadeOut = prog(f, END - 14, END);
     // A slow push-in while the price is held, so it never looks frozen.
     const hold = prog(f, 40, HIT, (t) => t);
 
@@ -148,7 +147,7 @@ export const Outro: React.FC = () => {
                             transform: `translateY(${(1 - prog(f, HIT + 16, HIT + 34)) * 20}px)`,
                         }}
                     >
-                        The home, <span style={{ color: brand.coral }}>organised.</span>
+                        Your home, <span style={{ color: brand.coral }}>organised.</span>
                     </div>
                     <div
                         style={{
@@ -186,7 +185,6 @@ export const Outro: React.FC = () => {
                     { f: CLICK + 50, x: 1300, y: 900 },
                 ]}
             />
-            <AbsoluteFill style={{ background: '#000', opacity: fadeOut }} />
         </AbsoluteFill>
     );
 };
