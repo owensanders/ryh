@@ -13,6 +13,6 @@ class ToggleJoinCodeUseCase
 
     public function execute(Household $household, bool $enabled): Household
     {
-        return $this->households->update($household, ['join_code_enabled' => $enabled]);
+        return $this->households->setJoinCodeEnabled($household, $enabled);
     }
 }

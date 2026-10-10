@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Data\Input\ShoppingListInputData;
 use App\Enums\PaletteEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -27,16 +28,11 @@ class ShoppingListRequest extends FormRequest
         ];
     }
 
-    /**
-     * The list columns, with the defaults the form leaves off.
-     *
-     * @return array<string, mixed>
-     */
-    public function listAttributes(): array
+    public function toData(): ShoppingListInputData
     {
-        return [
-            'name' => trim((string) $this->validated('name')),
-            'colour' => PaletteEnum::tryFrom((string) $this->validated('colour')) ?? PaletteEnum::Mint,
-        ];
+        return new ShoppingListInputData(
+            name: trim((string) $this->validated('name')),
+            colour: PaletteEnum::tryFrom((string) $this->validated('colour')) ?? PaletteEnum::Mint,
+        );
     }
 }

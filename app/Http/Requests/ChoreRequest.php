@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Data\Input\ChoreInputData;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -30,16 +31,11 @@ class ChoreRequest extends FormRequest
         ];
     }
 
-    /**
-     * The chore columns, with the defaults the form leaves off.
-     *
-     * @return array<string, mixed>
-     */
-    public function choreAttributes(): array
+    public function toData(): ChoreInputData
     {
-        return [
-            'name' => trim((string) $this->validated('name')),
-            'assigned_to' => $this->validated('assigned_to'),
-        ];
+        return new ChoreInputData(
+            name: trim((string) $this->validated('name')),
+            assignedTo: $this->filled('assigned_to') ? (int) $this->validated('assigned_to') : null,
+        );
     }
 }

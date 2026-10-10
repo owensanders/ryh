@@ -7,6 +7,7 @@ namespace App\UseCases\Documents;
 use App\Contracts\Repositories\DocumentRepositoryInterface;
 use App\Data\DocumentData;
 use App\Data\DocumentFolderData;
+use App\Data\DocumentsScreenData;
 use App\Models\Document;
 use App\Models\DocumentFolder;
 use App\Models\Household;
@@ -16,16 +17,7 @@ class GetDocumentsScreenUseCase
 {
     public function __construct(private readonly DocumentRepositoryInterface $documents) {}
 
-    /**
-     * @return array{
-     *     folders: array<int, DocumentFolderData>,
-     *     active: ?DocumentFolderData,
-     *     documents: array<int, DocumentData>,
-     *     storageLabel: string,
-     *     storagePct: int,
-     * }
-     */
-    public function execute(Household $household, ?DocumentFolder $active): array
+    public function execute(Household $household, ?DocumentFolder $active): DocumentsScreenData
     {
         $folders = $this->documents->foldersFor($household);
         $active ??= $folders->first();
@@ -36,16 +28,16 @@ class GetDocumentsScreenUseCase
         $totalBytes = $this->documents->totalSizeFor($household);
         $quotaBytes = (int) config('documents.quota_bytes');
 
-        return [
-            'folders' => $folders
+        return new DocumentsScreenData(
+            folders: $folders
                 ->map(fn (DocumentFolder $folder) => DocumentFolderData::fromModel($folder, $folder->documents_count))
                 ->values()
                 ->all(),
-            'active' => $active !== null ? DocumentFolderData::fromModel($active, $activeDocuments->count()) : null,
-            'documents' => $activeDocuments->map(DocumentData::fromModel(...))->values()->all(),
-            'storageLabel' => $this->formatBytes($totalBytes).' of '.$this->formatBytes($quotaBytes),
-            'storagePct' => $quotaBytes > 0 ? max(2, (int) round($totalBytes / $quotaBytes * 100)) : 0,
-        ];
+            active: $active !== null ? DocumentFolderData::fromModel($active, $activeDocuments->count()) : null,
+            documents: $activeDocuments->map(DocumentData::fromModel(...))->values()->all(),
+            storageLabel: $this->formatBytes($totalBytes).' of '.$this->formatBytes($quotaBytes),
+            storagePct: $quotaBytes > 0 ? max(2, (int) round($totalBytes / $quotaBytes * 100)) : 0,
+        );
     }
 
     private function formatBytes(int $bytes): string

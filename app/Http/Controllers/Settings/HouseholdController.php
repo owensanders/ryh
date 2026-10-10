@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\HouseholdSelectRequest;
 use App\Http\Requests\Settings\LeaveHouseholdRequest;
-use App\Models\Household;
 use App\Traits\ResolvesUserTrait;
 use App\UseCases\House\GetHouseholdOptionsUseCase;
 use App\UseCases\House\LeaveHouseholdUseCase;
@@ -36,14 +35,15 @@ class HouseholdController extends Controller
         return to_route('dashboard');
     }
 
-    public function leave(LeaveHouseholdRequest $request, LeaveHouseholdUseCase $leave): RedirectResponse
+    public function leave(LeaveHouseholdRequest $request, LeaveHouseholdUseCase $leave, GetHouseholdOptionsUseCase $getOptions): RedirectResponse
     {
-        $household = Household::findOrFail((int) $request->validated('household_id'));
-        $householdName = $household->name;
+        $householdName = $leave->execute(
+            $this->user($request),
+            (int) $request->validated('household_id'),
+            $request->boolean('confirm_household_deletion'),
+        );
 
-        $leave->execute($this->user($request), $household, $request->boolean('confirm_household_deletion'));
-
-        if ($this->user($request)->households()->doesntExist()) {
+        if ($getOptions->execute($this->user($request)) === []) {
             return to_route('household.setup');
         }
 

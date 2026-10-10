@@ -5,35 +5,33 @@ declare(strict_types=1);
 namespace App\UseCases\Meals;
 
 use App\Contracts\Repositories\MealPlanRepositoryInterface;
-use App\Contracts\Repositories\ShoppingRepositoryInterface;
+use App\Data\Input\PlannedMealInputData;
 use App\Data\PlannedMealData;
 use App\Models\PlannedMeal;
 use App\Models\User;
 use App\Notifications\MealAssignedNotification;
 use App\Notifications\MealEditedNotification;
-use App\Traits\PushesNewRecipeIngredientsTrait;
 use App\UseCases\Shopping\AddRecipeIngredientsToListUseCase;
 use LogicException;
 
 class UpdatePlannedMealUseCase
 {
-    use PushesNewRecipeIngredientsTrait;
-
     public function __construct(
         private readonly MealPlanRepositoryInterface $meals,
-        private readonly ShoppingRepositoryInterface $shopping,
         private readonly AddRecipeIngredientsToListUseCase $addIngredients,
     ) {}
 
-    /** @param  array<string, mixed>  $attributes */
-    public function execute(PlannedMeal $meal, array $attributes, User $actor): PlannedMealData
+    public function execute(PlannedMeal $meal, PlannedMealInputData $changes, User $actor): PlannedMealData
     {
         $previousCookId = $meal->cook_id;
 
-        $updated = $this->meals->update($meal, $attributes);
+        $updated = $this->meals->update($meal, $changes);
 
         $household = $updated->household ?? throw new LogicException('A planned meal always belongs to a household.');
-        $this->pushNewRecipeIngredients($household, $updated, $attributes);
+
+        if ($changes->addIngredientsToListId !== null) {
+            $this->addIngredients->execute($household, $updated->recipe, $changes->addIngredientsToListId);
+        }
 
         if ($updated->cook_id !== null && $updated->cook_id !== $actor->id) {
             $notification = $updated->cook_id !== $previousCookId

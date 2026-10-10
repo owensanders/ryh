@@ -6,6 +6,7 @@ namespace App\UseCases\Budget;
 
 use App\Contracts\Repositories\BudgetRepositoryInterface;
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
+use App\Data\Input\BudgetCategoryInputData;
 use App\Models\Household;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -29,13 +30,12 @@ class CarryForwardRecurringCategoriesUseCase
             }
 
             foreach ($this->budget->recurringCategoriesBefore($household, $month) as $category) {
-                $this->budget->createCategory($household, $month, [
-                    'label' => $category->label,
-                    'icon' => $category->icon,
-                    'colour' => $category->colour,
-                    'budgeted_pence' => $category->budgeted_pence,
-                    'is_recurring' => true,
-                ]);
+                $this->budget->createCategory(
+                    $household,
+                    $month,
+                    new BudgetCategoryInputData($category->label, $category->icon, $category->budgeted_pence, isRecurring: true),
+                    $category->colour,
+                );
             }
         });
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Data\Input\BudgetCategoryInputData;
 use Illuminate\Foundation\Http\FormRequest;
 
 class BudgetCategoryRequest extends FormRequest
@@ -27,18 +28,13 @@ class BudgetCategoryRequest extends FormRequest
         ];
     }
 
-    /**
-     * The category columns, with the pounds input converted to pence.
-     *
-     * @return array<string, mixed>
-     */
-    public function categoryAttributes(): array
+    public function toData(): BudgetCategoryInputData
     {
-        return [
-            'label' => trim((string) $this->validated('label')),
-            'icon' => $this->validated('icon'),
-            'budgeted_pence' => (int) round(((float) $this->validated('budgeted')) * 100),
-            'is_recurring' => $this->boolean('is_recurring'),
-        ];
+        return new BudgetCategoryInputData(
+            label: trim((string) $this->validated('label')),
+            icon: $this->validated('icon'),
+            budgetedPence: (int) round(((float) $this->validated('budgeted')) * 100),
+            isRecurring: $this->boolean('is_recurring'),
+        );
     }
 }

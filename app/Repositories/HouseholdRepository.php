@@ -5,29 +5,43 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
-use App\Enums\HouseholdRoleEnum;
-use App\Models\BudgetCategory;
-use App\Models\CalendarEvent;
 use App\Models\Household;
-use App\Models\User;
-use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
-use Illuminate\Support\Collection;
 
 class HouseholdRepository implements HouseholdRepositoryInterface
 {
-    /** @param  array<string, mixed>  $attributes */
-    public function create(array $attributes): Household
+    public function create(string $name, ?CarbonInterface $trialEndsAt): Household
     {
-        return Household::create($attributes);
+        return Household::create(['name' => $name, 'trial_ends_at' => $trialEndsAt]);
     }
 
-    /** @param  array<string, mixed>  $attributes */
-    public function update(Household $household, array $attributes): Household
+    public function setJoinCodeEnabled(Household $household, bool $enabled): Household
     {
-        $household->update($attributes);
+        $household->update(['join_code_enabled' => $enabled]);
 
         return $household->refresh();
+    }
+
+    public function setJoinCode(Household $household, string $joinCode): Household
+    {
+        $household->update(['join_code' => $joinCode]);
+
+        return $household->refresh();
+    }
+
+    public function recordStreak(Household $household, int $days, CarbonInterface $lastActiveOn): void
+    {
+        $household->update(['streak_days' => $days, 'streak_last_active_date' => $lastActiveOn]);
+    }
+
+    public function markAiMealPlanGenerated(Household $household): void
+    {
+        $household->update(['ai_meal_plan_generated_at' => now()]);
+    }
+
+    public function markChoreRemindersSent(Household $household): void
+    {
+        $household->update(['last_chore_notification_sent_at' => now()]);
     }
 
     public function lockForUpdate(Household $household): Household
@@ -35,70 +49,19 @@ class HouseholdRepository implements HouseholdRepositoryInterface
         return Household::query()->whereKey($household->id)->lockForUpdate()->firstOrFail();
     }
 
+    public function find(int $id): ?Household
+    {
+        return Household::find($id);
+    }
+
     public function findByJoinCode(string $joinCode): ?Household
     {
         return Household::where('join_code', $joinCode)->first();
     }
 
-    /** @return Collection<int, User> */
-    public function members(Household $household): Collection
-    {
-        return $household->members()->get();
-    }
-
-    /** @return Collection<int, User> */
-    public function activeMembers(Household $household): Collection
-    {
-        return $household->members()->wherePivot('pending', false)->get();
-    }
-
     public function findByStripeCustomer(string $customerId): ?Household
     {
         return Household::where('stripe_id', $customerId)->first();
-    }
-
-    /** @return Collection<int, User> */
-    public function activeOwners(Household $household): Collection
-    {
-        return $household->members()
-            ->wherePivot('pending', false)
-            ->wherePivot('role', HouseholdRoleEnum::Owner->value)
-            ->get();
-    }
-
-    public function isSoleOwner(Household $household, User $member): bool
-    {
-        return $this->members($household)
-            ->where('pivot.role', HouseholdRoleEnum::Owner)
-            ->where('id', '!=', $member->id)
-            ->isEmpty();
-    }
-
-    /** @return Collection<int, CalendarEvent> */
-    public function eventsBetween(Household $household, CarbonImmutable $from, CarbonImmutable $to): Collection
-    {
-        return $household->calendarEvents()
-            ->with('attendees')
-            ->whereBetween('starts_at', [$from, $to])
-            ->orderBy('starts_at')
-            ->get();
-    }
-
-    /** @return Collection<int, BudgetCategory> */
-    public function budgetFor(Household $household, CarbonImmutable $month): Collection
-    {
-        return $household->budgetCategories()
-            ->whereDate('month', $month->startOfMonth()->toDateString())
-            ->get();
-    }
-
-    /** @return Collection<int, BudgetCategory> */
-    public function budgetCategoriesUpTo(Household $household, CarbonImmutable $month): Collection
-    {
-        return $household->budgetCategories()
-            ->whereDate('month', '<=', $month->startOfMonth()->toDateString())
-            ->orderByDesc('month')
-            ->get();
     }
 
     public function countAiMealPlansSince(CarbonInterface $since): int

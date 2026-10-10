@@ -13,8 +13,6 @@ class RegenerateJoinCodeUseCase
 
     public function execute(Household $household): Household
     {
-        return $this->households->update($household, [
-            'join_code' => Household::generateJoinCode($household->name),
-        ]);
+        return $this->households->setJoinCode($household, Household::generateJoinCode($household->name));
     }
 }

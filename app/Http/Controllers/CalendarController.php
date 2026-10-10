@@ -42,8 +42,7 @@ class CalendarController extends Controller
     {
         $event = $add->execute(
             $this->household($request),
-            $request->eventAttributes(),
-            $request->attendeeIds(),
+            $request->toData(),
             $this->user($request),
         );
 
@@ -52,7 +51,7 @@ class CalendarController extends Controller
 
     public function update(CalendarEventRequest $request, CalendarEvent $event, UpdateCalendarEventUseCase $update): RedirectResponse
     {
-        $updated = $update->execute($event, $request->eventAttributes(), $request->attendeeIds(), $this->user($request));
+        $updated = $update->execute($event, $request->toData(), $this->user($request));
 
         return back()->with('toast', "“{$updated->title}” updated");
     }

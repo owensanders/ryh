@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace App\UseCases\House;
 
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
+use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
-use App\Models\HouseholdUser;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
 
 class ChangeMemberRoleUseCase
 {
     public function __construct(
-        private readonly HouseholdRepositoryInterface $households,
+        private readonly MembershipRepositoryInterface $memberships,
     ) {}
 
     /**
@@ -23,19 +22,14 @@ class ChangeMemberRoleUseCase
      *
      * @throws ValidationException
      */
-    public function execute(User $member, Household $household, HouseholdRoleEnum $role, User $changedBy): User
+    public function execute(User $member, Household $household, HouseholdRoleEnum $role, User $changedBy): void
     {
-        $currentRole = $member->households()->where('households.id', $household->id)->first()?->pivot->role;
+        $currentRole = $this->memberships->find($member, $household)?->role;
 
-        if ($currentRole === HouseholdRoleEnum::Owner && $role !== HouseholdRoleEnum::Owner && $this->households->isSoleOwner($household, $member)) {
+        if ($currentRole === HouseholdRoleEnum::Owner && $role !== HouseholdRoleEnum::Owner && $this->memberships->isSoleOwner($household, $member)) {
             throw ValidationException::withMessages(['role' => "You're the only owner — promote someone else first."]);
         }
 
-        $member->households()->updateExistingPivot($household->id, [
-            'role' => $role,
-            ...HouseholdUser::guardianAttributes($role, $changedBy->id),
-        ]);
-
-        return $member->refresh();
+        $this->memberships->changeRole($member, $household, $role, $changedBy->id);
     }
 }

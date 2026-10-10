@@ -6,6 +6,7 @@ namespace App\UseCases\Budget;
 
 use App\Contracts\Repositories\BudgetRepositoryInterface;
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
+use App\Data\Input\IncomeSourceInputData;
 use App\Models\Household;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -29,13 +30,12 @@ class CarryForwardRecurringIncomeUseCase
             }
 
             foreach ($this->budget->recurringIncomeSourcesBefore($household, $month) as $income) {
-                $this->budget->createIncomeSource($household, $month, [
-                    'label' => $income->label,
-                    'meta' => $income->meta,
-                    'colour' => $income->colour,
-                    'amount_pence' => $income->amount_pence,
-                    'is_recurring' => true,
-                ]);
+                $this->budget->createIncomeSource(
+                    $household,
+                    $month,
+                    new IncomeSourceInputData($income->label, $income->meta, $income->amount_pence, isRecurring: true),
+                    $income->colour,
+                );
             }
         });
     }

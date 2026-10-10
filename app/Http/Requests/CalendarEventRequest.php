@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Data\Input\CalendarEventInputData;
 use App\Enums\PaletteEnum;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -41,34 +43,21 @@ class CalendarEventRequest extends FormRequest
         ];
     }
 
-    /**
-     * The event columns, with the defaults the form leaves off.
-     *
-     * @return array<string, mixed>
-     */
-    public function eventAttributes(): array
+    public function toData(): CalendarEventInputData
     {
         $isAllDay = (bool) $this->validated('is_all_day', false);
+        // `ends_at` is excluded from validation when all-day, so it is absent then.
+        $endsAt = $isAllDay ? null : $this->validated('ends_at');
 
-        return [
-            'title' => trim((string) $this->validated('title')),
-            'starts_at' => $this->validated('starts_at'),
-            // `ends_at` is excluded from validation when all-day, so it is absent here.
-            'ends_at' => $isAllDay ? null : $this->validated('ends_at'),
-            'is_all_day' => $isAllDay,
-            'location' => $this->validated('location'),
-            'notes' => $this->validated('notes'),
-            'colour' => PaletteEnum::tryFrom((string) $this->validated('colour')) ?? PaletteEnum::Mint,
-        ];
-    }
-
-    /**
-     * Attendee ids. Empty means the event is for the whole house.
-     *
-     * @return list<int>
-     */
-    public function attendeeIds(): array
-    {
-        return array_values(array_map(intval(...), $this->validated('attendees', [])));
+        return new CalendarEventInputData(
+            title: trim((string) $this->validated('title')),
+            startsAt: CarbonImmutable::parse((string) $this->validated('starts_at')),
+            endsAt: $endsAt !== null ? CarbonImmutable::parse((string) $endsAt) : null,
+            isAllDay: $isAllDay,
+            location: $this->validated('location'),
+            notes: $this->validated('notes'),
+            colour: PaletteEnum::tryFrom((string) $this->validated('colour')) ?? PaletteEnum::Mint,
+            attendeeIds: array_values(array_map(intval(...), $this->validated('attendees', []))),
+        );
     }
 }

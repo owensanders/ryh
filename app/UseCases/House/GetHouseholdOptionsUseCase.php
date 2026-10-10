@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\UseCases\House;
 
+use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Data\HouseholdOptionData;
 use App\Models\Household;
 use App\Models\User;
@@ -11,10 +12,14 @@ use LogicException;
 
 class GetHouseholdOptionsUseCase
 {
+    public function __construct(
+        private readonly MembershipRepositoryInterface $memberships,
+    ) {}
+
     /** @return array<int, HouseholdOptionData> */
     public function execute(User $user): array
     {
-        $households = $user->households()->withCount('members')->with('members')->get();
+        $households = $this->memberships->householdsWithMembersFor($user);
 
         return $households->map(function (Household $household) {
             $membership = $household->pivot ?? throw new LogicException('A household loaded through its user always has the membership.');

@@ -6,21 +6,22 @@ namespace App\UseCases\Chores;
 
 use App\Contracts\Repositories\ChoreRepositoryInterface;
 use App\Data\ChoreData;
+use App\Data\Input\ChoreInputData;
 use App\Models\Chore;
 use App\Models\User;
 use App\Notifications\ChoreAssignedNotification;
 use App\Notifications\ChoreEditedNotification;
+use App\Support\RecipientsHelper;
 
 class UpdateChoreUseCase
 {
     public function __construct(private readonly ChoreRepositoryInterface $chores) {}
 
-    /** @param array<string, mixed> $attributes */
-    public function execute(Chore $chore, array $attributes, User $actor): ChoreData
+    public function execute(Chore $chore, ChoreInputData $changes, User $actor): ChoreData
     {
         $previousAssignee = $chore->assigned_to;
 
-        $updated = $this->chores->update($chore, $attributes);
+        $updated = $this->chores->update($chore, $changes);
 
         $reassigned = $updated->assigned_to !== null && $updated->assigned_to !== $previousAssignee;
 
@@ -38,13 +39,8 @@ class UpdateChoreUseCase
     /** Tells the assignee and/or creator when someone else edits their chore, without notifying either twice. */
     private function notifyInterestedParties(Chore $chore, User $actor): void
     {
-        $notified = [$actor->id];
-
-        foreach ([$chore->assignee, $chore->creator] as $recipient) {
-            if ($recipient !== null && ! in_array($recipient->id, $notified, true)) {
-                $recipient->notify(new ChoreEditedNotification($chore, $actor));
-                $notified[] = $recipient->id;
-            }
+        foreach (RecipientsHelper::except($actor, [$chore->assignee, $chore->creator]) as $recipient) {
+            $recipient->notify(new ChoreEditedNotification($chore, $actor));
         }
     }
 }

@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Data\Input\PlannedMealInputData;
+use App\Data\Input\RecipeDetailsInputData;
 use App\Enums\MealSlotEnum;
 use App\Enums\RecipeTagEnum;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Spatie\LaravelData\Optional;
 
 class PlannedMealRequest extends FormRequest
 {
@@ -64,36 +68,29 @@ class PlannedMealRequest extends FormRequest
         ];
     }
 
-    /**
-     * The planned-meal columns, with the recipe left for the repository to
-     * resolve (an existing id, or create-on-the-fly from a new name).
-     *
-     * @return array<string, mixed>
-     */
-    public function plannedMealAttributes(): array
+    public function toData(): PlannedMealInputData
     {
         $validated = $this->validated();
-
         // Recipe details are only passed on when the request sent them, so an
         // existing recipe planned by id alone keeps its details untouched.
-        $details = array_filter([
-            'new_recipe_description' => fn () => trim((string) $validated['new_recipe_description']) ?: null,
-            'new_recipe_duration_label' => fn () => $validated['new_recipe_duration_label'],
-            'new_recipe_difficulty' => fn () => $validated['new_recipe_difficulty'],
-            'new_recipe_tags' => fn () => $validated['new_recipe_tags'] ?? [],
-            'new_recipe_ingredients' => fn () => $validated['new_recipe_ingredients'] ?? [],
-            'new_recipe_tint' => fn () => $validated['new_recipe_tint'] ?? 0,
-            'new_recipe_is_favourite' => fn () => (bool) $validated['new_recipe_is_favourite'],
-        ], fn (string $key) => array_key_exists($key, $validated), ARRAY_FILTER_USE_KEY);
+        $sent = fn (string $key, callable $value) => array_key_exists($key, $validated) ? $value($validated[$key]) : Optional::create();
 
-        return [
-            'recipe_id' => $this->validated('recipe_id'),
-            'new_recipe_name' => trim((string) $this->validated('new_recipe_name', '')) ?: null,
-            ...array_map(fn (callable $value) => $value(), $details),
-            'new_recipe_shopping_list_id' => $this->validated('new_recipe_shopping_list_id'),
-            'planned_on' => $this->validated('planned_on'),
-            'slot' => MealSlotEnum::from($this->validated('slot')),
-            'cook_id' => $this->validated('cook_id'),
-        ];
+        return new PlannedMealInputData(
+            recipeId: isset($validated['recipe_id']) ? (int) $validated['recipe_id'] : null,
+            newRecipeName: trim((string) ($validated['new_recipe_name'] ?? '')) ?: null,
+            recipeDetails: new RecipeDetailsInputData(
+                description: $sent('new_recipe_description', fn (mixed $value) => trim((string) $value) ?: null),
+                durationLabel: $sent('new_recipe_duration_label', fn (mixed $value) => $value),
+                difficulty: $sent('new_recipe_difficulty', fn (mixed $value) => $value),
+                tags: $sent('new_recipe_tags', fn (mixed $value) => array_values($value ?? [])),
+                ingredients: $sent('new_recipe_ingredients', fn (mixed $value) => array_values($value ?? [])),
+                tint: $sent('new_recipe_tint', fn (mixed $value) => (int) ($value ?? 0)),
+                isFavourite: $sent('new_recipe_is_favourite', fn (mixed $value) => (bool) $value),
+            ),
+            addIngredientsToListId: isset($validated['new_recipe_shopping_list_id']) ? (int) $validated['new_recipe_shopping_list_id'] : null,
+            plannedOn: CarbonImmutable::parse((string) $validated['planned_on']),
+            slot: MealSlotEnum::from((string) $validated['slot']),
+            cookId: isset($validated['cook_id']) ? (int) $validated['cook_id'] : null,
+        );
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Contracts\Repositories\DocumentRepositoryInterface;
 use App\Http\Requests\DocumentFolderRequest;
 use App\Http\Requests\DocumentMoveRequest;
 use App\Http\Requests\DocumentUploadRequest;
@@ -20,7 +19,6 @@ use App\UseCases\Documents\MoveDocumentUseCase;
 use App\UseCases\Documents\UploadDocumentUseCase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -35,8 +33,6 @@ class DocumentController extends Controller
 
     /** How long an S3 download link works for — long enough to start the download, short enough not to be worth sharing. */
     private const int DOWNLOAD_LINK_MINUTES = 5;
-
-    public function __construct(private readonly DocumentRepositoryInterface $documents) {}
 
     public function index(Request $request, GetDocumentsScreenUseCase $getScreen, ?DocumentFolder $folder = null): Response
     {
@@ -69,14 +65,9 @@ class DocumentController extends Controller
 
     public function move(DocumentMoveRequest $request, Document $document, MoveDocumentUseCase $move): RedirectResponse
     {
-        $folder = $this->documents->findFolder((int) $request->validated('folder_id'));
-        abort_if($folder === null, 404);
-        // The destination comes from the request body, so the route can't check it.
-        Gate::authorize('addDocument', $folder);
+        $moved = $move->execute($document, (int) $request->validated('folder_id'));
 
-        $moved = $move->execute($document, $folder);
-
-        return back()->with('toast', "“{$moved->name}” moved to {$folder->name}");
+        return back()->with('toast', "“{$moved->document->name}” moved to {$moved->folderName}");
     }
 
     public function download(Document $document): SymfonyResponse

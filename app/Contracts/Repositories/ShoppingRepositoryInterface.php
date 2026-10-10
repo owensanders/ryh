@@ -17,6 +17,9 @@ interface ShoppingRepositoryInterface
 
     public function findListBySlug(Household $household, string $slug): ?ShoppingList;
 
+    /** One of the household's lists by id, with its items — null for another household's. */
+    public function findList(Household $household, int $id): ?ShoppingList;
+
     public function defaultListFor(Household $household): ?ShoppingList;
 
     public function createList(Household $household, string $name, PaletteEnum $colour): ShoppingList;

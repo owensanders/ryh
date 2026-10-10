@@ -6,8 +6,8 @@ namespace App\UseCases\House;
 
 use App\Contracts\Repositories\CalendarEventRepositoryInterface;
 use App\Contracts\Repositories\ChoreRepositoryInterface;
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Contracts\Repositories\MealPlanRepositoryInterface;
+use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
@@ -22,7 +22,7 @@ class RemoveMemberUseCase
         private readonly ChoreRepositoryInterface $chores,
         private readonly CalendarEventRepositoryInterface $events,
         private readonly MealPlanRepositoryInterface $meals,
-        private readonly HouseholdRepositoryInterface $households,
+        private readonly MembershipRepositoryInterface $memberships,
     ) {}
 
     /**
@@ -34,11 +34,13 @@ class RemoveMemberUseCase
      *
      * @throws ValidationException
      */
-    public function execute(User $member, Household $household): void
+    /** @return bool Whether they were still pending: an invite cancelled rather than a member removed. */
+    public function execute(User $member, Household $household): bool
     {
-        $currentRole = $member->households()->where('households.id', $household->id)->first()?->pivot->role;
+        $membership = $this->memberships->find($member, $household);
+        $currentRole = $membership?->role;
 
-        if ($currentRole === HouseholdRoleEnum::Owner && $this->households->isSoleOwner($household, $member)) {
+        if ($currentRole === HouseholdRoleEnum::Owner && $this->memberships->isSoleOwner($household, $member)) {
             throw ValidationException::withMessages(['member' => "You're the only owner — promote someone else first."]);
         }
 
@@ -47,11 +49,13 @@ class RemoveMemberUseCase
             $this->events->removeAttendeeFrom($member, $household);
             $this->meals->unassignCook($household, $member);
 
-            $member->households()->detach($household->id);
+            $this->memberships->remove($member, $household);
 
             if ($member->current_household_id === $household->id) {
-                $this->users->update($member, ['current_household_id' => $member->households()->first()?->id]);
+                $this->users->setCurrentHousehold($member, $this->memberships->firstHouseholdIdFor($member));
             }
         });
+
+        return $membership?->pending === true;
     }
 }

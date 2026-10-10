@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\UseCases\Settings;
 
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
+use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
@@ -20,6 +21,7 @@ class DeleteAccountUseCase
         private readonly UserRepositoryInterface $users,
         private readonly HouseholdRepositoryInterface $households,
         private readonly CancelHouseholdSubscriptionUseCase $cancelSubscription,
+        private readonly MembershipRepositoryInterface $memberships,
     ) {}
 
     /** @throws ValidationException */
@@ -59,7 +61,7 @@ class DeleteAccountUseCase
      */
     private function householdGoesWithThem(User $user, Household $household, bool $confirmHouseholdDeletion): bool
     {
-        $members = $this->households->members($household);
+        $members = $this->memberships->members($household);
         $hasOtherOwners = $members->contains(fn (User $m) => $m->pivot?->role === HouseholdRoleEnum::Owner && $m->id !== $user->id);
 
         if ($hasOtherOwners) {

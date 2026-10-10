@@ -138,12 +138,6 @@ class Household extends Model
         return $this->hasMany(Document::class);
     }
 
-    /** True once the household has no room left — pending invites and join requests hold a place too. */
-    public function isFull(): bool
-    {
-        return $this->members()->count() >= config('plans.max_members');
-    }
-
     /** True while the household's free trial hasn't ended and it isn't subscribed yet. */
     public function isOnTrial(): bool
     {
@@ -169,6 +163,18 @@ class Household extends Model
 
         return $subscription !== null
             && ($subscription->hasIncompletePayment() || $subscription->stripe_status === 'unpaid');
+    }
+
+    /** When "Notify Chores" can next be used — null once it already can. */
+    public function choreRemindersAvailableAt(): ?Carbon
+    {
+        if ($this->last_chore_notification_sent_at === null) {
+            return null;
+        }
+
+        $availableAt = $this->last_chore_notification_sent_at->addMinutes((int) config('notifications.chore_reminder_cooldown_minutes'));
+
+        return $availableAt->isFuture() ? $availableAt : null;
     }
 
     /** True if the household hasn't generated an AI meal plan in the last week. */

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Contracts\Repositories;
 
+use App\Data\Input\BudgetCategoryInputData;
+use App\Data\Input\IncomeSourceInputData;
+use App\Enums\PaletteEnum;
 use App\Models\BudgetCategory;
 use App\Models\Household;
 use App\Models\IncomeSource;
@@ -15,11 +18,12 @@ interface BudgetRepositoryInterface
     /** @return Collection<int, BudgetCategory> */
     public function categoriesFor(Household $household, CarbonImmutable $month): Collection;
 
-    /** @param array<string, mixed> $attributes */
-    public function createCategory(Household $household, CarbonImmutable $month, array $attributes): BudgetCategory;
+    /** @return Collection<int, BudgetCategory> Categories from the given month and earlier, newest month first. */
+    public function categoriesUpTo(Household $household, CarbonImmutable $month): Collection;
 
-    /** @param array<string, mixed> $attributes */
-    public function updateCategory(BudgetCategory $category, array $attributes): BudgetCategory;
+    public function createCategory(Household $household, CarbonImmutable $month, BudgetCategoryInputData $category, ?PaletteEnum $colour = null): BudgetCategory;
+
+    public function updateCategory(BudgetCategory $category, BudgetCategoryInputData $changes): BudgetCategory;
 
     public function deleteCategory(BudgetCategory $category): void;
 
@@ -29,11 +33,9 @@ interface BudgetRepositoryInterface
     /** @return Collection<int, IncomeSource> */
     public function incomeSourcesFor(Household $household, CarbonImmutable $month): Collection;
 
-    /** @param array<string, mixed> $attributes */
-    public function createIncomeSource(Household $household, CarbonImmutable $month, array $attributes): IncomeSource;
+    public function createIncomeSource(Household $household, CarbonImmutable $month, IncomeSourceInputData $income, ?PaletteEnum $colour = null): IncomeSource;
 
-    /** @param array<string, mixed> $attributes */
-    public function updateIncomeSource(IncomeSource $income, array $attributes): IncomeSource;
+    public function updateIncomeSource(IncomeSource $income, IncomeSourceInputData $changes): IncomeSource;
 
     public function deleteIncomeSource(IncomeSource $income): void;
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\UseCases\House;
 
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
+use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Enums\HouseholdRoleEnum;
 use App\Enums\PaletteEnum;
@@ -19,6 +20,7 @@ class JoinHouseholdUseCase
     public function __construct(
         private readonly HouseholdRepositoryInterface $households,
         private readonly UserRepositoryInterface $users,
+        private readonly MembershipRepositoryInterface $memberships,
     ) {}
 
     /** @throws ValidationException */
@@ -38,24 +40,14 @@ class JoinHouseholdUseCase
         return DB::transaction(function () use ($user, $household): Household {
             $household = $this->households->lockForUpdate($household);
 
-            if ($household->isFull()) {
+            if ($this->memberships->isFull($household)) {
                 throw ValidationException::withMessages(['code' => 'That household is full, so it can\'t take any more members.']);
             }
 
             $colours = PaletteEnum::cases();
-            $colour = $colours[$this->households->members($household)->count() % count($colours)];
+            $this->users->moveIntoHousehold($user, $household, $colours[$this->memberships->count($household) % count($colours)]);
 
-            $this->users->update($user, [
-                'current_household_id' => $household->id,
-                'initials' => mb_strtoupper(mb_substr(trim($user->name), 0, 2)),
-                'colour' => $colour,
-            ]);
-
-            $user->households()->attach($household->id, [
-                'role' => HouseholdRoleEnum::Adult,
-                'pending' => true,
-                'pending_reason' => PendingReasonEnum::Requested,
-            ]);
+            $this->memberships->add($user, $household, HouseholdRoleEnum::Adult, pending: true, pendingReason: PendingReasonEnum::Requested);
 
             return $household;
         });

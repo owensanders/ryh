@@ -6,15 +6,23 @@ namespace App\UseCases\Documents;
 
 use App\Contracts\Repositories\DocumentRepositoryInterface;
 use App\Data\DocumentData;
+use App\Data\DocumentMovedData;
 use App\Models\Document;
-use App\Models\DocumentFolder;
 
 class MoveDocumentUseCase
 {
     public function __construct(private readonly DocumentRepositoryInterface $documents) {}
 
-    public function execute(Document $document, DocumentFolder $folder): DocumentData
+    public function execute(Document $document, int $folderId): DocumentMovedData
     {
-        return DocumentData::fromModel($this->documents->moveDocument($document, $folder));
+        $folder = $this->documents->findFolder($folderId);
+
+        // A document never leaves its household, so another household's folder doesn't exist here.
+        abort_if($folder === null || $folder->household_id !== $document->household_id, 404);
+
+        return new DocumentMovedData(
+            DocumentData::fromModel($this->documents->moveDocument($document, $folder)),
+            $folder->name,
+        );
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Settings;
 
+use App\Data\Input\ProfileInputData;
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -25,5 +26,13 @@ class ProfileUpdateRequest extends FormRequest
                 Rule::unique(User::class)->ignore($this->user()?->id),
             ],
         ];
+    }
+
+    public function toData(): ProfileInputData
+    {
+        return new ProfileInputData(
+            name: (string) $this->validated('name'),
+            email: (string) $this->validated('email'),
+        );
     }
 }

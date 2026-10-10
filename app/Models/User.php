@@ -137,6 +137,12 @@ class User extends Authenticatable implements MustVerifyEmail
         return parent::refresh();
     }
 
+    /** The two letters shown on someone's avatar. */
+    public static function initialsFrom(string $name): string
+    {
+        return mb_strtoupper(mb_substr(trim($name), 0, 2));
+    }
+
     /** Every category pushes unless this person has turned it off. */
     public function wantsPushFor(NotificationCategoryEnum $category): bool
     {

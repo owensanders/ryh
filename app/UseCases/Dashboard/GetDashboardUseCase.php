@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\UseCases\Dashboard;
 
+use App\Contracts\Repositories\BudgetRepositoryInterface;
+use App\Contracts\Repositories\CalendarEventRepositoryInterface;
 use App\Contracts\Repositories\ChoreRepositoryInterface;
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Contracts\Repositories\MealPlanRepositoryInterface;
+use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Contracts\Repositories\ShoppingRepositoryInterface;
 use App\Data\AgendaEntryData;
 use App\Data\AgendaGroupData;
@@ -35,10 +37,12 @@ class GetDashboardUseCase
     private const int AGENDA_DAYS = 3;
 
     public function __construct(
-        private readonly HouseholdRepositoryInterface $households,
         private readonly ShoppingRepositoryInterface $shopping,
         private readonly ChoreRepositoryInterface $chores,
         private readonly MealPlanRepositoryInterface $meals,
+        private readonly MembershipRepositoryInterface $memberships,
+        private readonly CalendarEventRepositoryInterface $events,
+        private readonly BudgetRepositoryInterface $budget,
     ) {}
 
     public function execute(Household $household, string $viewerName, CarbonImmutable $today): DashboardData
@@ -52,7 +56,7 @@ class GetDashboardUseCase
         $remaining = $todays->count() - $done;
 
         // One read of the calendar covers both the summary line and the agenda card.
-        $events = $this->households->eventsBetween(
+        $events = $this->events->between(
             $household,
             $today->startOfDay(),
             $today->addDays(self::AGENDA_DAYS - 1)->endOfDay(),
@@ -67,7 +71,7 @@ class GetDashboardUseCase
                 $remaining,
             ),
             streakDays: $household->streak_days,
-            family: $this->households->activeMembers($household)->map(MemberData::fromModel(...))->values()->all(),
+            family: $this->memberships->activeMembers($household)->map(MemberData::fromModel(...))->values()->all(),
             tonight: $tonight !== null ? PlannedMealData::fromModel($tonight) : null,
             shoppingList: $list !== null ? ShoppingListData::fromModel($list) : null,
             chores: $todays->map(ChoreData::fromModel(...))->values()->all(),
@@ -137,7 +141,7 @@ class GetDashboardUseCase
 
     private function budget(Household $household, CarbonImmutable $today): BudgetSummaryData
     {
-        $categories = $this->households->budgetFor($household, $today);
+        $categories = $this->budget->categoriesFor($household, $today);
         $budgeted = (int) $categories->sum('budgeted_pence');
 
         return new BudgetSummaryData(

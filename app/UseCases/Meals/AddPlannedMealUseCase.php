@@ -5,30 +5,27 @@ declare(strict_types=1);
 namespace App\UseCases\Meals;
 
 use App\Contracts\Repositories\MealPlanRepositoryInterface;
-use App\Contracts\Repositories\ShoppingRepositoryInterface;
+use App\Data\Input\PlannedMealInputData;
 use App\Data\PlannedMealData;
 use App\Models\Household;
 use App\Models\User;
 use App\Notifications\MealAssignedNotification;
-use App\Traits\PushesNewRecipeIngredientsTrait;
 use App\UseCases\Shopping\AddRecipeIngredientsToListUseCase;
 
 class AddPlannedMealUseCase
 {
-    use PushesNewRecipeIngredientsTrait;
-
     public function __construct(
         private readonly MealPlanRepositoryInterface $meals,
-        private readonly ShoppingRepositoryInterface $shopping,
         private readonly AddRecipeIngredientsToListUseCase $addIngredients,
     ) {}
 
-    /** @param  array<string, mixed>  $attributes */
-    public function execute(Household $household, array $attributes, User $actor): PlannedMealData
+    public function execute(Household $household, PlannedMealInputData $input, User $actor): PlannedMealData
     {
-        $meal = $this->meals->create($household, $attributes);
+        $meal = $this->meals->create($household, $input);
 
-        $this->pushNewRecipeIngredients($household, $meal, $attributes);
+        if ($input->addIngredientsToListId !== null) {
+            $this->addIngredients->execute($household, $meal->recipe, $input->addIngredientsToListId);
+        }
 
         if ($meal->cook_id !== null && $meal->cook_id !== $actor->id) {
             $meal->cook?->notify(new MealAssignedNotification($meal, $actor));

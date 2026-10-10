@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Contracts\Repositories\ChoreRepositoryInterface;
+use App\Data\Input\ChoreInputData;
 use App\Enums\ChoreStatusEnum;
 use App\Models\Chore;
 use App\Models\Household;
@@ -30,20 +31,34 @@ class ChoreRepository implements ChoreRepositoryInterface
         return $chore->refresh();
     }
 
-    /** @param array<string, mixed> $attributes */
-    public function create(Household $household, array $attributes): Chore
+    public function create(Household $household, ChoreInputData $chore, ChoreStatusEnum $status, User $creator): Chore
     {
-        $position = $household->chores()->where('status', $attributes['status'])->max('position') + 1;
+        $position = $household->chores()->where('status', $status)->max('position') + 1;
 
-        return $household->chores()->create([...$attributes, 'position' => $position]);
+        return $household->chores()->create([
+            'name' => $chore->name,
+            'assigned_to' => $chore->assignedTo,
+            'created_by' => $creator->id,
+            'status' => $status,
+            'position' => $position,
+        ]);
     }
 
-    /** @param array<string, mixed> $attributes */
-    public function update(Chore $chore, array $attributes): Chore
+    public function update(Chore $chore, ChoreInputData $changes): Chore
     {
-        $chore->update($attributes);
+        $chore->update(['name' => $changes->name, 'assigned_to' => $changes->assignedTo]);
 
         return $chore->refresh();
+    }
+
+    /** @return Collection<int, Chore> */
+    public function outstandingAssigned(Household $household): Collection
+    {
+        return $household->chores()
+            ->with('assignee')
+            ->whereNotNull('assigned_to')
+            ->where('status', ChoreStatusEnum::Today)
+            ->get();
     }
 
     public function delete(Chore $chore): void

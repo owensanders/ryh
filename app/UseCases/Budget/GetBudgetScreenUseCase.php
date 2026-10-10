@@ -7,6 +7,7 @@ namespace App\UseCases\Budget;
 use App\Contracts\Repositories\BudgetRepositoryInterface;
 use App\Data\BudgetCategoryData;
 use App\Data\BudgetMonthSummaryData;
+use App\Data\BudgetScreenData;
 use App\Data\IncomeSourceData;
 use App\Models\BudgetCategory;
 use App\Models\Household;
@@ -23,16 +24,7 @@ class GetBudgetScreenUseCase
         private readonly CarryForwardRecurringIncomeUseCase $carryForwardIncome,
     ) {}
 
-    /**
-     * @return array{
-     *     month: string, monthLabel: string, previousMonth: string, nextMonth: string,
-     *     daysLeftLabel: string, leftToSpend: string, budgetedLabel: string, perDay: string,
-     *     budgetedPence: int, incomeTotalPence: int,
-     *     income: array<int, IncomeSourceData>, incomeTotal: string,
-     *     categories: array<int, BudgetCategoryData>, history: array<int, BudgetMonthSummaryData>,
-     * }
-     */
-    public function execute(Household $household, CarbonImmutable $month): array
+    public function execute(Household $household, CarbonImmutable $month): BudgetScreenData
     {
         $today = CarbonImmutable::today();
         $first = $month->startOfMonth();
@@ -51,22 +43,22 @@ class GetBudgetScreenUseCase
             ? (int) $today->diffInDays($first->endOfMonth(), absolute: true)
             : $first->daysInMonth;
 
-        return [
-            'month' => $first->format('Y-m'),
-            'monthLabel' => $first->format('F Y'),
-            'previousMonth' => $first->subMonth()->format('Y-m'),
-            'nextMonth' => $first->addMonth()->format('Y-m'),
-            'daysLeftLabel' => $daysLeft.' '.($daysLeft === 1 ? 'day' : 'days').' left',
-            'leftToSpend' => MoneyHelper::format($leftToSpend),
-            'budgetedLabel' => MoneyHelper::format($budgeted),
-            'perDay' => MoneyHelper::format($daysLeft > 0 ? intdiv(max($leftToSpend, 0), $daysLeft) : 0),
-            'budgetedPence' => $budgeted,
-            'incomeTotalPence' => $incomeTotal,
-            'income' => $income->map(IncomeSourceData::fromModel(...))->values()->all(),
-            'incomeTotal' => MoneyHelper::format($incomeTotal),
-            'categories' => $categories->map(fn (BudgetCategory $category) => BudgetCategoryData::fromModel($category, $budgeted))->values()->all(),
-            'history' => $this->history($household, $first),
-        ];
+        return new BudgetScreenData(
+            month: $first->format('Y-m'),
+            monthLabel: $first->format('F Y'),
+            previousMonth: $first->subMonth()->format('Y-m'),
+            nextMonth: $first->addMonth()->format('Y-m'),
+            daysLeftLabel: $daysLeft.' '.($daysLeft === 1 ? 'day' : 'days').' left',
+            leftToSpend: MoneyHelper::format($leftToSpend),
+            budgetedLabel: MoneyHelper::format($budgeted),
+            perDay: MoneyHelper::format($daysLeft > 0 ? intdiv(max($leftToSpend, 0), $daysLeft) : 0),
+            budgetedPence: $budgeted,
+            incomeTotalPence: $incomeTotal,
+            income: $income->map(IncomeSourceData::fromModel(...))->values()->all(),
+            incomeTotal: MoneyHelper::format($incomeTotal),
+            categories: $categories->map(fn (BudgetCategory $category) => BudgetCategoryData::fromModel($category, $budgeted))->values()->all(),
+            history: $this->history($household, $first),
+        );
     }
 
     /** @return array<int, BudgetMonthSummaryData> */

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Repositories;
 
+use App\Data\Input\ChoreInputData;
 use App\Enums\ChoreStatusEnum;
 use App\Models\Chore;
 use App\Models\Household;
@@ -17,11 +18,12 @@ interface ChoreRepositoryInterface
 
     public function moveTo(Chore $chore, ChoreStatusEnum $status): Chore;
 
-    /** @param array<string, mixed> $attributes */
-    public function create(Household $household, array $attributes): Chore;
+    public function create(Household $household, ChoreInputData $chore, ChoreStatusEnum $status, User $creator): Chore;
 
-    /** @param array<string, mixed> $attributes */
-    public function update(Chore $chore, array $attributes): Chore;
+    public function update(Chore $chore, ChoreInputData $changes): Chore;
+
+    /** @return Collection<int, Chore> Assigned chores still to do, with their assignee. */
+    public function outstandingAssigned(Household $household): Collection;
 
     public function delete(Chore $chore): void;
 

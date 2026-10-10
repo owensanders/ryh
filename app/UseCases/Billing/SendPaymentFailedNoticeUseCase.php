@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\UseCases\Billing;
 
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
+use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Mail\PaymentFailedMail;
 use Illuminate\Support\Facades\Mail;
 
@@ -14,7 +15,10 @@ use Illuminate\Support\Facades\Mail;
  */
 class SendPaymentFailedNoticeUseCase
 {
-    public function __construct(private readonly HouseholdRepositoryInterface $households) {}
+    public function __construct(
+        private readonly HouseholdRepositoryInterface $households,
+        private readonly MembershipRepositoryInterface $memberships,
+    ) {}
 
     /** @param  array<string, mixed>  $invoice  The failed invoice from the webhook payload. */
     public function execute(array $invoice): void
@@ -32,7 +36,7 @@ class SendPaymentFailedNoticeUseCase
             return;
         }
 
-        foreach ($this->households->activeOwners($household) as $owner) {
+        foreach ($this->memberships->activeOwners($household) as $owner) {
             Mail::to($owner->email)->queue(new PaymentFailedMail($household));
         }
     }
