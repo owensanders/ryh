@@ -53,10 +53,8 @@ class ShoppingListController extends Controller
         return back()->with('toast', "“{$item->name}” added to {$list->name}");
     }
 
-    public function toggle(Request $request, ShoppingItem $item, ToggleShoppingItemUseCase $toggle): RedirectResponse
+    public function toggle(ShoppingItem $item, ToggleShoppingItemUseCase $toggle): RedirectResponse
     {
-        $this->assertItemOwned($request, $item);
-
         $toggle->execute($item);
 
         return back();
@@ -72,18 +70,14 @@ class ShoppingListController extends Controller
 
     public function updateList(ShoppingListRequest $request, ShoppingList $list, RenameShoppingListUseCase $rename): RedirectResponse
     {
-        $this->assertOwned($request, $list);
-
         $attributes = $request->listAttributes();
         $updated = $rename->execute($list, $attributes['name'], $attributes['colour']);
 
         return back()->with('toast', "“{$updated->name}” updated");
     }
 
-    public function destroyList(Request $request, ShoppingList $list, DeleteShoppingListUseCase $delete): RedirectResponse
+    public function destroyList(ShoppingList $list, DeleteShoppingListUseCase $delete): RedirectResponse
     {
-        $this->assertOwned($request, $list);
-
         $name = $list->name;
         $delete->execute($list);
 
@@ -93,8 +87,6 @@ class ShoppingListController extends Controller
 
     public function updateItem(ShoppingItemRequest $request, ShoppingItem $item, UpdateShoppingItemUseCase $update): RedirectResponse
     {
-        $this->assertItemOwned($request, $item);
-
         $updated = $update->execute(
             $item,
             (string) $request->validated('name'),
@@ -104,23 +96,11 @@ class ShoppingListController extends Controller
         return back()->with('toast', "“{$updated->name}” updated");
     }
 
-    public function destroyItem(Request $request, ShoppingItem $item, DeleteShoppingItemUseCase $delete): RedirectResponse
+    public function destroyItem(ShoppingItem $item, DeleteShoppingItemUseCase $delete): RedirectResponse
     {
-        $this->assertItemOwned($request, $item);
-
         $name = $item->name;
         $delete->execute($item);
 
         return back()->with('toast', "“{$name}” deleted");
-    }
-
-    private function assertOwned(Request $request, ShoppingList $list): void
-    {
-        abort_if($list->household_id !== $this->household($request)->id, 404);
-    }
-
-    private function assertItemOwned(Request $request, ShoppingItem $item): void
-    {
-        abort_if($item->list?->household_id !== $this->household($request)->id, 404);
     }
 }

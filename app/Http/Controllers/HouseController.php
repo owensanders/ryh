@@ -9,7 +9,6 @@ use App\Http\Requests\InviteRequest;
 use App\Http\Requests\JoinCodeToggleRequest;
 use App\Http\Requests\RoleRequest;
 use App\Http\Requests\SubscribeRequest;
-use App\Models\Household;
 use App\Models\User;
 use App\Traits\ResolvesHouseholdTrait;
 use App\Traits\ResolvesUserTrait;
@@ -51,7 +50,6 @@ class HouseController extends Controller
     public function updateRole(RoleRequest $request, User $member, ChangeMemberRoleUseCase $change): RedirectResponse
     {
         $household = $this->household($request);
-        $this->assertOwned($member, $household);
 
         $role = HouseholdRoleEnum::from($request->validated('role'));
         $updated = $change->execute($member, $household, $role, $this->user($request));
@@ -62,7 +60,6 @@ class HouseController extends Controller
     public function approve(Request $request, User $member, ApproveMemberUseCase $approve): RedirectResponse
     {
         $household = $this->household($request);
-        $this->assertOwned($member, $household);
 
         $approved = $approve->execute($member, $household);
 
@@ -72,7 +69,6 @@ class HouseController extends Controller
     public function destroy(Request $request, User $member, RemoveMemberUseCase $remove): RedirectResponse
     {
         $household = $this->household($request);
-        $this->assertOwned($member, $household);
 
         $name = $member->name;
         $wasPending = $member->households()->where('households.id', $household->id)->first()?->pivot->pending === true;
@@ -115,10 +111,5 @@ class HouseController extends Controller
         }
 
         return back()->with('toast', 'You are already subscribed');
-    }
-
-    private function assertOwned(User $member, Household $household): void
-    {
-        abort_if(! $member->households()->where('households.id', $household->id)->exists(), 404);
     }
 }

@@ -6,12 +6,14 @@ namespace App\Http\Controllers;
 
 use App\Data\PlanData;
 use App\Http\Requests\SubscribeRequest;
+use App\Models\Household;
 use App\Traits\ResolvesHouseholdTrait;
 use App\Traits\ResolvesUserTrait;
 use App\UseCases\House\CompleteCheckoutUseCase;
 use App\UseCases\House\SubscribeHouseholdUseCase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -34,7 +36,7 @@ class BillingController extends Controller
 
         return Inertia::render('BillingRequired', [
             'plan' => PlanData::current(),
-            'isOwner' => $this->user($request)->currentRole()?->value === 'owner',
+            'isOwner' => Gate::allows('manage', Household::class),
             'paymentIssue' => $household->hasPaymentIssue(),
             'billingConfigured' => filled(config('plans.intervals.monthly.stripe_price'))
                 && filled(config('plans.intervals.annual.stripe_price')),

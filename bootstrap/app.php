@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Middleware\EnsureHasHouseholdMiddleware;
-use App\Http\Middleware\EnsureHouseholdRoleMiddleware;
 use App\Http\Middleware\EnsureTrialActiveMiddleware;
 use App\Http\Middleware\HandleInertiaRequestsMiddleware;
 use Illuminate\Foundation\Application;
@@ -27,7 +26,6 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'role' => EnsureHouseholdRoleMiddleware::class,
             'household' => EnsureHasHouseholdMiddleware::class,
             'trial.active' => EnsureTrialActiveMiddleware::class,
         ]);

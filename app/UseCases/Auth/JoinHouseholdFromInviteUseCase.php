@@ -11,6 +11,7 @@ use App\Enums\PaletteEnum;
 use App\Models\Household;
 use App\Models\HouseholdUser;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class JoinHouseholdFromInviteUseCase
 {
@@ -29,26 +30,31 @@ class JoinHouseholdFromInviteUseCase
      */
     public function execute(User $user, Household $household, HouseholdRoleEnum $role, ?int $guardianId = null, ?\DateTimeInterface $guardianConfirmedAt = null): bool
     {
-        if ($household->isFull()) {
-            return false;
-        }
+        // Under the household's lock, so two people can't both take its last place.
+        return DB::transaction(function () use ($user, $household, $role, $guardianId, $guardianConfirmedAt): bool {
+            $household = $this->households->lockForUpdate($household);
 
-        $colours = PaletteEnum::cases();
-        $colour = $colours[$this->households->members($household)->count() % count($colours)];
+            if ($household->isFull()) {
+                return false;
+            }
 
-        $this->users->update($user, [
-            'current_household_id' => $household->id,
-            'initials' => mb_strtoupper(mb_substr(trim($user->name), 0, 2)),
-            'colour' => $colour,
-        ]);
+            $colours = PaletteEnum::cases();
+            $colour = $colours[$this->households->members($household)->count() % count($colours)];
 
-        $user->households()->attach($household->id, [
-            'role' => $role,
-            'pending' => false,
-            'pending_reason' => null,
-            ...HouseholdUser::guardianAttributes($role, $guardianId, $guardianConfirmedAt),
-        ]);
+            $this->users->update($user, [
+                'current_household_id' => $household->id,
+                'initials' => mb_strtoupper(mb_substr(trim($user->name), 0, 2)),
+                'colour' => $colour,
+            ]);
 
-        return true;
+            $user->households()->attach($household->id, [
+                'role' => $role,
+                'pending' => false,
+                'pending_reason' => null,
+                ...HouseholdUser::guardianAttributes($role, $guardianId, $guardianConfirmedAt),
+            ]);
+
+            return true;
+        });
     }
 }

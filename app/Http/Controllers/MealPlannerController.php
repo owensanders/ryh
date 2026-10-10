@@ -70,8 +70,6 @@ class MealPlannerController extends Controller
 
     public function update(PlannedMealRequest $request, PlannedMeal $meal, UpdatePlannedMealUseCase $update): RedirectResponse
     {
-        $this->assertOwned($request, $meal);
-
         $updated = $update->execute($meal, $request->plannedMealAttributes(), $this->user($request));
 
         return back()->with('toast', "{$updated->name} updated");
@@ -79,8 +77,6 @@ class MealPlannerController extends Controller
 
     public function destroy(Request $request, PlannedMeal $meal, DeletePlannedMealUseCase $delete): RedirectResponse
     {
-        $this->assertOwned($request, $meal);
-
         $name = $meal->recipe->name;
         $delete->execute($meal, $this->user($request));
 
@@ -92,8 +88,6 @@ class MealPlannerController extends Controller
         PlannedMeal $meal,
         RescheduleMealUseCase $rescheduleMeal,
     ): RedirectResponse {
-        $this->assertOwned($request, $meal);
-
         $moved = $rescheduleMeal->execute($meal, CarbonImmutable::parse($request->validated('planned_on')));
 
         return back()->with('toast', "{$moved->name} moved");
@@ -134,10 +128,5 @@ class MealPlannerController extends Controller
         }
 
         return back()->with('libraryMeals', $meals);
-    }
-
-    private function assertOwned(Request $request, PlannedMeal $meal): void
-    {
-        abort_if($meal->household_id !== $this->household($request)->id, 404);
     }
 }

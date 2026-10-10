@@ -11,6 +11,7 @@ use App\Models\Household;
 use App\Models\User;
 use App\UseCases\House\CancelHouseholdSubscriptionUseCase;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class DeleteAccountUseCase
@@ -25,29 +26,44 @@ class DeleteAccountUseCase
     public function execute(User $user, bool $confirmHouseholdDeletion = false): void
     {
         $household = $user->currentHousehold;
+        $deleteHousehold = $household !== null
+            && $user->currentRole() === HouseholdRoleEnum::Owner
+            && $this->householdGoesWithThem($user, $household, $confirmHouseholdDeletion);
 
-        if ($household !== null && $user->currentRole() === HouseholdRoleEnum::Owner) {
-            $this->deleteHouseholdIfSoleOwner($user, $household, $confirmHouseholdDeletion);
+        // Stripe can't take part in the transaction, so its subscription is
+        // stopped first: a failure here leaves the account and household intact.
+        if ($deleteHousehold) {
+            $this->cancelSubscription->execute($household);
         }
 
         Auth::logout();
 
-        // push_subscriptions is polymorphic, so nothing cascades from users.
-        $this->users->deleteAllPushSubscriptions($user);
-        $this->users->delete($user);
+        DB::transaction(function () use ($user, $household, $deleteHousehold): void {
+            if ($deleteHousehold) {
+                $this->households->delete($household);
+            }
+
+            // push_subscriptions is polymorphic, so nothing cascades from users.
+            $this->users->deleteAllPushSubscriptions($user);
+            $this->users->delete($user);
+        });
 
         session()->invalidate();
         session()->regenerateToken();
     }
 
-    /** @throws ValidationException */
-    private function deleteHouseholdIfSoleOwner(User $user, Household $household, bool $confirmHouseholdDeletion): void
+    /**
+     * True when they're the household's only owner, so it can't outlive them.
+     *
+     * @throws ValidationException when others would lose it too and they haven't confirmed that
+     */
+    private function householdGoesWithThem(User $user, Household $household, bool $confirmHouseholdDeletion): bool
     {
         $members = $this->households->members($household);
         $hasOtherOwners = $members->contains(fn (User $m) => $m->pivot?->role === HouseholdRoleEnum::Owner && $m->id !== $user->id);
 
         if ($hasOtherOwners) {
-            return;
+            return false;
         }
 
         $hasOtherMembers = $members->contains(fn (User $m) => $m->id !== $user->id);
@@ -58,7 +74,6 @@ class DeleteAccountUseCase
             ]);
         }
 
-        $this->cancelSubscription->execute($household);
-        $this->households->delete($household);
+        return true;
     }
 }

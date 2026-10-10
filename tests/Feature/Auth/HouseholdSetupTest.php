@@ -8,10 +8,12 @@ use App\Enums\HouseholdRoleEnum;
 use App\Enums\PendingReasonEnum;
 use App\Mail\HouseholdInviteMail;
 use App\Models\Household;
+use App\Models\HouseholdUser;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use PHPUnit\Framework\Attributes\Test;
+use RuntimeException;
 use Tests\TestCase;
 
 class HouseholdSetupTest extends TestCase
@@ -46,6 +48,30 @@ class HouseholdSetupTest extends TestCase
 
         Mail::assertQueued(HouseholdInviteMail::class, fn (HouseholdInviteMail $mail) => ! $mail->hasAccount
             && $mail->household->id === $household->id);
+    }
+
+    #[Test]
+    public function aHouseholdThatFailsHalfwayIsNeverCreatedAndTheTrialIsNotSpent(): void
+    {
+        $user = User::factory()->create(['household_id' => null]);
+        $households = Household::count();
+
+        // The owner's membership is the last of the three writes.
+        HouseholdUser::creating(fn () => throw new RuntimeException('Database went away'));
+
+        $this->withoutExceptionHandling();
+
+        try {
+            $this->actingAs($user)->post('/household/setup', ['name' => 'The Parker household', 'size' => '4 people']);
+            $this->fail('Setup should have failed.');
+        } catch (RuntimeException $e) {
+            $this->assertSame('Database went away', $e->getMessage());
+        }
+
+        $user->refresh();
+        $this->assertSame($households, Household::count());
+        $this->assertNull($user->current_household_id);
+        $this->assertNull($user->trial_claimed_at);
     }
 
     #[Test]
