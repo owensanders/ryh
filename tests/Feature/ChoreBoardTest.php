@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\ChoreStatus;
+use App\Enums\ChoreStatusEnum;
 use App\Models\Chore;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -24,12 +24,12 @@ class ChoreBoardTest extends TestCase
         Chore::factory()->count(2)->create([
             'household_id' => $user->household_id,
             'assigned_to' => $partner->id,
-            'status' => ChoreStatus::Done,
+            'status' => ChoreStatusEnum::Done,
         ]);
         Chore::factory()->create([
             'household_id' => $user->household_id,
             'assigned_to' => $partner->id,
-            'status' => ChoreStatus::Today,
+            'status' => ChoreStatusEnum::Today,
         ]);
 
         $this->actingAs($user)
@@ -82,14 +82,14 @@ class ChoreBoardTest extends TestCase
         $user = User::factory()->create();
         $chore = Chore::factory()->create([
             'household_id' => $user->household_id,
-            'status' => ChoreStatus::Today,
+            'status' => ChoreStatusEnum::Today,
         ]);
 
         $this->actingAs($user)->patch("/chores/{$chore->id}/toggle")->assertRedirect();
-        $this->assertSame(ChoreStatus::Done, $chore->refresh()->status);
+        $this->assertSame(ChoreStatusEnum::Done, $chore->refresh()->status);
 
         $this->actingAs($user)->patch("/chores/{$chore->id}/toggle")->assertRedirect();
-        $this->assertSame(ChoreStatus::Today, $chore->refresh()->status);
+        $this->assertSame(ChoreStatusEnum::Today, $chore->refresh()->status);
     }
 
     #[Test]
@@ -103,7 +103,7 @@ class ChoreBoardTest extends TestCase
             ->assertRedirect()
             ->assertSessionHas('toast', 'Moved to Completed');
 
-        $this->assertSame(ChoreStatus::Done, $chore->refresh()->status);
+        $this->assertSame(ChoreStatusEnum::Done, $chore->refresh()->status);
     }
 
     #[Test]
@@ -127,7 +127,7 @@ class ChoreBoardTest extends TestCase
         $this->actingAs($user)->patch("/chores/{$chore->id}/toggle")->assertNotFound();
         $this->actingAs($user)->patch("/chores/{$chore->id}/move", ['status' => 'done'])->assertNotFound();
 
-        $this->assertSame(ChoreStatus::Today, $chore->refresh()->status);
+        $this->assertSame(ChoreStatusEnum::Today, $chore->refresh()->status);
     }
 
     #[Test]
@@ -165,11 +165,11 @@ class ChoreBoardTest extends TestCase
     public function editingADoneChoreDoesNotUncompleteIt(): void
     {
         $user = User::factory()->create();
-        $chore = Chore::factory()->create(['household_id' => $user->household_id, 'status' => ChoreStatus::Done]);
+        $chore = Chore::factory()->create(['household_id' => $user->household_id, 'status' => ChoreStatusEnum::Done]);
 
         $this->actingAs($user)->patch("/chores/{$chore->id}", ['name' => $chore->name]);
 
-        $this->assertSame(ChoreStatus::Done, $chore->refresh()->status);
+        $this->assertSame(ChoreStatusEnum::Done, $chore->refresh()->status);
     }
 
     #[Test]

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data;
 
 use App\Models\BudgetCategory;
-use App\Support\Money;
+use App\Support\MoneyHelper;
 use Spatie\LaravelData\Data;
 
 class BudgetCategoryData extends Data
@@ -32,7 +32,7 @@ class BudgetCategoryData extends Data
             label: $category->label,
             icon: $category->icon ?? '',
             colour: $category->colour->cssVar(),
-            budgeted: Money::format($category->budgeted_pence),
+            budgeted: MoneyHelper::format($category->budgeted_pence),
             budgetedPence: $category->budgeted_pence,
             shareOfTotal: $totalBudgetPence > 0
                 ? (int) round($category->budgeted_pence / $totalBudgetPence * 100)

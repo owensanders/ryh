@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Auth;
 
-use App\Enums\HouseholdRole;
+use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -36,7 +36,7 @@ class HouseholdSelectTest extends TestCase
     {
         $user = User::factory()->create();
         $second = Household::factory()->create();
-        $user->households()->attach($second->id, ['role' => HouseholdRole::Adult, 'pending' => false]);
+        $user->households()->attach($second->id, ['role' => HouseholdRoleEnum::Adult, 'pending' => false]);
         $user->forceFill(['current_household_id' => null])->save();
 
         $this->actingAs($user)->get('/dashboard')->assertRedirect(route('household.select', absolute: false));
@@ -47,7 +47,7 @@ class HouseholdSelectTest extends TestCase
     {
         $user = User::factory()->create();
         $second = Household::factory()->create();
-        $user->households()->attach($second->id, ['role' => HouseholdRole::Adult, 'pending' => false]);
+        $user->households()->attach($second->id, ['role' => HouseholdRoleEnum::Adult, 'pending' => false]);
 
         $this->actingAs($user)->get('/dashboard')->assertOk();
     }
@@ -55,9 +55,9 @@ class HouseholdSelectTest extends TestCase
     #[Test]
     public function thePickerListsEveryHouseholdTheUserBelongsToWithRoleAndMemberCount(): void
     {
-        $user = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $user = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $second = Household::factory()->create();
-        $user->households()->attach($second->id, ['role' => HouseholdRole::Adult, 'pending' => false]);
+        $user->households()->attach($second->id, ['role' => HouseholdRoleEnum::Adult, 'pending' => false]);
         $user->forceFill(['current_household_id' => null])->save();
 
         $this->actingAs($user)
@@ -73,7 +73,7 @@ class HouseholdSelectTest extends TestCase
     {
         $user = User::factory()->create();
         $second = Household::factory()->create();
-        $user->households()->attach($second->id, ['role' => HouseholdRole::Adult, 'pending' => false]);
+        $user->households()->attach($second->id, ['role' => HouseholdRoleEnum::Adult, 'pending' => false]);
 
         $this->actingAs($user)
             ->post('/household/select', ['household_id' => $second->id])
@@ -87,7 +87,7 @@ class HouseholdSelectTest extends TestCase
     {
         $user = User::factory()->create();
         $second = Household::factory()->create();
-        $user->households()->attach($second->id, ['role' => HouseholdRole::Adult, 'pending' => false]);
+        $user->households()->attach($second->id, ['role' => HouseholdRoleEnum::Adult, 'pending' => false]);
         $stranger = Household::factory()->create();
 
         $this->actingAs($user)
@@ -100,7 +100,7 @@ class HouseholdSelectTest extends TestCase
     {
         $user = User::factory()->create();
         $second = Household::factory()->create();
-        $user->households()->attach($second->id, ['role' => HouseholdRole::Adult, 'pending' => false]);
+        $user->households()->attach($second->id, ['role' => HouseholdRoleEnum::Adult, 'pending' => false]);
         // A household the user isn't (or is no longer) a member of — e.g. they
         // were removed from it after it became their current pick.
         $noLongerAMember = Household::factory()->create();

@@ -10,12 +10,12 @@ use Illuminate\Testing\TestResponse;
 use Laravel\Cashier\Subscription;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\HttpFoundation\Response;
-use Tests\Support\FakesStripe;
+use Tests\Support\FakesStripeTrait;
 use Tests\TestCase;
 
 class StripeWebhookTest extends TestCase
 {
-    use FakesStripe;
+    use FakesStripeTrait;
     use RefreshDatabase;
 
     private const string SECRET = 'whsec_test';

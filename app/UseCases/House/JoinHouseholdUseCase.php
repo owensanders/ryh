@@ -6,9 +6,9 @@ namespace App\UseCases\House;
 
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Contracts\Repositories\UserRepositoryInterface;
-use App\Enums\HouseholdRole;
-use App\Enums\Palette;
-use App\Enums\PendingReason;
+use App\Enums\HouseholdRoleEnum;
+use App\Enums\PaletteEnum;
+use App\Enums\PendingReasonEnum;
 use App\Models\Household;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
@@ -37,7 +37,7 @@ class JoinHouseholdUseCase
             throw ValidationException::withMessages(['code' => 'That household is full, so it can\'t take any more members.']);
         }
 
-        $colours = Palette::cases();
+        $colours = PaletteEnum::cases();
         $colour = $colours[$this->households->members($household)->count() % count($colours)];
 
         $this->users->update($user, [
@@ -47,9 +47,9 @@ class JoinHouseholdUseCase
         ]);
 
         $user->households()->attach($household->id, [
-            'role' => HouseholdRole::Adult,
+            'role' => HouseholdRoleEnum::Adult,
             'pending' => true,
-            'pending_reason' => PendingReason::Requested,
+            'pending_reason' => PendingReasonEnum::Requested,
         ]);
 
         return $household;

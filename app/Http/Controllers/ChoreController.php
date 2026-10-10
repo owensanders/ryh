@@ -6,8 +6,8 @@ namespace App\Http\Controllers;
 
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Data\MemberData;
-use App\Enums\ChoreStatus;
-use App\Enums\HouseholdRole;
+use App\Enums\ChoreStatusEnum;
+use App\Enums\HouseholdRoleEnum;
 use App\Http\Requests\ChoreRequest;
 use App\Http\Requests\MoveChoreRequest;
 use App\Models\Chore;
@@ -85,7 +85,7 @@ class ChoreController extends Controller
     {
         $this->assertOwned($request, $chore);
 
-        $status = ChoreStatus::from($request->validated('status'));
+        $status = ChoreStatusEnum::from($request->validated('status'));
         $move->execute($chore, $status);
 
         return back()->with('toast', "Moved to {$status->label()}");
@@ -122,7 +122,7 @@ class ChoreController extends Controller
     /** Teen/Child can only tick off chores assigned to them; Owner/Adult can toggle any. */
     private function assertCanToggle(Request $request, Chore $chore): void
     {
-        $restricted = in_array($this->user($request)->currentRole(), [HouseholdRole::Teen, HouseholdRole::Child], true);
+        $restricted = in_array($this->user($request)->currentRole(), [HouseholdRoleEnum::Teen, HouseholdRoleEnum::Child], true);
 
         abort_if($restricted && $chore->assigned_to !== $this->user($request)->id, 403);
     }

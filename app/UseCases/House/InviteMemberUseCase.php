@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\UseCases\House;
 
 use App\Contracts\Repositories\UserRepositoryInterface;
-use App\Enums\HouseholdRole;
-use App\Enums\PendingReason;
+use App\Enums\HouseholdRoleEnum;
+use App\Enums\PendingReasonEnum;
 use App\Mail\HouseholdInviteMail;
 use App\Models\Household;
 use App\Models\HouseholdUser;
@@ -31,7 +31,7 @@ class InviteMemberUseCase
     public function execute(Household $household, array $attributes, User $invitedBy): void
     {
         $email = $attributes['email'];
-        $role = HouseholdRole::from($attributes['role']);
+        $role = HouseholdRoleEnum::from($attributes['role']);
 
         if ($household->members()->where('email', $email)->exists()) {
             throw ValidationException::withMessages(['email' => 'This person is already part of the household.']);
@@ -49,7 +49,7 @@ class InviteMemberUseCase
             $existing->households()->attach($household->id, [
                 'role' => $role,
                 'pending' => true,
-                'pending_reason' => PendingReason::Invited,
+                'pending_reason' => PendingReasonEnum::Invited,
                 ...HouseholdUser::guardianAttributes($role, $invitedBy->id),
             ]);
 

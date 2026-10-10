@@ -6,7 +6,7 @@ namespace App\UseCases\Chores;
 
 use App\Contracts\Repositories\ChoreRepositoryInterface;
 use App\Data\ChoreData;
-use App\Enums\ChoreStatus;
+use App\Enums\ChoreStatusEnum;
 use App\Models\Chore;
 use App\Models\User;
 use App\Notifications\ChoreActionedNotification;
@@ -18,9 +18,9 @@ class ToggleChoreUseCase
 
     public function execute(Chore $chore, User $actor): ChoreData
     {
-        $target = $chore->status === ChoreStatus::Done
-            ? ChoreStatus::Today
-            : ChoreStatus::Done;
+        $target = $chore->status === ChoreStatusEnum::Done
+            ? ChoreStatusEnum::Today
+            : ChoreStatusEnum::Done;
 
         $updated = $this->chores->moveTo($chore, $target);
 

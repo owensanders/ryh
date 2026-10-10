@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\HouseholdRole;
-use App\Enums\PendingReason;
+use App\Enums\HouseholdRoleEnum;
+use App\Enums\PendingReasonEnum;
 use App\Models\Household;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,9 +23,9 @@ class HouseholdInviteAcceptTest extends TestCase
         $household = Household::factory()->create();
         $user = User::factory()->create();
         $user->households()->attach($household->id, [
-            'role' => HouseholdRole::Adult,
+            'role' => HouseholdRoleEnum::Adult,
             'pending' => true,
-            'pending_reason' => PendingReason::Invited,
+            'pending_reason' => PendingReasonEnum::Invited,
         ]);
         $originalHouseholdId = $user->current_household_id;
 
@@ -54,9 +54,9 @@ class HouseholdInviteAcceptTest extends TestCase
         $household = Household::factory()->create();
         $invitee = User::factory()->create();
         $invitee->households()->attach($household->id, [
-            'role' => HouseholdRole::Adult,
+            'role' => HouseholdRoleEnum::Adult,
             'pending' => true,
-            'pending_reason' => PendingReason::Invited,
+            'pending_reason' => PendingReasonEnum::Invited,
         ]);
         $stranger = User::factory()->create();
 
@@ -74,9 +74,9 @@ class HouseholdInviteAcceptTest extends TestCase
         $household = Household::factory()->create();
         $user = User::factory()->create();
         $user->households()->attach($household->id, [
-            'role' => HouseholdRole::Adult,
+            'role' => HouseholdRoleEnum::Adult,
             'pending' => true,
-            'pending_reason' => PendingReason::Invited,
+            'pending_reason' => PendingReasonEnum::Invited,
         ]);
 
         $url = URL::temporarySignedRoute('household-invites.accept', now()->addDays(7), [
@@ -96,9 +96,9 @@ class HouseholdInviteAcceptTest extends TestCase
         $household = Household::factory()->create();
         $user = User::factory()->create();
         $user->households()->attach($household->id, [
-            'role' => HouseholdRole::Adult,
+            'role' => HouseholdRoleEnum::Adult,
             'pending' => true,
-            'pending_reason' => PendingReason::Invited,
+            'pending_reason' => PendingReasonEnum::Invited,
         ]);
 
         $url = URL::temporarySignedRoute('household-invites.accept', now()->addDays(7), [
@@ -117,9 +117,9 @@ class HouseholdInviteAcceptTest extends TestCase
         $household = Household::factory()->create();
         $user = User::factory()->create();
         $user->households()->attach($household->id, [
-            'role' => HouseholdRole::Adult,
+            'role' => HouseholdRoleEnum::Adult,
             'pending' => true,
-            'pending_reason' => PendingReason::Invited,
+            'pending_reason' => PendingReasonEnum::Invited,
         ]);
 
         $url = URL::temporarySignedRoute('household-invites.accept', now()->addDays(7), [

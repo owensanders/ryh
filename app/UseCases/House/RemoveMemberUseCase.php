@@ -9,7 +9,7 @@ use App\Contracts\Repositories\ChoreRepositoryInterface;
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Contracts\Repositories\MealPlanRepositoryInterface;
 use App\Contracts\Repositories\UserRepositoryInterface;
-use App\Enums\HouseholdRole;
+use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -38,7 +38,7 @@ class RemoveMemberUseCase
     {
         $currentRole = $member->households()->where('households.id', $household->id)->first()?->pivot->role;
 
-        if ($currentRole === HouseholdRole::Owner && $this->households->isSoleOwner($household, $member)) {
+        if ($currentRole === HouseholdRoleEnum::Owner && $this->households->isSoleOwner($household, $member)) {
             throw ValidationException::withMessages(['member' => "You're the only owner — promote someone else first."]);
         }
 

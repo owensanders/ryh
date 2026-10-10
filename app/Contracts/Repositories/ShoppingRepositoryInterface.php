@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Repositories;
 
-use App\Enums\Palette;
+use App\Enums\PaletteEnum;
 use App\Models\Household;
 use App\Models\ShoppingItem;
 use App\Models\ShoppingList;
@@ -19,9 +19,9 @@ interface ShoppingRepositoryInterface
 
     public function defaultListFor(Household $household): ?ShoppingList;
 
-    public function createList(Household $household, string $name, Palette $colour): ShoppingList;
+    public function createList(Household $household, string $name, PaletteEnum $colour): ShoppingList;
 
-    public function updateList(ShoppingList $list, string $name, Palette $colour): ShoppingList;
+    public function updateList(ShoppingList $list, string $name, PaletteEnum $colour): ShoppingList;
 
     public function deleteList(ShoppingList $list): void;
 

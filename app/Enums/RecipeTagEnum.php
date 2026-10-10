@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-enum RecipeTag: string
+enum RecipeTagEnum: string
 {
     case Healthy = 'healthy';
     case Vegetarian = 'vegetarian';

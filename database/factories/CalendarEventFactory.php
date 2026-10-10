@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\Palette;
+use App\Enums\PaletteEnum;
 use App\Models\CalendarEvent;
 use App\Models\Household;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -26,7 +26,7 @@ class CalendarEventFactory extends Factory
             'is_all_day' => false,
             'location' => null,
             'notes' => null,
-            'colour' => Palette::Mint,
+            'colour' => PaletteEnum::Mint,
         ];
     }
 

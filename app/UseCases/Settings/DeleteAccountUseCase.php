@@ -6,7 +6,7 @@ namespace App\UseCases\Settings;
 
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Contracts\Repositories\UserRepositoryInterface;
-use App\Enums\HouseholdRole;
+use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
 use App\Models\User;
 use App\UseCases\House\CancelHouseholdSubscriptionUseCase;
@@ -26,7 +26,7 @@ class DeleteAccountUseCase
     {
         $household = $user->currentHousehold;
 
-        if ($household !== null && $user->currentRole() === HouseholdRole::Owner) {
+        if ($household !== null && $user->currentRole() === HouseholdRoleEnum::Owner) {
             $this->deleteHouseholdIfSoleOwner($user, $household, $confirmHouseholdDeletion);
         }
 
@@ -44,7 +44,7 @@ class DeleteAccountUseCase
     private function deleteHouseholdIfSoleOwner(User $user, Household $household, bool $confirmHouseholdDeletion): void
     {
         $members = $this->households->members($household);
-        $hasOtherOwners = $members->contains(fn (User $m) => $m->pivot?->role === HouseholdRole::Owner && $m->id !== $user->id);
+        $hasOtherOwners = $members->contains(fn (User $m) => $m->pivot?->role === HouseholdRoleEnum::Owner && $m->id !== $user->id);
 
         if ($hasOtherOwners) {
             return;

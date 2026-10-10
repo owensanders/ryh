@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /** How one part of the platform is doing, as the public status page shows it. */
-enum ServiceState: string
+enum ServiceStateEnum: string
 {
     case Operational = 'operational';
     case Degraded = 'degraded';

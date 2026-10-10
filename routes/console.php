@@ -1,6 +1,6 @@
 <?php
 
-use App\Ai\AiConfig;
+use App\Ai\AiConfigService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Artisan;
@@ -11,7 +11,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Artisan::command('ai:resume', function () {
-    AiConfig::resume();
+    AiConfigService::resume();
     $this->info('AI features resumed.');
 })->purpose('Resume AI features after topping up provider credit');
 

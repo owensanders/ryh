@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\ChoreStatus;
-use App\Enums\HouseholdRole;
+use App\Enums\ChoreStatusEnum;
+use App\Enums\HouseholdRoleEnum;
 use App\Models\Chore;
 use App\Models\User;
 use App\Notifications\ChoresReminderNotification;
@@ -27,9 +27,9 @@ class NotifyChoresTest extends TestCase
         $owner = User::factory()->create();
         $member = User::factory()->create(['household_id' => $owner->household_id]);
 
-        Chore::factory()->create(['household_id' => $owner->household_id, 'assigned_to' => $member->id, 'status' => ChoreStatus::Today]);
-        Chore::factory()->create(['household_id' => $owner->household_id, 'assigned_to' => $member->id, 'status' => ChoreStatus::Done]);
-        Chore::factory()->create(['household_id' => $owner->household_id, 'assigned_to' => null, 'status' => ChoreStatus::Today]);
+        Chore::factory()->create(['household_id' => $owner->household_id, 'assigned_to' => $member->id, 'status' => ChoreStatusEnum::Today]);
+        Chore::factory()->create(['household_id' => $owner->household_id, 'assigned_to' => $member->id, 'status' => ChoreStatusEnum::Done]);
+        Chore::factory()->create(['household_id' => $owner->household_id, 'assigned_to' => null, 'status' => ChoreStatusEnum::Today]);
 
         $this->actingAs($owner)->post('/chores/notify')->assertRedirect();
 
@@ -58,8 +58,8 @@ class NotifyChoresTest extends TestCase
     public function teenAndChildCannotUseIt(): void
     {
         $owner = User::factory()->create();
-        $teen = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRole::Teen]);
-        $child = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRole::Child]);
+        $teen = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRoleEnum::Teen]);
+        $child = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRoleEnum::Child]);
 
         $this->actingAs($teen)->post('/chores/notify')->assertForbidden();
         $this->actingAs($child)->post('/chores/notify')->assertForbidden();

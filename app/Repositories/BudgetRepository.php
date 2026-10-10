@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Contracts\Repositories\BudgetRepositoryInterface;
-use App\Enums\Palette;
+use App\Enums\PaletteEnum;
 use App\Models\BudgetCategory;
 use App\Models\Household;
 use App\Models\IncomeSource;
@@ -45,12 +45,12 @@ class BudgetRepository implements BudgetRepositoryInterface
      *
      * @param  Collection<int, BudgetCategory>  $categories
      */
-    private function leastUsedColour(Collection $categories): Palette
+    private function leastUsedColour(Collection $categories): PaletteEnum
     {
         $counts = $categories->countBy(fn (BudgetCategory $category) => $category->colour->value);
 
-        return collect(Palette::cases())
-            ->sortBy(fn (Palette $colour, int $index) => [$counts->get($colour->value, 0), $index])
+        return collect(PaletteEnum::cases())
+            ->sortBy(fn (PaletteEnum $colour, int $index) => [$counts->get($colour->value, 0), $index])
             ->firstOrFail();
     }
 

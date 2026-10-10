@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Ai\Agents\MealPlanAgent;
-use App\Ai\AiConfig;
-use App\Enums\HouseholdRole;
-use App\Enums\KitchenEquipment;
+use App\Ai\AiConfigService;
+use App\Enums\HouseholdRoleEnum;
+use App\Enums\KitchenEquipmentEnum;
 use App\Models\BudgetCategory;
 use App\Models\Household;
 use App\Models\PlannedMeal;
@@ -497,7 +497,7 @@ class MealPlannerTest extends TestCase
 
         $this->actingAs($user)
             ->get('/meals')
-            ->assertInertia(fn ($page) => $page->where('aiOptions.equipment', KitchenEquipment::values()));
+            ->assertInertia(fn ($page) => $page->where('aiOptions.equipment', KitchenEquipmentEnum::values()));
     }
 
     #[Test]
@@ -567,7 +567,7 @@ class MealPlannerTest extends TestCase
             ->post('/meals/ai-plan', $this->aiPlanPayload())
             ->assertSessionHasErrors('ai');
 
-        $this->assertTrue(AiConfig::isPaused());
+        $this->assertTrue(AiConfigService::isPaused());
         $this->assertNull($user->household->refresh()->ai_meal_plan_generated_at);
         Notification::assertSentOnDemand(
             AiCreditsExhaustedNotification::class,
@@ -586,7 +586,7 @@ class MealPlannerTest extends TestCase
     {
         config(['ai.providers.anthropic.key' => 'test-key']);
         MealPlanAgent::fake()->preventStrayPrompts();
-        AiConfig::pause();
+        AiConfigService::pause();
         $user = User::factory()->create();
 
         $this->actingAs($user)
@@ -601,12 +601,12 @@ class MealPlannerTest extends TestCase
     #[Test]
     public function theResumeCommandSwitchesAiBackOn(): void
     {
-        AiConfig::pause();
+        AiConfigService::pause();
 
         $this->artisan('ai:resume')->assertSuccessful();
 
-        $this->assertFalse(AiConfig::isPaused());
-        $this->assertTrue(AiConfig::pause(), 'Resuming should re-arm the one-off alert.');
+        $this->assertFalse(AiConfigService::isPaused());
+        $this->assertTrue(AiConfigService::pause(), 'Resuming should re-arm the one-off alert.');
     }
 
     #[Test]
@@ -723,7 +723,7 @@ class MealPlannerTest extends TestCase
     #[Test]
     public function aChildCannotPlanFromTheLibrary(): void
     {
-        $child = User::factory()->create(['role' => HouseholdRole::Child]);
+        $child = User::factory()->create(['role' => HouseholdRoleEnum::Child]);
 
         $this->actingAs($child)
             ->post('/meals/library-plan', ['diets' => [], 'avoid' => ''])

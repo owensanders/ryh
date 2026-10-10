@@ -8,7 +8,7 @@ use App\Models\User;
 use App\UseCases\Auth\RecordLoginStreakUseCase;
 use Illuminate\Auth\Events\Login;
 
-class RecordLoginStreak
+class RecordLoginStreakListener
 {
     public function __construct(
         private readonly RecordLoginStreakUseCase $recordLoginStreak,

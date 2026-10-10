@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Contracts\Repositories\ChoreRepositoryInterface;
-use App\Enums\ChoreStatus;
+use App\Enums\ChoreStatusEnum;
 use App\Models\Chore;
 use App\Models\Household;
 use App\Models\User;
@@ -23,7 +23,7 @@ class ChoreRepository implements ChoreRepositoryInterface
             ->get();
     }
 
-    public function moveTo(Chore $chore, ChoreStatus $status): Chore
+    public function moveTo(Chore $chore, ChoreStatusEnum $status): Chore
     {
         $chore->update(['status' => $status]);
 

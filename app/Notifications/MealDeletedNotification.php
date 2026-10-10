@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationCategoryEnum;
 use App\Models\PlannedMeal;
 use App\Models\User;
 
@@ -29,9 +29,9 @@ class MealDeletedNotification extends HouseholdNotification
         ];
     }
 
-    public function category(): NotificationCategory
+    public function category(): NotificationCategoryEnum
     {
-        return NotificationCategory::Meals;
+        return NotificationCategoryEnum::Meals;
     }
 
     protected function householdId(): int

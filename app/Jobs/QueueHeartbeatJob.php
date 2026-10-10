@@ -9,7 +9,7 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Cache;
 
 /** A no-op job the status page sends through the queue to prove a worker is picking jobs up. */
-class QueueHeartbeat implements ShouldQueue
+class QueueHeartbeatJob implements ShouldQueue
 {
     use Queueable;
 

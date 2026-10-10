@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Enums\Palette;
+use App\Enums\PaletteEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,7 +15,7 @@ class ShoppingListRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:120'],
-            'colour' => ['nullable', Rule::enum(Palette::class)],
+            'colour' => ['nullable', Rule::enum(PaletteEnum::class)],
         ];
     }
 
@@ -36,7 +36,7 @@ class ShoppingListRequest extends FormRequest
     {
         return [
             'name' => trim((string) $this->validated('name')),
-            'colour' => Palette::tryFrom((string) $this->validated('colour')) ?? Palette::Mint,
+            'colour' => PaletteEnum::tryFrom((string) $this->validated('colour')) ?? PaletteEnum::Mint,
         ];
     }
 }

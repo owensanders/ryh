@@ -38,7 +38,7 @@ export interface User {
     name: string;
     email: string;
     avatar?: string;
-    /** Raw `HouseholdRole` enum value: 'owner' | 'adult' | 'teen' | 'child'. Null while onboarding hasn't settled a household yet. */
+    /** Raw `HouseholdRoleEnum` value: 'owner' | 'adult' | 'teen' | 'child'. Null while onboarding hasn't settled a household yet. */
     role: string | null;
     email_verified_at: string | null;
     created_at: string;

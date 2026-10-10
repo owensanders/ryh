@@ -17,7 +17,7 @@ use Illuminate\Notifications\Events\BroadcastNotificationCreated;
  * reload — and a slow or unreachable Reverb only delays the bell, never fails
  * the request that triggered it.
  */
-class UserNotificationBroadcast implements ShouldBroadcast, ShouldDispatchAfterCommit, ShouldRescue
+class UserNotificationBroadcastEvent implements ShouldBroadcast, ShouldDispatchAfterCommit, ShouldRescue
 {
     /** @param  array<string, mixed>  $payload */
     public function __construct(

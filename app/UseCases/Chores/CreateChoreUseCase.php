@@ -6,7 +6,7 @@ namespace App\UseCases\Chores;
 
 use App\Contracts\Repositories\ChoreRepositoryInterface;
 use App\Data\ChoreData;
-use App\Enums\ChoreStatus;
+use App\Enums\ChoreStatusEnum;
 use App\Models\Household;
 use App\Models\User;
 use App\Notifications\ChoreAssignedNotification;
@@ -18,7 +18,7 @@ class CreateChoreUseCase
     /** @param array<string, mixed> $attributes */
     public function execute(Household $household, array $attributes, User $actor): ChoreData
     {
-        $attributes['status'] = ChoreStatus::Today->value;
+        $attributes['status'] = ChoreStatusEnum::Today->value;
         $attributes['created_by'] = $actor->id;
 
         $chore = $this->chores->create($household, $attributes);

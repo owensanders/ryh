@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\HouseholdRole;
+use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Cashier\Subscription;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\Support\FakesStripe;
+use Tests\Support\FakesStripeTrait;
 use Tests\TestCase;
 
 class StripeBillingTest extends TestCase
 {
-    use FakesStripe;
+    use FakesStripeTrait;
     use RefreshDatabase;
 
     protected function setUp(): void
@@ -233,7 +233,7 @@ class StripeBillingTest extends TestCase
     {
         $household = Household::factory()->create($attributes);
 
-        return User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
+        return User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
     }
 
     private function subscribe(Household $household, string $status = 'active'): void

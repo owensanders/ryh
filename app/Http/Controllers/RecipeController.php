@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Contracts\Repositories\ShoppingRepositoryInterface;
-use App\Enums\RecipeTag;
+use App\Enums\RecipeTagEnum;
 use App\Http\Requests\AddRecipeIngredientsRequest;
 use App\Http\Requests\RecipeRequest;
 use App\Models\Recipe;
@@ -33,7 +33,7 @@ class RecipeController extends Controller
 
         return Inertia::render('Recipes', [
             'recipes' => $getLibrary->execute($household),
-            'tagOptions' => RecipeTag::options(),
+            'tagOptions' => RecipeTagEnum::options(),
             'shoppingLists' => $getShoppingLists->execute($household),
         ]);
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Repositories;
 
-use App\Enums\ChoreStatus;
+use App\Enums\ChoreStatusEnum;
 use App\Models\Chore;
 use App\Models\Household;
 use App\Models\User;
@@ -15,7 +15,7 @@ interface ChoreRepositoryInterface
     /** @return Collection<int, Chore> */
     public function allFor(Household $household): Collection;
 
-    public function moveTo(Chore $chore, ChoreStatus $status): Chore;
+    public function moveTo(Chore $chore, ChoreStatusEnum $status): Chore;
 
     /** @param array<string, mixed> $attributes */
     public function create(Household $household, array $attributes): Chore;

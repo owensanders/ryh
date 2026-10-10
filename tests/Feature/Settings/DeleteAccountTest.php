@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Enums\HouseholdRole;
+use App\Enums\HouseholdRoleEnum;
 use App\Models\Chore;
 use App\Models\Household;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Cashier\Subscription;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\Support\FakesStripe;
+use Tests\Support\FakesStripeTrait;
 use Tests\TestCase;
 
 class DeleteAccountTest extends TestCase
 {
-    use FakesStripe;
+    use FakesStripeTrait;
     use RefreshDatabase;
 
     #[Test]
     public function itDeletesAUserWithNoHousehold(): void
     {
-        $user = User::factory()->create(['household_id' => null, 'role' => HouseholdRole::Adult]);
+        $user = User::factory()->create(['household_id' => null, 'role' => HouseholdRoleEnum::Adult]);
 
         $this->actingAs($user)
             ->delete('/settings/profile', ['password' => 'password'])
@@ -35,8 +35,8 @@ class DeleteAccountTest extends TestCase
     public function itDeletesANonOwnerMemberWithoutTouchingTheHousehold(): void
     {
         $household = Household::factory()->create();
-        User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
-        $member = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Adult]);
+        User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
+        $member = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Adult]);
 
         $this->actingAs($member)
             ->delete('/settings/profile', ['password' => 'password'])
@@ -50,8 +50,8 @@ class DeleteAccountTest extends TestCase
     public function itDeletesAnOwnerWhenAnotherOwnerRemains(): void
     {
         $household = Household::factory()->create();
-        $owner = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
-        User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
+        User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($owner)
             ->delete('/settings/profile', ['password' => 'password'])
@@ -65,7 +65,7 @@ class DeleteAccountTest extends TestCase
     public function itDeletesTheHouseholdWhenTheSoleOwnerHasNoOtherMembers(): void
     {
         $household = Household::factory()->create();
-        $owner = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($owner)
             ->delete('/settings/profile', ['password' => 'password'])
@@ -79,8 +79,8 @@ class DeleteAccountTest extends TestCase
     public function itBlocksTheSoleOwnerWithOtherMembersWithoutConfirmation(): void
     {
         $household = Household::factory()->create();
-        $owner = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
-        $member = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Adult]);
+        $owner = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
+        $member = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Adult]);
 
         $this->actingAs($owner)
             ->delete('/settings/profile', ['password' => 'password'])
@@ -95,8 +95,8 @@ class DeleteAccountTest extends TestCase
     public function itDeletesTheHouseholdAndUnlinksOtherMembersWhenConfirmed(): void
     {
         $household = Household::factory()->create();
-        $owner = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
-        $member = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Adult]);
+        $owner = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
+        $member = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Adult]);
         $chore = Chore::factory()->create(['household_id' => $household->id]);
 
         $this->actingAs($owner)
@@ -132,7 +132,7 @@ class DeleteAccountTest extends TestCase
     {
         $stripe = $this->fakeStripe();
         $owner = $this->ownerOfPaidHousehold();
-        $member = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRole::Adult]);
+        $member = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRoleEnum::Adult]);
 
         $this->actingAs($member)->delete('/settings/profile', ['password' => 'password']);
 
@@ -142,7 +142,7 @@ class DeleteAccountTest extends TestCase
 
     private function ownerOfPaidHousehold(): User
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $owner->household->update(['stripe_id' => 'cus_test123']);
         Subscription::create([
             'household_id' => $owner->household_id,

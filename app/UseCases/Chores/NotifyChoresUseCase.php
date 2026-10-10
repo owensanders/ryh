@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\UseCases\Chores;
 
-use App\Enums\ChoreStatus;
+use App\Enums\ChoreStatusEnum;
 use App\Models\Household;
 use App\Notifications\ChoresReminderNotification;
 
@@ -15,7 +15,7 @@ class NotifyChoresUseCase
     {
         $outstanding = $household->chores()
             ->whereNotNull('assigned_to')
-            ->where('status', ChoreStatus::Today)
+            ->where('status', ChoreStatusEnum::Today)
             ->get()
             ->groupBy('assigned_to');
 

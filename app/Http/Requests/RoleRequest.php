@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Enums\HouseholdRole;
+use App\Enums\HouseholdRoleEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -14,7 +14,7 @@ class RoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'role' => ['required', Rule::enum(HouseholdRole::class)],
+            'role' => ['required', Rule::enum(HouseholdRoleEnum::class)],
             // Under-18s join only with a parent or guardian's agreement (Terms of Service).
             'guardian_confirmed' => ['accepted_if:role,teen,child'],
         ];

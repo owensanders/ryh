@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-enum CookingConfidence: string
+enum CookingConfidenceEnum: string
 {
     case Beginner = 'beginner';
     case Comfortable = 'comfortable';

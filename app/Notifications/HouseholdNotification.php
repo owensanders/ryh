@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationCategoryEnum;
 use App\Models\Household;
 use App\Models\User;
 use App\Notifications\Channels\QueuedBroadcastChannel;
@@ -49,7 +49,7 @@ abstract class HouseholdNotification extends Notification
     /** @return array<string, mixed> */
     abstract public function toArray(object $notifiable): array;
 
-    abstract public function category(): NotificationCategory;
+    abstract public function category(): NotificationCategoryEnum;
 
     abstract protected function householdId(): int;
 

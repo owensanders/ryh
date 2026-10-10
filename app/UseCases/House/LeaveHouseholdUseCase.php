@@ -6,7 +6,7 @@ namespace App\UseCases\House;
 
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Contracts\Repositories\UserRepositoryInterface;
-use App\Enums\HouseholdRole;
+use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
@@ -26,7 +26,7 @@ class LeaveHouseholdUseCase
 
         abort_if($membership === null, 404);
 
-        if ($membership->role === HouseholdRole::Owner && $this->households->isSoleOwner($household, $user)) {
+        if ($membership->role === HouseholdRoleEnum::Owner && $this->households->isSoleOwner($household, $user)) {
             $hasOtherMembers = $this->households->members($household)->contains(fn (User $m) => $m->id !== $user->id);
 
             if ($hasOtherMembers && ! $confirmHouseholdDeletion) {

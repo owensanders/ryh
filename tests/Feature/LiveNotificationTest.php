@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\ChoreStatus;
-use App\Events\UserNotificationBroadcast;
+use App\Enums\ChoreStatusEnum;
+use App\Events\UserNotificationBroadcastEvent;
 use App\Models\Chore;
 use App\Models\User;
 use Illuminate\Broadcasting\BroadcastEvent;
@@ -37,7 +37,7 @@ class LiveNotificationTest extends TestCase
     #[Test]
     public function theLiveUpdateGoesToTheRecipientsOwnChannelWithTheBellPayload(): void
     {
-        Event::fake([UserNotificationBroadcast::class]);
+        Event::fake([UserNotificationBroadcastEvent::class]);
 
         $owner = User::factory()->create(['name' => 'Sarah Parker']);
         $partner = User::factory()->create(['household_id' => $owner->household_id]);
@@ -46,8 +46,8 @@ class LiveNotificationTest extends TestCase
 
         $stored = $partner->notifications()->sole();
 
-        Event::assertDispatchedTimes(UserNotificationBroadcast::class, 1);
-        Event::assertDispatched(UserNotificationBroadcast::class, function (UserNotificationBroadcast $event) use ($partner, $stored): bool {
+        Event::assertDispatchedTimes(UserNotificationBroadcastEvent::class, 1);
+        Event::assertDispatched(UserNotificationBroadcastEvent::class, function (UserNotificationBroadcastEvent $event) use ($partner, $stored): bool {
             return $event->broadcastOn()[0]->name === "private-App.Models.User.{$partner->id}"
                 && $event->broadcastWith()['id'] === $stored->id
                 && $event->broadcastWith()['type'] === 'chore_assigned'
@@ -66,14 +66,14 @@ class LiveNotificationTest extends TestCase
         $chore = Chore::factory()->create([
             'household_id' => $owner->household_id,
             'assigned_to' => $partner->id,
-            'status' => ChoreStatus::Today,
+            'status' => ChoreStatusEnum::Today,
         ]);
 
         $this->actingAs($owner)->patch("/chores/{$chore->id}/toggle")->assertRedirect();
 
-        $this->assertSame(ChoreStatus::Done, $chore->fresh()?->status);
+        $this->assertSame(ChoreStatusEnum::Done, $chore->fresh()?->status);
         $this->assertCount(1, $partner->notifications);
-        Queue::assertPushed(BroadcastEvent::class, fn (BroadcastEvent $job) => $job->event instanceof UserNotificationBroadcast);
+        Queue::assertPushed(BroadcastEvent::class, fn (BroadcastEvent $job) => $job->event instanceof UserNotificationBroadcastEvent);
     }
 
     #[Test]
@@ -91,7 +91,7 @@ class LiveNotificationTest extends TestCase
         Queue::assertPushed(BroadcastEvent::class, function (BroadcastEvent $job): bool {
             $restored = unserialize(serialize($job));
 
-            return $restored->event instanceof UserNotificationBroadcast
+            return $restored->event instanceof UserNotificationBroadcastEvent
                 && str_contains((string) $restored->event->broadcastWith()['body'], 'deleted');
         });
     }

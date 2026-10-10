@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Repositories;
 
-use App\Enums\MealSlot;
+use App\Enums\MealSlotEnum;
 use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\Recipe;
@@ -17,7 +17,7 @@ interface MealPlanRepositoryInterface
     /** @return Collection<int, PlannedMeal> */
     public function between(Household $household, CarbonImmutable $from, CarbonImmutable $to): Collection;
 
-    public function forDay(Household $household, CarbonImmutable $day, MealSlot $slot): ?PlannedMeal;
+    public function forDay(Household $household, CarbonImmutable $day, MealSlotEnum $slot): ?PlannedMeal;
 
     public function reschedule(PlannedMeal $meal, CarbonImmutable $day): PlannedMeal;
 

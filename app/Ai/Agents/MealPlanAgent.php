@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Ai\Agents;
 
-use App\Enums\CookingConfidence;
+use App\Enums\CookingConfidenceEnum;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\HasStructuredOutput;
@@ -34,7 +34,7 @@ class MealPlanAgent implements Agent, HasStructuredOutput
         private readonly array $avoid,
         private readonly array $goals,
         private readonly array $recentRecipeNames,
-        private readonly CookingConfidence $confidence,
+        private readonly CookingConfidenceEnum $confidence,
         private readonly array $equipment,
         private readonly array $useUp,
         private readonly string $notes,

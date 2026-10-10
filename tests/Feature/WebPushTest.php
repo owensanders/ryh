@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationCategoryEnum;
 use App\Models\Chore;
 use App\Models\User;
 use App\Notifications\CalendarEventAssignedNotification;
@@ -59,7 +59,7 @@ class WebPushTest extends TestCase
     public function aCategoryTheyHaveTurnedOffIsNotPushedButStillReachesTheBell(): void
     {
         $owner = User::factory()->create();
-        $partner = User::factory()->create(['household_id' => $owner->household_id, 'push_opt_outs' => [NotificationCategory::Chores->value]]);
+        $partner = User::factory()->create(['household_id' => $owner->household_id, 'push_opt_outs' => [NotificationCategoryEnum::Chores->value]]);
         $this->subscribe($partner);
         $chore = Chore::factory()->create(['household_id' => $owner->household_id]);
 
@@ -130,28 +130,28 @@ class WebPushTest extends TestCase
         $this->assertSame(['url' => route('chores.index')], $payload['data']);
     }
 
-    /** @return array<string, array{class-string<HouseholdNotification>, NotificationCategory}> */
+    /** @return array<string, array{class-string<HouseholdNotification>, NotificationCategoryEnum}> */
     public static function notificationCategories(): array
     {
         return [
-            'chore assigned' => [ChoreAssignedNotification::class, NotificationCategory::Chores],
-            'chore edited' => [ChoreEditedNotification::class, NotificationCategory::Chores],
-            'chore actioned' => [ChoreActionedNotification::class, NotificationCategory::Chores],
-            'chore deleted' => [ChoreDeletedNotification::class, NotificationCategory::Chores],
-            'chores reminder' => [ChoresReminderNotification::class, NotificationCategory::Chores],
-            'event assigned' => [CalendarEventAssignedNotification::class, NotificationCategory::Calendar],
-            'event updated' => [CalendarEventUpdatedNotification::class, NotificationCategory::Calendar],
-            'event deleted' => [CalendarEventDeletedNotification::class, NotificationCategory::Calendar],
-            'meal assigned' => [MealAssignedNotification::class, NotificationCategory::Meals],
-            'meal edited' => [MealEditedNotification::class, NotificationCategory::Meals],
-            'meal deleted' => [MealDeletedNotification::class, NotificationCategory::Meals],
+            'chore assigned' => [ChoreAssignedNotification::class, NotificationCategoryEnum::Chores],
+            'chore edited' => [ChoreEditedNotification::class, NotificationCategoryEnum::Chores],
+            'chore actioned' => [ChoreActionedNotification::class, NotificationCategoryEnum::Chores],
+            'chore deleted' => [ChoreDeletedNotification::class, NotificationCategoryEnum::Chores],
+            'chores reminder' => [ChoresReminderNotification::class, NotificationCategoryEnum::Chores],
+            'event assigned' => [CalendarEventAssignedNotification::class, NotificationCategoryEnum::Calendar],
+            'event updated' => [CalendarEventUpdatedNotification::class, NotificationCategoryEnum::Calendar],
+            'event deleted' => [CalendarEventDeletedNotification::class, NotificationCategoryEnum::Calendar],
+            'meal assigned' => [MealAssignedNotification::class, NotificationCategoryEnum::Meals],
+            'meal edited' => [MealEditedNotification::class, NotificationCategoryEnum::Meals],
+            'meal deleted' => [MealDeletedNotification::class, NotificationCategoryEnum::Meals],
         ];
     }
 
     /** @param class-string<HouseholdNotification> $class */
     #[Test]
     #[DataProvider('notificationCategories')]
-    public function eachNotificationIsFiledUnderTheRightCategory(string $class, NotificationCategory $category): void
+    public function eachNotificationIsFiledUnderTheRightCategory(string $class, NotificationCategoryEnum $category): void
     {
         $notification = (new ReflectionClass($class))->newInstanceWithoutConstructor();
 

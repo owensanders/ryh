@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\MealSlot;
+use App\Enums\MealSlotEnum;
 use Database\Factories\PlannedMealFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
  * @property int $recipe_id
  * @property int|null $cook_id
  * @property Carbon $planned_on
- * @property MealSlot $slot
+ * @property MealSlotEnum $slot
  * @property int $missing_ingredients
  * @property Recipe $recipe
  * @property User|null $cook
@@ -34,7 +34,7 @@ class PlannedMeal extends Model
     {
         return [
             'planned_on' => 'date',
-            'slot' => MealSlot::class,
+            'slot' => MealSlotEnum::class,
             'missing_ingredients' => 'integer',
         ];
     }

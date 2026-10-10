@@ -137,7 +137,7 @@ With Sail up, a run serves the app on <http://localhost:8091> from inside
 `ryh-app` with `APP_ENV=e2e` (`.env.e2e`), and rebuilds the separate
 `testing_e2e` database from the seeder first, so your dev data is never touched.
 Registration links are read from Mailpit, and AI meal planning is a fixed fake
-(`App\Ai\Fakes\E2eMealPlan`), so no API key or paid call is needed. Journeys
+(`App\Ai\Fakes\E2eMealPlanFake`), so no API key or paid call is needed. Journeys
 share that one database, so they run one at a time and name what they create
 uniquely. CI runs the same
 suite in the `e2e` job and uploads the report and traces when it fails.

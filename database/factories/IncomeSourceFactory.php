@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\Palette;
+use App\Enums\PaletteEnum;
 use App\Models\Household;
 use App\Models\IncomeSource;
 use Carbon\CarbonImmutable;
@@ -22,7 +22,7 @@ class IncomeSourceFactory extends Factory
             'household_id' => Household::factory(),
             'label' => $this->faker->words(2, true),
             'meta' => 'Every 4 weeks',
-            'colour' => Palette::Mint,
+            'colour' => PaletteEnum::Mint,
             'amount_pence' => 200000,
             'is_recurring' => false,
             'month' => CarbonImmutable::now()->startOfMonth(),

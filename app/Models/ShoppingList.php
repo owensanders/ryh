@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\Palette;
+use App\Enums\PaletteEnum;
 use Database\Factories\ShoppingListFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $household_id
  * @property string $name
  * @property string $slug
- * @property Palette $colour
+ * @property PaletteEnum $colour
  * @property int $position
  * @property Collection<int, ShoppingItem> $items
  */
@@ -31,7 +31,7 @@ class ShoppingList extends Model
 
     protected function casts(): array
     {
-        return ['colour' => Palette::class];
+        return ['colour' => PaletteEnum::class];
     }
 
     /** @return BelongsTo<Household, $this> */

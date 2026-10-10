@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /** The four household roles from the design, and what each is allowed to see/do. */
-enum HouseholdRole: string
+enum HouseholdRoleEnum: string
 {
     case Owner = 'owner';
     case Adult = 'adult';
@@ -31,13 +31,13 @@ enum HouseholdRole: string
         return $this === self::Teen || $this === self::Child;
     }
 
-    public function colour(): Palette
+    public function colour(): PaletteEnum
     {
         return match ($this) {
-            self::Owner => Palette::Coral,
-            self::Adult => Palette::Mint,
-            self::Teen => Palette::Sun,
-            self::Child => Palette::Sky,
+            self::Owner => PaletteEnum::Coral,
+            self::Adult => PaletteEnum::Mint,
+            self::Teen => PaletteEnum::Sun,
+            self::Child => PaletteEnum::Sky,
         };
     }
 

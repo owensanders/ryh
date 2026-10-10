@@ -46,7 +46,7 @@ test('the owner saves a recipe, sends its ingredients to a list, and plans it fo
 test.describe('a fresh household', () => {
     test.use({ storageState: { cookies: [], origins: [] } });
 
-    // In e2e the AI is a fixed fake (App\Ai\Fakes\E2eMealPlan) that answers after ~7s.
+    // In e2e the AI is a fixed fake (App\Ai\Fakes\E2eMealPlanFake) that answers after ~7s.
     test('plans the week with the AI step by step, then from its recipes once the weekly plan is used', async ({ page }) => {
         test.setTimeout(60_000);
 

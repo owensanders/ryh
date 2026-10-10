@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Middleware\EnsureHasHousehold;
-use App\Http\Middleware\EnsureHouseholdRole;
-use App\Http\Middleware\EnsureTrialActive;
-use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\EnsureHasHouseholdMiddleware;
+use App\Http\Middleware\EnsureHouseholdRoleMiddleware;
+use App\Http\Middleware\EnsureTrialActiveMiddleware;
+use App\Http\Middleware\HandleInertiaRequestsMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -22,14 +22,14 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
-            HandleInertiaRequests::class,
+            HandleInertiaRequestsMiddleware::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
         $middleware->alias([
-            'role' => EnsureHouseholdRole::class,
-            'household' => EnsureHasHousehold::class,
-            'trial.active' => EnsureTrialActive::class,
+            'role' => EnsureHouseholdRoleMiddleware::class,
+            'household' => EnsureHasHouseholdMiddleware::class,
+            'trial.active' => EnsureTrialActiveMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

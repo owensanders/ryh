@@ -18,13 +18,13 @@ use App\Data\DashboardData;
 use App\Data\MemberData;
 use App\Data\PlannedMealData;
 use App\Data\ShoppingListData;
-use App\Enums\ChoreStatus;
-use App\Enums\MealSlot;
+use App\Enums\ChoreStatusEnum;
+use App\Enums\MealSlotEnum;
 use App\Models\BudgetCategory;
 use App\Models\CalendarEvent;
 use App\Models\Household;
 use App\Models\PlannedMeal;
-use App\Support\Money;
+use App\Support\MoneyHelper;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -44,10 +44,10 @@ class GetDashboardUseCase
     public function execute(Household $household, string $viewerName, CarbonImmutable $today): DashboardData
     {
         $chores = $this->chores->allFor($household);
-        $todays = $chores->whereIn('status', [ChoreStatus::Today, ChoreStatus::Done]);
-        $done = $todays->where('status', ChoreStatus::Done)->count();
+        $todays = $chores->whereIn('status', [ChoreStatusEnum::Today, ChoreStatusEnum::Done]);
+        $done = $todays->where('status', ChoreStatusEnum::Done)->count();
 
-        $tonight = $this->meals->forDay($household, $today, MealSlot::Dinner);
+        $tonight = $this->meals->forDay($household, $today, MealSlotEnum::Dinner);
         $list = $this->shopping->defaultListFor($household);
         $remaining = $todays->count() - $done;
 
@@ -142,7 +142,7 @@ class GetDashboardUseCase
 
         return new BudgetSummaryData(
             monthLabel: $today->format('F'),
-            budgeted: Money::format($budgeted),
+            budgeted: MoneyHelper::format($budgeted),
             daysLeft: (int) $today->diffInDays($today->endOfMonth(), absolute: true),
             categories: $categories
                 ->map(fn (BudgetCategory $category) => BudgetCategoryData::fromModel($category, $budgeted))

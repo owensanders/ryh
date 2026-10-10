@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\UseCases\Meals;
 
 use App\Contracts\Repositories\MealPlanRepositoryInterface;
-use App\Enums\MealDiet;
-use App\Enums\RecipeTag;
+use App\Enums\MealDietEnum;
+use App\Enums\RecipeTagEnum;
 use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\Recipe;
@@ -76,12 +76,12 @@ class SuggestLibraryMealPlanUseCase
     {
         $tags = array_map(mb_strtolower(...), $recipe->tags ?? []);
 
-        if (in_array(MealDiet::Vegan->value, $diets, true)) {
-            return in_array(RecipeTag::Vegan->value, $tags, true);
+        if (in_array(MealDietEnum::Vegan->value, $diets, true)) {
+            return in_array(RecipeTagEnum::Vegan->value, $tags, true);
         }
 
-        if (in_array(MealDiet::Vegetarian->value, $diets, true)) {
-            return in_array(RecipeTag::Vegetarian->value, $tags, true) || in_array(RecipeTag::Vegan->value, $tags, true);
+        if (in_array(MealDietEnum::Vegetarian->value, $diets, true)) {
+            return in_array(RecipeTagEnum::Vegetarian->value, $tags, true) || in_array(RecipeTagEnum::Vegan->value, $tags, true);
         }
 
         return true;

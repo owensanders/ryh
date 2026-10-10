@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\Palette;
+use App\Enums\PaletteEnum;
 use App\Models\BudgetCategory;
 use App\Models\Household;
 use Carbon\CarbonImmutable;
@@ -22,7 +22,7 @@ class BudgetCategoryFactory extends Factory
             'household_id' => Household::factory(),
             'label' => $this->faker->words(2, true),
             'icon' => null,
-            'colour' => Palette::Coral,
+            'colour' => PaletteEnum::Coral,
             'budgeted_pence' => 50000,
             'is_recurring' => false,
             'month' => CarbonImmutable::now()->startOfMonth(),

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\HouseholdRole;
-use App\Enums\PendingReason;
+use App\Enums\HouseholdRoleEnum;
+use App\Enums\PendingReasonEnum;
 use App\Mail\HouseholdInviteMail;
 use App\Models\Household;
 use App\Models\User;
@@ -46,8 +46,8 @@ class HouseholdMemberCapTest extends TestCase
     public function pendingInvitesAndJoinRequestsHoldAPlace(): void
     {
         $owner = $this->ownerWithMembers(5);
-        User::factory()->create(['household_id' => $owner->household_id, 'pending' => true, 'pending_reason' => PendingReason::Invited]);
-        User::factory()->create(['household_id' => $owner->household_id, 'pending' => true, 'pending_reason' => PendingReason::Requested]);
+        User::factory()->create(['household_id' => $owner->household_id, 'pending' => true, 'pending_reason' => PendingReasonEnum::Invited]);
+        User::factory()->create(['household_id' => $owner->household_id, 'pending' => true, 'pending_reason' => PendingReasonEnum::Requested]);
 
         $this->assertTrue($owner->household->isFull());
     }
@@ -253,7 +253,7 @@ class HouseholdMemberCapTest extends TestCase
     public function theHousePageShowsHowManyPlacesAreTaken(): void
     {
         $owner = $this->ownerWithMembers(4);
-        User::factory()->create(['household_id' => $owner->household_id, 'pending' => true, 'pending_reason' => PendingReason::Invited]);
+        User::factory()->create(['household_id' => $owner->household_id, 'pending' => true, 'pending_reason' => PendingReasonEnum::Invited]);
 
         $this->actingAs($owner)
             ->get('/house')
@@ -295,7 +295,7 @@ class HouseholdMemberCapTest extends TestCase
     private function ownerWithMembers(int $others, array $householdAttributes = []): User
     {
         $household = Household::factory()->create($householdAttributes);
-        $owner = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
         // Not `count()` — the factory only turns `household_id` into a membership on single creates.
         for ($i = 0; $i < $others; $i++) {
             User::factory()->create(['household_id' => $household->id]);

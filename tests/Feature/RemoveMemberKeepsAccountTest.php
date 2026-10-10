@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\HouseholdRole;
-use App\Enums\PendingReason;
+use App\Enums\HouseholdRoleEnum;
+use App\Enums\PendingReasonEnum;
 use App\Models\CalendarEvent;
 use App\Models\Chore;
 use App\Models\Household;
@@ -29,9 +29,9 @@ class RemoveMemberKeepsAccountTest extends TestCase
     public function cancellingAnInviteToSomeoneElsesAccountLeavesTheirAccountAndHouseholdAlone(): void
     {
         $theirHousehold = Household::factory()->create();
-        $victim = User::factory()->create(['household_id' => $theirHousehold->id, 'role' => HouseholdRole::Owner]);
+        $victim = User::factory()->create(['household_id' => $theirHousehold->id, 'role' => HouseholdRoleEnum::Owner]);
 
-        $stranger = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $stranger = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $this->actingAs($stranger)->post('/house/invite', ['email' => $victim->email, 'role' => 'adult']);
         $this->assertDatabaseHas('household_user', ['household_id' => $stranger->household_id, 'user_id' => $victim->id, 'pending' => true]);
 
@@ -73,7 +73,7 @@ class RemoveMemberKeepsAccountTest extends TestCase
     #[Test]
     public function removingSomeoneFromTheirOnlyHouseholdLeavesThemWithNone(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $member = User::factory()->create(['household_id' => $owner->household_id]);
 
         $this->actingAs($owner)->delete("/house/members/{$member->id}");
@@ -86,7 +86,7 @@ class RemoveMemberKeepsAccountTest extends TestCase
     #[Test]
     public function aRemovedMemberLosesAccessToTheHousehold(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $member = User::factory()->create(['household_id' => $owner->household_id]);
 
         $this->actingAs($owner)->delete("/house/members/{$member->id}");
@@ -139,7 +139,7 @@ class RemoveMemberKeepsAccountTest extends TestCase
     #[Test]
     public function aRemovedMemberCanBeInvitedBackLater(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $member = User::factory()->create(['household_id' => $owner->household_id]);
 
         $this->actingAs($owner)->delete("/house/members/{$member->id}");
@@ -151,17 +151,17 @@ class RemoveMemberKeepsAccountTest extends TestCase
             'household_id' => $owner->household_id,
             'user_id' => $member->id,
             'pending' => true,
-            'pending_reason' => PendingReason::Invited->value,
+            'pending_reason' => PendingReasonEnum::Invited->value,
         ]);
     }
 
     /** @return array{User, User, Household} the owner, a member of the owner's household, and that member's other household */
     private function memberOfTwoHouseholds(): array
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $otherHousehold = Household::factory()->create();
         $member = User::factory()->create(['household_id' => $otherHousehold->id]);
-        $member->households()->attach($owner->household_id, ['role' => HouseholdRole::Adult, 'pending' => false]);
+        $member->households()->attach($owner->household_id, ['role' => HouseholdRoleEnum::Adult, 'pending' => false]);
 
         return [$owner, $member->refresh(), $otherHousehold];
     }

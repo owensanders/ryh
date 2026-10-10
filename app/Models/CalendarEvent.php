@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\Palette;
+use App\Enums\PaletteEnum;
 use Database\Factories\CalendarEventFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,7 +23,7 @@ use Illuminate\Support\Carbon;
  * @property bool $is_all_day
  * @property string|null $location
  * @property string|null $notes
- * @property Palette $colour
+ * @property PaletteEnum $colour
  * @property Collection<int, User> $attendees
  * @property User|null $creator
  */
@@ -41,7 +41,7 @@ class CalendarEvent extends Model
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'is_all_day' => 'boolean',
-            'colour' => Palette::class,
+            'colour' => PaletteEnum::class,
         ];
     }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\HouseholdRole;
+use App\Enums\HouseholdRoleEnum;
 use App\Mail\HouseholdInviteMail;
 use App\Models\Household;
 use App\Models\HouseholdUser;
@@ -34,7 +34,7 @@ class GuardianConfirmationTest extends TestCase
     public function invitingATeenOrChildNeedsTheGuardianConfirmation(): void
     {
         Mail::fake();
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
 
         foreach (['teen', 'child'] as $role) {
             $this->actingAs($owner)
@@ -49,7 +49,7 @@ class GuardianConfirmationTest extends TestCase
     public function invitingAnAdultDoesNotAskForIt(): void
     {
         Mail::fake();
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $adult = User::factory()->create(['household_id' => null]);
 
         $this->actingAs($owner)
@@ -66,7 +66,7 @@ class GuardianConfirmationTest extends TestCase
     {
         Mail::fake();
         $this->freezeSecond();
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $child = User::factory()->create(['household_id' => null]);
 
         $this->actingAs($owner)
@@ -74,7 +74,7 @@ class GuardianConfirmationTest extends TestCase
             ->assertSessionHasNoErrors();
 
         $membership = $this->membership($child, $owner->household_id);
-        $this->assertSame(HouseholdRole::Child, $membership->role);
+        $this->assertSame(HouseholdRoleEnum::Child, $membership->role);
         $this->assertSame($owner->id, $membership->guardian_confirmed_by);
         $this->assertTrue($membership->guardian_confirmed_at?->equalTo(now()));
     }
@@ -83,7 +83,7 @@ class GuardianConfirmationTest extends TestCase
     public function aNewChildInvitedByEmailJoinsWithTheConfirmationFromTheirInvite(): void
     {
         Mail::fake();
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $invitedAt = now()->startOfSecond();
         $this->travelTo($invitedAt);
 
@@ -111,7 +111,7 @@ class GuardianConfirmationTest extends TestCase
 
         $mia = User::where('email', 'mia@parkerhouse.co.uk')->firstOrFail();
         $membership = $this->membership($mia, $owner->household_id);
-        $this->assertSame(HouseholdRole::Child, $membership->role);
+        $this->assertSame(HouseholdRoleEnum::Child, $membership->role);
         $this->assertSame($owner->id, $membership->guardian_confirmed_by);
         $this->assertTrue($membership->guardian_confirmed_at?->equalTo($invitedAt));
     }
@@ -143,21 +143,21 @@ class GuardianConfirmationTest extends TestCase
     #[Test]
     public function makingSomeoneATeenOrChildNeedsTheConfirmation(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
-        $member = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRole::Adult]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
+        $member = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRoleEnum::Adult]);
 
         $this->actingAs($owner)
             ->patch("/house/members/{$member->id}/role", ['role' => 'child'])
             ->assertSessionHasErrors('guardian_confirmed');
 
-        $this->assertSame(HouseholdRole::Adult, $member->refresh()->currentRole());
+        $this->assertSame(HouseholdRoleEnum::Adult, $member->refresh()->currentRole());
     }
 
     #[Test]
     public function aConfirmedRoleChangeIsRecordedAndClearedWhenTheyBecomeAnAdult(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
-        $member = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRole::Adult]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
+        $member = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRoleEnum::Adult]);
 
         $this->actingAs($owner)
             ->patch("/house/members/{$member->id}/role", ['role' => 'teen', 'guardian_confirmed' => true])
@@ -215,6 +215,6 @@ class GuardianConfirmationTest extends TestCase
     {
         $this->expectException(LogicException::class);
 
-        HouseholdUser::guardianAttributes(HouseholdRole::Teen, null);
+        HouseholdUser::guardianAttributes(HouseholdRoleEnum::Teen, null);
     }
 }

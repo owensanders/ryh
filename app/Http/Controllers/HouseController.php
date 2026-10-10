@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Enums\HouseholdRole;
+use App\Enums\HouseholdRoleEnum;
 use App\Http\Requests\InviteRequest;
 use App\Http\Requests\JoinCodeToggleRequest;
 use App\Http\Requests\RoleRequest;
@@ -53,7 +53,7 @@ class HouseController extends Controller
         $household = $this->household($request);
         $this->assertOwned($member, $household);
 
-        $role = HouseholdRole::from($request->validated('role'));
+        $role = HouseholdRoleEnum::from($request->validated('role'));
         $updated = $change->execute($member, $household, $role, $this->user($request));
 
         return back()->with('toast', "{$updated->name} is now {$role->label()}");

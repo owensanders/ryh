@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\HouseholdRole;
+use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -54,7 +54,7 @@ class BillingGateTest extends TestCase
     public function thePaywallItselfIsReachableEvenPastTheTrial(): void
     {
         $household = Household::factory()->create(['trial_ends_at' => now()->subDay()]);
-        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($user)->get('/billing/required')->assertOk();
     }
@@ -63,7 +63,7 @@ class BillingGateTest extends TestCase
     public function onlyTheOwnerCanStartCheckoutFromThePaywall(): void
     {
         $household = Household::factory()->create(['trial_ends_at' => now()->subDay()]);
-        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Adult]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Adult]);
 
         $this->actingAs($user)->post('/billing/subscribe')->assertForbidden();
     }
@@ -72,7 +72,7 @@ class BillingGateTest extends TestCase
     public function subscribingRequiresAValidInterval(): void
     {
         $household = Household::factory()->create(['trial_ends_at' => now()->subDay()]);
-        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($user)->post('/billing/subscribe', ['interval' => 'weekly'])
             ->assertSessionHasErrors('interval');
@@ -82,7 +82,7 @@ class BillingGateTest extends TestCase
     public function subscribingFailsCleanlyWhenBillingIsNotConfigured(): void
     {
         $household = Household::factory()->create(['trial_ends_at' => now()->subDay()]);
-        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($user)->post('/billing/subscribe', ['interval' => 'annual'])
             ->assertSessionHasErrors('plan');
@@ -92,7 +92,7 @@ class BillingGateTest extends TestCase
     public function onlyTheOwnerCanOpenTheBillingPortal(): void
     {
         $household = Household::factory()->create(['trial_ends_at' => now()->addDays(10)]);
-        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Adult]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Adult]);
 
         $this->actingAs($user)->post('/billing/portal')->assertForbidden();
     }
@@ -101,7 +101,7 @@ class BillingGateTest extends TestCase
     public function theBillingPortalNeedsAStripeCustomer(): void
     {
         $household = Household::factory()->create(['trial_ends_at' => now()->addDays(10)]);
-        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($user)->post('/billing/portal')->assertSessionHasErrors('plan');
     }
@@ -110,7 +110,7 @@ class BillingGateTest extends TestCase
     public function onlyTheOwnerCanCompleteCheckout(): void
     {
         $household = Household::factory()->create(['trial_ends_at' => now()->subDay()]);
-        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Adult]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Adult]);
 
         $this->actingAs($user)->get('/billing/checkout/complete')->assertForbidden();
     }
@@ -119,7 +119,7 @@ class BillingGateTest extends TestCase
     public function completingCheckoutReturnsTheOwnerToWhereTheyStarted(): void
     {
         $household = Household::factory()->create(['trial_ends_at' => now()->addDays(10)]);
-        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($user)->get('/billing/checkout/complete')
             ->assertRedirect(route('dashboard', absolute: false));
@@ -138,7 +138,7 @@ class BillingGateTest extends TestCase
             'stripe_status' => 'past_due',
             'stripe_price' => 'price_home_monthly_test',
         ]);
-        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($user)->get('/dashboard')->assertRedirect(route('billing.required', absolute: false));
         $this->actingAs($user)->get('/billing/required')
@@ -149,7 +149,7 @@ class BillingGateTest extends TestCase
     public function thePaywallSendsSubscribedHouseholdsBackToTheApp(): void
     {
         $household = Household::factory()->create(['trial_ends_at' => now()->addDays(10)]);
-        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRole::Owner]);
+        $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($user)->get('/billing/required')->assertRedirect(route('dashboard', absolute: false));
     }

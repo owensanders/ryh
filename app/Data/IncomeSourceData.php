@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data;
 
 use App\Models\IncomeSource;
-use App\Support\Money;
+use App\Support\MoneyHelper;
 use Spatie\LaravelData\Data;
 
 class IncomeSourceData extends Data
@@ -28,7 +28,7 @@ class IncomeSourceData extends Data
             label: $income->label,
             meta: $income->meta,
             colour: $income->colour->cssVar(),
-            amount: Money::format($income->amount_pence),
+            amount: MoneyHelper::format($income->amount_pence),
             amountPence: $income->amount_pence,
             initials: mb_strtoupper(mb_substr($income->label, 0, 2)),
             isRecurring: $income->is_recurring,

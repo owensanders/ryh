@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\Palette;
+use App\Enums\PaletteEnum;
 use Database\Factories\IncomeSourceFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
  * @property int $household_id
  * @property string $label
  * @property string|null $meta
- * @property Palette $colour
+ * @property PaletteEnum $colour
  * @property int $amount_pence
  * @property bool $is_recurring
  * @property Carbon $month
@@ -33,7 +33,7 @@ class IncomeSource extends Model
     protected function casts(): array
     {
         return [
-            'colour' => Palette::class,
+            'colour' => PaletteEnum::class,
             'amount_pence' => 'integer',
             'is_recurring' => 'boolean',
             'month' => 'date',

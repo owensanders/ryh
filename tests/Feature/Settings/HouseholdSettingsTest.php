@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Enums\HouseholdRole;
+use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Cashier\Subscription;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\Support\FakesStripe;
+use Tests\Support\FakesStripeTrait;
 use Tests\TestCase;
 
 class HouseholdSettingsTest extends TestCase
 {
-    use FakesStripe;
+    use FakesStripeTrait;
     use RefreshDatabase;
 
     #[Test]
@@ -24,7 +24,7 @@ class HouseholdSettingsTest extends TestCase
     {
         $user = User::factory()->create();
         $second = Household::factory()->create(['name' => 'The Cottage']);
-        $user->households()->attach($second->id, ['role' => HouseholdRole::Adult, 'pending' => false]);
+        $user->households()->attach($second->id, ['role' => HouseholdRoleEnum::Adult, 'pending' => false]);
 
         $this->actingAs($user)
             ->get('/settings/households')
@@ -41,7 +41,7 @@ class HouseholdSettingsTest extends TestCase
     {
         $user = User::factory()->create();
         $second = Household::factory()->create();
-        $user->households()->attach($second->id, ['role' => HouseholdRole::Adult, 'pending' => false]);
+        $user->households()->attach($second->id, ['role' => HouseholdRoleEnum::Adult, 'pending' => false]);
 
         $this->actingAs($user)
             ->patch('/settings/households/current', ['household_id' => $second->id])
@@ -64,8 +64,8 @@ class HouseholdSettingsTest extends TestCase
     #[Test]
     public function aNonSoleOwnerLeavingJustDetaches(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
-        $member = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRole::Adult]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
+        $member = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRoleEnum::Adult]);
 
         $this->actingAs($member)
             ->delete('/settings/households/current', ['household_id' => $owner->household_id])
@@ -79,8 +79,8 @@ class HouseholdSettingsTest extends TestCase
     #[Test]
     public function aSoleOwnerWithOtherMembersMustConfirmBeforeLeavingDeletesTheHousehold(): void
     {
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
-        User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRole::Adult]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
+        User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRoleEnum::Adult]);
 
         $this->actingAs($owner)
             ->delete('/settings/households/current', ['household_id' => $owner->household_id])
@@ -101,8 +101,8 @@ class HouseholdSettingsTest extends TestCase
     #[Test]
     public function leavingYourOnlyHouseholdRedirectsToSetup(): void
     {
-        $user = User::factory()->create(['role' => HouseholdRole::Adult]);
-        User::factory()->create(['household_id' => $user->household_id, 'role' => HouseholdRole::Owner]);
+        $user = User::factory()->create(['role' => HouseholdRoleEnum::Adult]);
+        User::factory()->create(['household_id' => $user->household_id, 'role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($user)
             ->delete('/settings/households/current', ['household_id' => $user->household_id])
@@ -116,7 +116,7 @@ class HouseholdSettingsTest extends TestCase
     {
         $user = User::factory()->create();
         $second = Household::factory()->create();
-        $user->households()->attach($second->id, ['role' => HouseholdRole::Adult, 'pending' => false]);
+        $user->households()->attach($second->id, ['role' => HouseholdRoleEnum::Adult, 'pending' => false]);
         $firstHouseholdId = $user->current_household_id;
 
         $this->actingAs($user)
@@ -130,7 +130,7 @@ class HouseholdSettingsTest extends TestCase
     public function leavingAPaidHouseholdCancelsItInStripeBeforeDeletingIt(): void
     {
         $stripe = $this->fakeStripe()->respond('DELETE', '/v1/subscriptions/sub_live', $this->stripeSubscription('sub_live', 'cus_test123', 'price_monthly', 'canceled'));
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $owner->household->update(['stripe_id' => 'cus_test123']);
         Subscription::create([
             'household_id' => $owner->household_id,
@@ -150,7 +150,7 @@ class HouseholdSettingsTest extends TestCase
     public function aStripeOutageKeepsThePaidHouseholdRatherThanOrphanTheSubscription(): void
     {
         $this->fakeStripe()->respond('DELETE', '/v1/subscriptions/sub_live', ['error' => ['type' => 'api_error', 'message' => 'Down']], 500);
-        $owner = User::factory()->create(['role' => HouseholdRole::Owner]);
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $owner->household->update(['stripe_id' => 'cus_test123']);
         Subscription::create([
             'household_id' => $owner->household_id,

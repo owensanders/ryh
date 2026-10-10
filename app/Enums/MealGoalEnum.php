@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-enum MealGoal: string
+enum MealGoalEnum: string
 {
     case EatHealthier = 'Eat healthier';
     case SpendLess = 'Spend less';
