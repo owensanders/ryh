@@ -13,7 +13,7 @@ class QueueHeartbeat implements ShouldQueue
 {
     use Queueable;
 
-    public const CACHE_KEY = 'status:queue-heartbeat';
+    public const string CACHE_KEY = 'status:queue-heartbeat';
 
     public int $tries = 1;
 

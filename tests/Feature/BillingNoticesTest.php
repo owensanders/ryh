@@ -22,7 +22,7 @@ class BillingNoticesTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const SECRET = 'whsec_test';
+    private const string SECRET = 'whsec_test';
 
     private User $owner;
 

@@ -18,7 +18,7 @@ use Carbon\CarbonImmutable;
 class GetCalendarMonthUseCase
 {
     /** Six rows of seven, so the grid never changes height as you page through months. */
-    private const CELLS = 42;
+    private const int CELLS = 42;
 
     public function __construct(
         private readonly CalendarEventRepositoryInterface $events,

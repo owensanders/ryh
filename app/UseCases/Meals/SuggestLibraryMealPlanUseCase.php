@@ -21,9 +21,9 @@ use RuntimeException;
 class SuggestLibraryMealPlanUseCase
 {
     // Matches the AI pool so regenerate and swaps behave the same.
-    private const POOL_SIZE = 14;
+    private const int POOL_SIZE = 14;
 
-    private const RECENT_DAYS = 14;
+    private const int RECENT_DAYS = 14;
 
     public function __construct(
         private readonly MealPlanRepositoryInterface $meals,

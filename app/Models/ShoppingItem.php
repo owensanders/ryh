@@ -26,7 +26,7 @@ class ShoppingItem extends Model
     use HasFactory, MassPrunable;
 
     /** How long a ticked-off item stays on its list before the nightly prune clears it. */
-    public const KEEP_COMPLETED_DAYS = 7;
+    public const int KEEP_COMPLETED_DAYS = 7;
 
     /** @var list<string> */
     protected $fillable = ['shopping_list_id', 'name', 'quantity', 'completed_at', 'position'];

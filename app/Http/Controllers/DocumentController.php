@@ -33,7 +33,7 @@ class DocumentController extends Controller
     use ResolvesUserTrait;
 
     /** How long an S3 download link works for — long enough to start the download, short enough not to be worth sharing. */
-    private const DOWNLOAD_LINK_MINUTES = 5;
+    private const int DOWNLOAD_LINK_MINUTES = 5;
 
     public function __construct(private readonly DocumentRepositoryInterface $documents) {}
 

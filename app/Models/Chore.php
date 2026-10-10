@@ -31,7 +31,7 @@ class Chore extends Model
     use HasFactory, MassPrunable;
 
     /** How long a completed chore stays on the board before the nightly prune clears it. */
-    public const KEEP_COMPLETED_DAYS = 30;
+    public const int KEEP_COMPLETED_DAYS = 30;
 
     /** @var list<string> */
     protected $fillable = ['household_id', 'assigned_to', 'created_by', 'name', 'status', 'position'];

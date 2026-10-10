@@ -20,11 +20,11 @@ use Throwable;
 class PlatformProbes
 {
     /** Jobs the worker hasn't picked up within this long mean the queue is stuck. */
-    public const QUEUE_GRACE_SECONDS = 120;
+    public const int QUEUE_GRACE_SECONDS = 120;
 
-    private const QUEUE_PROBE_KEY = 'status:queue-probe';
+    private const string QUEUE_PROBE_KEY = 'status:queue-probe';
 
-    private const REALTIME_TIMEOUT_SECONDS = 2;
+    private const int REALTIME_TIMEOUT_SECONDS = 2;
 
     public function database(): ServiceState
     {

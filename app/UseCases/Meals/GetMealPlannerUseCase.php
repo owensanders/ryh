@@ -18,9 +18,9 @@ use Carbon\CarbonImmutable;
 
 class GetMealPlannerUseCase
 {
-    private const LIBRARY_SIZE = 6;
+    private const int LIBRARY_SIZE = 6;
 
-    private const FOOD_BUDGET_LABEL = '/food|grocer|shopping/i';
+    private const string FOOD_BUDGET_LABEL = '/food|grocer|shopping/i';
 
     public function __construct(
         private readonly MealPlanRepositoryInterface $meals,
