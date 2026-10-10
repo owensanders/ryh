@@ -8,6 +8,7 @@ use App\Enums\HouseholdRole;
 use App\Models\Household;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Cashier\Subscription;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Support\FakesStripe;
@@ -17,6 +18,23 @@ class HouseholdSettingsTest extends TestCase
 {
     use FakesStripe;
     use RefreshDatabase;
+
+    #[Test]
+    public function itListsEveryHouseholdTheUserBelongsTo(): void
+    {
+        $user = User::factory()->create();
+        $second = Household::factory()->create(['name' => 'The Cottage']);
+        $user->households()->attach($second->id, ['role' => HouseholdRole::Adult, 'pending' => false]);
+
+        $this->actingAs($user)
+            ->get('/settings/households')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('settings/Households')
+                ->where('currentHouseholdId', $user->current_household_id)
+                ->has('households', 2)
+                ->where('households.1.name', 'The Cottage'));
+    }
 
     #[Test]
     public function itSwitchesToAHouseholdTheUserBelongsTo(): void

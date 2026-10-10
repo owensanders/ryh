@@ -1,21 +1,23 @@
 <script setup lang="ts">
-import { isIos } from '@/lib/pwa';
+import InstallStepPicture, { type InstallScene } from '@/components/landing/InstallStepPicture.vue';
+import { isAndroid } from '@/lib/pwa';
 import { onMounted, ref } from 'vue';
 
 type Platform = 'iphone' | 'android';
 
-const platforms: { id: Platform; label: string; browser: string; steps: { title: string; body: string }[] }[] = [
+const platforms: { id: Platform; label: string; browser: string; steps: { title: string; body: string; scene: InstallScene }[] }[] = [
     {
         id: 'iphone',
         label: 'iPhone & iPad',
         browser: 'Safari',
         steps: [
-            { title: 'Open RYH in Safari', body: 'Go to this site in Safari and sign in.' },
-            { title: 'Tap Share', body: 'The square with an arrow pointing up, in Safari’s toolbar.' },
-            { title: 'Choose Add to Home Screen', body: 'Scroll down the share sheet if you can’t see it, then tap Add.' },
+            { title: 'Open RYH in Safari', body: 'Go to this site in Safari and sign in.', scene: 'safari-site' },
+            { title: 'Tap Share', body: 'The square with an arrow pointing up, in Safari’s toolbar.', scene: 'safari-share' },
+            { title: 'Choose Add to Home Screen', body: 'Scroll down the share sheet if you can’t see it, then tap Add.', scene: 'share-sheet' },
             {
                 title: 'Open it and turn on notifications',
                 body: 'Open RYH from your home screen, then go to Settings → Notifications and tap Turn on. On iPhone, notifications only work from the home-screen app.',
+                scene: 'notifications',
             },
         ],
     },
@@ -24,22 +26,24 @@ const platforms: { id: Platform; label: string; browser: string; steps: { title:
         label: 'Android',
         browser: 'Chrome',
         steps: [
-            { title: 'Open RYH in Chrome', body: 'Go to this site in Chrome and sign in.' },
+            { title: 'Open RYH in Chrome', body: 'Go to this site in Chrome and sign in.', scene: 'chrome-site' },
             {
                 title: 'Tap Install',
                 body: 'Use the “Get the RYH app” card that appears, or open Chrome’s ⋮ menu and choose Install app (or Add to Home screen).',
+                scene: 'chrome-install',
             },
-            { title: 'Confirm', body: 'RYH is added to your home screen and app drawer.' },
-            { title: 'Turn on notifications', body: 'Open RYH, go to Settings → Notifications and tap Turn on.' },
+            { title: 'Confirm', body: 'Tap Install. RYH is added to your home screen and app drawer.', scene: 'install-confirm' },
+            { title: 'Turn on notifications', body: 'Open RYH, go to Settings → Notifications and tap Turn on.', scene: 'notifications' },
         ],
     },
 ];
 
-// Start on the visitor's own kind of phone.
-const active = ref<Platform>('android');
+// Start on iPhone & iPad (the steps most people need walking through), or on
+// Android for someone already browsing on an Android phone.
+const active = ref<Platform>('iphone');
 onMounted(() => {
-    if (isIos()) {
-        active.value = 'iphone';
+    if (isAndroid()) {
+        active.value = 'android';
     }
 });
 </script>
@@ -75,14 +79,17 @@ onMounted(() => {
                 class="mt-5"
             >
                 <p class="text-[13px] text-ryh-ink3">Using {{ platform.browser }}:</p>
-                <ol class="mt-3 flex flex-col gap-3">
-                    <li v-for="(step, index) in platform.steps" :key="step.title" class="flex gap-3">
-                        <span class="grid h-7 w-7 flex-none place-items-center rounded-[9px] bg-ryh-coral text-[13px] font-extrabold text-white">
-                            {{ index + 1 }}
-                        </span>
-                        <div class="min-w-0 pt-0.5">
-                            <div class="text-[14.5px] font-bold">{{ step.title }}</div>
-                            <div class="mt-0.5 text-[13.5px] leading-relaxed text-ryh-ink2">{{ step.body }}</div>
+                <ol class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <li v-for="(step, index) in platform.steps" :key="step.title" class="flex flex-col gap-3">
+                        <InstallStepPicture :scene="step.scene" />
+                        <div class="flex gap-3">
+                            <span class="grid h-7 w-7 flex-none place-items-center rounded-[9px] bg-ryh-coral text-[13px] font-extrabold text-white">
+                                {{ index + 1 }}
+                            </span>
+                            <div class="min-w-0 pt-0.5">
+                                <div class="text-[14.5px] font-bold">{{ step.title }}</div>
+                                <div class="mt-0.5 text-[13.5px] leading-relaxed text-ryh-ink2">{{ step.body }}</div>
+                            </div>
                         </div>
                     </li>
                 </ol>

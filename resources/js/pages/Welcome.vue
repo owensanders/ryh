@@ -29,6 +29,17 @@ const tourMuted = ref(true);
 const tourEnded = ref(false);
 
 onMounted(() => {
+    // The header's links from other pages (e.g. /#pricing) load this page fresh.
+    // The browser looks for the section before it has rendered, and Inertia then
+    // restores the scroll position to the top before firing `navigate`, so go to
+    // the section on that first `navigate`.
+    if (window.location.hash) {
+        const stopListening = router.on('navigate', () => {
+            stopListening();
+            document.getElementById(window.location.hash.slice(1))?.scrollIntoView();
+        });
+    }
+
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         tourVideo.value?.play().catch(() => {});
     }
@@ -201,8 +212,11 @@ function startRegistration(): void {
             </div>
         </section>
 
+        <!-- The sections the header links to each set scroll-mt so their content
+             lands 24px below the 76px sticky header: 100px less their top padding. -->
+
         <!-- The daily three -->
-        <section id="daily" class="px-5 pb-[72px] pt-5 sm:px-8 lg:px-14">
+        <section id="daily" class="scroll-mt-20 px-5 pb-[72px] pt-5 sm:px-8 lg:px-14">
             <div class="mb-[22px] flex flex-wrap items-baseline gap-x-3.5 gap-y-2">
                 <h2 class="text-[28px] font-black tracking-[-0.03em] sm:text-[34px]">One glance, three answers</h2>
                 <span class="text-[15px] text-ryh-ink3">The whole reason people open it before the kettle boils.</span>
@@ -238,7 +252,7 @@ function startRegistration(): void {
         <!-- Everything else -->
         <section
             id="features"
-            class="relative mx-5 overflow-hidden rounded-[26px] p-8 text-ryh-onhero sm:mx-8 sm:p-12 lg:mx-14"
+            class="relative mx-5 scroll-mt-[100px] overflow-hidden rounded-[26px] p-8 text-ryh-onhero sm:mx-8 sm:p-12 lg:mx-14"
             :style="{ background: heroGradient }"
         >
             <div class="absolute -bottom-[120px] left-[38%] h-[340px] w-[340px] rounded-full bg-ryh-coral opacity-20 blur-[60px]"></div>
@@ -273,7 +287,7 @@ function startRegistration(): void {
         </section>
 
         <!-- On your phone -->
-        <section id="phone" class="px-5 pt-[76px] sm:px-8 lg:px-14">
+        <section id="phone" class="scroll-mt-6 px-5 pt-[76px] sm:px-8 lg:px-14">
             <div class="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-14">
                 <div class="order-2 lg:sticky lg:top-8 lg:order-1">
                     <PhoneMockup />
@@ -309,7 +323,7 @@ function startRegistration(): void {
         </section>
 
         <!-- Pricing -->
-        <section id="pricing" class="px-5 pb-6 pt-[76px] sm:px-8 lg:px-14">
+        <section id="pricing" class="scroll-mt-6 px-5 pb-6 pt-[76px] sm:px-8 lg:px-14">
             <div class="mb-6">
                 <h2 class="text-[28px] font-black tracking-[-0.03em] sm:text-[34px]">One price, everything included</h2>
                 <p class="mt-2.5 max-w-[560px] text-[15.5px] leading-relaxed text-ryh-ink2">
@@ -369,7 +383,7 @@ function startRegistration(): void {
         </section>
 
         <!-- Promises -->
-        <section id="promises" class="grid grid-cols-1 gap-4 px-5 pb-[72px] pt-7 sm:px-8 md:grid-cols-2 lg:grid-cols-3 lg:px-14">
+        <section id="promises" class="grid scroll-mt-[72px] grid-cols-1 gap-4 px-5 pb-[72px] pt-7 sm:px-8 md:grid-cols-2 lg:grid-cols-3 lg:px-14">
             <div v-for="(promise, index) in promises" :key="promise.title" class="rounded-[22px] border border-ryh-line bg-ryh-panel p-6">
                 <div class="grid h-[38px] w-[38px] place-items-center rounded-xl text-[17px]" :style="{ background: tint(index + 1) }">
                     <span aria-hidden="true">{{ promise.icon }}</span>

@@ -5,11 +5,20 @@ namespace Tests\Feature\Settings;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class PasswordUpdateTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function testPasswordPageIsDisplayed(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get('/settings/password')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('settings/Password'));
+    }
 
     public function testPasswordCanBeUpdated(): void
     {

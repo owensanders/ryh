@@ -18,6 +18,11 @@ export function isIos(): boolean {
     return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1);
 }
 
+/** Android, where Chrome offers its own install prompt. */
+export function isAndroid(): boolean {
+    return /android/i.test(navigator.userAgent);
+}
+
 /**
  * The deferred install prompt (Android/desktop Chrome). It can fire before any
  * component mounts, so it's captured at startup by `initPwa()` and kept here.
