@@ -58,17 +58,13 @@ class RecipeController extends Controller
 
     public function update(RecipeRequest $request, Recipe $recipe, UpdateRecipeUseCase $update): RedirectResponse
     {
-        $this->assertOwned($request, $recipe);
-
         $updated = $update->execute($recipe, $request->recipeAttributes());
 
         return back()->with('toast', "{$updated->name} updated");
     }
 
-    public function destroy(Request $request, Recipe $recipe, DeleteRecipeUseCase $delete): RedirectResponse
+    public function destroy(Recipe $recipe, DeleteRecipeUseCase $delete): RedirectResponse
     {
-        $this->assertOwned($request, $recipe);
-
         $name = $recipe->name;
         $delete->execute($recipe);
 
@@ -80,8 +76,6 @@ class RecipeController extends Controller
         Recipe $recipe,
         AddRecipeIngredientsToListUseCase $addIngredients,
     ): RedirectResponse {
-        $this->assertOwned($request, $recipe);
-
         $list = $this->shopping->listsFor($this->household($request))
             ->firstWhere('id', $request->validated('shopping_list_id'));
 
@@ -90,10 +84,5 @@ class RecipeController extends Controller
         $updated = $addIngredients->execute($recipe, $list);
 
         return back()->with('toast', "Ingredients added to {$updated->name}");
-    }
-
-    private function assertOwned(Request $request, Recipe $recipe): void
-    {
-        abort_if($recipe->household_id !== $this->household($request)->id, 404);
     }
 }

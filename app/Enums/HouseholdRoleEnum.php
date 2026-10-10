@@ -31,6 +31,26 @@ enum HouseholdRoleEnum: string
         return $this === self::Teen || $this === self::Child;
     }
 
+    /**
+     * Owner and Adult: everyone who creates, edits and deletes household data.
+     *
+     * @return list<self>
+     */
+    public static function managers(): array
+    {
+        return [self::Owner, self::Adult];
+    }
+
+    /**
+     * Managers plus Teen: the calendar and ticking off shopping are theirs to run too.
+     *
+     * @return list<self>
+     */
+    public static function managersAndTeens(): array
+    {
+        return [self::Owner, self::Adult, self::Teen];
+    }
+
     public function colour(): PaletteEnum
     {
         return match ($this) {

@@ -9,6 +9,7 @@ use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class LeaveHouseholdUseCase
@@ -41,12 +42,14 @@ class LeaveHouseholdUseCase
             return;
         }
 
-        $wasCurrent = $user->current_household_id === $household->id;
+        DB::transaction(function () use ($user, $household): void {
+            $wasCurrent = $user->current_household_id === $household->id;
 
-        $user->households()->detach($household->id);
+            $user->households()->detach($household->id);
 
-        if ($wasCurrent) {
-            $this->users->update($user, ['current_household_id' => $user->households()->first()?->id]);
-        }
+            if ($wasCurrent) {
+                $this->users->update($user, ['current_household_id' => $user->households()->first()?->id]);
+            }
+        });
     }
 }

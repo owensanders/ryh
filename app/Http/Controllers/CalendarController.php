@@ -52,8 +52,6 @@ class CalendarController extends Controller
 
     public function update(CalendarEventRequest $request, CalendarEvent $event, UpdateCalendarEventUseCase $update): RedirectResponse
     {
-        $this->assertOwned($request, $event);
-
         $updated = $update->execute($event, $request->eventAttributes(), $request->attendeeIds(), $this->user($request));
 
         return back()->with('toast', "“{$updated->title}” updated");
@@ -61,16 +59,9 @@ class CalendarController extends Controller
 
     public function destroy(Request $request, CalendarEvent $event, DeleteCalendarEventUseCase $delete): RedirectResponse
     {
-        $this->assertOwned($request, $event);
-
         $title = $event->title;
         $delete->execute($event, $this->user($request));
 
         return back()->with('toast', "“{$title}” deleted");
-    }
-
-    private function assertOwned(Request $request, CalendarEvent $event): void
-    {
-        abort_if($event->household_id !== $this->household($request)->id, 404);
     }
 }

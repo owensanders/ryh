@@ -11,6 +11,7 @@ use App\Enums\PaletteEnum;
 use App\Enums\PendingReasonEnum;
 use App\Models\Household;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class JoinHouseholdUseCase
@@ -33,25 +34,30 @@ class JoinHouseholdUseCase
             throw ValidationException::withMessages(['code' => 'This household isn\'t accepting join requests right now.']);
         }
 
-        if ($household->isFull()) {
-            throw ValidationException::withMessages(['code' => 'That household is full, so it can\'t take any more members.']);
-        }
+        // Under the household's lock, so two people can't both take its last place.
+        return DB::transaction(function () use ($user, $household): Household {
+            $household = $this->households->lockForUpdate($household);
 
-        $colours = PaletteEnum::cases();
-        $colour = $colours[$this->households->members($household)->count() % count($colours)];
+            if ($household->isFull()) {
+                throw ValidationException::withMessages(['code' => 'That household is full, so it can\'t take any more members.']);
+            }
 
-        $this->users->update($user, [
-            'current_household_id' => $household->id,
-            'initials' => mb_strtoupper(mb_substr(trim($user->name), 0, 2)),
-            'colour' => $colour,
-        ]);
+            $colours = PaletteEnum::cases();
+            $colour = $colours[$this->households->members($household)->count() % count($colours)];
 
-        $user->households()->attach($household->id, [
-            'role' => HouseholdRoleEnum::Adult,
-            'pending' => true,
-            'pending_reason' => PendingReasonEnum::Requested,
-        ]);
+            $this->users->update($user, [
+                'current_household_id' => $household->id,
+                'initials' => mb_strtoupper(mb_substr(trim($user->name), 0, 2)),
+                'colour' => $colour,
+            ]);
 
-        return $household;
+            $user->households()->attach($household->id, [
+                'role' => HouseholdRoleEnum::Adult,
+                'pending' => true,
+                'pending_reason' => PendingReasonEnum::Requested,
+            ]);
+
+            return $household;
+        });
     }
 }

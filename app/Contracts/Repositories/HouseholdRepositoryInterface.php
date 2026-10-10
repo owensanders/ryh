@@ -22,6 +22,12 @@ interface HouseholdRepositoryInterface
 
     public function findByJoinCode(string $joinCode): ?Household;
 
+    /**
+     * Re-reads the household holding a row lock until the transaction ends,
+     * so checks like the member cap can't race another request.
+     */
+    public function lockForUpdate(Household $household): Household;
+
     /** The household billed under this Stripe customer ID, as named in webhook payloads. */
     public function findByStripeCustomer(string $customerId): ?Household;
 

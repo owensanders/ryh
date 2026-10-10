@@ -14,7 +14,6 @@ use App\UseCases\Budget\GetBudgetScreenUseCase;
 use App\UseCases\Budget\UpdateBudgetCategoryUseCase;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -49,25 +48,16 @@ class BudgetController extends Controller
 
     public function updateCategory(BudgetCategoryRequest $request, BudgetCategory $category, UpdateBudgetCategoryUseCase $update): RedirectResponse
     {
-        $this->assertOwned($request, $category);
-
         $updated = $update->execute($category, $request->categoryAttributes());
 
         return back()->with('toast', "{$updated->label} updated");
     }
 
-    public function destroyCategory(Request $request, BudgetCategory $category, DeleteBudgetCategoryUseCase $delete): RedirectResponse
+    public function destroyCategory(BudgetCategory $category, DeleteBudgetCategoryUseCase $delete): RedirectResponse
     {
-        $this->assertOwned($request, $category);
-
         $label = $category->label;
         $delete->execute($category);
 
         return back()->with('toast', "{$label} removed");
-    }
-
-    private function assertOwned(Request $request, BudgetCategory $category): void
-    {
-        abort_if($category->household_id !== $this->household($request)->id, 404);
     }
 }

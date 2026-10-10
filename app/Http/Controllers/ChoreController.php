@@ -7,7 +7,6 @@ namespace App\Http\Controllers;
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Data\MemberData;
 use App\Enums\ChoreStatusEnum;
-use App\Enums\HouseholdRoleEnum;
 use App\Http\Requests\ChoreRequest;
 use App\Http\Requests\MoveChoreRequest;
 use App\Models\Chore;
@@ -54,8 +53,6 @@ class ChoreController extends Controller
 
     public function update(ChoreRequest $request, Chore $chore, UpdateChoreUseCase $update): RedirectResponse
     {
-        $this->assertOwned($request, $chore);
-
         $updated = $update->execute($chore, $request->choreAttributes(), $this->user($request));
 
         return back()->with('toast', "{$updated->name} updated");
@@ -63,8 +60,6 @@ class ChoreController extends Controller
 
     public function destroy(Request $request, Chore $chore, DeleteChoreUseCase $delete): RedirectResponse
     {
-        $this->assertOwned($request, $chore);
-
         $name = $chore->name;
         $delete->execute($chore, $this->user($request));
 
@@ -73,9 +68,6 @@ class ChoreController extends Controller
 
     public function toggle(Request $request, Chore $chore, ToggleChoreUseCase $toggle): RedirectResponse
     {
-        $this->assertOwned($request, $chore);
-        $this->assertCanToggle($request, $chore);
-
         $updated = $toggle->execute($chore, $this->user($request));
 
         return back()->with('toast', $updated->done ? "{$updated->name} — nice one" : null);
@@ -83,8 +75,6 @@ class ChoreController extends Controller
 
     public function move(MoveChoreRequest $request, Chore $chore, MoveChoreUseCase $move): RedirectResponse
     {
-        $this->assertOwned($request, $chore);
-
         $status = ChoreStatusEnum::from($request->validated('status'));
         $move->execute($chore, $status);
 
@@ -102,11 +92,6 @@ class ChoreController extends Controller
         return back()->with('toast', 'Reminders sent');
     }
 
-    private function assertOwned(Request $request, Chore $chore): void
-    {
-        abort_if($chore->household_id !== $this->household($request)->id, 404);
-    }
-
     /** When the "Notify Chores" button becomes usable again — null once it's already available. */
     private function notifyChoresAvailableAt(Household $household): ?Carbon
     {
@@ -117,13 +102,5 @@ class ChoreController extends Controller
         $availableAt = $household->last_chore_notification_sent_at->addMinutes(config('notifications.chore_reminder_cooldown_minutes'));
 
         return $availableAt->isFuture() ? $availableAt : null;
-    }
-
-    /** Teen/Child can only tick off chores assigned to them; Owner/Adult can toggle any. */
-    private function assertCanToggle(Request $request, Chore $chore): void
-    {
-        $restricted = in_array($this->user($request)->currentRole(), [HouseholdRoleEnum::Teen, HouseholdRoleEnum::Child], true);
-
-        abort_if($restricted && $chore->assigned_to !== $this->user($request)->id, 403);
     }
 }

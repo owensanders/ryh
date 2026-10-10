@@ -30,6 +30,11 @@ class HouseholdRepository implements HouseholdRepositoryInterface
         return $household->refresh();
     }
 
+    public function lockForUpdate(Household $household): Household
+    {
+        return Household::query()->whereKey($household->id)->lockForUpdate()->firstOrFail();
+    }
+
     public function findByJoinCode(string $joinCode): ?Household
     {
         return Household::where('join_code', $joinCode)->first();
