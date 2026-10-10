@@ -30,6 +30,7 @@ does them, or note where they were done.
 
 ## Infrastructure
 
+- [ ] **PHP 8.3 or newer** on the servers (typed class constants need it).
 - [ ] **Deploy steps:** `composer install --no-dev --optimize-autoloader`
       (this also leaves Telescope out), `npm ci && npm run build`,
       `php artisan migrate --force`, `php artisan optimize`. OPcache on.
