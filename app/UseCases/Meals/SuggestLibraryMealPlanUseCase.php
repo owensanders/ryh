@@ -30,8 +30,8 @@ class SuggestLibraryMealPlanUseCase
     ) {}
 
     /**
-     * @param  list<string>  $diets
-     * @return list<array{recipe_id: int, name: string, description: ?string, duration_label: ?string, difficulty: ?string, estimated_cost: null, tags: list<string>, ingredients: list<array{name: string, quantity: string|null}>, tint: int, is_favourite: bool}>
+     * @param  array<int, string>  $diets
+     * @return array<int, array{recipe_id: int, name: string, description: ?string, duration_label: ?string, difficulty: ?string, estimated_cost: null, tags: array<int, string>, ingredients: array<int, array{name: string, quantity: string|null}>, tint: int, is_favourite: bool}>
      */
     public function execute(Household $household, array $diets, string $avoid): array
     {
@@ -71,7 +71,7 @@ class SuggestLibraryMealPlanUseCase
             ->all();
     }
 
-    /** @param  list<string>  $diets */
+    /** @param  array<int, string>  $diets */
     private function suitsDiets(Recipe $recipe, array $diets): bool
     {
         $tags = array_map(mb_strtolower(...), $recipe->tags ?? []);

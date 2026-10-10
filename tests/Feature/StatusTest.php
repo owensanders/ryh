@@ -28,7 +28,7 @@ class StatusTest extends TestCase
     {
         return $this->mock(PlatformProbes::class, function (MockInterface $mock) use ($overrides): void {
             foreach (['database', 'cache', 'queue', 'realtime', 'ai', 'documents'] as $probe) {
-                $mock->shouldReceive($probe)->andReturn($overrides[$probe] ?? ServiceState::Operational);
+                $mock->allows([$probe => $overrides[$probe] ?? ServiceState::Operational]);
             }
         });
     }

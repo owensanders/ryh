@@ -8,7 +8,7 @@ use Spatie\LaravelData\Data;
 
 class PlanData extends Data
 {
-    /** @param  list<string>  $features */
+    /** @param  array<int, string>  $features */
     public function __construct(
         public string $name,
         public float $priceMonthly,

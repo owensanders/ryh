@@ -8,7 +8,7 @@ use Spatie\LaravelData\Data;
 
 class HouseholdOptionData extends Data
 {
-    /** @param  list<array{initials: string, colour: string}>  $memberAvatars */
+    /** @param  array<int, array{initials: string, colour: string}>  $memberAvatars */
     public function __construct(
         public int $id,
         public string $name,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data;
 
 use App\Models\User;
+use LogicException;
 use Spatie\LaravelData\Data;
 
 class HouseMemberData extends Data
@@ -25,18 +26,20 @@ class HouseMemberData extends Data
 
     public static function fromModel(User $user, int $viewerId): self
     {
+        $membership = $user->pivot ?? throw new LogicException('HouseMemberData needs a user loaded through a household, with its membership.');
+
         return new self(
             id: $user->id,
             name: $user->name,
             initials: $user->initials ?? mb_strtoupper(mb_substr($user->name, 0, 2)),
             colour: $user->colour->cssVar(),
             email: $user->email,
-            role: $user->pivot->role->value,
-            roleLabel: $user->pivot->role->label(),
+            role: $membership->role->value,
+            roleLabel: $membership->role->label(),
             activity: $user->status_line ?? '',
             you: $user->id === $viewerId,
-            pending: $user->pivot->pending,
-            pendingReason: $user->pivot->pending_reason?->value,
+            pending: $membership->pending,
+            pendingReason: $membership->pending_reason?->value,
         );
     }
 }

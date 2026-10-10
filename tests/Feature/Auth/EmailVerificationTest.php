@@ -1,19 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class EmailVerificationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testEmailVerificationScreenCanBeRendered(): void
+    #[Test]
+    public function emailVerificationScreenCanBeRendered(): void
     {
         $user = User::factory()->unverified()->create();
 
@@ -22,7 +28,8 @@ class EmailVerificationTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function testEmailCanBeVerified(): void
+    #[Test]
+    public function emailCanBeVerified(): void
     {
         $user = User::factory()->unverified()->create();
 
@@ -41,7 +48,8 @@ class EmailVerificationTest extends TestCase
         $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
     }
 
-    public function testEmailIsNotVerifiedWithInvalidHash(): void
+    #[Test]
+    public function emailIsNotVerifiedWithInvalidHash(): void
     {
         $user = User::factory()->unverified()->create();
 
@@ -54,5 +62,33 @@ class EmailVerificationTest extends TestCase
         $this->actingAs($user)->get($verificationUrl);
 
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
+    }
+
+    #[Test]
+    public function theVerificationEmailCanBeResent(): void
+    {
+        Notification::fake();
+        $user = User::factory()->unverified()->create();
+
+        $this->actingAs($user)
+            ->from('/verify-email')
+            ->post('/email/verification-notification')
+            ->assertRedirect('/verify-email')
+            ->assertSessionHas('status', 'verification-link-sent');
+
+        Notification::assertSentTo($user, VerifyEmail::class);
+    }
+
+    #[Test]
+    public function anAlreadyVerifiedUserIsSentOnWithoutAnotherEmail(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/email/verification-notification')
+            ->assertRedirect(route('dashboard', absolute: false));
+
+        Notification::assertNothingSent();
     }
 }

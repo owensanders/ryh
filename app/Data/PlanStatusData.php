@@ -32,14 +32,14 @@ class PlanStatusData extends Data
 
         return new self(
             onTrial: $household->isOnTrial(),
-            trialEndsLabel: $household->isOnTrial() ? $household->trial_ends_at->format('j F Y') : null,
+            trialEndsLabel: $household->isOnTrial() ? $household->trial_ends_at?->format('j F Y') : null,
             subscribed: $subscribed,
             interval: match (true) {
                 ! $subscribed => null,
-                is_string($annualPrice) && $subscription->hasPrice($annualPrice) => 'annual',
+                is_string($annualPrice) && $subscription?->hasPrice($annualPrice) === true => 'annual',
                 default => 'monthly',
             },
-            endsLabel: $subscription?->onGracePeriod() ? $subscription->ends_at->format('j F Y') : null,
+            endsLabel: $subscription?->onGracePeriod() ? $subscription->ends_at?->format('j F Y') : null,
             paymentIssue: $household->hasPaymentIssue(),
             priceMonthly: config('plans.intervals.monthly.price'),
             priceAnnual: config('plans.intervals.annual.price'),

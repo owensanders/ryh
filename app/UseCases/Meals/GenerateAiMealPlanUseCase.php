@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Ai\Exceptions\AiException;
 use Laravel\Ai\Exceptions\InsufficientCreditsException;
+use Laravel\Ai\Responses\StructuredAgentResponse;
+use LogicException;
 use RuntimeException;
 
 class GenerateAiMealPlanUseCase
@@ -32,10 +34,10 @@ class GenerateAiMealPlanUseCase
     ) {}
 
     /**
-     * @param  list<string>  $diets
-     * @param  list<string>  $goals
-     * @param  list<string>  $equipment
-     * @return list<array{name: string, description: string, duration_label: string, difficulty: string, estimated_cost: float, tags: list<string>, ingredients: list<array{name: string, quantity: string}>}>
+     * @param  array<int, string>  $diets
+     * @param  array<int, string>  $goals
+     * @param  array<int, string>  $equipment
+     * @return array<int, array{name: string, description: string, duration_label: string, difficulty: string, estimated_cost: float, tags: array<int, string>, ingredients: array<int, array{name: string, quantity: string}>}>
      */
     public function execute(
         Household $household,
@@ -99,6 +101,11 @@ class GenerateAiMealPlanUseCase
                 throw new RuntimeException('We couldn\'t generate a meal plan right now — please try again in a few minutes.');
             }
 
+            // MealPlanAgent declares a schema, so its answer is always structured.
+            if (! $response instanceof StructuredAgentResponse) {
+                throw new LogicException('MealPlanAgent answered without its structured schema.');
+            }
+
             $this->households->update($household, ['ai_meal_plan_generated_at' => now()]);
 
             Log::info('AI meal plan generated', [
@@ -113,13 +120,13 @@ class GenerateAiMealPlanUseCase
         }
     }
 
-    /** @return list<string> */
+    /** @return array<int, string> */
     private function splitList(string $value): array
     {
         return collect(explode(',', $value))->map(fn (string $item) => trim($item))->filter()->values()->all();
     }
 
-    /** @return list<string> */
+    /** @return array<int, string> */
     private function recentRecipeNames(Household $household): array
     {
         return $this->meals->allRecipes($household)

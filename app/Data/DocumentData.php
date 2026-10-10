@@ -9,7 +9,7 @@ use Spatie\LaravelData\Data;
 
 class DocumentData extends Data
 {
-    /** @param list<string> $tags */
+    /** @param array<int, string> $tags */
     public function __construct(
         public int $id,
         public string $name,
@@ -29,7 +29,7 @@ class DocumentData extends Data
             id: $document->id,
             name: $document->name,
             extension: $document->extension,
-            meta: number_format($document->size / 1024 / 1024, 1).' MB · '.$document->created_at->format('d M Y'),
+            meta: number_format($document->size / 1024 / 1024, 1).' MB · '.$document->created_at?->format('d M Y'),
             tags: $document->tags ?? [],
             expiryLabel: $expiresAt?->format('d M Y'),
             isUrgent: $expiresAt !== null && $expiresAt->lessThanOrEqualTo(now()->addDays(60)),

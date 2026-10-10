@@ -13,14 +13,14 @@ class GetShoppingScreenUseCase
 {
     public function __construct(private readonly ShoppingRepositoryInterface $shopping) {}
 
-    /** @return array{lists: list<ShoppingListData>, active: ?ShoppingListData} */
+    /** @return array{lists: array<int, ShoppingListData>, active: ?ShoppingListData} */
     public function execute(Household $household, ?ShoppingList $active): array
     {
         $lists = $this->shopping->listsFor($household);
         $active ??= $lists->first();
 
         return [
-            'lists' => $lists->map(fn (ShoppingList $list) => ShoppingListData::fromModel($list, withItems: false))->all(),
+            'lists' => $lists->map(fn (ShoppingList $list) => ShoppingListData::fromModel($list, withItems: false))->values()->all(),
             'active' => $active !== null ? ShoppingListData::fromModel($active) : null,
         ];
     }

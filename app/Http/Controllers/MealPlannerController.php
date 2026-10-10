@@ -16,6 +16,7 @@ use App\Http\Requests\RescheduleMealRequest;
 use App\Http\Requests\SuggestLibraryMealPlanRequest;
 use App\Models\PlannedMeal;
 use App\Traits\ResolvesHouseholdTrait;
+use App\Traits\ResolvesUserTrait;
 use App\UseCases\Meals\AddPlannedMealUseCase;
 use App\UseCases\Meals\DeletePlannedMealUseCase;
 use App\UseCases\Meals\GenerateAiMealPlanUseCase;
@@ -34,6 +35,7 @@ use RuntimeException;
 class MealPlannerController extends Controller
 {
     use ResolvesHouseholdTrait;
+    use ResolvesUserTrait;
 
     public function index(
         IndexMealPlannerRequest $request,
@@ -46,7 +48,7 @@ class MealPlannerController extends Controller
         return Inertia::render('MealPlanner', [
             ...$getMealPlanner->execute(
                 $household,
-                $week !== null ? CarbonImmutable::createFromFormat('!Y-m-d', $week) : CarbonImmutable::now(),
+                $week !== null ? CarbonImmutable::createFromFormat('!Y-m-d', $week) ?? CarbonImmutable::now() : CarbonImmutable::now(),
             ),
             'shoppingLists' => $getShoppingLists->execute($household),
             'tagOptions' => RecipeTag::options(),
@@ -61,7 +63,7 @@ class MealPlannerController extends Controller
 
     public function store(PlannedMealRequest $request, AddPlannedMealUseCase $add): RedirectResponse
     {
-        $meal = $add->execute($this->household($request), $request->plannedMealAttributes(), $request->user());
+        $meal = $add->execute($this->household($request), $request->plannedMealAttributes(), $this->user($request));
 
         return back()->with('toast', "{$meal->name} added");
     }
@@ -70,7 +72,7 @@ class MealPlannerController extends Controller
     {
         $this->assertOwned($request, $meal);
 
-        $updated = $update->execute($meal, $request->plannedMealAttributes(), $request->user());
+        $updated = $update->execute($meal, $request->plannedMealAttributes(), $this->user($request));
 
         return back()->with('toast', "{$updated->name} updated");
     }
@@ -80,7 +82,7 @@ class MealPlannerController extends Controller
         $this->assertOwned($request, $meal);
 
         $name = $meal->recipe->name;
-        $delete->execute($meal, $request->user());
+        $delete->execute($meal, $this->user($request));
 
         return back()->with('toast', "{$name} removed");
     }

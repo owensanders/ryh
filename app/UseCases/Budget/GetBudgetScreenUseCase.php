@@ -28,8 +28,8 @@ class GetBudgetScreenUseCase
      *     month: string, monthLabel: string, previousMonth: string, nextMonth: string,
      *     daysLeftLabel: string, leftToSpend: string, budgetedLabel: string, perDay: string,
      *     budgetedPence: int, incomeTotalPence: int,
-     *     income: list<IncomeSourceData>, incomeTotal: string,
-     *     categories: list<BudgetCategoryData>, history: list<BudgetMonthSummaryData>,
+     *     income: array<int, IncomeSourceData>, incomeTotal: string,
+     *     categories: array<int, BudgetCategoryData>, history: array<int, BudgetMonthSummaryData>,
      * }
      */
     public function execute(Household $household, CarbonImmutable $month): array
@@ -69,7 +69,7 @@ class GetBudgetScreenUseCase
         ];
     }
 
-    /** @return list<BudgetMonthSummaryData> */
+    /** @return array<int, BudgetMonthSummaryData> */
     private function history(Household $household, CarbonImmutable $first): array
     {
         $months = [];

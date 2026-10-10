@@ -8,6 +8,7 @@ use App\Http\Requests\CalendarEventRequest;
 use App\Http\Requests\IndexCalendarRequest;
 use App\Models\CalendarEvent;
 use App\Traits\ResolvesHouseholdTrait;
+use App\Traits\ResolvesUserTrait;
 use App\UseCases\Calendar\AddCalendarEventUseCase;
 use App\UseCases\Calendar\DeleteCalendarEventUseCase;
 use App\UseCases\Calendar\GetCalendarMonthUseCase;
@@ -21,6 +22,7 @@ use Inertia\Response;
 class CalendarController extends Controller
 {
     use ResolvesHouseholdTrait;
+    use ResolvesUserTrait;
 
     public function index(IndexCalendarRequest $request, GetCalendarMonthUseCase $getCalendarMonth): Response
     {
@@ -31,7 +33,7 @@ class CalendarController extends Controller
                 $this->household($request),
                 // `!` resets the unspecified day/time — without it PHP fills the day from
                 // today, so on the 31st "2026-09" would roll over into October.
-                $month !== null ? CarbonImmutable::createFromFormat('!Y-m', $month) : CarbonImmutable::now(),
+                $month !== null ? CarbonImmutable::createFromFormat('!Y-m', $month) ?? CarbonImmutable::now() : CarbonImmutable::now(),
             ),
         ]);
     }
@@ -42,7 +44,7 @@ class CalendarController extends Controller
             $this->household($request),
             $request->eventAttributes(),
             $request->attendeeIds(),
-            $request->user(),
+            $this->user($request),
         );
 
         return back()->with('toast', "“{$event->title}” added");
@@ -52,7 +54,7 @@ class CalendarController extends Controller
     {
         $this->assertOwned($request, $event);
 
-        $updated = $update->execute($event, $request->eventAttributes(), $request->attendeeIds(), $request->user());
+        $updated = $update->execute($event, $request->eventAttributes(), $request->attendeeIds(), $this->user($request));
 
         return back()->with('toast', "“{$updated->title}” updated");
     }
@@ -62,7 +64,7 @@ class CalendarController extends Controller
         $this->assertOwned($request, $event);
 
         $title = $event->title;
-        $delete->execute($event, $request->user());
+        $delete->execute($event, $this->user($request));
 
         return back()->with('toast', "“{$title}” deleted");
     }

@@ -21,7 +21,7 @@ class UpdateCalendarEventUseCase
      */
     public function execute(CalendarEvent $event, array $attributes, array $attendeeIds, User $actor): CalendarEventData
     {
-        $previousAttendeeIds = $event->attendees()->pluck('users.id')->all();
+        $previousAttendeeIds = $event->attendees()->pluck('users.id')->map(fn (mixed $id): int => (int) $id)->all();
 
         $updated = $this->events->update($event, $attributes, $attendeeIds);
 
@@ -34,7 +34,7 @@ class UpdateCalendarEventUseCase
      * Newly added attendees get an "assigned" notification; everyone else who already
      * had this event (attendees and creator) gets a plain "updated" one.
      *
-     * @param  list<int>  $previousAttendeeIds
+     * @param  array<int, int>  $previousAttendeeIds
      */
     private function notifyInterestedParties(CalendarEvent $event, array $previousAttendeeIds, User $actor): void
     {

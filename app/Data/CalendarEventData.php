@@ -9,7 +9,7 @@ use Spatie\LaravelData\Data;
 
 class CalendarEventData extends Data
 {
-    /** @param list<MemberData> $attendees */
+    /** @param array<int, MemberData> $attendees */
     public function __construct(
         public int $id,
         public string $title,

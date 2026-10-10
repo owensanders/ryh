@@ -121,6 +121,6 @@ class ShoppingListController extends Controller
 
     private function assertItemOwned(Request $request, ShoppingItem $item): void
     {
-        abort_if($item->list->household_id !== $this->household($request)->id, 404);
+        abort_if($item->list?->household_id !== $this->household($request)->id, 404);
     }
 }

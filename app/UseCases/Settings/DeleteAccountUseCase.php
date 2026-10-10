@@ -7,6 +7,7 @@ namespace App\UseCases\Settings;
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Enums\HouseholdRole;
+use App\Models\Household;
 use App\Models\User;
 use App\UseCases\House\CancelHouseholdSubscriptionUseCase;
 use Illuminate\Support\Facades\Auth;
@@ -23,8 +24,10 @@ class DeleteAccountUseCase
     /** @throws ValidationException */
     public function execute(User $user, bool $confirmHouseholdDeletion = false): void
     {
-        if ($user->currentHousehold !== null && $user->currentRole() === HouseholdRole::Owner) {
-            $this->deleteHouseholdIfSoleOwner($user, $confirmHouseholdDeletion);
+        $household = $user->currentHousehold;
+
+        if ($household !== null && $user->currentRole() === HouseholdRole::Owner) {
+            $this->deleteHouseholdIfSoleOwner($user, $household, $confirmHouseholdDeletion);
         }
 
         Auth::logout();
@@ -38,10 +41,10 @@ class DeleteAccountUseCase
     }
 
     /** @throws ValidationException */
-    private function deleteHouseholdIfSoleOwner(User $user, bool $confirmHouseholdDeletion): void
+    private function deleteHouseholdIfSoleOwner(User $user, Household $household, bool $confirmHouseholdDeletion): void
     {
-        $members = $this->households->members($user->currentHousehold);
-        $hasOtherOwners = $members->contains(fn (User $m) => $m->pivot->role === HouseholdRole::Owner && $m->id !== $user->id);
+        $members = $this->households->members($household);
+        $hasOtherOwners = $members->contains(fn (User $m) => $m->pivot?->role === HouseholdRole::Owner && $m->id !== $user->id);
 
         if ($hasOtherOwners) {
             return;
@@ -55,7 +58,7 @@ class DeleteAccountUseCase
             ]);
         }
 
-        $this->cancelSubscription->execute($user->currentHousehold);
-        $this->households->delete($user->currentHousehold);
+        $this->cancelSubscription->execute($household);
+        $this->households->delete($household);
     }
 }

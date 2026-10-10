@@ -7,6 +7,7 @@ namespace App\UseCases\House;
 use App\Models\Household;
 use Laravel\Cashier\Cashier;
 use Laravel\Cashier\Http\Controllers\WebhookController;
+use Stripe\Subscription as StripeSubscription;
 
 class CompleteCheckoutUseCase
 {
@@ -25,7 +26,7 @@ class CompleteCheckoutUseCase
 
         $session = Cashier::stripe()->checkout->sessions->retrieve($sessionId, ['expand' => ['subscription']]);
 
-        if ($session->customer !== $household->stripe_id || $session->status !== 'complete' || $session->subscription === null) {
+        if ($session->customer !== $household->stripe_id || $session->status !== 'complete' || ! $session->subscription instanceof StripeSubscription) {
             return;
         }
 

@@ -13,6 +13,7 @@ use App\Http\Requests\MoveChoreRequest;
 use App\Models\Chore;
 use App\Models\Household;
 use App\Traits\ResolvesHouseholdTrait;
+use App\Traits\ResolvesUserTrait;
 use App\UseCases\Chores\CreateChoreUseCase;
 use App\UseCases\Chores\DeleteChoreUseCase;
 use App\UseCases\Chores\GetChoreBoardUseCase;
@@ -29,6 +30,7 @@ use Inertia\Response;
 class ChoreController extends Controller
 {
     use ResolvesHouseholdTrait;
+    use ResolvesUserTrait;
 
     public function __construct(private readonly HouseholdRepositoryInterface $households) {}
 
@@ -45,7 +47,7 @@ class ChoreController extends Controller
 
     public function store(ChoreRequest $request, CreateChoreUseCase $create): RedirectResponse
     {
-        $chore = $create->execute($this->household($request), $request->choreAttributes(), $request->user());
+        $chore = $create->execute($this->household($request), $request->choreAttributes(), $this->user($request));
 
         return back()->with('toast', "{$chore->name} added");
     }
@@ -54,7 +56,7 @@ class ChoreController extends Controller
     {
         $this->assertOwned($request, $chore);
 
-        $updated = $update->execute($chore, $request->choreAttributes(), $request->user());
+        $updated = $update->execute($chore, $request->choreAttributes(), $this->user($request));
 
         return back()->with('toast', "{$updated->name} updated");
     }
@@ -64,7 +66,7 @@ class ChoreController extends Controller
         $this->assertOwned($request, $chore);
 
         $name = $chore->name;
-        $delete->execute($chore, $request->user());
+        $delete->execute($chore, $this->user($request));
 
         return back()->with('toast', "{$name} deleted");
     }
@@ -74,7 +76,7 @@ class ChoreController extends Controller
         $this->assertOwned($request, $chore);
         $this->assertCanToggle($request, $chore);
 
-        $updated = $toggle->execute($chore, $request->user());
+        $updated = $toggle->execute($chore, $this->user($request));
 
         return back()->with('toast', $updated->done ? "{$updated->name} — nice one" : null);
     }
@@ -120,8 +122,8 @@ class ChoreController extends Controller
     /** Teen/Child can only tick off chores assigned to them; Owner/Adult can toggle any. */
     private function assertCanToggle(Request $request, Chore $chore): void
     {
-        $restricted = in_array($request->user()->currentRole(), [HouseholdRole::Teen, HouseholdRole::Child], true);
+        $restricted = in_array($this->user($request)->currentRole(), [HouseholdRole::Teen, HouseholdRole::Child], true);
 
-        abort_if($restricted && $chore->assigned_to !== $request->user()->id, 403);
+        abort_if($restricted && $chore->assigned_to !== $this->user($request)->id, 403);
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature\Auth;
 
 use App\Models\Household;
@@ -14,7 +16,8 @@ class RegistrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testRegistrationScreenCanBeRendered(): void
+    #[Test]
+    public function registrationScreenCanBeRendered(): void
     {
         $response = $this->get('/register');
 
@@ -37,7 +40,8 @@ class RegistrationTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page->where('email', ''));
     }
 
-    public function testNewUsersCanRegister(): void
+    #[Test]
+    public function newUsersCanRegister(): void
     {
         $response = $this->post('/register', [
             'name' => 'Test User',

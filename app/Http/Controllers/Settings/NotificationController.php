@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\DestroyPushSubscriptionRequest;
 use App\Http\Requests\Settings\StorePushSubscriptionRequest;
 use App\Http\Requests\Settings\UpdatePushOptOutsRequest;
+use App\Traits\ResolvesUserTrait;
 use App\UseCases\Settings\DeletePushSubscriptionUseCase;
 use App\UseCases\Settings\SavePushSubscriptionUseCase;
 use App\UseCases\Settings\SendTestPushUseCase;
@@ -22,14 +23,16 @@ use Inertia\Response;
 /** Settings → Notifications: which categories push, and this device's push subscription. */
 class NotificationController extends Controller
 {
+    use ResolvesUserTrait;
+
     public function edit(Request $request, ShowNotificationSettingsUseCase $show): Response
     {
-        return Inertia::render('settings/Notifications', $show->execute($request->user()));
+        return Inertia::render('settings/Notifications', $show->execute($this->user($request)));
     }
 
     public function update(UpdatePushOptOutsRequest $request, UpdatePushOptOutsUseCase $update): RedirectResponse
     {
-        $update->execute($request->user(), $request->optOuts());
+        $update->execute($this->user($request), $request->optOuts());
 
         return back()->with('toast', 'Notification settings saved');
     }
@@ -40,7 +43,7 @@ class NotificationController extends Controller
     public function subscribe(StorePushSubscriptionRequest $request, SavePushSubscriptionUseCase $save): HttpResponse
     {
         $save->execute(
-            $request->user(),
+            $this->user($request),
             $request->validated('endpoint'),
             $request->validated('keys.p256dh'),
             $request->validated('keys.auth'),
@@ -52,14 +55,14 @@ class NotificationController extends Controller
 
     public function unsubscribe(DestroyPushSubscriptionRequest $request, DeletePushSubscriptionUseCase $delete): HttpResponse
     {
-        $delete->execute($request->user(), $request->validated('endpoint'));
+        $delete->execute($this->user($request), $request->validated('endpoint'));
 
         return response()->noContent();
     }
 
     public function test(Request $request, SendTestPushUseCase $sendTest): RedirectResponse
     {
-        $sendTest->execute($request->user());
+        $sendTest->execute($this->user($request));
 
         return back()->with('toast', 'Test notification sent');
     }

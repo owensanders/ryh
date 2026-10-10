@@ -8,7 +8,7 @@ use Spatie\LaravelData\Data;
 
 class AgendaGroupData extends Data
 {
-    /** @param list<AgendaEntryData> $items */
+    /** @param array<int, AgendaEntryData> $items */
     public function __construct(
         public string $label,
         public array $items,

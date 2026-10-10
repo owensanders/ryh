@@ -29,7 +29,7 @@ class GetHouseUseCase
 
         return new HouseData(
             houseName: $household->name,
-            houseCreated: $household->created_at->format('F Y'),
+            houseCreated: $household->created_at?->format('F Y') ?? '',
             joinCode: $household->join_code ?? '',
             joinCodeEnabled: $household->join_code_enabled,
             houseStats: [

@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Traits\ResolvesUserTrait;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureHasHousehold
 {
+    use ResolvesUserTrait;
+
     /**
      * A verified user with no household yet has nowhere else useful to go —
      * send them to finish the setup wizard instead of 403ing on every page.
@@ -19,7 +22,7 @@ class EnsureHasHousehold
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
+        $user = $this->user($request);
         $householdIds = $user->households()->pluck('households.id');
 
         if ($householdIds->isEmpty()) {

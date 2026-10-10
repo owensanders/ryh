@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Traits\ResolvesUserTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
+    use ResolvesUserTrait;
+
     public function index(Request $request): JsonResponse
     {
         return response()->json(
-            $request->user()->notifications()->latest()->limit(20)->get(),
+            $this->user($request)->notifications()->latest()->limit(20)->get(),
         );
     }
 
@@ -23,7 +26,7 @@ class NotificationController extends Controller
      */
     public function markAsRead(Request $request, string $id): RedirectResponse
     {
-        $notification = $request->user()->notifications()->findOrFail($id);
+        $notification = $this->user($request)->notifications()->findOrFail($id);
         $notification->markAsRead();
 
         $url = $notification->data['url'] ?? null;
@@ -33,14 +36,14 @@ class NotificationController extends Controller
 
     public function markAllAsRead(Request $request): RedirectResponse
     {
-        $request->user()->unreadNotifications->markAsRead();
+        $this->user($request)->unreadNotifications->markAsRead();
 
         return back();
     }
 
     public function destroyAll(Request $request): RedirectResponse
     {
-        $request->user()->notifications()->delete();
+        $this->user($request)->notifications()->delete();
 
         return back();
     }

@@ -1,16 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature\Settings;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class ProfileUpdateTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testProfilePageIsDisplayed(): void
+    #[Test]
+    public function profilePageIsDisplayed(): void
     {
         $user = User::factory()->create();
 
@@ -21,7 +25,8 @@ class ProfileUpdateTest extends TestCase
         $response->assertOk();
     }
 
-    public function testProfileInformationCanBeUpdated(): void
+    #[Test]
+    public function profileInformationCanBeUpdated(): void
     {
         $user = User::factory()->create();
 
@@ -43,7 +48,8 @@ class ProfileUpdateTest extends TestCase
         $this->assertNull($user->email_verified_at);
     }
 
-    public function testEmailVerificationStatusIsUnchangedWhenTheEmailAddressIsUnchanged(): void
+    #[Test]
+    public function emailVerificationStatusIsUnchangedWhenTheEmailAddressIsUnchanged(): void
     {
         $user = User::factory()->create();
 
@@ -61,7 +67,8 @@ class ProfileUpdateTest extends TestCase
         $this->assertNotNull($user->refresh()->email_verified_at);
     }
 
-    public function testUserCanDeleteTheirAccount(): void
+    #[Test]
+    public function userCanDeleteTheirAccount(): void
     {
         $user = User::factory()->create();
 
@@ -79,7 +86,8 @@ class ProfileUpdateTest extends TestCase
         $this->assertNull($user->fresh());
     }
 
-    public function testCorrectPasswordMustBeProvidedToDeleteAccount(): void
+    #[Test]
+    public function correctPasswordMustBeProvidedToDeleteAccount(): void
     {
         $user = User::factory()->create();
 

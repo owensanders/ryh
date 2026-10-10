@@ -12,7 +12,7 @@ class GetRecipeLibraryUseCase
 {
     public function __construct(private readonly MealPlanRepositoryInterface $meals) {}
 
-    /** @return list<RecipeData> */
+    /** @return array<int, RecipeData> */
     public function execute(Household $household): array
     {
         return $this->meals->allRecipes($household)

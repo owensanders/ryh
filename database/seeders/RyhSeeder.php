@@ -10,6 +10,7 @@ use App\Enums\MealSlot;
 use App\Enums\Palette;
 use App\Enums\PendingReason;
 use App\Enums\RecipeTag;
+use App\Models\DocumentFolder;
 use App\Models\Household;
 use App\Models\Recipe;
 use App\Models\ShoppingList;
@@ -225,6 +226,7 @@ class RyhSeeder extends Seeder
                 'Cucumber, tomato, olives and feta with a simple olive oil dressing. No cooking required.'],
         ];
 
+        /** @var array<string, Recipe> $saved */
         $saved = [];
 
         foreach ($recipes as [$name, $duration, $difficulty, $tint, $tags, $favourite, $description]) {
@@ -349,6 +351,7 @@ class RyhSeeder extends Seeder
             ['Utilities', '💡', Palette::Mint],
         ];
 
+        /** @var array<string, DocumentFolder> $created */
         $created = [];
 
         foreach ($folders as $position => [$name, $icon, $colour]) {

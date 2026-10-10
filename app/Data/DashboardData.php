@@ -9,9 +9,9 @@ use Spatie\LaravelData\Data;
 class DashboardData extends Data
 {
     /**
-     * @param  list<MemberData>  $family
-     * @param  list<ChoreData>  $chores
-     * @param  list<AgendaGroupData>  $agenda
+     * @param  array<int, MemberData>  $family
+     * @param  array<int, ChoreData>  $chores
+     * @param  array<int, AgendaGroupData>  $agenda
      */
     public function __construct(
         public string $greeting,

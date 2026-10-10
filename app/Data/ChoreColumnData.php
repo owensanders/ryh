@@ -8,7 +8,7 @@ use Spatie\LaravelData\Data;
 
 class ChoreColumnData extends Data
 {
-    /** @param list<ChoreData> $items */
+    /** @param array<int, ChoreData> $items */
     public function __construct(
         public string $status,
         public string $title,

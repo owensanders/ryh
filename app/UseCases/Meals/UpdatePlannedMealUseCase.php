@@ -13,6 +13,7 @@ use App\Notifications\MealAssignedNotification;
 use App\Notifications\MealEditedNotification;
 use App\UseCases\Meals\Concerns\PushesNewRecipeIngredients;
 use App\UseCases\Shopping\AddRecipeIngredientsToListUseCase;
+use LogicException;
 
 class UpdatePlannedMealUseCase
 {
@@ -31,7 +32,8 @@ class UpdatePlannedMealUseCase
 
         $updated = $this->meals->update($meal, $attributes);
 
-        $this->pushNewRecipeIngredients($updated->household, $updated, $attributes);
+        $household = $updated->household ?? throw new LogicException('A planned meal always belongs to a household.');
+        $this->pushNewRecipeIngredients($household, $updated, $attributes);
 
         if ($updated->cook_id !== null && $updated->cook_id !== $actor->id) {
             $notification = $updated->cook_id !== $previousCookId
