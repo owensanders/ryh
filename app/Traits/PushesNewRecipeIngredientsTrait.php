@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\UseCases\Meals\Concerns;
+namespace App\Traits;
 
 use App\Models\Household;
 use App\Models\PlannedMeal;
 
-trait PushesNewRecipeIngredients
+trait PushesNewRecipeIngredientsTrait
 {
     /** @param  array<string, mixed>  $attributes */
     protected function pushNewRecipeIngredients(Household $household, PlannedMeal $meal, array $attributes): void

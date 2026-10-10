@@ -11,13 +11,13 @@ use App\Models\PlannedMeal;
 use App\Models\User;
 use App\Notifications\MealAssignedNotification;
 use App\Notifications\MealEditedNotification;
-use App\UseCases\Meals\Concerns\PushesNewRecipeIngredients;
+use App\Traits\PushesNewRecipeIngredientsTrait;
 use App\UseCases\Shopping\AddRecipeIngredientsToListUseCase;
 use LogicException;
 
 class UpdatePlannedMealUseCase
 {
-    use PushesNewRecipeIngredients;
+    use PushesNewRecipeIngredientsTrait;
 
     public function __construct(
         private readonly MealPlanRepositoryInterface $meals,
