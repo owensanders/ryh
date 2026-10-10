@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\UseCases\House;
 
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
+use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Data\HouseData;
 use App\Data\HouseMemberData;
 use App\Data\PlanStatusData;
@@ -17,12 +17,12 @@ use App\Models\User;
 class GetHouseUseCase
 {
     public function __construct(
-        private readonly HouseholdRepositoryInterface $households,
+        private readonly MembershipRepositoryInterface $memberships,
     ) {}
 
     public function execute(Household $household, int $viewerId): HouseData
     {
-        $members = $this->households->members($household);
+        $members = $this->memberships->members($household);
         $activeCount = $members->where('pivot.pending', false)->count();
         $pendingCount = $members->where('pivot.pending', true)->count();
         $planStatus = PlanStatusData::fromHousehold($household);

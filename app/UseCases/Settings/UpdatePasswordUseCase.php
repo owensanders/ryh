@@ -14,6 +14,6 @@ class UpdatePasswordUseCase
 
     public function execute(User $user, string $password): User
     {
-        return $this->users->update($user, ['password' => Hash::make($password)]);
+        return $this->users->updatePassword($user, Hash::make($password));
     }
 }

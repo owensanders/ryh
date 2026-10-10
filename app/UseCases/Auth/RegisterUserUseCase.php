@@ -16,14 +16,8 @@ class RegisterUserUseCase
 
     public function execute(string $name, string $email, string $password): User
     {
-        $user = $this->users->create([
-            'name' => $name,
-            'email' => $email,
-            'password' => Hash::make($password),
-            // Registration requires ticking the terms box, so record what was agreed to.
-            'terms_accepted_at' => now(),
-            'terms_version' => config('legal.terms_version'),
-        ]);
+        // Registration requires ticking the terms box, so record what was agreed to.
+        $user = $this->users->create($name, $email, Hash::make($password), (string) config('legal.terms_version'));
 
         event(new Registered($user));
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\UseCases\Calendar;
 
 use App\Contracts\Repositories\CalendarEventRepositoryInterface;
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
+use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Data\CalendarDayData;
 use App\Data\CalendarEventData;
 use App\Data\CalendarMonthData;
@@ -22,7 +22,7 @@ class GetCalendarMonthUseCase
 
     public function __construct(
         private readonly CalendarEventRepositoryInterface $events,
-        private readonly HouseholdRepositoryInterface $households,
+        private readonly MembershipRepositoryInterface $memberships,
     ) {}
 
     public function execute(Household $household, CarbonImmutable $month): CalendarMonthData
@@ -75,7 +75,7 @@ class GetCalendarMonthUseCase
             today: $today->format('Y-m'),
             weekdayLabels: $weekdayLabels,
             days: $days,
-            members: $this->households->activeMembers($household)
+            members: $this->memberships->activeMembers($household)
                 ->map(fn (User $member) => MemberData::fromModel($member))
                 ->values()
                 ->all(),

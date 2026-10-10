@@ -6,16 +6,23 @@ namespace App\UseCases\Shopping;
 
 use App\Contracts\Repositories\ShoppingRepositoryInterface;
 use App\Data\ShoppingListData;
+use App\Models\Household;
 use App\Models\Recipe;
-use App\Models\ShoppingList;
 use Illuminate\Support\Facades\DB;
 
 class AddRecipeIngredientsToListUseCase
 {
     public function __construct(private readonly ShoppingRepositoryInterface $shopping) {}
 
-    public function execute(Recipe $recipe, ShoppingList $list): ShoppingListData
+    /** @return ShoppingListData|null The updated list, or null when it isn't one of the household's. */
+    public function execute(Household $household, Recipe $recipe, int $listId): ?ShoppingListData
     {
+        $list = $this->shopping->findList($household, $listId);
+
+        if ($list === null) {
+            return null;
+        }
+
         $present = $list->items->reject->isDone()->map(fn ($item) => mb_strtolower(trim($item->name)))->all();
 
         // All of a recipe's ingredients land on the list, or none do.
@@ -32,6 +39,6 @@ class AddRecipeIngredientsToListUseCase
             }
         });
 
-        return ShoppingListData::fromModel($list->refresh());
+        return ShoppingListData::fromModel($this->shopping->findList($household, $listId) ?? $list);
     }
 }

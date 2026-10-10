@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\UseCases\Chores;
 
 use App\Contracts\Repositories\ChoreRepositoryInterface;
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
+use App\Contracts\Repositories\MembershipRepositoryInterface;
+use App\Data\ChoreBoardScreenData;
 use App\Data\ChoreColumnData;
 use App\Data\ChoreData;
 use App\Data\MemberData;
@@ -18,11 +19,10 @@ class GetChoreBoardUseCase
 {
     public function __construct(
         private readonly ChoreRepositoryInterface $chores,
-        private readonly HouseholdRepositoryInterface $households,
+        private readonly MembershipRepositoryInterface $memberships,
     ) {}
 
-    /** @return array{columns: array<int, ChoreColumnData>, scores: array<int, MemberScoreData>} */
-    public function execute(Household $household): array
+    public function execute(Household $household): ChoreBoardScreenData
     {
         $chores = $this->chores->allFor($household);
 
@@ -36,9 +36,9 @@ class GetChoreBoardUseCase
             ChoreStatusEnum::cases(),
         );
 
-        return [
-            'columns' => $columns,
-            'scores' => $this->households->activeMembers($household)
+        return new ChoreBoardScreenData(
+            columns: $columns,
+            scores: $this->memberships->activeMembers($household)
                 ->map(fn (User $member) => MemberScoreData::make(
                     member: MemberData::fromModel($member),
                     done: $chores->where('assigned_to', $member->id)->where('status', ChoreStatusEnum::Done)->count(),
@@ -46,6 +46,8 @@ class GetChoreBoardUseCase
                 ))
                 ->values()
                 ->all(),
-        ];
+            members: $this->memberships->members($household)->map(MemberData::fromModel(...))->values()->all(),
+            notifyChoresAvailableAt: $household->choreRemindersAvailableAt()?->toJSON(),
+        );
     }
 }

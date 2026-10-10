@@ -6,15 +6,15 @@ namespace App\UseCases\Budget;
 
 use App\Contracts\Repositories\BudgetRepositoryInterface;
 use App\Data\IncomeSourceData;
+use App\Data\Input\IncomeSourceInputData;
 use App\Models\IncomeSource;
 
 class UpdateIncomeSourceUseCase
 {
     public function __construct(private readonly BudgetRepositoryInterface $budget) {}
 
-    /** @param array<string, mixed> $attributes */
-    public function execute(IncomeSource $income, array $attributes): IncomeSourceData
+    public function execute(IncomeSource $income, IncomeSourceInputData $changes): IncomeSourceData
     {
-        return IncomeSourceData::fromModel($this->budget->updateIncomeSource($income, $attributes));
+        return IncomeSourceData::fromModel($this->budget->updateIncomeSource($income, $changes));
     }
 }

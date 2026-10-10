@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Data\Input\RecipeInputData;
 use App\Enums\RecipeTagEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -47,22 +48,23 @@ class RecipeRequest extends FormRequest
         ];
     }
 
-    /**
-     * The recipe columns, with the defaults the form leaves off.
-     *
-     * @return array<string, mixed>
-     */
-    public function recipeAttributes(): array
+    public function toData(): RecipeInputData
     {
-        return [
-            'name' => trim((string) $this->validated('name')),
-            'description' => $this->validated('description'),
-            'duration_label' => $this->validated('duration_label'),
-            'difficulty' => $this->validated('difficulty'),
-            'tags' => $this->validated('tags', []),
-            'ingredients' => $this->validated('ingredients', []),
-            'tint' => $this->validated('tint') ?? 0,
-            'is_favourite' => (bool) $this->validated('is_favourite', false),
-        ];
+        return new RecipeInputData(
+            name: trim((string) $this->validated('name')),
+            description: $this->validated('description'),
+            durationLabel: $this->validated('duration_label'),
+            difficulty: $this->validated('difficulty'),
+            tags: array_values($this->validated('tags', [])),
+            ingredients: array_values($this->validated('ingredients', [])),
+            tint: (int) ($this->validated('tint') ?? 0),
+            isFavourite: (bool) $this->validated('is_favourite', false),
+        );
+    }
+
+    /** The list to put the new recipe's ingredients on, if one was picked. */
+    public function shoppingListId(): ?int
+    {
+        return $this->filled('shopping_list_id') ? (int) $this->validated('shopping_list_id') : null;
     }
 }

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Enums\HouseholdRoleEnum;
+use App\Enums\InviteJoinOutcomeEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Models\Household;
 use App\UseCases\Auth\JoinHouseholdFromInviteUseCase;
 use App\UseCases\Auth\RegisterUserUseCase;
 use Carbon\CarbonImmutable;
@@ -57,26 +57,24 @@ class RegisteredUserController extends Controller
 
         /** @var array{household_id: int, role: string, guardian_id?: int|null, guardian_at?: int|null}|null $invite */
         $invite = $request->session()->pull('pendingInvite');
-        $household = $invite !== null ? Household::find($invite['household_id']) : null;
 
-        if ($household !== null) {
-            $role = HouseholdRoleEnum::from($invite['role']);
-            $guardianId = $invite['guardian_id'] ?? null;
-
-            // Links sent before guardians had to confirm can't add a Teen or Child.
-            if ($role->isForMinors() && $guardianId === null) {
-                return to_route('household.setup')->with('reinviteHousehold', $household->name);
-            }
-
-            $guardianAt = isset($invite['guardian_at']) ? CarbonImmutable::createFromTimestamp($invite['guardian_at']) : null;
-
-            if ($joinFromInvite->execute($user, $household, $role, $guardianId, $guardianAt)) {
-                return to_route('dashboard');
-            }
-
-            return to_route('household.setup')->with('fullHousehold', $household->name);
+        if ($invite === null) {
+            return to_route('household.setup');
         }
 
-        return to_route('household.setup');
+        $result = $joinFromInvite->execute(
+            $user,
+            (int) $invite['household_id'],
+            HouseholdRoleEnum::from($invite['role']),
+            $invite['guardian_id'] ?? null,
+            isset($invite['guardian_at']) ? CarbonImmutable::createFromTimestamp($invite['guardian_at']) : null,
+        );
+
+        return match ($result->outcome) {
+            InviteJoinOutcomeEnum::Joined => to_route('dashboard'),
+            InviteJoinOutcomeEnum::NeedsGuardian => to_route('household.setup')->with('reinviteHousehold', $result->householdName),
+            InviteJoinOutcomeEnum::HouseholdFull => to_route('household.setup')->with('fullHousehold', $result->householdName),
+            InviteJoinOutcomeEnum::HouseholdGone => to_route('household.setup'),
+        };
     }
 }

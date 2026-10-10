@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Traits\ResolvesUserTrait;
+use App\UseCases\Notifications\ClearNotificationsUseCase;
+use App\UseCases\Notifications\GetNotificationsUseCase;
+use App\UseCases\Notifications\MarkAllNotificationsReadUseCase;
+use App\UseCases\Notifications\OpenNotificationUseCase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,37 +17,32 @@ class NotificationController extends Controller
 {
     use ResolvesUserTrait;
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request, GetNotificationsUseCase $getNotifications): JsonResponse
     {
-        return response()->json(
-            $this->user($request)->notifications()->latest()->limit(20)->get(),
-        );
+        return response()->json($getNotifications->execute($this->user($request)));
     }
 
     /**
      * Opening a notification is reading it — mark it and go straight to what
      * it's about in one request, so the bell never has to race a navigation.
      */
-    public function markAsRead(Request $request, string $id): RedirectResponse
+    public function markAsRead(Request $request, string $id, OpenNotificationUseCase $open): RedirectResponse
     {
-        $notification = $this->user($request)->notifications()->findOrFail($id);
-        $notification->markAsRead();
+        $url = $open->execute($this->user($request), $id);
 
-        $url = $notification->data['url'] ?? null;
-
-        return is_string($url) ? redirect($url) : back();
+        return $url !== null ? redirect($url) : back();
     }
 
-    public function markAllAsRead(Request $request): RedirectResponse
+    public function markAllAsRead(Request $request, MarkAllNotificationsReadUseCase $markAllRead): RedirectResponse
     {
-        $this->user($request)->unreadNotifications->markAsRead();
+        $markAllRead->execute($this->user($request));
 
         return back();
     }
 
-    public function destroyAll(Request $request): RedirectResponse
+    public function destroyAll(Request $request, ClearNotificationsUseCase $clear): RedirectResponse
     {
-        $this->user($request)->notifications()->delete();
+        $clear->execute($this->user($request));
 
         return back();
     }

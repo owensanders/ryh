@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Data\MealSuggestionData;
 use App\Enums\CookingConfidenceEnum;
 use App\Enums\KitchenEquipmentEnum;
 use App\Enums\MealDietEnum;
@@ -49,7 +50,7 @@ class MealPlannerController extends Controller
             ...$getMealPlanner->execute(
                 $household,
                 $week !== null ? CarbonImmutable::createFromFormat('!Y-m-d', $week) ?? CarbonImmutable::now() : CarbonImmutable::now(),
-            ),
+            )->toArray(),
             'shoppingLists' => $getShoppingLists->execute($household),
             'tagOptions' => RecipeTagEnum::options(),
             'aiOptions' => [
@@ -63,14 +64,14 @@ class MealPlannerController extends Controller
 
     public function store(PlannedMealRequest $request, AddPlannedMealUseCase $add): RedirectResponse
     {
-        $meal = $add->execute($this->household($request), $request->plannedMealAttributes(), $this->user($request));
+        $meal = $add->execute($this->household($request), $request->toData(), $this->user($request));
 
         return back()->with('toast', "{$meal->name} added");
     }
 
     public function update(PlannedMealRequest $request, PlannedMeal $meal, UpdatePlannedMealUseCase $update): RedirectResponse
     {
-        $updated = $update->execute($meal, $request->plannedMealAttributes(), $this->user($request));
+        $updated = $update->execute($meal, $request->toData(), $this->user($request));
 
         return back()->with('toast', "{$updated->name} updated");
     }
@@ -112,7 +113,7 @@ class MealPlannerController extends Controller
             return back()->withErrors(['ai' => $e->getMessage()]);
         }
 
-        return back()->with('aiMeals', $meals);
+        return back()->with('aiMeals', array_map(fn (MealSuggestionData $meal) => $meal->toArray(), $meals));
     }
 
     public function suggestLibraryPlan(SuggestLibraryMealPlanRequest $request, SuggestLibraryMealPlanUseCase $suggest): RedirectResponse
@@ -127,6 +128,6 @@ class MealPlannerController extends Controller
             return back()->withErrors(['ai' => $e->getMessage()]);
         }
 
-        return back()->with('libraryMeals', $meals);
+        return back()->with('libraryMeals', array_map(fn (MealSuggestionData $meal) => $meal->toArray(), $meals));
     }
 }

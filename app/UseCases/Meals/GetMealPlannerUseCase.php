@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\UseCases\Meals;
 
 use App\Ai\AiConfigService;
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
+use App\Contracts\Repositories\BudgetRepositoryInterface;
 use App\Contracts\Repositories\MealPlanRepositoryInterface;
+use App\Contracts\Repositories\MembershipRepositoryInterface;
+use App\Data\MealPlannerScreenData;
 use App\Data\MemberData;
 use App\Data\PlannedMealData;
 use App\Data\PlannerDayData;
@@ -24,24 +26,11 @@ class GetMealPlannerUseCase
 
     public function __construct(
         private readonly MealPlanRepositoryInterface $meals,
-        private readonly HouseholdRepositoryInterface $households,
+        private readonly MembershipRepositoryInterface $memberships,
+        private readonly BudgetRepositoryInterface $budget,
     ) {}
 
-    /**
-     * @return array{
-     *     weekOf: string,
-     *     days: array<int, PlannerDayData>,
-     *     library: array<int, RecipeData>,
-     *     recipeCount: int,
-     *     recipes: array<int, RecipeData>,
-     *     members: array<int, MemberData>,
-     *     aiConfigured: bool,
-     *     aiPaused: bool,
-     *     aiAvailableFrom: ?string,
-     *     aiSuggestedBudget: ?int,
-     * }
-     */
-    public function execute(Household $household, CarbonImmutable $anyDayInWeek): array
+    public function execute(Household $household, CarbonImmutable $anyDayInWeek): MealPlannerScreenData
     {
         $start = $anyDayInWeek->startOfWeek();
         $end = $start->addDays(6);
@@ -65,29 +54,29 @@ class GetMealPlannerUseCase
             );
         }
 
-        return [
-            'weekOf' => $start->format('j F'),
-            'days' => $days,
-            'library' => $this->meals->favouriteRecipes($household, self::LIBRARY_SIZE)
+        return new MealPlannerScreenData(
+            weekOf: $start->format('j F'),
+            days: $days,
+            library: $this->meals->favouriteRecipes($household, self::LIBRARY_SIZE)
                 ->map(RecipeData::fromModel(...))
                 ->values()
                 ->all(),
-            'recipeCount' => $this->meals->countRecipes($household),
-            'recipes' => $this->meals->allRecipes($household)
+            recipeCount: $this->meals->countRecipes($household),
+            recipes: $this->meals->allRecipes($household)
                 ->map(RecipeData::fromModel(...))
                 ->values()
                 ->all(),
-            'members' => $this->households->activeMembers($household)
+            members: $this->memberships->activeMembers($household)
                 ->map(MemberData::fromModel(...))
                 ->values()
                 ->all(),
-            'aiConfigured' => AiConfigService::isConfigured(),
-            'aiPaused' => AiConfigService::isPaused(),
-            'aiAvailableFrom' => $household->canGenerateAiMealPlan()
+            aiConfigured: AiConfigService::isConfigured(),
+            aiPaused: AiConfigService::isPaused(),
+            aiAvailableFrom: $household->canGenerateAiMealPlan()
                 ? null
                 : $household->ai_meal_plan_generated_at?->addWeek()->toDateString(),
-            'aiSuggestedBudget' => $this->suggestedWeeklyFoodBudget($household, $today),
-        ];
+            aiSuggestedBudget: $this->suggestedWeeklyFoodBudget($household, $today),
+        );
     }
 
     /**
@@ -97,7 +86,7 @@ class GetMealPlannerUseCase
      */
     private function suggestedWeeklyFoodBudget(Household $household, CarbonImmutable $today): ?int
     {
-        $food = $this->households->budgetCategoriesUpTo($household, $today)
+        $food = $this->budget->categoriesUpTo($household, $today)
             ->first(fn (BudgetCategory $category) => preg_match(self::FOOD_BUDGET_LABEL, $category->label) === 1);
 
         if ($food === null || $food->budgeted_pence <= 0) {

@@ -25,6 +25,11 @@ class ShoppingRepository implements ShoppingRepositoryInterface
         return $household->shoppingLists()->with('items')->where('slug', $slug)->first();
     }
 
+    public function findList(Household $household, int $id): ?ShoppingList
+    {
+        return $household->shoppingLists()->with('items')->find($id);
+    }
+
     /** Prefers a list that actually has items, so the dashboard doesn't spotlight an empty one. */
     public function defaultListFor(Household $household): ?ShoppingList
     {

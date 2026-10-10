@@ -24,7 +24,7 @@ class IncomeSourceController extends Controller
         $income = $create->execute(
             $this->household($request),
             $month !== null ? CarbonImmutable::createFromFormat('!Y-m', (string) $month) ?? CarbonImmutable::now() : CarbonImmutable::now(),
-            $request->incomeAttributes(),
+            $request->toData(),
         );
 
         return back()->with('toast', "{$income->label} added");
@@ -32,7 +32,7 @@ class IncomeSourceController extends Controller
 
     public function update(IncomeSourceRequest $request, IncomeSource $income, UpdateIncomeSourceUseCase $update): RedirectResponse
     {
-        $updated = $update->execute($income, $request->incomeAttributes());
+        $updated = $update->execute($income, $request->toData());
 
         return back()->with('toast', "{$updated->label} updated");
     }

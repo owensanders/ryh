@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Enums\HouseholdRoleEnum;
 use App\Enums\PendingReasonEnum;
 use App\Mail\HouseholdInviteMail;
@@ -35,11 +36,11 @@ class HouseholdMemberCapTest extends TestCase
     {
         $owner = $this->ownerWithMembers(6);
 
-        $this->assertFalse($owner->household->isFull());
+        $this->assertFalse($this->isFull($owner));
 
         User::factory()->create(['household_id' => $owner->household_id]);
 
-        $this->assertTrue($owner->household->refresh()->isFull());
+        $this->assertTrue($this->isFull($owner));
     }
 
     #[Test]
@@ -49,7 +50,7 @@ class HouseholdMemberCapTest extends TestCase
         User::factory()->create(['household_id' => $owner->household_id, 'pending' => true, 'pending_reason' => PendingReasonEnum::Invited]);
         User::factory()->create(['household_id' => $owner->household_id, 'pending' => true, 'pending_reason' => PendingReasonEnum::Requested]);
 
-        $this->assertTrue($owner->household->isFull());
+        $this->assertTrue($this->isFull($owner));
     }
 
     #[Test]
@@ -66,7 +67,7 @@ class HouseholdMemberCapTest extends TestCase
             ->assertSessionHas('toast', 'Invite sent to margaret@parkerhouse.co.uk');
 
         $this->assertDatabaseHas('household_user', ['household_id' => $owner->household_id, 'user_id' => $existing->id, 'pending' => true]);
-        $this->assertTrue($owner->household->isFull());
+        $this->assertTrue($this->isFull($owner));
     }
 
     #[Test]
@@ -217,7 +218,7 @@ class HouseholdMemberCapTest extends TestCase
             'terms' => true,
         ])->assertRedirect(route('dashboard', absolute: false));
 
-        $this->assertTrue($owner->household->isFull());
+        $this->assertTrue($this->isFull($owner));
     }
 
     #[Test]
@@ -317,5 +318,10 @@ class HouseholdMemberCapTest extends TestCase
     private function setupInvites(int $count): array
     {
         return array_map(fn (int $i) => ['email' => "person{$i}@parkerhouse.co.uk", 'role' => 'adult'], range(1, $count));
+    }
+
+    private function isFull(User $owner): bool
+    {
+        return app(MembershipRepositoryInterface::class)->isFull($owner->household()->firstOrFail());
     }
 }

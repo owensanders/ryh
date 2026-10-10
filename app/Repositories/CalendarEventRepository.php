@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Contracts\Repositories\CalendarEventRepositoryInterface;
+use App\Data\Input\CalendarEventInputData;
 use App\Models\CalendarEvent;
 use App\Models\Household;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class CalendarEventRepository implements CalendarEventRepositoryInterface
 {
@@ -28,28 +30,30 @@ class CalendarEventRepository implements CalendarEventRepositoryInterface
             ->get();
     }
 
-    /**
-     * @param  array<string, mixed>  $attributes
-     * @param  list<int>  $attendeeIds
-     */
-    public function create(Household $household, array $attributes, array $attendeeIds): CalendarEvent
+    public function create(Household $household, CalendarEventInputData $event, User $creator): CalendarEvent
     {
-        $event = $household->calendarEvents()->create($attributes);
-        $event->attendees()->sync($attendeeIds);
+        return DB::transaction(function () use ($household, $event, $creator): CalendarEvent {
+            $created = $household->calendarEvents()->create([...$this->columns($event), 'created_by' => $creator->id]);
+            $created->attendees()->sync($event->attendeeIds);
 
-        return $event->load('attendees');
+            return $created->load('attendees');
+        });
     }
 
-    /**
-     * @param  array<string, mixed>  $attributes
-     * @param  list<int>  $attendeeIds
-     */
-    public function update(CalendarEvent $event, array $attributes, array $attendeeIds): CalendarEvent
+    public function update(CalendarEvent $event, CalendarEventInputData $changes): CalendarEvent
     {
-        $event->update($attributes);
-        $event->attendees()->sync($attendeeIds);
+        return DB::transaction(function () use ($event, $changes): CalendarEvent {
+            $event->update($this->columns($changes));
+            $event->attendees()->sync($changes->attendeeIds);
 
-        return $event->refresh()->load('attendees');
+            return $event->refresh()->load('attendees');
+        });
+    }
+
+    /** @return array<int, int> */
+    public function attendeeIds(CalendarEvent $event): array
+    {
+        return $event->attendees()->pluck('users.id')->map(fn (mixed $id): int => (int) $id)->values()->all();
     }
 
     public function delete(CalendarEvent $event): void
@@ -63,5 +67,19 @@ class CalendarEventRepository implements CalendarEventRepositoryInterface
             ->each(fn (CalendarEvent $event) => $event->attendees->count() === 1
                 ? $event->delete()
                 : $event->attendees()->detach($member->id));
+    }
+
+    /** @return array<string, mixed> */
+    private function columns(CalendarEventInputData $event): array
+    {
+        return [
+            'title' => $event->title,
+            'starts_at' => $event->startsAt,
+            'ends_at' => $event->endsAt,
+            'is_all_day' => $event->isAllDay,
+            'location' => $event->location,
+            'notes' => $event->notes,
+            'colour' => $event->colour,
+        ];
     }
 }

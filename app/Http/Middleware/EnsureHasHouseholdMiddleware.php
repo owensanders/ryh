@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Contracts\Repositories\MembershipRepositoryInterface;
+use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Traits\ResolvesUserTrait;
 use Closure;
 use Illuminate\Http\Request;
@@ -12,6 +14,11 @@ use Symfony\Component\HttpFoundation\Response;
 class EnsureHasHouseholdMiddleware
 {
     use ResolvesUserTrait;
+
+    public function __construct(
+        private readonly MembershipRepositoryInterface $memberships,
+        private readonly UserRepositoryInterface $users,
+    ) {}
 
     /**
      * A verified user with no household yet has nowhere else useful to go —
@@ -23,7 +30,7 @@ class EnsureHasHouseholdMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         $user = $this->user($request);
-        $householdIds = $user->households()->pluck('households.id');
+        $householdIds = $this->memberships->householdIdsFor($user);
 
         if ($householdIds->isEmpty()) {
             return redirect()->route('household.setup');
@@ -31,7 +38,7 @@ class EnsureHasHouseholdMiddleware
 
         if ($householdIds->count() === 1) {
             if ($user->current_household_id !== $householdIds->first()) {
-                $user->forceFill(['current_household_id' => $householdIds->first()])->save();
+                $this->users->setCurrentHousehold($user, $householdIds->first());
             }
         } elseif ($user->current_household_id === null || ! $householdIds->contains($user->current_household_id)) {
             return redirect()->route('household.select');

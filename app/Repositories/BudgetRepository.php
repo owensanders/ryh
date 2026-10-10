@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Contracts\Repositories\BudgetRepositoryInterface;
+use App\Data\Input\BudgetCategoryInputData;
+use App\Data\Input\IncomeSourceInputData;
 use App\Enums\PaletteEnum;
 use App\Models\BudgetCategory;
 use App\Models\Household;
@@ -22,21 +24,29 @@ class BudgetRepository implements BudgetRepositoryInterface
             ->get();
     }
 
-    /** @param array<string, mixed> $attributes */
-    public function createCategory(Household $household, CarbonImmutable $month, array $attributes): BudgetCategory
+    /** @return Collection<int, BudgetCategory> */
+    public function categoriesUpTo(Household $household, CarbonImmutable $month): Collection
+    {
+        return $household->budgetCategories()
+            ->whereDate('month', '<=', $month->startOfMonth()->toDateString())
+            ->orderByDesc('month')
+            ->get();
+    }
+
+    public function createCategory(Household $household, CarbonImmutable $month, BudgetCategoryInputData $category, ?PaletteEnum $colour = null): BudgetCategory
     {
         $existing = $this->categoriesFor($household, $month);
 
-        $category = $household->budgetCategories()->create([
-            'colour' => $this->leastUsedColour($existing),
-            ...$attributes,
+        $created = $household->budgetCategories()->create([
+            'colour' => $colour ?? $this->leastUsedColour($existing),
+            ...$this->categoryColumns($category),
             'month' => $month->startOfMonth(),
             'position' => (int) $existing->max('position') + 1,
         ]);
 
         // create() doesn't hydrate DB-level defaults (e.g. `colour`) onto the
         // in-memory instance, so refresh before it's used to build a DTO.
-        return $category->refresh();
+        return $created->refresh();
     }
 
     /**
@@ -54,10 +64,9 @@ class BudgetRepository implements BudgetRepositoryInterface
             ->firstOrFail();
     }
 
-    /** @param array<string, mixed> $attributes */
-    public function updateCategory(BudgetCategory $category, array $attributes): BudgetCategory
+    public function updateCategory(BudgetCategory $category, BudgetCategoryInputData $changes): BudgetCategory
     {
-        $category->update($attributes);
+        $category->update($this->categoryColumns($changes));
 
         return $category->refresh();
     }
@@ -93,28 +102,27 @@ class BudgetRepository implements BudgetRepositoryInterface
             ->get();
     }
 
-    /** @param array<string, mixed> $attributes */
-    public function createIncomeSource(Household $household, CarbonImmutable $month, array $attributes): IncomeSource
+    public function createIncomeSource(Household $household, CarbonImmutable $month, IncomeSourceInputData $income, ?PaletteEnum $colour = null): IncomeSource
     {
         $position = (int) $household->incomeSources()
             ->whereDate('month', $month->startOfMonth()->toDateString())
             ->max('position') + 1;
 
-        $income = $household->incomeSources()->create([
-            ...$attributes,
+        $created = $household->incomeSources()->create([
+            ...$this->incomeColumns($income),
+            ...($colour !== null ? ['colour' => $colour] : []),
             'month' => $month->startOfMonth(),
             'position' => $position,
         ]);
 
         // create() doesn't hydrate DB-level defaults (e.g. `colour`) onto the
         // in-memory instance, so refresh before it's used to build a DTO.
-        return $income->refresh();
+        return $created->refresh();
     }
 
-    /** @param array<string, mixed> $attributes */
-    public function updateIncomeSource(IncomeSource $income, array $attributes): IncomeSource
+    public function updateIncomeSource(IncomeSource $income, IncomeSourceInputData $changes): IncomeSource
     {
-        $income->update($attributes);
+        $income->update($this->incomeColumns($changes));
 
         return $income->refresh();
     }
@@ -140,5 +148,27 @@ class BudgetRepository implements BudgetRepositoryInterface
             ->where('is_recurring', true)
             ->whereDate('month', $latestMonth)
             ->get();
+    }
+
+    /** @return array<string, mixed> */
+    private function categoryColumns(BudgetCategoryInputData $category): array
+    {
+        return [
+            'label' => $category->label,
+            'icon' => $category->icon,
+            'budgeted_pence' => $category->budgetedPence,
+            'is_recurring' => $category->isRecurring,
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function incomeColumns(IncomeSourceInputData $income): array
+    {
+        return [
+            'label' => $income->label,
+            'meta' => $income->meta,
+            'amount_pence' => $income->amountPence,
+            'is_recurring' => $income->isRecurring,
+        ];
     }
 }

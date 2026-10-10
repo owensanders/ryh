@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\UseCases\Meals;
 
 use App\Contracts\Repositories\MealPlanRepositoryInterface;
+use App\Data\MealSuggestionData;
 use App\Enums\MealDietEnum;
 use App\Enums\RecipeTagEnum;
 use App\Models\Household;
@@ -31,7 +32,7 @@ class SuggestLibraryMealPlanUseCase
 
     /**
      * @param  array<int, string>  $diets
-     * @return array<int, array{recipe_id: int, name: string, description: ?string, duration_label: ?string, difficulty: ?string, estimated_cost: null, tags: array<int, string>, ingredients: array<int, array{name: string, quantity: string|null}>, tint: int, is_favourite: bool}>
+     * @return array<int, MealSuggestionData>
      */
     public function execute(Household $household, array $diets, string $avoid): array
     {
@@ -55,18 +56,7 @@ class SuggestLibraryMealPlanUseCase
             ->shuffle()
             ->sortBy(fn (Recipe $recipe) => [$recentRecipeIds->contains($recipe->id) ? 1 : 0, $recipe->is_favourite ? 0 : 1])
             ->take(self::POOL_SIZE)
-            ->map(fn (Recipe $recipe) => [
-                'recipe_id' => $recipe->id,
-                'name' => $recipe->name,
-                'description' => $recipe->description,
-                'duration_label' => $recipe->duration_label,
-                'difficulty' => $recipe->difficulty,
-                'estimated_cost' => null,
-                'tags' => $recipe->tags ?? [],
-                'ingredients' => $recipe->ingredients ?? [],
-                'tint' => $recipe->tint,
-                'is_favourite' => $recipe->is_favourite,
-            ])
+            ->map(MealSuggestionData::fromRecipe(...))
             ->values()
             ->all();
     }

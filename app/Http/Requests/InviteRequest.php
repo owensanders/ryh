@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Data\Input\InviteInputData;
 use App\Enums\HouseholdRoleEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -30,12 +31,11 @@ class InviteRequest extends FormRequest
         ];
     }
 
-    /** @return array{email: string, role: string} */
-    public function inviteAttributes(): array
+    public function toData(): InviteInputData
     {
-        return [
-            'email' => (string) $this->validated('email'),
-            'role' => (string) $this->validated('role'),
-        ];
+        return new InviteInputData(
+            email: (string) $this->validated('email'),
+            role: HouseholdRoleEnum::from((string) $this->validated('role')),
+        );
     }
 }

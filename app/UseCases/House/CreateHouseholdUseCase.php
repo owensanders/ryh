@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\UseCases\House;
 
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
+use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Contracts\Repositories\UserRepositoryInterface;
+use App\Data\Input\HouseholdSetupInputData;
 use App\Enums\HouseholdRoleEnum;
 use App\Enums\PaletteEnum;
 use App\Models\Household;
@@ -18,44 +20,32 @@ class CreateHouseholdUseCase
         private readonly HouseholdRepositoryInterface $households,
         private readonly UserRepositoryInterface $users,
         private readonly InviteMemberUseCase $inviteMember,
+        private readonly MembershipRepositoryInterface $memberships,
     ) {}
 
-    /**
-     * `size` is collected for the wizard's copy but has nowhere to live yet —
-     * ponytail: not persisted, add a column when a feature actually reads it.
-     *
-     * @param  array{name: string, size?: string|null, invites?: array<int, array{email: string, role: string}>}  $attributes
-     */
-    public function execute(User $owner, array $attributes): Household
+    public function execute(User $owner, HouseholdSetupInputData $setup): Household
     {
         // The household, its owner's membership and their claimed trial stand
         // or fall together — a household with no owner would strand them
         // with their one free trial spent.
-        $household = DB::transaction(function () use ($owner, $attributes): Household {
+        $household = DB::transaction(function () use ($owner, $setup): Household {
             // One free month per person — otherwise a lapsed owner could just
             // start a new household to reset the clock.
-            $household = $this->households->create([
-                'name' => trim($attributes['name']),
-                'trial_ends_at' => $owner->trial_claimed_at === null ? now()->addDays(config('plans.trial_days')) : null,
-            ]);
+            $household = $this->households->create(
+                trim($setup->name),
+                trialEndsAt: $owner->trial_claimed_at === null ? now()->addDays(config('plans.trial_days')) : null,
+            );
 
-            $this->users->update($owner, [
-                'current_household_id' => $household->id,
-                'trial_claimed_at' => $owner->trial_claimed_at ?? now(),
-                'initials' => mb_strtoupper(mb_substr(trim($owner->name), 0, 2)),
-                'colour' => PaletteEnum::cases()[0],
-            ]);
+            $this->users->moveIntoHousehold($owner, $household, PaletteEnum::cases()[0]);
+            $this->users->claimTrial($owner);
 
-            $owner->households()->attach($household->id, ['role' => HouseholdRoleEnum::Owner, 'pending' => false]);
+            $this->memberships->add($owner, $household, HouseholdRoleEnum::Owner);
 
             return $household;
         });
 
-        foreach ($attributes['invites'] ?? [] as $invite) {
-            $this->inviteMember->execute($household, [
-                'email' => $invite['email'],
-                'role' => $invite['role'],
-            ], invitedBy: $owner);
+        foreach ($setup->invites as $invite) {
+            $this->inviteMember->execute($household, $invite, invitedBy: $owner);
         }
 
         return $household;

@@ -8,6 +8,7 @@ use App\Contracts\Repositories\ChoreRepositoryInterface;
 use App\Models\Chore;
 use App\Models\User;
 use App\Notifications\ChoreDeletedNotification;
+use App\Support\RecipientsHelper;
 
 class DeleteChoreUseCase
 {
@@ -23,13 +24,8 @@ class DeleteChoreUseCase
     /** Tells the assignee and/or creator when someone else deletes their chore, without notifying either twice. */
     private function notifyInterestedParties(Chore $chore, User $actor): void
     {
-        $notified = [$actor->id];
-
-        foreach ([$chore->assignee, $chore->creator] as $recipient) {
-            if ($recipient !== null && ! in_array($recipient->id, $notified, true)) {
-                $recipient->notify(new ChoreDeletedNotification($chore, $actor));
-                $notified[] = $recipient->id;
-            }
+        foreach (RecipientsHelper::except($actor, [$chore->assignee, $chore->creator]) as $recipient) {
+            $recipient->notify(new ChoreDeletedNotification($chore, $actor));
         }
     }
 }

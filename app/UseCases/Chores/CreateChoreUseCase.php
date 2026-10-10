@@ -6,6 +6,7 @@ namespace App\UseCases\Chores;
 
 use App\Contracts\Repositories\ChoreRepositoryInterface;
 use App\Data\ChoreData;
+use App\Data\Input\ChoreInputData;
 use App\Enums\ChoreStatusEnum;
 use App\Models\Household;
 use App\Models\User;
@@ -15,13 +16,10 @@ class CreateChoreUseCase
 {
     public function __construct(private readonly ChoreRepositoryInterface $chores) {}
 
-    /** @param array<string, mixed> $attributes */
-    public function execute(Household $household, array $attributes, User $actor): ChoreData
+    public function execute(Household $household, ChoreInputData $input, User $actor): ChoreData
     {
-        $attributes['status'] = ChoreStatusEnum::Today->value;
-        $attributes['created_by'] = $actor->id;
-
-        $chore = $this->chores->create($household, $attributes);
+        // New chores always start on the Today board.
+        $chore = $this->chores->create($household, $input, ChoreStatusEnum::Today, $actor);
 
         if ($chore->assigned_to !== null && $chore->assigned_to !== $actor->id) {
             $chore->assignee?->notify(new ChoreAssignedNotification($chore, $actor));

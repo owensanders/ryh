@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Data\Input\IncomeSourceInputData;
 use Illuminate\Foundation\Http\FormRequest;
 
 class IncomeSourceRequest extends FormRequest
@@ -27,18 +28,13 @@ class IncomeSourceRequest extends FormRequest
         ];
     }
 
-    /**
-     * The income source columns, with the pounds input converted to pence.
-     *
-     * @return array<string, mixed>
-     */
-    public function incomeAttributes(): array
+    public function toData(): IncomeSourceInputData
     {
-        return [
-            'label' => trim((string) $this->validated('label')),
-            'meta' => $this->validated('meta'),
-            'amount_pence' => (int) round(((float) $this->validated('amount')) * 100),
-            'is_recurring' => $this->boolean('is_recurring'),
-        ];
+        return new IncomeSourceInputData(
+            label: trim((string) $this->validated('label')),
+            meta: $this->validated('meta'),
+            amountPence: (int) round(((float) $this->validated('amount')) * 100),
+            isRecurring: $this->boolean('is_recurring'),
+        );
     }
 }

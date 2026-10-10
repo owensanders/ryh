@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Repositories;
 
+use App\Data\Input\CalendarEventInputData;
 use App\Models\CalendarEvent;
 use App\Models\Household;
 use App\Models\User;
@@ -15,17 +16,12 @@ interface CalendarEventRepositoryInterface
     /** @return Collection<int, CalendarEvent> */
     public function between(Household $household, CarbonImmutable $from, CarbonImmutable $to): Collection;
 
-    /**
-     * @param  array<string, mixed>  $attributes
-     * @param  list<int>  $attendeeIds
-     */
-    public function create(Household $household, array $attributes, array $attendeeIds): CalendarEvent;
+    public function create(Household $household, CalendarEventInputData $event, User $creator): CalendarEvent;
 
-    /**
-     * @param  array<string, mixed>  $attributes
-     * @param  list<int>  $attendeeIds
-     */
-    public function update(CalendarEvent $event, array $attributes, array $attendeeIds): CalendarEvent;
+    public function update(CalendarEvent $event, CalendarEventInputData $changes): CalendarEvent;
+
+    /** @return array<int, int> */
+    public function attendeeIds(CalendarEvent $event): array;
 
     public function delete(CalendarEvent $event): void;
 

@@ -41,10 +41,10 @@ class HouseController extends Controller
 
     public function invite(InviteRequest $request, InviteMemberUseCase $invite): RedirectResponse
     {
-        $attributes = $request->inviteAttributes();
-        $invite->execute($this->household($request), $attributes, $this->user($request));
+        $input = $request->toData();
+        $invite->execute($this->household($request), $input, $this->user($request));
 
-        return back()->with('toast', "Invite sent to {$attributes['email']}");
+        return back()->with('toast', "Invite sent to {$input->email}");
     }
 
     public function updateRole(RoleRequest $request, User $member, ChangeMemberRoleUseCase $change): RedirectResponse
@@ -52,18 +52,18 @@ class HouseController extends Controller
         $household = $this->household($request);
 
         $role = HouseholdRoleEnum::from($request->validated('role'));
-        $updated = $change->execute($member, $household, $role, $this->user($request));
+        $change->execute($member, $household, $role, $this->user($request));
 
-        return back()->with('toast', "{$updated->name} is now {$role->label()}");
+        return back()->with('toast', "{$member->name} is now {$role->label()}");
     }
 
     public function approve(Request $request, User $member, ApproveMemberUseCase $approve): RedirectResponse
     {
         $household = $this->household($request);
 
-        $approved = $approve->execute($member, $household);
+        $approve->execute($member, $household);
 
-        return back()->with('toast', "{$approved->name} approved — welcome to the household");
+        return back()->with('toast', "{$member->name} approved — welcome to the household");
     }
 
     public function destroy(Request $request, User $member, RemoveMemberUseCase $remove): RedirectResponse
@@ -71,8 +71,7 @@ class HouseController extends Controller
         $household = $this->household($request);
 
         $name = $member->name;
-        $wasPending = $member->households()->where('households.id', $household->id)->first()?->pivot->pending === true;
-        $remove->execute($member, $household);
+        $wasPending = $remove->execute($member, $household);
 
         return back()->with('toast', $wasPending ? "{$name} — invite cancelled" : "{$name} removed from the household");
     }

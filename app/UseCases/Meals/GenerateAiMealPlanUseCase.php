@@ -8,6 +8,7 @@ use App\Ai\Agents\MealPlanAgent;
 use App\Ai\AiConfigService;
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Contracts\Repositories\MealPlanRepositoryInterface;
+use App\Data\MealSuggestionData;
 use App\Enums\CookingConfidenceEnum;
 use App\Models\Household;
 use App\Models\Recipe;
@@ -37,7 +38,7 @@ class GenerateAiMealPlanUseCase
      * @param  array<int, string>  $diets
      * @param  array<int, string>  $goals
      * @param  array<int, string>  $equipment
-     * @return array<int, array{name: string, description: string, duration_label: string, difficulty: string, estimated_cost: float, tags: array<int, string>, ingredients: array<int, array{name: string, quantity: string}>}>
+     * @return array<int, MealSuggestionData>
      */
     public function execute(
         Household $household,
@@ -106,7 +107,7 @@ class GenerateAiMealPlanUseCase
                 throw new LogicException('MealPlanAgent answered without its structured schema.');
             }
 
-            $this->households->update($household, ['ai_meal_plan_generated_at' => now()]);
+            $this->households->markAiMealPlanGenerated($household);
 
             Log::info('AI meal plan generated', [
                 'household_id' => $household->id,
@@ -114,7 +115,7 @@ class GenerateAiMealPlanUseCase
                 'output_tokens' => $response->usage->completionTokens,
             ]);
 
-            return $response['meals'];
+            return array_map(MealSuggestionData::fromAi(...), $response['meals']);
         } finally {
             $lock->release();
         }

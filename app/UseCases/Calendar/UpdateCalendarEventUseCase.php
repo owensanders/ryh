@@ -6,24 +6,22 @@ namespace App\UseCases\Calendar;
 
 use App\Contracts\Repositories\CalendarEventRepositoryInterface;
 use App\Data\CalendarEventData;
+use App\Data\Input\CalendarEventInputData;
 use App\Models\CalendarEvent;
 use App\Models\User;
 use App\Notifications\CalendarEventAssignedNotification;
 use App\Notifications\CalendarEventUpdatedNotification;
+use App\Support\RecipientsHelper;
 
 class UpdateCalendarEventUseCase
 {
     public function __construct(private readonly CalendarEventRepositoryInterface $events) {}
 
-    /**
-     * @param  array<string, mixed>  $attributes
-     * @param  list<int>  $attendeeIds
-     */
-    public function execute(CalendarEvent $event, array $attributes, array $attendeeIds, User $actor): CalendarEventData
+    public function execute(CalendarEvent $event, CalendarEventInputData $changes, User $actor): CalendarEventData
     {
-        $previousAttendeeIds = $event->attendees()->pluck('users.id')->map(fn (mixed $id): int => (int) $id)->all();
+        $previousAttendeeIds = $this->events->attendeeIds($event);
 
-        $updated = $this->events->update($event, $attributes, $attendeeIds);
+        $updated = $this->events->update($event, $changes);
 
         $this->notifyInterestedParties($updated, $previousAttendeeIds, $actor);
 
@@ -38,23 +36,13 @@ class UpdateCalendarEventUseCase
      */
     private function notifyInterestedParties(CalendarEvent $event, array $previousAttendeeIds, User $actor): void
     {
-        $notified = [$actor->id];
+        // Someone newly added hears they've been assigned; everyone else that it changed.
+        foreach (RecipientsHelper::except($actor, [...$event->attendees, $event->creator]) as $recipient) {
+            $isNewAttendee = $event->attendees->contains('id', $recipient->id) && ! in_array($recipient->id, $previousAttendeeIds, true);
 
-        foreach ($event->attendees as $attendee) {
-            if ($attendee->id === $actor->id || in_array($attendee->id, $notified, true)) {
-                continue;
-            }
-
-            $notification = in_array($attendee->id, $previousAttendeeIds, true)
-                ? new CalendarEventUpdatedNotification($event, $actor)
-                : new CalendarEventAssignedNotification($event, $actor);
-
-            $attendee->notify($notification);
-            $notified[] = $attendee->id;
-        }
-
-        if ($event->creator !== null && ! in_array($event->creator->id, $notified, true)) {
-            $event->creator->notify(new CalendarEventUpdatedNotification($event, $actor));
+            $recipient->notify($isNewAttendee
+                ? new CalendarEventAssignedNotification($event, $actor)
+                : new CalendarEventUpdatedNotification($event, $actor));
         }
     }
 }

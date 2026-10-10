@@ -5,16 +5,24 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Contracts\Repositories\UserRepositoryInterface;
+use App\Data\Input\ProfileInputData;
 use App\Enums\NotificationCategoryEnum;
+use App\Enums\PaletteEnum;
+use App\Models\Household;
 use App\Models\User;
 use Illuminate\Support\Str;
 
 class UserRepository implements UserRepositoryInterface
 {
-    /** @param array<string, mixed> $attributes */
-    public function create(array $attributes): User
+    public function create(string $name, string $email, string $hashedPassword, string $termsVersion): User
     {
-        return User::create($attributes);
+        return User::create([
+            'name' => $name,
+            'email' => $email,
+            'password' => $hashedPassword,
+            'terms_accepted_at' => now(),
+            'terms_version' => $termsVersion,
+        ]);
     }
 
     public function findByEmail(string $email): ?User
@@ -22,18 +30,23 @@ class UserRepository implements UserRepositoryInterface
         return User::where('email', $email)->first();
     }
 
-    /** @param array<string, mixed> $attributes */
-    public function update(User $user, array $attributes): User
+    public function updateProfile(User $user, ProfileInputData $profile, bool $unverifyEmail): User
     {
-        $user->update($attributes);
+        $user->fill(['name' => $profile->name, 'email' => $profile->email]);
+
+        // Set directly rather than through fill() — `email_verified_at` is not fillable.
+        if ($unverifyEmail) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
 
         return $user->refresh();
     }
 
-    /** Persists attributes already set on the model, guarded ones included. */
-    public function save(User $user): User
+    public function updatePassword(User $user, string $hashedPassword): User
     {
-        $user->save();
+        $user->forceFill(['password' => $hashedPassword])->save();
 
         return $user->refresh();
     }
@@ -49,6 +62,25 @@ class UserRepository implements UserRepositoryInterface
         ])->save();
 
         return $user->refresh();
+    }
+
+    public function setCurrentHousehold(User $user, ?int $householdId): void
+    {
+        $user->forceFill(['current_household_id' => $householdId])->save();
+    }
+
+    public function moveIntoHousehold(User $user, Household $household, PaletteEnum $colour): void
+    {
+        $user->update([
+            'current_household_id' => $household->id,
+            'initials' => User::initialsFrom($user->name),
+            'colour' => $colour,
+        ]);
+    }
+
+    public function claimTrial(User $user): void
+    {
+        $user->update(['trial_claimed_at' => $user->trial_claimed_at ?? now()]);
     }
 
     public function markEmailAsVerified(User $user): bool

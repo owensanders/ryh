@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Auth;
 
+use App\Data\Input\HouseholdSetupInputData;
+use App\Data\Input\InviteInputData;
 use App\Enums\HouseholdRoleEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -54,13 +56,14 @@ class HouseholdSetupRequest extends FormRequest
         ];
     }
 
-    /** @return array{name: string, size: string|null, invites: list<array{email: string, role: string}>} */
-    public function householdAttributes(): array
+    public function toData(): HouseholdSetupInputData
     {
-        return [
-            'name' => (string) $this->validated('name'),
-            'size' => $this->validated('size'),
-            'invites' => $this->validated('invites', []),
-        ];
+        /** @var list<array{email: string, role: string}> $invites */
+        $invites = array_values($this->validated('invites', []));
+
+        return new HouseholdSetupInputData(
+            name: (string) $this->validated('name'),
+            invites: array_map(fn (array $invite) => new InviteInputData($invite['email'], HouseholdRoleEnum::from($invite['role'])), $invites),
+        );
     }
 }

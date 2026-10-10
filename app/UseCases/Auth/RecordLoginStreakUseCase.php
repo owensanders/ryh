@@ -31,9 +31,6 @@ class RecordLoginStreakUseCase
 
         $continuesStreak = $lastActive !== null && $today->subDay()->isSameDay($lastActive);
 
-        $this->households->update($household, [
-            'streak_days' => $continuesStreak ? $household->streak_days + 1 : 1,
-            'streak_last_active_date' => $today,
-        ]);
+        $this->households->recordStreak($household, $continuesStreak ? $household->streak_days + 1 : 1, $today);
     }
 }

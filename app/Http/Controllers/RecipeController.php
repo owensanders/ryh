@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Contracts\Repositories\ShoppingRepositoryInterface;
 use App\Enums\RecipeTagEnum;
 use App\Http\Requests\AddRecipeIngredientsRequest;
 use App\Http\Requests\RecipeRequest;
@@ -25,8 +24,6 @@ class RecipeController extends Controller
 {
     use ResolvesHouseholdTrait;
 
-    public function __construct(private readonly ShoppingRepositoryInterface $shopping) {}
-
     public function index(Request $request, GetRecipeLibraryUseCase $getLibrary, GetShoppingListOptionsUseCase $getShoppingLists): Response
     {
         $household = $this->household($request);
@@ -38,27 +35,16 @@ class RecipeController extends Controller
         ]);
     }
 
-    public function store(RecipeRequest $request, AddRecipeUseCase $add, AddRecipeIngredientsToListUseCase $addIngredients): RedirectResponse
+    public function store(RecipeRequest $request, AddRecipeUseCase $add): RedirectResponse
     {
-        $household = $this->household($request);
-        $recipe = $add->execute($household, $request->recipeAttributes());
-
-        $listId = $request->validated('shopping_list_id');
-
-        if ($listId !== null) {
-            $list = $this->shopping->listsFor($household)->firstWhere('id', $listId);
-
-            if ($list !== null) {
-                $addIngredients->execute(Recipe::findOrFail($recipe->id), $list);
-            }
-        }
+        $recipe = $add->execute($this->household($request), $request->toData(), $request->shoppingListId());
 
         return back()->with('toast', "{$recipe->name} added");
     }
 
     public function update(RecipeRequest $request, Recipe $recipe, UpdateRecipeUseCase $update): RedirectResponse
     {
-        $updated = $update->execute($recipe, $request->recipeAttributes());
+        $updated = $update->execute($recipe, $request->toData());
 
         return back()->with('toast', "{$updated->name} updated");
     }
@@ -76,12 +62,9 @@ class RecipeController extends Controller
         Recipe $recipe,
         AddRecipeIngredientsToListUseCase $addIngredients,
     ): RedirectResponse {
-        $list = $this->shopping->listsFor($this->household($request))
-            ->firstWhere('id', $request->validated('shopping_list_id'));
+        $updated = $addIngredients->execute($this->household($request), $recipe, (int) $request->validated('shopping_list_id'));
 
-        abort_if($list === null, 404);
-
-        $updated = $addIngredients->execute($recipe, $list);
+        abort_if($updated === null, 404);
 
         return back()->with('toast', "Ingredients added to {$updated->name}");
     }

@@ -4,25 +4,27 @@ declare(strict_types=1);
 
 namespace App\UseCases\Chores;
 
-use App\Enums\ChoreStatusEnum;
+use App\Contracts\Repositories\ChoreRepositoryInterface;
+use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Models\Household;
 use App\Notifications\ChoresReminderNotification;
 
 /** Reminds every member with at least one outstanding chore, then starts the household's cooldown. */
 class NotifyChoresUseCase
 {
+    public function __construct(
+        private readonly ChoreRepositoryInterface $chores,
+        private readonly HouseholdRepositoryInterface $households,
+    ) {}
+
     public function execute(Household $household): void
     {
-        $outstanding = $household->chores()
-            ->whereNotNull('assigned_to')
-            ->where('status', ChoreStatusEnum::Today)
-            ->get()
-            ->groupBy('assigned_to');
+        abort_if($household->choreRemindersAvailableAt() !== null, 429);
 
-        foreach ($outstanding as $chores) {
+        foreach ($this->chores->outstandingAssigned($household)->groupBy('assigned_to') as $chores) {
             $chores->first()?->assignee?->notify(new ChoresReminderNotification($household, $chores->count()));
         }
 
-        $household->update(['last_chore_notification_sent_at' => now()]);
+        $this->households->markChoreRemindersSent($household);
     }
 }
