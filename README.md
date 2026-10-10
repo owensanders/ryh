@@ -146,17 +146,132 @@ Run Playwright from your Mac, but install npm packages with `sail npm install`:
 `node_modules` is shared with the Linux container, and a host `npm install`
 strips the container's native Rollup build, which breaks Vite.
 
-## Layout
+## Architecture
 
-Clean architecture, matching the conventions in `../CLAUDE.md`:
+The rules behind this section are in [`CLAUDE.md`](CLAUDE.md). Tests enforce
+the ones that can drift, so a change that breaks them fails CI.
 
-| Layer | Where | Notes |
-|---|---|---|
-| Use cases | `app/UseCases/**` | All business logic — one class per screen or action |
-| Repositories | `app/Repositories/**` | Behind `app/Contracts/Repositories/*Interface.php`, bound in `RepositoryServiceProvider` |
-| DTOs | `app/Data/**` | `spatie/laravel-data`; mirrored in `resources/js/types/ryh.ts` |
-| Notifications | `app/Notifications/**` | Extend `HouseholdNotification`; persist to the database, and go live to the recipient's own private channel (`App.Models.User.{id}`) through the queue |
-| Screens | `resources/js/pages/*.vue` | App screens use the persistent `layouts/RyhShell.vue` (`defineOptions({ layout: RyhShell })`), so the sidebar, header and tab bar stay mounted between screens; each sets its header title with `<RyhLayout title subtitle>` |
+### The moving parts
+
+During a request, the web app talks to storage and to the two third parties
+whose answer the user is waiting for:
+
+```mermaid
+flowchart LR
+    browser["Browser / installed PWA<br/>Vue 3 + Inertia"]
+    web["Web app<br/>PHP-FPM"]
+    mysql[("MySQL<br/>all app data")]
+    redis[("Redis<br/>sessions · cache · queue")]
+    s3[("S3<br/>documents")]
+    stripe(["Stripe"])
+    anthropic(["Anthropic"])
+
+    browser -->|"pages, forms"| web
+    browser -->|"downloads, by signed link"| s3
+    web --> mysql
+    web --> redis
+    web -->|"uploads"| s3
+    web -->|"checkout"| stripe
+    stripe -->|"webhooks"| web
+    web -->|"AI meal plans"| anthropic
+```
+
+Everything else happens in the background, so a slow or unavailable Reverb,
+push service or mail provider delays a notification but never fails the
+user's action:
+
+```mermaid
+flowchart LR
+    redis[("Redis queue")]
+    worker["Queue worker<br/>queue:work"]
+    reverb["Reverb<br/>WebSockets"]
+    push(["Web Push services"])
+    mail(["Mail provider"])
+    browser["Browser / installed PWA"]
+    scheduler["Scheduler<br/>schedule:run"]
+    mysql[("MySQL")]
+
+    redis -->|"jobs"| worker
+    worker -->|"live updates"| reverb
+    worker -->|"pushes"| push
+    worker -->|"invites, billing emails"| mail
+    reverb -->|"bell"| browser
+    push -->|"system notification"| browser
+    scheduler -->|"nightly: prune old notifications,<br/>completed chores, bought items"| mysql
+```
+
+### A request, layer by layer
+
+```mermaid
+flowchart TD
+    route["Route — routes/web.php<br/>auth · verified · household · trial.active"]
+    policy{"Policy — app/Policies<br/>->can('update', 'chore')"}
+    controller["Controller — app/Http/Controllers<br/>thin: request in, response out"]
+    request["Form request — app/Http/Requests<br/>validates, then toData()"]
+    input["*InputData — app/Data/Input<br/>typed input"]
+    usecase["Use case — app/UseCases<br/>all business rules; one per screen or action"]
+    repo["Repository — app/Repositories<br/>every query, behind an interface"]
+    db[("MySQL")]
+    data["*Data — app/Data<br/>typed output, mirrored in resources/js/types"]
+    page["Inertia page — resources/js/pages"]
+    notification["Notification — app/Notifications"]
+
+    route --> policy
+    policy -- "other household: 404<br/>role not allowed: 403" --> stop(("✕"))
+    policy -- "allowed" --> controller
+    controller --> request --> input --> usecase
+    usecase --> repo --> db
+    usecase --> notification
+    usecase --> data --> controller
+    controller --> page
+```
+
+Each layer only talks to the one below it:
+
+| Layer | Where | Does | Never |
+|---|---|---|---|
+| Routes | `routes/web.php` | Middleware, and the policy ability for every household route (`->can(...)`) | Business rules |
+| Policies | `app/Policies/*Policy.php` | Is this record in the current household (else 404)? Does the role allow it (else 403)? | Writes |
+| Controllers | `app/Http/Controllers` | Call use cases, render pages, redirect with toasts | Query the database or use repositories |
+| Form requests | `app/Http/Requests` | Validate, then `toData()` into a typed `*InputData` | Pass `array $attributes` along |
+| Use cases | `app/UseCases/<Area>` | Business rules, transactions, sending notifications. Return `*Data` objects | Query the database directly |
+| Repositories | `app/Repositories` (interfaces in `app/Contracts/Repositories`) | Every query and write; map input objects to columns | Business rules |
+| Models | `app/Models` | Relations, casts, small helpers that don't query | Queries in helpers |
+| Data | `app/Data` (output), `app/Data/Input` (input) | Typed shapes between layers; output mirrored in `resources/js/types/ryh.ts` | — |
+
+### How a notification reaches someone
+
+```mermaid
+sequenceDiagram
+    participant UC as Use case
+    participant DB as MySQL
+    participant Q as Queue (Redis)
+    participant W as Queue worker
+    participant R as Reverb
+    participant P as Push service
+    participant B as Recipient's browser
+
+    UC->>DB: notify() — store the bell entry
+    UC->>Q: live update (after the transaction commits)
+    UC->>Q: push, if they've turned it on for this category
+    Note over UC: the request returns here
+    W->>Q: take jobs
+    W->>R: broadcast on App.Models.User.{id}
+    R-->>B: bell updates live
+    W->>P: Web Push
+    P-->>B: system notification
+```
+
+Notifications go to the recipient's own private channel, so nobody receives
+anyone else's. `RecipientsHelper` decides who hears about a change: everyone
+involved, each once, never the person who made it.
+
+### Screens
+
+App screens use the persistent `layouts/RyhShell.vue`
+(`defineOptions({ layout: RyhShell })`), so the sidebar, header and tab bar
+stay mounted between screens. Each screen sets its header title with
+`<RyhLayout title subtitle>`.
 
 Design tokens live as `--ryh-*` custom properties in `resources/css/app.css`
 and are surfaced as Tailwind `ryh-*` colours. They key off the same `.dark`
