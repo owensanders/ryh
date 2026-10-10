@@ -16,17 +16,17 @@ defineProps<{
     <PublicLayout>
         <div class="mx-auto max-w-[760px] px-5 pb-20 pt-12 sm:px-8 lg:pt-16">
             <h1 class="text-[34px] font-black leading-[1.05] tracking-[-0.035em] sm:text-[44px]">{{ title }}</h1>
-            <p class="mt-3 text-sm text-hh-ink3">Last updated {{ updated }} · version {{ version }}</p>
+            <p class="mt-3 text-sm text-ryh-ink3">Last updated {{ updated }} · version {{ version }}</p>
 
-            <div class="legal-intro mt-6 text-pretty text-[15.5px] leading-relaxed text-hh-ink2">
+            <div class="legal-intro mt-6 text-pretty text-[15.5px] leading-relaxed text-ryh-ink2">
                 <slot name="intro" />
             </div>
 
-            <nav aria-label="Contents" class="mt-8 rounded-[18px] border border-hh-line bg-hh-panel p-5 sm:p-6">
-                <div class="text-xs font-bold uppercase tracking-[0.08em] text-hh-ink3">Contents</div>
+            <nav aria-label="Contents" class="mt-8 rounded-[18px] border border-ryh-line bg-ryh-panel p-5 sm:p-6">
+                <div class="text-xs font-bold uppercase tracking-[0.08em] text-ryh-ink3">Contents</div>
                 <ol class="mt-3 grid list-decimal gap-1.5 pl-5 text-[14.5px] sm:grid-cols-2 sm:gap-x-8">
                     <li v-for="section in sections" :key="section.id">
-                        <a :href="`#${section.id}`" class="font-semibold text-hh-ink hover:text-hh-coral">{{ section.title }}</a>
+                        <a :href="`#${section.id}`" class="font-semibold text-ryh-ink hover:text-ryh-coral">{{ section.title }}</a>
                     </li>
                 </ol>
             </nav>
@@ -40,7 +40,7 @@ defineProps<{
 
 <style scoped>
 .legal-prose {
-    color: var(--hh-ink2);
+    color: var(--ryh-ink2);
     font-size: 15.5px;
     line-height: 1.7;
     counter-reset: legal-section;
@@ -49,7 +49,7 @@ defineProps<{
     counter-increment: legal-section;
     margin-top: 2.75rem;
     scroll-margin-top: 96px;
-    color: var(--hh-ink);
+    color: var(--ryh-ink);
     font-size: 22px;
     font-weight: 800;
     letter-spacing: -0.02em;
@@ -60,7 +60,7 @@ defineProps<{
 }
 .legal-prose :deep(h3) {
     margin-top: 1.5rem;
-    color: var(--hh-ink);
+    color: var(--ryh-ink);
     font-size: 16.5px;
     font-weight: 700;
 }
@@ -82,11 +82,11 @@ defineProps<{
     margin-top: 0.35rem;
 }
 .legal-prose :deep(strong) {
-    color: var(--hh-ink);
+    color: var(--ryh-ink);
 }
 .legal-intro :deep(a),
 .legal-prose :deep(a) {
-    color: var(--hh-ink);
+    color: var(--ryh-ink);
     font-weight: 600;
     text-decoration: underline;
     text-underline-offset: 2px;
@@ -102,19 +102,19 @@ defineProps<{
 }
 .legal-prose :deep(th),
 .legal-prose :deep(td) {
-    border-bottom: 1px solid var(--hh-line);
+    border-bottom: 1px solid var(--ryh-line);
     padding: 0.6rem 0.75rem 0.6rem 0;
     text-align: left;
     vertical-align: top;
 }
 .legal-prose :deep(th) {
-    color: var(--hh-ink);
+    color: var(--ryh-ink);
     font-weight: 700;
 }
 .legal-prose :deep(.legal-callout) {
     margin-top: 1rem;
     border-radius: 14px;
-    background: var(--hh-soft);
+    background: var(--ryh-soft);
     padding: 0.9rem 1.1rem;
 }
 </style>

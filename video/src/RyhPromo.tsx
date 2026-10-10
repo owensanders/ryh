@@ -32,7 +32,7 @@ const scenes: { id: string; frames: number; Component: React.FC }[] = [
 
 export const TOTAL_FRAMES = scenes.reduce((a, s) => a + s.frames, 0);
 
-export const HouseHubPromo: React.FC = () => {
+export const RyhPromo: React.FC = () => {
     let from = 0;
     return (
         <AbsoluteFill style={{ background: '#07090f', fontFamily: fonts.sans }}>

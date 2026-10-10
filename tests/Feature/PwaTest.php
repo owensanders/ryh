@@ -27,7 +27,7 @@ class PwaTest extends TestCase
     {
         $manifest = json_decode((string) file_get_contents(public_path('manifest.webmanifest')), true, flags: JSON_THROW_ON_ERROR);
 
-        $this->assertSame('HouseHub', $manifest['name']);
+        $this->assertSame('RYH', $manifest['name']);
         $this->assertSame('standalone', $manifest['display']);
         $this->assertSame('/dashboard', $manifest['start_url']);
 

@@ -92,90 +92,90 @@ html {
 }
 
 /* ---------------------------------------------------------------------------
- * HouseHub design tokens (from HouseHub.dc.html). Namespaced with `hh-` so they
+ * RYH design tokens (from RYH.dc.html). Namespaced with `ryh-` so they
  * sit alongside the starter kit's shadcn tokens rather than fighting them, and
  * keyed off the same `.dark` class the appearance switcher already toggles.
  * ------------------------------------------------------------------------- */
 @layer base {
     :root {
-        --hh-bg: #eeeae3;
-        --hh-shell: #fcfaf7;
-        --hh-panel: #f4f1eb;
-        --hh-card: #ffffff;
-        --hh-soft: #f2eee7;
-        --hh-sunk: #ede8e0;
+        --ryh-bg: #eeeae3;
+        --ryh-shell: #fcfaf7;
+        --ryh-panel: #f4f1eb;
+        --ryh-card: #ffffff;
+        --ryh-soft: #f2eee7;
+        --ryh-sunk: #ede8e0;
 
-        --hh-ink: #0e1a2b;
-        --hh-ink2: rgba(14, 26, 43, 0.56);
-        --hh-ink3: rgba(14, 26, 43, 0.4);
-        --hh-line: rgba(14, 26, 43, 0.09);
+        --ryh-ink: #0e1a2b;
+        --ryh-ink2: rgba(14, 26, 43, 0.56);
+        --ryh-ink3: rgba(14, 26, 43, 0.4);
+        --ryh-line: rgba(14, 26, 43, 0.09);
 
-        --hh-hero1: #101c2e;
-        --hh-hero2: #1b2f4a;
-        --hh-onhero: #fbfaf8;
-        --hh-onhero2: rgba(251, 250, 248, 0.66);
-        --hh-herofilm: rgba(255, 255, 255, 0.09);
-        --hh-heroline: rgba(255, 255, 255, 0.14);
+        --ryh-hero1: #101c2e;
+        --ryh-hero2: #1b2f4a;
+        --ryh-onhero: #fbfaf8;
+        --ryh-onhero2: rgba(251, 250, 248, 0.66);
+        --ryh-herofilm: rgba(255, 255, 255, 0.09);
+        --ryh-heroline: rgba(255, 255, 255, 0.14);
 
-        --hh-coral: #ff4f40;
-        --hh-mint: #3ddc97;
-        --hh-lilac: #8b7cf6;
-        --hh-sun: #ffc94d;
-        --hh-sky: #6bc5f8;
+        --ryh-coral: #ff4f40;
+        --ryh-mint: #3ddc97;
+        --ryh-lilac: #8b7cf6;
+        --ryh-sun: #ffc94d;
+        --ryh-sky: #6bc5f8;
 
-        --hh-t1: linear-gradient(150deg, #ffd9d4, #ffb3a8);
-        --hh-t2: linear-gradient(150deg, #d8f6e7, #a9e9cc);
-        --hh-t3: linear-gradient(150deg, #dde6ff, #bcc9fa);
-        --hh-t4: linear-gradient(150deg, #ffefc9, #ffdc97);
-        --hh-t5: linear-gradient(150deg, #e9e1ff, #cfc2fa);
-        --hh-ontint: #101c2e;
+        --ryh-t1: linear-gradient(150deg, #ffd9d4, #ffb3a8);
+        --ryh-t2: linear-gradient(150deg, #d8f6e7, #a9e9cc);
+        --ryh-t3: linear-gradient(150deg, #dde6ff, #bcc9fa);
+        --ryh-t4: linear-gradient(150deg, #ffefc9, #ffdc97);
+        --ryh-t5: linear-gradient(150deg, #e9e1ff, #cfc2fa);
+        --ryh-ontint: #101c2e;
 
-        --hh-shadow: 0 18px 44px -26px rgba(14, 26, 43, 0.5);
+        --ryh-shadow: 0 18px 44px -26px rgba(14, 26, 43, 0.5);
     }
 
     .dark {
-        --hh-bg: #07090f;
-        --hh-shell: #0e1119;
-        --hh-panel: #0b0e15;
-        --hh-card: #151a25;
-        --hh-soft: #1a2130;
-        --hh-sunk: #11161f;
+        --ryh-bg: #07090f;
+        --ryh-shell: #0e1119;
+        --ryh-panel: #0b0e15;
+        --ryh-card: #151a25;
+        --ryh-soft: #1a2130;
+        --ryh-sunk: #11161f;
 
-        --hh-ink: #f2f5f9;
-        --hh-ink2: rgba(242, 245, 249, 0.62);
-        --hh-ink3: rgba(242, 245, 249, 0.42);
-        --hh-line: rgba(255, 255, 255, 0.09);
+        --ryh-ink: #f2f5f9;
+        --ryh-ink2: rgba(242, 245, 249, 0.62);
+        --ryh-ink3: rgba(242, 245, 249, 0.42);
+        --ryh-line: rgba(255, 255, 255, 0.09);
 
-        --hh-hero1: #1a1030;
-        --hh-hero2: #2a1840;
-        --hh-onhero: #f7f4ff;
-        --hh-onhero2: rgba(247, 244, 255, 0.66);
-        --hh-herofilm: rgba(255, 255, 255, 0.07);
-        --hh-heroline: rgba(255, 255, 255, 0.12);
+        --ryh-hero1: #1a1030;
+        --ryh-hero2: #2a1840;
+        --ryh-onhero: #f7f4ff;
+        --ryh-onhero2: rgba(247, 244, 255, 0.66);
+        --ryh-herofilm: rgba(255, 255, 255, 0.07);
+        --ryh-heroline: rgba(255, 255, 255, 0.12);
 
-        --hh-t1: linear-gradient(150deg, #4a2a2c, #6b3a38);
-        --hh-t2: linear-gradient(150deg, #173a2e, #22553f);
-        --hh-t3: linear-gradient(150deg, #1e2a4e, #2c3c6b);
-        --hh-t4: linear-gradient(150deg, #463618, #63501f);
-        --hh-t5: linear-gradient(150deg, #2e2450, #42356e);
-        --hh-ontint: #f7f4ff;
+        --ryh-t1: linear-gradient(150deg, #4a2a2c, #6b3a38);
+        --ryh-t2: linear-gradient(150deg, #173a2e, #22553f);
+        --ryh-t3: linear-gradient(150deg, #1e2a4e, #2c3c6b);
+        --ryh-t4: linear-gradient(150deg, #463618, #63501f);
+        --ryh-t5: linear-gradient(150deg, #2e2450, #42356e);
+        --ryh-ontint: #f7f4ff;
 
-        --hh-shadow: 0 18px 44px -22px rgba(0, 0, 0, 0.8);
+        --ryh-shadow: 0 18px 44px -22px rgba(0, 0, 0, 0.8);
     }
 }
 
 /* Shared form primitives — same shapes the dashboard uses inline, extracted
    because the auth screens repeat them a dozen times over. */
 @layer components {
-    .hh-input {
-        @apply h-11 w-full min-w-0 rounded-[13px] border border-hh-line bg-hh-sunk px-3.5 text-sm text-hh-ink placeholder:text-hh-ink3 read-only:text-hh-ink2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hh-coral disabled:opacity-60;
+    .ryh-input {
+        @apply h-11 w-full min-w-0 rounded-[13px] border border-ryh-line bg-ryh-sunk px-3.5 text-sm text-ryh-ink placeholder:text-ryh-ink3 read-only:text-ryh-ink2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ryh-coral disabled:opacity-60;
     }
 
-    .hh-label {
-        @apply text-[13px] font-semibold text-hh-ink2;
+    .ryh-label {
+        @apply text-[13px] font-semibold text-ryh-ink2;
     }
 
-    .hh-btn {
+    .ryh-btn {
         @apply flex h-[42px] w-full items-center justify-center gap-2 whitespace-nowrap rounded-[13px] px-5 text-[13.5px] font-bold transition hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-50;
     }
 
@@ -206,7 +206,7 @@ html {
     }
 }
 
-@keyframes hh-rise {
+@keyframes ryh-rise {
     from {
         opacity: 0;
         transform: translateY(12px);
@@ -217,7 +217,7 @@ html {
     }
 }
 
-@keyframes hh-pop {
+@keyframes ryh-pop {
     0% {
         transform: scale(0.85);
     }
@@ -229,7 +229,7 @@ html {
     }
 }
 
-@keyframes hh-toast {
+@keyframes ryh-toast {
     from {
         opacity: 0;
         transform: translate(-50%, 16px) scale(0.96);
@@ -240,7 +240,7 @@ html {
     }
 }
 
-@keyframes hh-glow {
+@keyframes ryh-glow {
     0%,
     100% {
         opacity: 0.55;

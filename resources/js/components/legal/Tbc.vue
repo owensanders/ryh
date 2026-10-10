@@ -5,7 +5,7 @@ defineProps<{ value: string | null | undefined; label: string }>();
 
 <template>
     <span v-if="value">{{ value }}</span>
-    <mark v-else class="rounded px-1 font-semibold text-hh-ink" style="background: color-mix(in srgb, var(--hh-sun) 45%, transparent)" data-tbc
+    <mark v-else class="rounded px-1 font-semibold text-ryh-ink" style="background: color-mix(in srgb, var(--ryh-sun) 45%, transparent)" data-tbc
         >[{{ label }} to be confirmed]</mark
     >
 </template>

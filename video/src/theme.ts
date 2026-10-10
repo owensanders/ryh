@@ -9,7 +9,7 @@ export const fonts = {
     mono: loadMono('normal', { weights: ['400', '500'], subsets: ['latin'] }).fontFamily,
 };
 
-// Mirrors the --hh-* tokens in resources/css/app.css.
+// Mirrors the --ryh-* tokens in resources/css/app.css.
 export const light = {
     bg: '#eeeae3',
     shell: '#fcfaf7',

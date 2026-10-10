@@ -25,7 +25,7 @@ class RenewalReminderMail extends Mailable implements ShouldQueue
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: "Your HouseHub subscription renews on {$this->renewsOnLabel}");
+        return new Envelope(subject: "Your RYH subscription renews on {$this->renewsOnLabel}");
     }
 
     public function content(): Content

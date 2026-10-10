@@ -2,15 +2,15 @@
 @if ($hasAccount)
 # You're invited to join {{ $householdName }}
 
-Someone has invited your HouseHub account to join the household "{{ $householdName }}". Accept below to be added — you'll be able to pick which household you want to view once you're in.
+Someone has invited your RYH account to join the household "{{ $householdName }}". Accept below to be added — you'll be able to pick which household you want to view once you're in.
 
 <x-mail::button :url="$actionUrl">
 Accept invite
 </x-mail::button>
 @else
-# Join {{ $householdName }} on HouseHub
+# Join {{ $householdName }} on RYH
 
-You've been invited to join the household "{{ $householdName }}" on HouseHub. Create your account below and you'll be added to the household automatically.
+You've been invited to join the household "{{ $householdName }}" on RYH. Create your account below and you'll be added to the household automatically.
 
 <x-mail::button :url="$actionUrl">
 Create your account

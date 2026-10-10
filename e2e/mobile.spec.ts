@@ -30,7 +30,7 @@ test('on Android, the install card opens the browser install dialog', async ({ p
         window.dispatchEvent(event);
     });
 
-    const card = page.getByRole('region', { name: 'Install HouseHub' });
+    const card = page.getByRole('region', { name: 'Install RYH' });
     await card.getByRole('button', { name: 'Install', exact: true }).click();
 
     expect(await page.evaluate(() => (window as Window & { prompted?: boolean }).prompted)).toBe(true);
@@ -45,7 +45,7 @@ test.describe('on an iPhone', () => {
 
     test('the install card explains Add to Home Screen, and "Not now" sticks', async ({ page }) => {
         await page.goto('/dashboard');
-        const card = page.getByRole('region', { name: 'Install HouseHub' });
+        const card = page.getByRole('region', { name: 'Install RYH' });
         await expect(card).toContainText('Add to Home Screen');
 
         await card.getByRole('button', { name: 'Not now' }).click();

@@ -123,37 +123,95 @@ const Particles: React.FC = () => {
 
 // ---------------------------------------------------------------- brand
 
-/** Lucide's House icon, as used in the app header, with a stroke-draw option. */
-export const HouseIcon: React.FC<{ size: number; draw?: number; color?: string; stroke?: number }> = ({
-    size,
-    draw = 1,
-    color = 'white',
-    stroke = 2.5,
-}) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" pathLength={1} strokeDasharray={1} strokeDashoffset={1 - draw} />
-        <path
-            d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
-            pathLength={1}
-            strokeDasharray={1}
-            strokeDashoffset={1 - draw}
-        />
+// The Run Your Home logo, drawn as in resources/js/components/ryh/RyhLogo.vue:
+// the roof and "RUN YOUR" in the ink colour, the window and "HOME" in coral.
+const ROOF = 'M4 275 L395 6 L786 275 L731 275 L395 46 L59 275 Z M560 46 H644 V195 L560 138 Z';
+const PANES = [
+    [328, 144],
+    [406, 144],
+    [328, 222],
+    [406, 222],
+];
+
+/** The roof alone. `draw` wipes the roof in from the left, then pops the window panes in. */
+export const RoofMark: React.FC<{ width: number; color: string; draw?: number }> = ({ width, color, draw = 1 }) => {
+    const id = React.useId();
+    return (
+        <svg width={width} height={(width * 282) / 790} viewBox="0 0 790 282" style={{ display: 'block', flex: 'none', overflow: 'visible' }}>
+            <clipPath id={id}>
+                <rect x={-10} y={-10} width={810 * Math.min(1, draw / 0.75)} height={300} />
+            </clipPath>
+            <path d={ROOF} fill={color} stroke={color} strokeWidth={6} strokeLinejoin="round" clipPath={`url(#${id})`} />
+            {PANES.map(([x, y], i) => {
+                const p = Math.max(0, Math.min(1, (draw - 0.55 - i * 0.08) / 0.2));
+                return (
+                    <rect
+                        key={i}
+                        x={x}
+                        y={y}
+                        width={56}
+                        height={56}
+                        rx={7}
+                        fill={brand.coral}
+                        style={{ transformBox: 'fill-box', transformOrigin: 'center', transform: `scale(${p})` }}
+                    />
+                );
+            })}
+        </svg>
+    );
+};
+
+/** "RUN YOUR" over "HOME", `height` tall. `lines` animates each line in (0 hidden, 1 in place). */
+export const Wordmark: React.FC<{ height: number; color: string; lines?: [number, number] }> = ({ height, color, lines = [1, 1] }) => (
+    <svg width={(height * 662) / 282} height={height} viewBox="860 0 662 282" style={{ display: 'block', flex: 'none', overflow: 'visible' }}>
+        {(
+            [
+                ['RUN YOUR', 84, 117, color],
+                ['HOME', 276, 226, brand.coral],
+            ] as const
+        ).map(([text, y, size, fill], i) => (
+            <text
+                key={text}
+                x={860}
+                y={y}
+                fontFamily={fonts.sans}
+                fontWeight={800}
+                fontSize={size}
+                textLength={662}
+                lengthAdjust="spacingAndGlyphs"
+                fill={fill}
+                opacity={lines[i]}
+                transform={`translate(0 ${(1 - lines[i]) * 90})`}
+            >
+                {text}
+            </text>
+        ))}
     </svg>
 );
 
-export const LogoMark: React.FC<{ size: number; draw?: number; radius?: number }> = ({ size, draw = 1, radius }) => (
+/** The roof beside the wordmark, `height` tall — the app's header logo. */
+export const Lockup: React.FC<{ height: number; color: string }> = ({ height, color }) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: (height * 70) / 282 }}>
+        <RoofMark width={(height * 790) / 282} color={color} />
+        <Wordmark height={height} color={color} />
+    </div>
+);
+
+/** The installed app's icon (public/icons/icon.svg): the roof on a white tile. */
+export const LogoMark: React.FC<{ size: number; radius?: number }> = ({ size, radius }) => (
     <div
         style={{
             width: size,
             height: size,
-            borderRadius: radius ?? size * 0.33,
-            background: brand.coral,
+            flex: 'none',
+            borderRadius: radius ?? size * 0.22,
+            background: 'white',
             display: 'grid',
             placeItems: 'center',
-            boxShadow: `0 ${size * 0.25}px ${size * 0.6}px -${size * 0.2}px rgba(255, 79, 64, 0.7)`,
+            boxShadow: `0 ${size * 0.12}px ${size * 0.4}px -${size * 0.16}px rgba(0, 0, 0, 0.35)`,
         }}
     >
-        <HouseIcon size={size * 0.53} draw={draw} />
+        <RoofMark width={size * 0.78} color={light.ink} />
     </div>
 );
 

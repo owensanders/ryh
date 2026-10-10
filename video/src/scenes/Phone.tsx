@@ -1,11 +1,11 @@
 import React from 'react';
 import { AbsoluteFill, useCurrentFrame } from 'remotion';
 import { prog, range, spr, springs } from '../anim';
-import { Avatar, CircleWipe, Eyebrow, Headline, LogoMark, Sfx, Sub, Tick, WarmBg } from '../components/ui';
+import { Avatar, CircleWipe, Eyebrow, Headline, LogoMark, RoofMark, Sfx, Sub, Tick, WarmBg } from '../components/ui';
 import { brand, family, fonts, heroGradient, light, Person } from '../theme';
 
 // Beats, in frames.
-const ADD = 26; // HouseHub lands on the home screen
+const ADD = 26; // RYH lands on the home screen
 const BANNER = 80; // a push notification arrives
 const TAP = 126; // it's tapped…
 const OPEN = 130; // …and the app opens on Chores
@@ -19,7 +19,7 @@ const PHONE = { x: 1180, y: 124, w: 420, h: 868 };
 const SCREEN_INSET = 14;
 
 // The notification is the app's real wording (ChoreAssignedNotification),
-// titled with the household's name as every HouseHub push is.
+// titled with the household's name as every RYH push is.
 const PUSH = { household: 'The Parkers', body: 'Sarah Parker assigned you “Take the bins out”' };
 
 const homeIcons = ['#6bc5f8', '#3ddc97', '#ffc94d', '#8b7cf6', '#f2eee7', '#ff8a7a', null, '#a9e9cc', '#bcc9fa', '#ffdc97', '#cfc2fa', '#ffb3a8'];
@@ -48,7 +48,7 @@ const moreItems = [
     { icon: '⚙', label: 'Settings' },
 ];
 
-// The seeded Parkers budget (HouseHubSeeder): £3,390 in, £2,150 assigned.
+// The seeded Parkers budget (RyhSeeder): £3,390 in, £2,150 assigned.
 const budget = {
     leftToSpend: 1240,
     moneyIn: '£3,390',
@@ -104,7 +104,7 @@ const HomeScreen: React.FC<{ f: number }> = ({ f }) => {
                     ) : (
                         <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, transform: `scale(${add})` }}>
                             <LogoMark size={70} radius={18} />
-                            <div style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>HouseHub</div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>RYH</div>
                         </div>
                     ),
                 )}
@@ -244,7 +244,7 @@ const AppScreen: React.FC<{ f: number }> = ({ f }) => {
         <div style={{ position: 'absolute', inset: 0, background: light.shell, color: light.ink, display: 'flex', flexDirection: 'column' }}>
             <StatusBar dark />
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '6px 22px 18px', borderBottom: `1.5px solid ${light.line}` }}>
-                <LogoMark size={40} radius={12} />
+                <RoofMark width={52} color={light.ink} />
                 <div style={{ fontSize: 26, fontWeight: 900, letterSpacing: '-0.03em' }}>{onBudget ? 'Budget' : 'Chores'}</div>
                 <div style={{ flex: 1 }} />
                 <div style={{ width: 42, height: 42, borderRadius: 13, background: light.soft, display: 'grid', placeItems: 'center', fontSize: 19 }}>🔔</div>
@@ -368,7 +368,7 @@ export const Phone: React.FC = () => {
                 <Eyebrow icon="📱" label="On your phone" delay={4} />
                 <Headline segments={['In your', { accent: 'pocket,' }, 'too.']} delay={10} size={104} style={{ marginTop: 30 }} />
                 <Sub delay={30} style={{ marginTop: 26, maxWidth: 760 }}>
-                    Add HouseHub to your home screen — no app store — and get a nudge the moment something needs you.
+                    Add RYH to your home screen — no app store — and get a nudge the moment something needs you.
                 </Sub>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 34 }}>
                     {perks.map(({ text: perk, at }) => {

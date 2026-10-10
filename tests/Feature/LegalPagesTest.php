@@ -35,7 +35,7 @@ class LegalPagesTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component($component)
-                ->where('legal.tradingName', 'HouseHub')
+                ->where('legal.tradingName', 'RYH')
                 ->where('legal.termsVersion', config('legal.terms_version')));
     }
 
@@ -64,30 +64,30 @@ class LegalPagesTest extends TestCase
     public function itPassesConfiguredBusinessDetailsThrough(): void
     {
         config([
-            'legal.entity_name' => 'HouseHub Ltd',
+            'legal.entity_name' => 'RYH Ltd',
             'legal.entity_type' => 'limited_company',
             'legal.company_number' => '12345678',
-            'legal.support_email' => 'help@househub.test',
-            'legal.privacy_email' => 'privacy@househub.test',
+            'legal.support_email' => 'help@ryh.test',
+            'legal.privacy_email' => 'privacy@ryh.test',
         ]);
 
         $this->get('/privacy')
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('legal.entityName', 'HouseHub Ltd')
+                ->where('legal.entityName', 'RYH Ltd')
                 ->where('legal.entityType', 'limited_company')
                 ->where('legal.companyNumber', '12345678')
-                ->where('legal.supportEmail', 'help@househub.test')
-                ->where('legal.privacyEmail', 'privacy@househub.test'));
+                ->where('legal.supportEmail', 'help@ryh.test')
+                ->where('legal.privacyEmail', 'privacy@ryh.test'));
     }
 
     #[Test]
     public function theCookiePolicyDescribesTheCookiesTheAppActuallySets(): void
     {
-        config(['session.cookie' => 'househub_session', 'session.lifetime' => 120, 'session.expire_on_close' => false]);
+        config(['session.cookie' => 'ryh_session', 'session.lifetime' => 120, 'session.expire_on_close' => false]);
 
         $this->get('/cookies')
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('cookies.sessionCookie', 'househub_session')
+                ->where('cookies.sessionCookie', 'ryh_session')
                 ->where('cookies.sessionLifetimeMinutes', 120)
                 ->where('cookies.expireOnClose', false)
                 ->where('cookies.rememberDays', 400)

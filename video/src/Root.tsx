@@ -1,8 +1,8 @@
 import React from 'react';
 import { Composition } from 'remotion';
 import { FPS } from './anim';
-import { HouseHubPromo, TOTAL_FRAMES } from './HouseHubPromo';
+import { RyhPromo, TOTAL_FRAMES } from './RyhPromo';
 
 export const RemotionRoot: React.FC = () => (
-    <Composition id="HouseHubPromo" component={HouseHubPromo} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1920} height={1080} />
+    <Composition id="RyhPromo" component={RyhPromo} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1920} height={1080} />
 );

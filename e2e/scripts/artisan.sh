@@ -7,4 +7,4 @@ if [ -n "$CI" ]; then
     APP_ENV=e2e exec php artisan "$@"
 fi
 
-exec docker exec -i -e APP_ENV=e2e home-hub-app php artisan "$@"
+exec docker exec -i -e APP_ENV=e2e ryh-app php artisan "$@"

@@ -1,8 +1,8 @@
-# HouseHub
+# RYH
 
 Family home organiser — dashboard, meal planner, shopping lists, chores,
 shared calendar, budget and a document vault, with live in-app notifications.
-Built from the HouseHub design (`HouseHub.dc.html`) as a Laravel 12 + Inertia 2
+Built from the RYH design (`RYH.dc.html`) as a Laravel 12 + Inertia 2
 + Vue 3 (TypeScript) + Tailwind app, running under Laravel Sail.
 
 ## Features
@@ -24,9 +24,9 @@ Built from the HouseHub design (`HouseHub.dc.html`) as a Laravel 12 + Inertia 2
 - **Push notifications** — the same notifications as Web Push to any device
   someone turns on in Settings → Notifications (on iOS, only in the installed
   app), with a per-category opt-out (chores, calendar, meals). Pushes go out
-  through the queue (`home-hub-queue`); signing out turns push off for that
+  through the queue (`ryh-queue`); signing out turns push off for that
   device.
-- **Installable app** — a PWA: add HouseHub to a phone's home screen (an
+- **Installable app** — a PWA: add RYH to a phone's home screen (an
   install card offers it on Android and walks iOS users through "Add to Home
   Screen"). `public/sw.js` is registered in production builds only and shows
   `public/offline.html` when there's no connection. Icons are rendered from
@@ -48,17 +48,17 @@ Built from the HouseHub design (`HouseHub.dc.html`) as a Laravel 12 + Inertia 2
 ./vendor/bin/sail npm run dev
 ```
 
-Then <http://localhost:8090>. Sign in as `sarah@househub.test` / `password`
+Then <http://localhost:8090>. Sign in as `sarah@ryh.test` / `password`
 (also `james@`, `mia@`, `noah@`) — the seeded "Parkers" household, already
 subscribed, with chores, meals, calendar events, budget and documents in
 place.
 
-`sail up -d` also starts a `home-hub-websockets` container (Reverb,
+`sail up -d` also starts a `ryh-websockets` container (Reverb,
 `php artisan reverb:start`) for live notifications — no separate step needed.
 
-Containers: `home-hub-app` (PHP app + Vite), `home-hub-websockets` (Reverb),
-`home-hub-queue` (`queue:work`, e.g. invite emails), `home-hub-mysql`,
-`home-hub-redis` (cache, sessions and queue), `home-hub-mailpit` (catches all
+Containers: `ryh-app` (PHP app + Vite), `ryh-websockets` (Reverb),
+`ryh-queue` (`queue:work`, e.g. invite emails), `ryh-mysql`,
+`ryh-redis` (cache, sessions and queue), `ryh-mailpit` (catches all
 outgoing mail — inbox at <http://localhost:8025>). The Compose service names
 (`laravel.test`, `reverb`, `queue`, `mysql`, `redis`, `mailpit`) are unchanged — they're the in-network hostnames and
 what `sail` commands target.
@@ -101,13 +101,13 @@ the bell only refreshes when a page loads. Push notifications still arrive.
 
 Things to check on the phone:
 
-- **Android (Chrome):** the "Get the HouseHub app" card installs the app.
+- **Android (Chrome):** the "Get the RYH app" card installs the app.
 - **iPhone (Safari):** the card shows the Add to Home Screen steps.
   Notifications only work from the installed app.
 - **Installed app:** after signing out, "Remember me" is already ticked on the
   sign-in form. Coming back after 30+ seconds away shows fresh data.
 - **Settings → Notifications:** "Turn on", then "Send a test". Tapping the
-  notification opens HouseHub. Assign yourself a chore from another account:
+  notification opens RYH. Assign yourself a chore from another account:
   the push says who did it, under the household's name.
 - **Offline:** with no connection, any page shows "You're offline". It reloads
   by itself when the connection comes back.
@@ -134,7 +134,7 @@ npm run e2e                        # or npm run e2e:ui to watch it
 ```
 
 With Sail up, a run serves the app on <http://localhost:8091> from inside
-`home-hub-app` with `APP_ENV=e2e` (`.env.e2e`), and rebuilds the separate
+`ryh-app` with `APP_ENV=e2e` (`.env.e2e`), and rebuilds the separate
 `testing_e2e` database from the seeder first, so your dev data is never touched.
 Registration links are read from Mailpit, and AI meal planning is a fixed fake
 (`App\Ai\Fakes\E2eMealPlan`), so no API key or paid call is needed. Journeys
@@ -154,11 +154,11 @@ Clean architecture, matching the conventions in `../CLAUDE.md`:
 |---|---|---|
 | Use cases | `app/UseCases/**` | All business logic — one class per screen or action |
 | Repositories | `app/Repositories/**` | Behind `app/Contracts/Repositories/*Interface.php`, bound in `RepositoryServiceProvider` |
-| DTOs | `app/Data/**` | `spatie/laravel-data`; mirrored in `resources/js/types/househub.ts` |
+| DTOs | `app/Data/**` | `spatie/laravel-data`; mirrored in `resources/js/types/ryh.ts` |
 | Notifications | `app/Notifications/**` | Extend `HouseholdNotification`; broadcast on `household.{id}` and persist to the database |
-| Screens | `resources/js/pages/*.vue` | App screens use the persistent `layouts/HouseHubShell.vue` (`defineOptions({ layout: HouseHubShell })`), so the sidebar, header and tab bar stay mounted between screens; each sets its header title with `<HouseHubLayout title subtitle>` |
+| Screens | `resources/js/pages/*.vue` | App screens use the persistent `layouts/RyhShell.vue` (`defineOptions({ layout: RyhShell })`), so the sidebar, header and tab bar stay mounted between screens; each sets its header title with `<RyhLayout title subtitle>` |
 
-Design tokens live as `--hh-*` custom properties in `resources/css/app.css`
-and are surfaced as Tailwind `hh-*` colours. They key off the same `.dark`
+Design tokens live as `--ryh-*` custom properties in `resources/css/app.css`
+and are surfaced as Tailwind `ryh-*` colours. They key off the same `.dark`
 class the starter kit's appearance switcher already toggles, so the design's
 dark theme comes for free.

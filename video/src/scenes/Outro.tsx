@@ -1,7 +1,7 @@
 import React from 'react';
 import { AbsoluteFill, Easing, useCurrentFrame } from 'remotion';
 import { prog, range, spr, springs } from '../anim';
-import { Confetti, Cursor, HeroBg, LogoMark, Sfx } from '../components/ui';
+import { Confetti, Cursor, HeroBg, RoofMark, Sfx, Wordmark } from '../components/ui';
 import { brand, fonts } from '../theme';
 
 // The price holds for six seconds so it can be read properly, then the logo
@@ -132,20 +132,9 @@ export const Outro: React.FC = () => {
                     })}
                     <div style={{ position: 'absolute', top: 250, display: 'flex', alignItems: 'center', gap: 40 }}>
                         <div style={{ transform: `scale(${logo}) rotate(${(1 - logo) * 40}deg)` }}>
-                            <LogoMark size={190} radius={58} />
+                            <RoofMark width={532} color={brand.onhero} />
                         </div>
-                        <span
-                            style={{
-                                fontSize: 180,
-                                fontWeight: 900,
-                                letterSpacing: '-0.05em',
-                                color: brand.onhero,
-                                opacity: word,
-                                transform: `translateX(${(1 - word) * -60}px)`,
-                            }}
-                        >
-                            HouseHub
-                        </span>
+                        <Wordmark height={190} color={brand.onhero} lines={[word, word]} />
                     </div>
                     <div
                         style={{

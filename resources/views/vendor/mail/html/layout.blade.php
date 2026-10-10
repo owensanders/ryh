@@ -31,7 +31,7 @@ text-align: center !important;
 }
 
 /* The theme is inlined, so dark mode has to win with !important. Colours are the
-   app's dark `--hh-*` tokens, pre-blended against the dark card (#151a25). */
+   app's dark `--ryh-*` tokens, pre-blended against the dark card (#151a25). */
 @media (prefers-color-scheme: dark) {
 body,
 .wrapper {
@@ -48,13 +48,11 @@ border-color: #2a2f39 !important;
 .content-cell h3,
 .content-cell p,
 .content-cell td,
-.brand-name,
 .panel-content,
 .panel-content p {
 color: #f2f5f9 !important;
 }
 
-.brand-tagline,
 .subcopy p,
 .subcopy a {
 color: #72767e !important;
@@ -67,6 +65,14 @@ border-color: #2a2f39 !important;
 
 .panel-content {
 background-color: #1a2130 !important;
+}
+
+.logo-light {
+display: none !important;
+}
+
+.logo-dark {
+display: block !important;
 }
 
 .footer p,

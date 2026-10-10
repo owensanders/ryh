@@ -1,11 +1,11 @@
-/** The seeded "Parkers" household (database/seeders/HouseHubSeeder.php). */
+/** The seeded "Parkers" household (database/seeders/RyhSeeder.php). */
 export const PASSWORD = 'password';
 
 export const users = {
-    owner: { email: 'sarah@househub.test', name: 'Sarah Parker' },
-    adult: { email: 'james@househub.test', name: 'James Parker' },
-    teen: { email: 'mia@househub.test', name: 'Mia Parker' },
-    child: { email: 'noah@househub.test', name: 'Noah Parker' },
+    owner: { email: 'sarah@ryh.test', name: 'Sarah Parker' },
+    adult: { email: 'james@ryh.test', name: 'James Parker' },
+    teen: { email: 'mia@ryh.test', name: 'Mia Parker' },
+    child: { email: 'noah@ryh.test', name: 'Noah Parker' },
 } as const;
 
 export type Role = keyof typeof users;

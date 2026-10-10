@@ -2,15 +2,15 @@
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useHouseholdRole } from '@/composables/useHouseholdRole';
-import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
-import HouseHubShell from '@/layouts/HouseHubShell.vue';
-import { dial, tickStyle } from '@/lib/househub';
-import type { Chore, ChoreColumn, ChoreStatus, Member, MemberScore } from '@/types/househub';
+import RyhLayout from '@/layouts/RyhLayout.vue';
+import RyhShell from '@/layouts/RyhShell.vue';
+import { dial, tickStyle } from '@/lib/ryh';
+import type { Chore, ChoreColumn, ChoreStatus, Member, MemberScore } from '@/types/ryh';
 import { router, useForm } from '@inertiajs/vue3';
 import { Bell, Plus, X } from 'lucide-vue-next';
 import { computed, onUnmounted, ref } from 'vue';
 
-defineOptions({ layout: HouseHubShell });
+defineOptions({ layout: RyhShell });
 
 const props = defineProps<{
     columns: ChoreColumn[];
@@ -164,35 +164,35 @@ function confirmDestroy(): void {
 </script>
 
 <template>
-    <HouseHubLayout title="Chores" subtitle="This week">
-        <div class="flex animate-hh-rise flex-col gap-[18px]">
+    <RyhLayout title="Chores" subtitle="This week">
+        <div class="flex animate-ryh-rise flex-col gap-[18px]">
             <div class="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
                 <div
                     v-for="score in scores"
                     :key="score.member.id"
-                    class="flex items-center gap-3.5 rounded-[20px] border border-hh-line bg-hh-card px-[18px] py-4"
+                    class="flex items-center gap-3.5 rounded-[20px] border border-ryh-line bg-ryh-card px-[18px] py-4"
                 >
                     <div
                         class="grid h-[60px] w-[60px] flex-none place-items-center rounded-full transition-[background] duration-500"
                         :style="{ background: dial(score.percentage, score.member.colour) }"
                     >
-                        <div class="grid h-[46px] w-[46px] place-items-center rounded-full bg-hh-card text-xs font-extrabold">
+                        <div class="grid h-[46px] w-[46px] place-items-center rounded-full bg-ryh-card text-xs font-extrabold">
                             {{ score.member.initials }}
                         </div>
                     </div>
                     <div>
                         <div class="text-[14.5px] font-extrabold">{{ score.member.name.split(' ')[0] }}</div>
-                        <div class="mt-[3px] text-[12.5px] text-hh-ink3">{{ score.done }} of {{ score.total }} this week</div>
+                        <div class="mt-[3px] text-[12.5px] text-ryh-ink3">{{ score.done }} of {{ score.total }} this week</div>
                     </div>
                 </div>
             </div>
 
             <div v-if="canManage" class="flex items-center justify-end gap-2.5">
-                <span v-if="notifyChoresCooldownLabel" class="text-[12px] text-hh-ink3">{{ notifyChoresCooldownLabel }}</span>
+                <span v-if="notifyChoresCooldownLabel" class="text-[12px] text-ryh-ink3">{{ notifyChoresCooldownLabel }}</span>
                 <button
                     type="button"
                     :disabled="!notifyChoresReady"
-                    class="hh-btn w-auto bg-hh-soft text-hh-ink disabled:cursor-not-allowed disabled:opacity-50"
+                    class="ryh-btn w-auto bg-ryh-soft text-ryh-ink disabled:cursor-not-allowed disabled:opacity-50"
                     @click="notifyChores"
                 >
                     <Bell class="h-4 w-4" :stroke-width="2.5" />
@@ -200,20 +200,20 @@ function confirmDestroy(): void {
                 </button>
             </div>
 
-            <section v-if="canManage" class="flex flex-wrap items-center gap-2.5 rounded-[20px] border border-hh-line bg-hh-panel p-[18px]">
+            <section v-if="canManage" class="flex flex-wrap items-center gap-2.5 rounded-[20px] border border-ryh-line bg-ryh-panel p-[18px]">
                 <input
                     v-model="draft"
                     type="text"
                     placeholder="Add a chore, e.g. Clean the bathroom"
                     aria-label="New chore"
-                    class="hh-input h-12 min-w-[220px] flex-1"
+                    class="ryh-input h-12 min-w-[220px] flex-1"
                     @keydown.enter="addChore"
                 />
-                <select v-model="draftAssignedTo" aria-label="Assign new chore to" class="hh-input h-12 w-[132px]">
+                <select v-model="draftAssignedTo" aria-label="Assign new chore to" class="ryh-input h-12 w-[132px]">
                     <option value="">Unassigned</option>
                     <option v-for="member in members" :key="member.id" :value="String(member.id)">{{ member.name }}</option>
                 </select>
-                <button type="button" class="hh-btn w-auto bg-hh-coral text-white" @click="addChore">
+                <button type="button" class="ryh-btn w-auto bg-ryh-coral text-white" @click="addChore">
                     <Plus class="h-4 w-4" :stroke-width="2.5" />
                     Add chore
                 </button>
@@ -225,22 +225,22 @@ function confirmDestroy(): void {
                     :key="column.status"
                     class="flex min-h-[420px] flex-col gap-2.5 rounded-[20px] border border-dashed p-3.5 transition"
                     :style="{
-                        background: draggingId !== null ? 'var(--hh-sunk)' : 'var(--hh-panel)',
-                        borderColor: draggingId !== null ? 'var(--hh-line)' : 'transparent',
+                        background: draggingId !== null ? 'var(--ryh-sunk)' : 'var(--ryh-panel)',
+                        borderColor: draggingId !== null ? 'var(--ryh-line)' : 'transparent',
                     }"
                     @dragover.prevent
                     @drop.prevent="drop(column.status)"
                 >
                     <div class="flex items-center gap-2">
                         <span class="text-[13.5px] font-extrabold">{{ column.title }}</span>
-                        <span class="rounded-md bg-hh-soft px-1.5 py-0.5 font-mono text-[11px] text-hh-ink2">{{ column.count }}</span>
+                        <span class="rounded-md bg-ryh-soft px-1.5 py-0.5 font-mono text-[11px] text-ryh-ink2">{{ column.count }}</span>
                     </div>
 
                     <div
                         v-for="chore in column.items"
                         :key="chore.id"
                         :draggable="canManage"
-                        class="rounded-2xl border border-hh-line bg-hh-card px-3.5 py-3 transition hover:-translate-y-0.5 hover:shadow-hh"
+                        class="rounded-2xl border border-ryh-line bg-ryh-card px-3.5 py-3 transition hover:-translate-y-0.5 hover:shadow-ryh"
                         :class="canManage ? 'cursor-grab' : ''"
                         :style="{ opacity: draggingId === chore.id ? 0.4 : 1 }"
                         @dragstart="startDrag($event, chore.id)"
@@ -259,14 +259,14 @@ function confirmDestroy(): void {
                             >
                                 {{ chore.done ? '✓' : '' }}
                             </button>
-                            <span class="flex-1 text-sm font-medium leading-snug" :class="chore.done ? 'text-hh-ink3 line-through' : 'text-hh-ink'">
+                            <span class="flex-1 text-sm font-medium leading-snug" :class="chore.done ? 'text-ryh-ink3 line-through' : 'text-ryh-ink'">
                                 {{ chore.name }}
                             </span>
                             <button
                                 v-if="canManage"
                                 type="button"
                                 title="Delete chore"
-                                class="grid h-6 w-6 flex-none place-items-center rounded-lg border-0 bg-transparent text-hh-ink3 transition hover:bg-hh-soft hover:text-hh-coral"
+                                class="grid h-6 w-6 flex-none place-items-center rounded-lg border-0 bg-transparent text-ryh-ink3 transition hover:bg-ryh-soft hover:text-ryh-coral"
                                 @click.stop="requestDelete(chore)"
                             >
                                 <X class="h-3 w-3" :stroke-width="2.5" />
@@ -282,7 +282,7 @@ function confirmDestroy(): void {
                         </div>
                     </div>
 
-                    <div v-if="column.items.length === 0" class="py-6 text-center text-[12.5px] text-hh-ink3">
+                    <div v-if="column.items.length === 0" class="py-6 text-center text-[12.5px] text-ryh-ink3">
                         {{ column.status === 'done' ? 'Nothing ticked off yet.' : 'Drag a chore here.' }}
                     </div>
                 </div>
@@ -291,21 +291,21 @@ function confirmDestroy(): void {
 
         <!-- Edit -->
         <Dialog :open="open" @update:open="open = $event">
-            <DialogContent class="rounded-[22px] border-hh-line bg-hh-card text-hh-ink sm:rounded-[22px]">
+            <DialogContent class="rounded-[22px] border-ryh-line bg-ryh-card text-ryh-ink sm:rounded-[22px]">
                 <DialogHeader>
                     <DialogTitle class="text-[16px] font-extrabold tracking-tight">Edit chore</DialogTitle>
                 </DialogHeader>
 
                 <form class="flex flex-col gap-4" @submit.prevent="submit">
                     <div class="flex flex-col gap-1.5">
-                        <label for="name" class="hh-label">Name</label>
-                        <input id="name" v-model="form.name" type="text" class="hh-input" required placeholder="What needs doing?" />
-                        <p v-if="form.errors.name" class="text-[12.5px] text-hh-coral">{{ form.errors.name }}</p>
+                        <label for="name" class="ryh-label">Name</label>
+                        <input id="name" v-model="form.name" type="text" class="ryh-input" required placeholder="What needs doing?" />
+                        <p v-if="form.errors.name" class="text-[12.5px] text-ryh-coral">{{ form.errors.name }}</p>
                     </div>
 
                     <div class="flex flex-col gap-1.5">
-                        <label for="assigned_to" class="hh-label">Assignee</label>
-                        <select id="assigned_to" v-model="form.assigned_to" class="hh-input">
+                        <label for="assigned_to" class="ryh-label">Assignee</label>
+                        <select id="assigned_to" v-model="form.assigned_to" class="ryh-input">
                             <option value="">Unassigned</option>
                             <option v-for="member in members" :key="member.id" :value="String(member.id)">
                                 {{ member.name }}
@@ -314,13 +314,13 @@ function confirmDestroy(): void {
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <button type="submit" class="hh-btn w-auto bg-hh-coral text-white" :disabled="form.processing">Save changes</button>
-                        <button type="button" class="hh-btn w-auto bg-hh-soft text-hh-ink" @click="open = false">Cancel</button>
+                        <button type="submit" class="ryh-btn w-auto bg-ryh-coral text-white" :disabled="form.processing">Save changes</button>
+                        <button type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="open = false">Cancel</button>
                     </div>
                 </form>
             </DialogContent>
         </Dialog>
 
         <ConfirmDialog :open="confirmOpen" message="Delete this chore?" @update:open="confirmOpen = $event" @confirm="confirmDestroy" />
-    </HouseHubLayout>
+    </RyhLayout>
 </template>

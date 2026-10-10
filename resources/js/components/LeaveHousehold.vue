@@ -47,33 +47,33 @@ const closeModal = () => {
 
 <template>
     <Dialog>
-        <DialogTrigger class="hh-btn w-auto bg-hh-sunk px-4 text-hh-coral"> Leave </DialogTrigger>
-        <DialogContent class="rounded-[22px] border-hh-line bg-hh-card text-hh-ink sm:rounded-[22px]">
+        <DialogTrigger class="ryh-btn w-auto bg-ryh-sunk px-4 text-ryh-coral"> Leave </DialogTrigger>
+        <DialogContent class="rounded-[22px] border-ryh-line bg-ryh-card text-ryh-ink sm:rounded-[22px]">
             <form class="flex flex-col gap-5" @submit="leaveHousehold">
                 <DialogHeader class="space-y-2">
                     <DialogTitle class="text-[16px] font-extrabold tracking-tight">Leave {{ props.householdName }}?</DialogTitle>
-                    <DialogDescription class="text-[13px] text-hh-ink3">
+                    <DialogDescription class="text-[13px] text-ryh-ink3">
                         You will lose access to its meals, lists, chores, calendar and documents until someone invites you back.
                     </DialogDescription>
                 </DialogHeader>
 
-                <div v-if="householdError" class="rounded-[13px] bg-[color-mix(in_srgb,var(--hh-coral)_10%,transparent)] p-3.5">
-                    <p class="text-[13px] text-hh-ink2">{{ householdError }}</p>
-                    <a :href="route('house.index')" class="mt-1.5 inline-block text-[13px] font-bold text-hh-coral underline">
+                <div v-if="householdError" class="rounded-[13px] bg-[color-mix(in_srgb,var(--ryh-coral)_10%,transparent)] p-3.5">
+                    <p class="text-[13px] text-ryh-ink2">{{ householdError }}</p>
+                    <a :href="route('house.index')" class="mt-1.5 inline-block text-[13px] font-bold text-ryh-coral underline">
                         Go promote another member to Owner instead
                     </a>
-                    <label class="mt-3 flex items-start gap-2 text-[13px] text-hh-ink2">
+                    <label class="mt-3 flex items-start gap-2 text-[13px] text-ryh-ink2">
                         <input v-model="form.confirm_household_deletion" type="checkbox" class="mt-0.5" />
                         I understand — delete this household and all its data
                     </label>
                 </div>
 
                 <DialogFooter class="gap-2">
-                    <DialogClose class="hh-btn w-auto bg-hh-soft text-hh-ink" @click="closeModal"> Cancel </DialogClose>
+                    <DialogClose class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="closeModal"> Cancel </DialogClose>
 
                     <button
                         type="submit"
-                        class="hh-btn w-auto bg-hh-coral text-white"
+                        class="ryh-btn w-auto bg-ryh-coral text-white"
                         :disabled="form.processing || (!!householdError && !form.confirm_household_deletion)"
                     >
                         Leave household

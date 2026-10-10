@@ -2,15 +2,15 @@
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useHouseholdRole } from '@/composables/useHouseholdRole';
-import HouseHubLayout from '@/layouts/HouseHubLayout.vue';
-import HouseHubShell from '@/layouts/HouseHubShell.vue';
-import { tickStyle } from '@/lib/househub';
-import type { ShoppingItem, ShoppingList } from '@/types/househub';
+import RyhLayout from '@/layouts/RyhLayout.vue';
+import RyhShell from '@/layouts/RyhShell.vue';
+import { tickStyle } from '@/lib/ryh';
+import type { ShoppingItem, ShoppingList } from '@/types/ryh';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
-defineOptions({ layout: HouseHubShell });
+defineOptions({ layout: RyhShell });
 
 const props = defineProps<{
     lists: ShoppingList[];
@@ -145,10 +145,10 @@ function confirmDestroy(): void {
 </script>
 
 <template>
-    <HouseHubLayout title="Shopping Lists" :subtitle="`${lists.length} lists`">
-        <div class="flex animate-hh-rise flex-col items-start gap-5 lg:flex-row">
+    <RyhLayout title="Shopping Lists" :subtitle="`${lists.length} lists`">
+        <div class="flex animate-ryh-rise flex-col items-start gap-5 lg:flex-row">
             <div class="flex w-full flex-none flex-col gap-1.5 lg:w-[232px]">
-                <button v-if="canManage" type="button" class="hh-btn mb-1 w-auto self-start bg-hh-coral text-white" @click="openNewList">
+                <button v-if="canManage" type="button" class="ryh-btn mb-1 w-auto self-start bg-ryh-coral text-white" @click="openNewList">
                     <Plus class="h-4 w-4" :stroke-width="2.5" />
                     New list
                 </button>
@@ -157,17 +157,17 @@ function confirmDestroy(): void {
                     v-for="list in lists"
                     :key="list.id"
                     :href="route('shopping.index', { slug: list.slug })"
-                    class="flex min-h-[48px] items-center gap-2.5 rounded-[14px] border px-3.5 text-left transition hover:bg-hh-card"
-                    :class="active?.id === list.id ? 'border-hh-line bg-hh-card' : 'border-transparent bg-transparent'"
+                    class="flex min-h-[48px] items-center gap-2.5 rounded-[14px] border px-3.5 text-left transition hover:bg-ryh-card"
+                    :class="active?.id === list.id ? 'border-ryh-line bg-ryh-card' : 'border-transparent bg-transparent'"
                 >
                     <span class="h-2.5 w-2.5 flex-none rounded-[3px]" :style="{ background: list.colour }"></span>
                     <span class="flex-1 text-sm font-semibold">{{ list.name }}</span>
-                    <span class="font-mono text-[11.5px] text-hh-ink3">{{ list.remaining }}/{{ list.total }}</span>
+                    <span class="font-mono text-[11.5px] text-ryh-ink3">{{ list.remaining }}/{{ list.total }}</span>
                 </Link>
             </div>
 
-            <div v-if="active" class="w-full min-w-0 flex-1 rounded-[22px] border border-hh-line bg-hh-card p-4 sm:p-[22px]">
-                <div class="flex items-center gap-3 border-b border-hh-line pb-4">
+            <div v-if="active" class="w-full min-w-0 flex-1 rounded-[22px] border border-ryh-line bg-ryh-card p-4 sm:p-[22px]">
+                <div class="flex items-center gap-3 border-b border-ryh-line pb-4">
                     <div class="flex-1">
                         <div class="flex items-center gap-1.5">
                             <h3 class="text-lg font-extrabold tracking-[-0.02em]">{{ active.name }}</h3>
@@ -175,22 +175,22 @@ function confirmDestroy(): void {
                                 v-if="canManage"
                                 type="button"
                                 aria-label="Rename list"
-                                class="rounded-lg p-1 transition hover:bg-hh-soft"
+                                class="rounded-lg p-1 transition hover:bg-ryh-soft"
                                 @click="openEditList(active)"
                             >
-                                <Pencil class="h-3.5 w-3.5 text-hh-ink3" />
+                                <Pencil class="h-3.5 w-3.5 text-ryh-ink3" />
                             </button>
                         </div>
-                        <div class="mt-1 text-[13px] text-hh-ink3">{{ active.remaining }} items left</div>
+                        <div class="mt-1 text-[13px] text-ryh-ink3">{{ active.remaining }} items left</div>
                     </div>
                     <button
                         v-if="canManage"
                         type="button"
                         aria-label="Delete list"
-                        class="rounded-lg p-1.5 transition hover:bg-hh-soft"
+                        class="rounded-lg p-1.5 transition hover:bg-ryh-soft"
                         @click="destroyActiveList"
                     >
-                        <Trash2 class="h-4 w-4 text-hh-ink3" />
+                        <Trash2 class="h-4 w-4 text-ryh-ink3" />
                     </button>
                 </div>
 
@@ -199,23 +199,23 @@ function confirmDestroy(): void {
                         v-model="draft.name"
                         placeholder="Add to this list…"
                         aria-label="Add to this list"
-                        class="h-12 min-w-0 flex-1 rounded-[14px] border border-hh-line bg-hh-sunk px-4 text-[14.5px] text-hh-ink placeholder:text-hh-ink3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hh-coral"
+                        class="h-12 min-w-0 flex-1 rounded-[14px] border border-ryh-line bg-ryh-sunk px-4 text-[14.5px] text-ryh-ink placeholder:text-ryh-ink3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ryh-coral"
                     />
                     <input
                         v-model="draft.quantity"
                         placeholder="Qty"
                         aria-label="Quantity"
-                        class="h-12 w-16 flex-none rounded-[14px] border border-hh-line bg-hh-sunk px-3 text-[14.5px] text-hh-ink placeholder:text-hh-ink3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hh-coral sm:w-20"
+                        class="h-12 w-16 flex-none rounded-[14px] border border-ryh-line bg-ryh-sunk px-3 text-[14.5px] text-ryh-ink placeholder:text-ryh-ink3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ryh-coral sm:w-20"
                     />
                     <button
                         type="submit"
                         :disabled="draft.processing"
-                        class="h-12 flex-none rounded-[14px] bg-hh-coral px-4 text-sm font-bold text-white transition hover:-translate-y-0.5 disabled:opacity-50 sm:px-[22px]"
+                        class="h-12 flex-none rounded-[14px] bg-ryh-coral px-4 text-sm font-bold text-white transition hover:-translate-y-0.5 disabled:opacity-50 sm:px-[22px]"
                     >
                         Add
                     </button>
                 </form>
-                <p v-if="draft.errors.name" class="-mt-2 mb-3 text-[13px] text-hh-coral">{{ draft.errors.name }}</p>
+                <p v-if="draft.errors.name" class="-mt-2 mb-3 text-[13px] text-ryh-coral">{{ draft.errors.name }}</p>
 
                 <div class="flex flex-col gap-0.5">
                     <div v-for="item in active.items" :key="item.id" class="group relative">
@@ -224,7 +224,7 @@ function confirmDestroy(): void {
                             :disabled="!canToggleItems"
                             role="checkbox"
                             :aria-checked="item.done"
-                            class="flex min-h-[46px] w-full items-center gap-3 rounded-[13px] px-2.5 pr-10 text-left transition-colors hover:bg-hh-soft disabled:cursor-not-allowed"
+                            class="flex min-h-[46px] w-full items-center gap-3 rounded-[13px] px-2.5 pr-10 text-left transition-colors hover:bg-ryh-soft disabled:cursor-not-allowed"
                             @click="toggleItem(item.id)"
                         >
                             <span
@@ -234,10 +234,10 @@ function confirmDestroy(): void {
                             >
                                 {{ item.done ? '✓' : '' }}
                             </span>
-                            <span class="flex-1 text-[14.5px]" :class="item.done ? 'text-hh-ink3 line-through' : 'text-hh-ink'">
+                            <span class="flex-1 text-[14.5px]" :class="item.done ? 'text-ryh-ink3 line-through' : 'text-ryh-ink'">
                                 {{ item.name }}
                             </span>
-                            <span class="font-mono text-[11.5px] text-hh-ink3">{{ item.quantity }}</span>
+                            <span class="font-mono text-[11.5px] text-ryh-ink3">{{ item.quantity }}</span>
                         </button>
                         <button
                             v-if="canManage"
@@ -246,31 +246,31 @@ function confirmDestroy(): void {
                             class="absolute right-0.5 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-lg transition [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
                             @click.stop="openEditItem(item)"
                         >
-                            <Pencil class="h-3.5 w-3.5 text-hh-ink3" />
+                            <Pencil class="h-3.5 w-3.5 text-ryh-ink3" />
                         </button>
                     </div>
                 </div>
 
-                <p v-if="active.items.length === 0" class="py-10 text-center text-sm text-hh-ink3">This list is empty.</p>
+                <p v-if="active.items.length === 0" class="py-10 text-center text-sm text-ryh-ink3">This list is empty.</p>
             </div>
         </div>
 
         <!-- Create / rename list -->
         <Dialog :open="listDialogOpen" @update:open="listDialogOpen = $event">
-            <DialogContent class="rounded-[22px] border-hh-line bg-hh-card text-hh-ink sm:rounded-[22px]">
+            <DialogContent class="rounded-[22px] border-ryh-line bg-ryh-card text-ryh-ink sm:rounded-[22px]">
                 <DialogHeader>
                     <DialogTitle class="text-[16px] font-extrabold tracking-tight">{{ listDialogTitle }}</DialogTitle>
                 </DialogHeader>
 
                 <form class="flex flex-col gap-4" @submit.prevent="submitList">
                     <div class="flex flex-col gap-1.5">
-                        <label for="list-name" class="hh-label">Name</label>
-                        <input id="list-name" v-model="listForm.name" type="text" class="hh-input" required placeholder="e.g. Tesco" />
-                        <p v-if="listForm.errors.name" class="text-[12.5px] text-hh-coral">{{ listForm.errors.name }}</p>
+                        <label for="list-name" class="ryh-label">Name</label>
+                        <input id="list-name" v-model="listForm.name" type="text" class="ryh-input" required placeholder="e.g. Tesco" />
+                        <p v-if="listForm.errors.name" class="text-[12.5px] text-ryh-coral">{{ listForm.errors.name }}</p>
                     </div>
 
                     <div class="flex flex-col gap-1.5">
-                        <span class="hh-label">Colour</span>
+                        <span class="ryh-label">Colour</span>
                         <div class="flex gap-2">
                             <button
                                 v-for="colour in COLOURS"
@@ -280,18 +280,18 @@ function confirmDestroy(): void {
                                 :aria-label="colour"
                                 :aria-pressed="listForm.colour === colour"
                                 class="h-7 w-7 rounded-[9px] transition"
-                                :class="listForm.colour === colour ? 'ring-2 ring-hh-ink ring-offset-2 ring-offset-hh-card' : ''"
-                                :style="{ background: `var(--hh-${colour})` }"
+                                :class="listForm.colour === colour ? 'ring-2 ring-ryh-ink ring-offset-2 ring-offset-ryh-card' : ''"
+                                :style="{ background: `var(--ryh-${colour})` }"
                                 @click="listForm.colour = colour"
                             ></button>
                         </div>
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <button type="submit" class="hh-btn w-auto bg-hh-coral text-white" :disabled="listForm.processing">
+                        <button type="submit" class="ryh-btn w-auto bg-ryh-coral text-white" :disabled="listForm.processing">
                             {{ editingList ? 'Save changes' : 'Add list' }}
                         </button>
-                        <button type="button" class="hh-btn w-auto bg-hh-soft text-hh-ink" @click="listDialogOpen = false">Cancel</button>
+                        <button type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="listDialogOpen = false">Cancel</button>
                     </div>
                 </form>
             </DialogContent>
@@ -299,32 +299,32 @@ function confirmDestroy(): void {
 
         <!-- Edit item -->
         <Dialog :open="itemDialogOpen" @update:open="itemDialogOpen = $event">
-            <DialogContent class="rounded-[22px] border-hh-line bg-hh-card text-hh-ink sm:rounded-[22px]">
+            <DialogContent class="rounded-[22px] border-ryh-line bg-ryh-card text-ryh-ink sm:rounded-[22px]">
                 <DialogHeader>
                     <DialogTitle class="text-[16px] font-extrabold tracking-tight">Edit item</DialogTitle>
                 </DialogHeader>
 
                 <form class="flex flex-col gap-4" @submit.prevent="submitItem">
                     <div class="flex flex-col gap-1.5">
-                        <label for="item-name" class="hh-label">Name</label>
-                        <input id="item-name" v-model="itemForm.name" type="text" class="hh-input" required />
-                        <p v-if="itemForm.errors.name" class="text-[12.5px] text-hh-coral">{{ itemForm.errors.name }}</p>
+                        <label for="item-name" class="ryh-label">Name</label>
+                        <input id="item-name" v-model="itemForm.name" type="text" class="ryh-input" required />
+                        <p v-if="itemForm.errors.name" class="text-[12.5px] text-ryh-coral">{{ itemForm.errors.name }}</p>
                     </div>
 
                     <div class="flex flex-col gap-1.5">
-                        <label for="item-quantity" class="hh-label">Quantity</label>
-                        <input id="item-quantity" v-model="itemForm.quantity" type="text" class="hh-input" placeholder="x1" />
+                        <label for="item-quantity" class="ryh-label">Quantity</label>
+                        <input id="item-quantity" v-model="itemForm.quantity" type="text" class="ryh-input" placeholder="x1" />
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <button type="submit" class="hh-btn w-auto bg-hh-coral text-white" :disabled="itemForm.processing">Save changes</button>
-                        <button type="button" class="hh-btn w-auto bg-hh-soft text-hh-ink" @click="itemDialogOpen = false">Cancel</button>
-                        <button type="button" class="hh-btn ml-auto w-auto bg-hh-soft text-hh-coral" @click="destroyItem">Delete</button>
+                        <button type="submit" class="ryh-btn w-auto bg-ryh-coral text-white" :disabled="itemForm.processing">Save changes</button>
+                        <button type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="itemDialogOpen = false">Cancel</button>
+                        <button type="button" class="ryh-btn ml-auto w-auto bg-ryh-soft text-ryh-coral" @click="destroyItem">Delete</button>
                     </div>
                 </form>
             </DialogContent>
         </Dialog>
 
         <ConfirmDialog :open="confirmDialogOpen" :message="confirmMessage" @update:open="confirmDialogOpen = $event" @confirm="confirmDestroy" />
-    </HouseHubLayout>
+    </RyhLayout>
 </template>

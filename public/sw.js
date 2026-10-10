@@ -1,5 +1,5 @@
 /*
- * HouseHub service worker, registered by resources/js/lib/pwa.ts in
+ * RYH service worker, registered by resources/js/lib/pwa.ts in
  * production builds only.
  *
  * - Page loads go to the network and fall back to /offline.html when there
@@ -13,8 +13,8 @@
  * Bump VERSION when this file or the precached files change; the old cache is
  * dropped when the new worker activates.
  */
-const VERSION = 'v3';
-const CACHE = `househub-${VERSION}`;
+const VERSION = 'v4';
+const CACHE = `ryh-${VERSION}`;
 // Self-contained (inline styles and icon), so it renders with no network at all.
 const PRECACHE = ['/offline.html'];
 const MAX_ASSETS = 80;
@@ -32,7 +32,7 @@ self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches
             .keys()
-            .then((keys) => Promise.all(keys.filter((key) => key.startsWith('househub-') && key !== CACHE).map((key) => caches.delete(key))))
+            .then((keys) => Promise.all(keys.filter((key) => key.startsWith('ryh-') && key !== CACHE).map((key) => caches.delete(key))))
             .then(() => self.clients.claim()),
     );
 });
@@ -82,7 +82,7 @@ self.addEventListener('push', (event) => {
     event.waitUntil(showUnlessFocused(message));
 });
 
-// While HouseHub is open and focused, the bell and toast already show it.
+// While RYH is open and focused, the bell and toast already show it.
 // Safari requires every push to show a notification, so it always does there.
 async function showUnlessFocused(message) {
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
@@ -92,7 +92,7 @@ async function showUnlessFocused(message) {
     }
 
     // WebPushMessage::toArray() — title, plus body/icon/tag/data as options.
-    const { title = 'HouseHub', ...options } = message;
+    const { title = 'RYH', ...options } = message;
     await self.registration.showNotification(title, options);
 }
 

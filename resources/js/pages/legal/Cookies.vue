@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import LegalDocument from '@/components/legal/LegalDocument.vue';
 import Tbc from '@/components/legal/Tbc.vue';
-import type { CookieSettings, Legal } from '@/types/househub';
+import type { CookieSettings, Legal } from '@/types/ryh';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
@@ -114,8 +114,8 @@ const sections = [
                     <tr>
                         <td><code>pwa-install-dismissed-at</code></td>
                         <td>
-                            Remembers that you tapped <strong>Not now</strong> on the "Get the HouseHub app" card, so it doesn't keep appearing. It is
-                            only saved when you dismiss the card.
+                            Remembers that you tapped <strong>Not now</strong> on the "Get the RYH app" card, so it doesn't keep appearing. It is only
+                            saved when you dismiss the card.
                         </td>
                         <td>The card stays hidden for 30 days; the setting stays until you clear your browser's site data</td>
                     </tr>

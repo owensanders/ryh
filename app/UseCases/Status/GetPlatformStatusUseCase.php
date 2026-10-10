@@ -52,7 +52,7 @@ class GetPlatformStatusUseCase
     private static function descriptions(): array
     {
         return [
-            'app' => ['Website & app', 'Signing in and using HouseHub'],
+            'app' => ['Website & app', 'Signing in and using RYH'],
             'database' => ['Household data', 'Chores, meals, lists, calendar and budget'],
             'cache' => ['Sessions', 'Staying signed in'],
             'queue' => ['Emails & background jobs', 'Invites, verification emails and reminders'],

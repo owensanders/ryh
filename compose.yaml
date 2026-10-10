@@ -1,6 +1,6 @@
 services:
     laravel.test:
-        container_name: home-hub-app
+        container_name: ryh-app
         build:
             context: './vendor/laravel/sail/runtimes/8.4'
             dockerfile: Dockerfile
@@ -29,7 +29,7 @@ services:
             - redis
             - mailpit
     reverb:
-        container_name: home-hub-websockets
+        container_name: ryh-websockets
         image: 'sail-8.4/app'
         environment:
             WWWUSER: '${WWWUSER}'
@@ -49,7 +49,7 @@ services:
         depends_on:
             - laravel.test
     queue:
-        container_name: home-hub-queue
+        container_name: ryh-queue
         image: 'sail-8.4/app'
         environment:
             WWWUSER: '${WWWUSER}'
@@ -68,7 +68,7 @@ services:
             - laravel.test
             - redis
     mysql:
-        container_name: home-hub-mysql
+        container_name: ryh-mysql
         image: 'mysql:8.4'
         ports:
             - '${FORWARD_DB_PORT:-3306}:3306'
@@ -94,7 +94,7 @@ services:
             retries: 3
             timeout: 5s
     redis:
-        container_name: home-hub-redis
+        container_name: ryh-redis
         image: 'redis:alpine'
         ports:
             - '${FORWARD_REDIS_PORT:-6379}:6379'
@@ -110,7 +110,7 @@ services:
             retries: 3
             timeout: 5s
     mailpit:
-        container_name: home-hub-mailpit
+        container_name: ryh-mailpit
         image: 'axllent/mailpit:latest'
         ports:
             - '${FORWARD_MAILPIT_PORT:-1025}:1025'
@@ -120,7 +120,7 @@ services:
     # HTTPS tunnel for trying the app on a phone (install, push). Not started
     # by `sail up -d`; see scripts/tunnel.sh. Needs TRUSTED_PROXIES in .env.
     tunnel:
-        container_name: home-hub-tunnel
+        container_name: ryh-tunnel
         image: 'cloudflare/cloudflared:latest'
         command: 'tunnel --no-autoupdate --url http://laravel.test:80'
         networks:

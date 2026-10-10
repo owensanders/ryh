@@ -21,7 +21,7 @@ class PaymentFailedMail extends Mailable implements ShouldQueue
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: "We couldn't take your HouseHub payment");
+        return new Envelope(subject: "We couldn't take your RYH payment");
     }
 
     public function content(): Content

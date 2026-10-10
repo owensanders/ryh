@@ -8,7 +8,7 @@ test('the landing page explains the phone app and how to install it', async ({ p
     await expect(page).toHaveURL(/\/#phone$/);
 
     const section = page.locator('section#phone');
-    await expect(section.getByRole('heading', { name: 'HouseHub lives on your home screen' })).toBeVisible();
+    await expect(section.getByRole('heading', { name: 'RYH lives on your home screen' })).toBeVisible();
 
     // A desktop visitor starts on Android; iPhone is a tab away.
     await expect(section.getByRole('tab', { name: 'Android' })).toHaveAttribute('aria-selected', 'true');

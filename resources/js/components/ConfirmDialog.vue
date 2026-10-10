@@ -15,16 +15,16 @@ const emit = defineEmits<{
 
 <template>
     <Dialog :open="open" @update:open="emit('update:open', $event)">
-        <DialogContent class="rounded-[22px] border-hh-line bg-hh-card text-hh-ink sm:rounded-[22px]">
+        <DialogContent class="rounded-[22px] border-ryh-line bg-ryh-card text-ryh-ink sm:rounded-[22px]">
             <DialogHeader>
                 <DialogTitle class="text-[16px] font-extrabold tracking-tight">Are you sure?</DialogTitle>
             </DialogHeader>
-            <p class="text-[13.5px] text-hh-ink2">{{ message }}</p>
+            <p class="text-[13.5px] text-ryh-ink2">{{ message }}</p>
             <div class="flex items-center gap-2">
-                <button type="button" class="hh-btn w-auto bg-hh-coral text-white" @click="emit('confirm')">
+                <button type="button" class="ryh-btn w-auto bg-ryh-coral text-white" @click="emit('confirm')">
                     {{ confirmLabel ?? 'Delete' }}
                 </button>
-                <button type="button" class="hh-btn w-auto bg-hh-soft text-hh-ink" @click="emit('update:open', false)">Cancel</button>
+                <button type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="emit('update:open', false)">Cancel</button>
             </div>
         </DialogContent>
     </Dialog>

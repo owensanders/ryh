@@ -6,17 +6,18 @@ import { registerNewUser, verifyEmail } from './support/register';
 import { storageState, uniqueName } from './support/users';
 
 /**
- * Opens the email as a mail client would show it, checks it carries the HouseHub
- * branding (logo, wordmark, coral button), and returns where its button goes —
+ * Opens the email as a mail client would show it, checks it carries the RYH
+ * branding (the logo and a coral button), and returns where its button goes —
  * so each journey continues by following the button, the way a person would.
  */
 async function openBrandedEmail(page: Page, address: string, subject: RegExp, heading: string, button: string): Promise<string> {
     await page.goto(emailHtmlUrl(await waitForEmail(address, subject)));
 
-    const logo = page.locator('img.logo');
+    // The light-mode logo; mail apps in dark mode swap in img.logo-dark.
+    const logo = page.locator('img.logo-light');
     await expect(logo).toBeVisible();
+    await expect(logo).toHaveAttribute('alt', 'Run Your Home');
     expect(await logo.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
-    await expect(page.getByText('The home, organised.')).toBeVisible();
 
     await expect(page.getByRole('heading', { name: heading })).toBeVisible();
 
@@ -59,7 +60,7 @@ test('the owner invites someone new by email, and they sign up from the link int
     await expect(owner.getByLabel('Email', { exact: true })).toHaveValue('');
 
     const invitee = await browser.newPage();
-    const registerUrl = await openBrandedEmail(invitee, email, /Join The Parkers/, 'Join The Parkers on HouseHub', 'Create your account');
+    const registerUrl = await openBrandedEmail(invitee, email, /Join The Parkers/, 'Join The Parkers on RYH', 'Create your account');
 
     await invitee.goto(registerUrl);
     await expect(invitee.getByLabel('Email address')).toHaveValue(email);
@@ -112,7 +113,7 @@ test('the owner invites a child by email after confirming they are their parent 
     await expect(owner.getByLabel('Email', { exact: true })).toHaveValue('');
 
     const invitee = await browser.newPage();
-    const registerUrl = await openBrandedEmail(invitee, email, /Join /, `Join ${householdName} on HouseHub`, 'Create your account');
+    const registerUrl = await openBrandedEmail(invitee, email, /Join /, `Join ${householdName} on RYH`, 'Create your account');
 
     await invitee.goto(registerUrl);
     // Invited members aren't asked to say they're 18 or over.

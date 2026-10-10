@@ -1,10 +1,10 @@
 import React from 'react';
 import { AbsoluteFill, Easing, useCurrentFrame } from 'remotion';
 import { prog, range, spr, springs } from '../anim';
-import { HeroBg, LogoMark, Sfx } from '../components/ui';
+import { HeroBg, RoofMark, Sfx, Wordmark } from '../components/ui';
 import { brand, fonts } from '../theme';
 
-// 120 frames: logo slam, wordmark, tagline, zoom-through exit.
+// 120 frames: roof slam, wordmark, tagline, zoom-through exit.
 export const Intro: React.FC = () => {
     const f = useCurrentFrame();
 
@@ -13,8 +13,6 @@ export const Intro: React.FC = () => {
     const ring = prog(f, 4, 40);
     const slide = spr(f, 30, springs.smooth);
     const exit = prog(f, 104, 120, Easing.in(Easing.cubic));
-
-    const word = 'HouseHub';
 
     return (
         <AbsoluteFill>
@@ -44,44 +42,23 @@ export const Intro: React.FC = () => {
                                 height: 200,
                                 borderRadius: '50%',
                                 border: `3px solid ${brand.coral}`,
-                                transform: `translateX(${-slide * 250}px) scale(${1 + p * 5})`,
+                                transform: `translateX(${-slide * 247}px) scale(${1 + p * 5})`,
                                 opacity: (1 - p) * 0.7,
                             }}
                         />
                     );
                 })}
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 44 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 48 }}>
                     <div
                         style={{
                             transform: `scale(${mark}) rotate(${(1 - mark) * -35}deg)`,
-                            marginRight: (1 - slide) * -520,
+                            marginRight: (1 - slide) * -494,
                         }}
                     >
-                        <LogoMark size={200} draw={draw} radius={60} />
+                        <RoofMark width={532} color={brand.onhero} draw={draw} />
                     </div>
-                    <div style={{ display: 'flex', overflow: 'hidden', paddingBottom: 20, marginBottom: -20 }}>
-                        {word.split('').map((ch, i) => {
-                            const p = spr(f, 34 + i * 2, springs.snappy);
-                            return (
-                                <span
-                                    key={i}
-                                    style={{
-                                        display: 'inline-block',
-                                        fontFamily: fonts.sans,
-                                        fontWeight: 900,
-                                        fontSize: 190,
-                                        letterSpacing: '-0.05em',
-                                        color: brand.onhero,
-                                        transform: `translateY(${(1 - p) * 120}%)`,
-                                        opacity: p,
-                                    }}
-                                >
-                                    {ch}
-                                </span>
-                            );
-                        })}
-                    </div>
+                    <Wordmark height={190} color={brand.onhero} lines={[spr(f, 34, springs.snappy), spr(f, 39, springs.snappy)]} />
                 </div>
 
                 <div

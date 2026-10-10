@@ -30,11 +30,11 @@ watch(latestToast, (toast) => toast && show(toast));
 <template>
     <div
         v-if="message"
-        class="fixed bottom-24 left-1/2 z-50 flex animate-hh-toast items-center gap-3 rounded-2xl bg-hh-ink px-[22px] py-3.5 text-[13.5px] font-semibold text-hh-shell shadow-[0_20px_44px_-18px_rgba(0,0,0,0.6)] sm:bottom-11"
+        class="fixed bottom-24 left-1/2 z-50 flex animate-ryh-toast items-center gap-3 rounded-2xl bg-ryh-ink px-[22px] py-3.5 text-[13.5px] font-semibold text-ryh-shell shadow-[0_20px_44px_-18px_rgba(0,0,0,0.6)] sm:bottom-11"
         role="status"
         aria-live="polite"
     >
-        <span class="grid h-[21px] w-[21px] animate-hh-pop place-items-center rounded-full bg-hh-mint text-[11px] text-[#0E1A2B]">✓</span>
+        <span class="grid h-[21px] w-[21px] animate-ryh-pop place-items-center rounded-full bg-ryh-mint text-[11px] text-[#0E1A2B]">✓</span>
         {{ message }}
     </div>
 </template>

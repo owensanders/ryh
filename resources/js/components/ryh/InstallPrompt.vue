@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { installPrompt, isIos, isStandalone, promptInstall } from '@/lib/pwa';
-import { House, Share, SquarePlus, X } from 'lucide-vue-next';
+import { Share, SquarePlus, X } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 
 // "Not now" hides the card for a while rather than for good.
@@ -44,41 +44,39 @@ async function install(): Promise<void> {
     >
         <section
             v-if="visible"
-            aria-label="Install HouseHub"
-            class="fixed inset-x-3 bottom-[calc(74px+env(safe-area-inset-bottom))] z-30 rounded-3xl border border-hh-line bg-hh-card p-4 shadow-hh sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-[360px]"
+            aria-label="Install RYH"
+            class="fixed inset-x-3 bottom-[calc(74px+env(safe-area-inset-bottom))] z-30 rounded-3xl border border-ryh-line bg-ryh-card p-4 shadow-ryh sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-[360px]"
         >
             <div class="flex items-start gap-3">
-                <div class="grid h-10 w-10 flex-none place-items-center rounded-xl bg-hh-coral text-white">
-                    <House class="h-5 w-5" :stroke-width="2.5" />
-                </div>
+                <img src="/icons/icon.svg" alt="" class="h-10 w-10 flex-none rounded-xl shadow-sm" />
                 <div class="min-w-0 flex-1">
-                    <div class="text-[15px] font-extrabold tracking-tight">Get the HouseHub app</div>
-                    <p class="mt-0.5 text-[13px] text-hh-ink2">Add it to your home screen for one-tap access to the household.</p>
+                    <div class="text-[15px] font-extrabold tracking-tight">Get the RYH app</div>
+                    <p class="mt-0.5 text-[13px] text-ryh-ink2">Add it to your home screen for one-tap access to the household.</p>
                 </div>
                 <button
                     type="button"
                     aria-label="Not now"
-                    class="-mr-1 -mt-1 grid h-8 w-8 flex-none place-items-center rounded-lg text-hh-ink3 hover:bg-hh-soft"
+                    class="-mr-1 -mt-1 grid h-8 w-8 flex-none place-items-center rounded-lg text-ryh-ink3 hover:bg-ryh-soft"
                     @click="dismiss"
                 >
                     <X class="h-4 w-4" />
                 </button>
             </div>
 
-            <ol v-if="ios && !installPrompt" class="mt-3 flex flex-col gap-2 text-[13px] text-hh-ink2">
+            <ol v-if="ios && !installPrompt" class="mt-3 flex flex-col gap-2 text-[13px] text-ryh-ink2">
                 <li class="flex items-center gap-2.5">
-                    <span class="grid h-7 w-7 flex-none place-items-center rounded-lg bg-hh-soft text-hh-ink"><Share class="h-4 w-4" /></span>
-                    <span>Tap <strong class="text-hh-ink">Share</strong> in Safari's toolbar</span>
+                    <span class="grid h-7 w-7 flex-none place-items-center rounded-lg bg-ryh-soft text-ryh-ink"><Share class="h-4 w-4" /></span>
+                    <span>Tap <strong class="text-ryh-ink">Share</strong> in Safari's toolbar</span>
                 </li>
                 <li class="flex items-center gap-2.5">
-                    <span class="grid h-7 w-7 flex-none place-items-center rounded-lg bg-hh-soft text-hh-ink"><SquarePlus class="h-4 w-4" /></span>
-                    <span>Choose <strong class="text-hh-ink">Add to Home Screen</strong></span>
+                    <span class="grid h-7 w-7 flex-none place-items-center rounded-lg bg-ryh-soft text-ryh-ink"><SquarePlus class="h-4 w-4" /></span>
+                    <span>Choose <strong class="text-ryh-ink">Add to Home Screen</strong></span>
                 </li>
             </ol>
 
             <div v-else class="mt-3 flex gap-2">
-                <button type="button" class="hh-btn flex-1 bg-hh-soft text-hh-ink" @click="dismiss">Not now</button>
-                <button type="button" class="hh-btn flex-1 bg-hh-coral text-white" @click="install">Install</button>
+                <button type="button" class="ryh-btn flex-1 bg-ryh-soft text-ryh-ink" @click="dismiss">Not now</button>
+                <button type="button" class="ryh-btn flex-1 bg-ryh-coral text-white" @click="install">Install</button>
             </div>
         </section>
     </Transition>

@@ -59,48 +59,48 @@ const submit = () => {
 
         <div class="max-w-[560px]">
             <h1 class="text-[32px] font-black tracking-[-0.035em] sm:text-[38px]">Create your account</h1>
-            <p class="mt-3 text-[15.5px] leading-relaxed text-hh-ink2">One login per person. You'll connect it to a household on the next step.</p>
+            <p class="mt-3 text-[15.5px] leading-relaxed text-ryh-ink2">One login per person. You'll connect it to a household on the next step.</p>
 
             <form class="mt-7 flex flex-col gap-3.5" @submit.prevent="submit">
                 <div class="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                     <div class="flex flex-col gap-1.5">
-                        <label for="firstName" class="hh-label">First name</label>
+                        <label for="firstName" class="ryh-label">First name</label>
                         <input
                             id="firstName"
                             v-model="firstName"
                             type="text"
-                            class="hh-input"
+                            class="ryh-input"
                             autofocus
                             autocomplete="given-name"
                             placeholder="John"
                         />
                     </div>
                     <div class="flex flex-col gap-1.5">
-                        <label for="lastName" class="hh-label">Last name</label>
-                        <input id="lastName" v-model="lastName" type="text" class="hh-input" autocomplete="family-name" placeholder="Doe" />
+                        <label for="lastName" class="ryh-label">Last name</label>
+                        <input id="lastName" v-model="lastName" type="text" class="ryh-input" autocomplete="family-name" placeholder="Doe" />
                     </div>
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                    <label for="email" class="hh-label">Email address</label>
-                    <input id="email" v-model="form.email" type="email" class="hh-input" autocomplete="email" placeholder="you@example.com" />
+                    <label for="email" class="ryh-label">Email address</label>
+                    <input id="email" v-model="form.email" type="email" class="ryh-input" autocomplete="email" placeholder="you@example.com" />
                     <InputError :message="form.errors.email" />
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                    <label for="password" class="hh-label">Password</label>
+                    <label for="password" class="ryh-label">Password</label>
                     <div class="flex gap-2">
                         <input
                             id="password"
                             v-model="form.password"
                             :type="showPassword ? 'text' : 'password'"
-                            class="hh-input flex-1"
+                            class="ryh-input flex-1"
                             autocomplete="new-password"
                             placeholder="At least 10 characters"
                         />
                         <button
                             type="button"
-                            class="h-11 w-24 flex-none rounded-[13px] border border-hh-line text-[13px] font-semibold text-hh-ink2 transition-colors hover:bg-hh-soft"
+                            class="h-11 w-24 flex-none rounded-[13px] border border-ryh-line text-[13px] font-semibold text-ryh-ink2 transition-colors hover:bg-ryh-soft"
                             @click="showPassword = !showPassword"
                         >
                             {{ showPassword ? 'Hide' : 'Show' }}
@@ -111,16 +111,16 @@ const submit = () => {
                             v-for="bar in 4"
                             :key="bar"
                             class="h-[5px] flex-1 rounded-[3px] transition-colors"
-                            :class="bar <= passwordScore ? 'bg-hh-mint' : 'bg-hh-line'"
+                            :class="bar <= passwordScore ? 'bg-ryh-mint' : 'bg-ryh-line'"
                         ></span>
                     </div>
-                    <span class="text-xs text-hh-ink3">{{ passwordNote }}</span>
+                    <span class="text-xs text-ryh-ink3">{{ passwordNote }}</span>
                     <InputError :message="form.errors.password" />
                 </div>
 
                 <div
-                    class="flex items-start gap-3 rounded-[14px] border border-hh-line p-3.5 transition-colors hover:bg-hh-soft"
-                    :class="acceptedTerms ? 'bg-hh-card' : 'bg-transparent'"
+                    class="flex items-start gap-3 rounded-[14px] border border-ryh-line p-3.5 transition-colors hover:bg-ryh-soft"
+                    :class="acceptedTerms ? 'bg-ryh-card' : 'bg-transparent'"
                 >
                     <button
                         type="button"
@@ -128,23 +128,23 @@ const submit = () => {
                         :aria-checked="acceptedTerms"
                         aria-labelledby="terms-label"
                         class="mt-0.5 grid h-[21px] w-[21px] flex-none place-items-center rounded-[7px] border-[1.5px] text-[11px] font-extrabold text-[#0E1A2B] transition-colors"
-                        :class="acceptedTerms ? 'border-hh-mint bg-hh-mint' : 'border-hh-line bg-transparent'"
+                        :class="acceptedTerms ? 'border-ryh-mint bg-ryh-mint' : 'border-ryh-line bg-transparent'"
                         @click="acceptedTerms = !acceptedTerms"
                     >
                         {{ acceptedTerms ? '✓' : '' }}
                     </button>
                     <span
                         id="terms-label"
-                        class="flex-1 cursor-pointer text-[13.5px] leading-relaxed text-hh-ink2"
+                        class="flex-1 cursor-pointer text-[13.5px] leading-relaxed text-ryh-ink2"
                         @click="acceptedTerms = !acceptedTerms"
                     >
                         <template v-if="props.invited">I agree to the </template>
                         <template v-else>I'm 18 or over, and I agree to the </template>
-                        <a :href="route('terms')" target="_blank" class="font-semibold text-hh-ink underline underline-offset-2" @click.stop
+                        <a :href="route('terms')" target="_blank" class="font-semibold text-ryh-ink underline underline-offset-2" @click.stop
                             >Terms of Service</a
                         >
                         and
-                        <a :href="route('privacy')" target="_blank" class="font-semibold text-hh-ink underline underline-offset-2" @click.stop
+                        <a :href="route('privacy')" target="_blank" class="font-semibold text-ryh-ink underline underline-offset-2" @click.stop
                             >Privacy Policy</a
                         >.
                         <template v-if="props.invited"> If I'm under 18, the parent or guardian who invited me has agreed to them for me.</template>
@@ -153,11 +153,11 @@ const submit = () => {
                 <InputError :message="form.errors.terms" />
 
                 <div class="mt-2 flex items-center gap-3.5">
-                    <button type="submit" class="hh-btn bg-hh-coral px-6 text-white" :disabled="!ready || form.processing">
+                    <button type="submit" class="ryh-btn bg-ryh-coral px-6 text-white" :disabled="!ready || form.processing">
                         <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                         Continue
                     </button>
-                    <span v-if="!ready" class="text-[13px] text-hh-ink3">Name, email, a strong password and the terms box.</span>
+                    <span v-if="!ready" class="text-[13px] text-ryh-ink3">Name, email, a strong password and the terms box.</span>
                 </div>
             </form>
         </div>

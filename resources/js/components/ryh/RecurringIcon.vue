@@ -15,7 +15,7 @@ const open = ref(false);
                 <button
                     type="button"
                     aria-label="Repeats every month"
-                    class="-m-1 grid flex-none place-items-center rounded p-1 text-hh-ink3 hover:text-hh-ink"
+                    class="-m-1 grid flex-none place-items-center rounded p-1 text-ryh-ink3 hover:text-ryh-ink"
                     @click="open = true"
                 >
                     <Repeat class="h-3 w-3" />

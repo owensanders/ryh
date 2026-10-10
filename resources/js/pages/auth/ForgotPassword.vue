@@ -21,19 +21,19 @@ const submit = () => {
     <AuthLayout title="Forgot password" description="We'll email you a link to set a new one.">
         <Head title="Forgot password" />
 
-        <div v-if="status" class="mb-4 text-[13px] font-semibold text-hh-mint">
+        <div v-if="status" class="mb-4 text-[13px] font-semibold text-ryh-mint">
             {{ status }}
         </div>
 
         <form class="flex flex-col gap-4" @submit.prevent="submit">
             <div class="flex flex-col gap-1.5">
-                <label for="email" class="hh-label">Email address</label>
+                <label for="email" class="ryh-label">Email address</label>
                 <input
                     id="email"
                     v-model="form.email"
                     type="email"
                     name="email"
-                    class="hh-input"
+                    class="ryh-input"
                     required
                     autocomplete="off"
                     autofocus
@@ -42,15 +42,15 @@ const submit = () => {
                 <InputError :message="form.errors.email" />
             </div>
 
-            <button type="submit" class="hh-btn mt-2 bg-hh-coral text-white" :disabled="form.processing">
+            <button type="submit" class="ryh-btn mt-2 bg-ryh-coral text-white" :disabled="form.processing">
                 <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                 Email password reset link
             </button>
         </form>
 
-        <p class="mt-6 text-center text-[13px] text-hh-ink3">
+        <p class="mt-6 text-center text-[13px] text-ryh-ink3">
             Or, return to
-            <Link :href="route('login')" class="font-semibold text-hh-coral hover:opacity-75">log in</Link>
+            <Link :href="route('login')" class="font-semibold text-ryh-coral hover:opacity-75">log in</Link>
         </p>
     </AuthLayout>
 </template>

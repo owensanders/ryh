@@ -2,7 +2,7 @@ import { router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 /**
- * HouseHub is online-only. In-app navigation and saving are background
+ * RYH is online-only. In-app navigation and saving are background
  * requests, so when the connection drops nothing visibly happens — this flag
  * drives the banner that says why (components/OfflineBanner.vue).
  */

@@ -1,4 +1,4 @@
-import type { AiMealSuggestion } from '@/types/househub';
+import type { AiMealSuggestion } from '@/types/ryh';
 import type { LucideIcon } from 'lucide-vue-next';
 
 export interface Auth {
