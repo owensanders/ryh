@@ -11,6 +11,9 @@ does them, or note where they were done.
 - [ ] `SESSION_SECURE_COOKIE=true`.
 - [ ] `TRUSTED_PROXIES` set to the load balancer's addresses, if there is one
       (not `*` in production unless the load balancer is the only way in).
+      Rate limits on sign-up and password reset count per IP, so if this is
+      wrong every visitor shares the load balancer's IP and one spammer
+      locks everyone out.
 - [ ] `LOG_LEVEL` at `info` or above, and `LOG_STACK` sent somewhere you'll
       read it (e.g. `daily` plus an error tracker).
 - [ ] Stripe live keys: `STRIPE_KEY`, `STRIPE_SECRET`, `STRIPE_WEBHOOK_SECRET`,
@@ -44,8 +47,8 @@ does them, or note where they were done.
       one server. It runs the nightly prunes: notifications over 90 days old,
       chores completed over 30 days ago, and shopping items ticked off over a
       week ago.
-- [ ] **Redis** won't silently drop data: sessions, cache and the queue share
-      it, so set `maxmemory-policy noeviction` (or move the cache to its own
+- [ ] **Redis** won't silently drop data: sessions, cache (including the
+      rate-limit counters) and the queue share it, so set `maxmemory-policy noeviction` (or move the cache to its own
       Redis with `allkeys-lru`). Turn persistence (AOF) on so queued jobs
       survive a restart.
 - [ ] **Reverb** (`php artisan reverb:start`) under Supervisor, behind the
@@ -59,6 +62,10 @@ does them, or note where they were done.
       (the Privacy Policy quotes it), and a test restore done once.
 - [ ] **Monitoring:** an uptime check on `/up`. Glance at `/status` after
       deploy: it checks the database, cache, queue, Reverb, AI and documents.
+- [ ] **Edge protection** (optional, recommended): Cloudflare or the host's
+      WAF in front of the app. The app's own rate limits stop one person or
+      script hammering endpoints, but not a flood of traffic, which has to be
+      stopped before it reaches PHP.
 - [ ] **HTTPS** everywhere, with HTTP redirecting to HTTPS. Push notifications
       and installing the app both need it.
 

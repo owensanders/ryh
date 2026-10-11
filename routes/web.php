@@ -40,13 +40,15 @@ Route::get('support', [LegalController::class, 'support'])->name('support');
 Route::get('status', StatusController::class)->middleware('throttle:30,1')->name('status');
 
 Route::get('household-invites/accept', [HouseholdInviteController::class, 'accept'])
-    ->middleware(['auth', 'signed'])
+    ->middleware(['auth', 'signed', 'throttle:app'])
     ->name('household-invites.accept');
 
 // Authorization lives in app/Policies: every route below names its ability
 // with ->can(), and RouteAuthorizationTest
 // fails if one doesn't. A record from another household is a 404.
-Route::middleware(['auth', 'verified', 'household'])->group(function (): void {
+// throttle:app caps each person's requests; RouteThrottleTest fails if a
+// write route has no limit.
+Route::middleware(['auth', 'verified', 'household', 'throttle:app'])->group(function (): void {
     // Reachable even once the trial has lapsed — this is the only place a
     // household without a subscription can go.
     Route::get('billing/required', [BillingController::class, 'required'])->name('billing.required')->can('view', Household::class);
@@ -64,7 +66,7 @@ Route::middleware(['auth', 'verified', 'household'])->group(function (): void {
         Route::delete('notifications', [NotificationController::class, 'destroyAll'])->name('notifications.destroyAll');
 
         Route::get('meals', [MealPlannerController::class, 'index'])->name('meals.index')->can('viewAny', PlannedMeal::class);
-        Route::post('meals/ai-plan', [MealPlannerController::class, 'generateAiPlan'])->name('meals.aiPlan')->can('create', PlannedMeal::class);
+        Route::post('meals/ai-plan', [MealPlannerController::class, 'generateAiPlan'])->middleware('throttle:ai')->name('meals.aiPlan')->can('create', PlannedMeal::class);
         Route::post('meals/library-plan', [MealPlannerController::class, 'suggestLibraryPlan'])->name('meals.libraryPlan')->can('create', PlannedMeal::class);
         Route::post('meals', [MealPlannerController::class, 'store'])->name('meals.store')->can('create', PlannedMeal::class);
         Route::patch('meals/{meal}', [MealPlannerController::class, 'update'])->name('meals.update')->can('update', 'meal');
@@ -113,13 +115,13 @@ Route::middleware(['auth', 'verified', 'household'])->group(function (): void {
         Route::get('documents/{folder?}', [DocumentController::class, 'index'])->name('documents.index')->can('view', [DocumentFolder::class, 'folder']);
         Route::post('document-folders', [DocumentController::class, 'storeFolder'])->name('documents.folders.store')->can('create', DocumentFolder::class);
         Route::delete('document-folders/{folder}', [DocumentController::class, 'destroyFolder'])->name('documents.folders.destroy')->can('delete', 'folder');
-        Route::post('document-folders/{folder}/documents', [DocumentController::class, 'store'])->name('documents.store')->can('addDocument', 'folder');
+        Route::post('document-folders/{folder}/documents', [DocumentController::class, 'store'])->middleware('throttle:uploads')->name('documents.store')->can('addDocument', 'folder');
         Route::patch('documents/{document}/move', [DocumentController::class, 'move'])->name('documents.move')->can('update', 'document');
         Route::get('documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download')->can('view', 'document');
         Route::delete('documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy')->can('delete', 'document');
 
         Route::get('house', [HouseController::class, 'index'])->name('house.index')->can('manage', Household::class);
-        Route::post('house/invite', [HouseController::class, 'invite'])->name('house.invite')->can('manage', Household::class);
+        Route::post('house/invite', [HouseController::class, 'invite'])->middleware('throttle:emails')->name('house.invite')->can('manage', Household::class);
         Route::patch('house/members/{member}/role', [HouseController::class, 'updateRole'])->name('house.members.role')->can('manageMember', 'member');
         Route::patch('house/members/{member}/approve', [HouseController::class, 'approve'])->name('house.members.approve')->can('manageMember', 'member');
         Route::delete('house/members/{member}', [HouseController::class, 'destroy'])->name('house.members.destroy')->can('manageMember', 'member');

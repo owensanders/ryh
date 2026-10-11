@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import RyhLogo from '@/components/ryh/RyhLogo.vue';
+import Toast from '@/components/ryh/Toast.vue';
 import { logout } from '@/lib/logout';
 import { Link } from '@inertiajs/vue3';
 
@@ -17,6 +18,8 @@ const steps = [
 
 <template>
     <div class="flex min-h-svh justify-center bg-ryh-bg p-4 text-ryh-ink transition-colors sm:p-7">
+        <Toast />
+
         <div class="flex w-full max-w-[1240px] animate-ryh-rise overflow-hidden rounded-[24px] bg-ryh-shell shadow-ryh">
             <aside
                 class="relative hidden w-[340px] flex-none flex-col overflow-hidden p-8 text-ryh-onhero lg:flex"
