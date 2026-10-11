@@ -11,6 +11,59 @@ servers, Supervisor, cron or Redis tuning to look after. Expected cost is
 about $32 (£25) a month at most. Upgrade to Growth ($20/month plus usage) for
 7-day logs, Pro compute and autoscaling once revenue covers it.
 
+**Status (October 2026):** the code is launch-ready. Launch is on hold until
+RYH Ltd exists, so Stripe, the ICO registration and the legal pages are in the
+company's name from day one rather than moved over later.
+
+## Order of work
+
+Some steps take days because they depend on someone else's verification.
+Start those first and in parallel, and do the rest while they complete.
+
+1. **Start the slow items:** the business, the domain, Stripe, the mail
+   provider and the ICO registration (next section).
+2. **Set up Laravel Cloud** on its free `*.laravel.cloud` address with Stripe
+   *test* keys, and run the client-IP check under Final checks early: it's
+   the only check that could need a code change. Hold off until the company
+   is close, because Cloud bills from the first deploy.
+3. **Go live:** the custom domain, live Stripe and mail keys, the `LEGAL_*`
+   details, then every item under Final checks.
+
+## Business and accounts
+
+These don't need Laravel Cloud and can be done first.
+
+- [ ] **Register the company** (RYH Ltd) at Companies House, about £50 online
+      and usually done within a day or two. Use a registered office service
+      if your home address shouldn't be public. This gives
+      `LEGAL_ENTITY_NAME`, `LEGAL_ENTITY_TYPE=limited_company`,
+      `LEGAL_COMPANY_NUMBER` and `LEGAL_ADDRESS`.
+- [ ] **Business bank account** in the company's name, for Stripe payouts.
+- [ ] **Accountant** (optional but sensible) for the yearly accounts,
+      confirmation statement and Corporation Tax. VAT isn't needed until
+      turnover passes the registration threshold (£90,000 a year in 2026).
+- [ ] **ICO data protection fee**, registered to the company (about £50–80 a
+      year for a small organisation; check with the ICO's online
+      self-assessment). The number goes in `LEGAL_ICO_REGISTRATION`.
+- [ ] **Domain** bought. `APP_URL`, mail, Stripe and the custom domain on
+      Cloud all use it.
+- [ ] **Stripe account** in the company's name, with live mode activated
+      (business verification can take a few days). Create the live prices
+      (£3.99 monthly, £39.99 annual) for `STRIPE_PRICE_HOME_MONTHLY` and
+      `STRIPE_PRICE_HOME_ANNUAL`.
+- [ ] **Mail provider** (Postmark or Resend) account, with the domain's
+      SPF/DKIM records added. DNS changes take time to verify, and Postmark
+      reviews new accounts before they can send to anyone.
+- [ ] **Inboxes** for the support and privacy addresses on the domain (e.g.
+      `support@` and `privacy@`, which can be the same inbox), since
+      customers and data requests reply to them. The mail provider only
+      sends. These become `SUPPORT_EMAIL` and `PRIVACY_EMAIL`.
+- [ ] **Production VAPID keys** generated once (`php artisan webpush:vapid`)
+      and stored in a password manager. They go in Cloud later, and replacing
+      them afterwards stops every existing push subscription working.
+- [ ] **Error tracker** account chosen (Nightwatch, Sentry or Flare).
+- [ ] **Anthropic API key** for production, with credit added.
+
 ## Laravel Cloud environment
 
 Create an application from the GitHub repo, with one `production` environment
@@ -67,9 +120,9 @@ Environment variables, set under the environment's settings.
       endpoint (`/stripe/webhook`) registered in the Stripe dashboard.
 - [ ] `ANTHROPIC_API_KEY` with credit, `AI_MEAL_PLAN_DAILY_CAP` chosen, and
       `AI_ALERT_EMAIL` set so you hear when the AI runs out of credit.
-- [ ] `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` generated once
-      (`php artisan webpush:vapid`) and kept: new keys stop every existing
-      push subscription working. `VAPID_SUBJECT` set.
+- [ ] `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` copied from the password
+      manager (generated under Business and accounts; never regenerate them).
+      `VAPID_SUBJECT` set.
 - [ ] Mail through an API provider (Postmark or Resend), with `MAIL_MAILER`
       and its key, and a `MAIL_FROM_ADDRESS` on a domain with SPF/DKIM set up.
 - [ ] Every `LEGAL_*`, `SUPPORT_EMAIL` and `PRIVACY_EMAIL` filled in, so
