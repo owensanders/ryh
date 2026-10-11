@@ -134,10 +134,12 @@ const sections = [
             <li>
                 <strong>Cloudflare</strong> — every visit passes through Cloudflare's network, run for us by our hosting provider, which protects the
                 site from attacks and floods of automated traffic. When it needs to tell real browsers from bots, it may set its own strictly
-                necessary security cookies, such as <code>__cf_bm</code> (it expires after 30 minutes without a visit) or <code>cf_clearance</code> (proof that you passed a
-                security check).
-                They don't identify you and aren't used for tracking. See
-                <a href="https://developers.cloudflare.com/fundamentals/reference/policies-compliances/cloudflare-cookies/" target="_blank" rel="noopener"
+                necessary security cookies, such as <code>__cf_bm</code> (it expires after 30 minutes without a visit) or
+                <code>cf_clearance</code> (proof that you passed a security check). They don't identify you and aren't used for tracking. See
+                <a
+                    href="https://developers.cloudflare.com/fundamentals/reference/policies-compliances/cloudflare-cookies/"
+                    target="_blank"
+                    rel="noopener"
                     >Cloudflare's cookie list</a
                 >.
             </li>
@@ -156,9 +158,10 @@ const sections = [
         <h2 id="consent">Why we don’t ask for consent</h2>
         <p>
             Under the Privacy and Electronic Communications Regulations, a website must ask before setting cookies — unless they are strictly
-            necessary to provide a service you've asked for. Every cookie we use, and Cloudflare's security cookies, fall into that exemption, the service worker's copy of the app is
-            needed for the app to work as you'd expect, and the settings above are only saved when you choose them. Push notifications are only turned
-            on when you ask, and your browser asks for your permission first. That's why you won't see a cookie banner here.
+            necessary to provide a service you've asked for. Every cookie we use, and Cloudflare's security cookies, fall into that exemption, the
+            service worker's copy of the app is needed for the app to work as you'd expect, and the settings above are only saved when you choose
+            them. Push notifications are only turned on when you ask, and your browser asks for your permission first. That's why you won't see a
+            cookie banner here.
         </p>
         <p>If we ever want to use a cookie that isn't strictly necessary, we'll update this policy and ask for your consent before setting it.</p>
 

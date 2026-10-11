@@ -358,10 +358,10 @@ const sections = [
         <h2 id="security">Security</h2>
         <p>
             We protect your information with measures appropriate to the risk, including encryption in transit (HTTPS), hashed passwords, role-based
-            access within households, signed and expiring invitation links, limits on repeated sign-in, sign-up and password reset attempts and on
-            how often any account can act, private document storage reached only through short-lived links, and restricting access to production
-            systems to the people who run the service. No system is perfectly secure, but if a breach puts your rights at risk we will tell you and
-            the ICO as the law requires.
+            access within households, signed and expiring invitation links, limits on repeated sign-in, sign-up and password reset attempts and on how
+            often any account can act, private document storage reached only through short-lived links, and restricting access to production systems
+            to the people who run the service. No system is perfectly secure, but if a breach puts your rights at risk we will tell you and the ICO as
+            the law requires.
         </p>
         <p>
             You can help by using a strong, unique password and only inviting people you trust into your household. The document vault is not a
