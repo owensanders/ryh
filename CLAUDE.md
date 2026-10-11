@@ -13,6 +13,11 @@ repository. Each layer only talks to the one below it.
   household route: `->can('update', 'chore')`, or
   `->can('create', Chore::class)` when there's no record yet.
   Enforced by `RouteAuthorizationTest`.
+  Every write route is also rate limited: signed-in groups carry
+  `throttle:app`, and routes that send email, upload files, call the AI or
+  take a guess (passwords, join codes) add a named limiter from
+  `AppServiceProvider::configureRateLimiting()`. Enforced by
+  `RouteThrottleTest`.
 - **Policies** (`app/Policies`): all authorization. One per model, using
   `AuthorizesHouseholdAccessTrait`: another household's record is a **404**
   (never confirm it exists), and a role that can't act is a **403**. Role sets

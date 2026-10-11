@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import RyhLogo from '@/components/ryh/RyhLogo.vue';
+import Toast from '@/components/ryh/Toast.vue';
 import { Link } from '@inertiajs/vue3';
 
 defineProps<{
@@ -10,6 +11,8 @@ defineProps<{
 
 <template>
     <div class="flex min-h-svh items-center justify-center bg-ryh-bg p-3 text-ryh-ink transition-colors sm:p-7">
+        <Toast />
+
         <div class="w-full max-w-[420px] animate-ryh-rise rounded-[22px] border border-ryh-line bg-ryh-card p-[22px] shadow-ryh sm:p-7">
             <Link :href="route('home')" class="mb-6 flex" aria-label="RYH home">
                 <RyhLogo class="h-9" />
