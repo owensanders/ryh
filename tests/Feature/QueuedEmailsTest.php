@@ -24,6 +24,8 @@ class QueuedEmailsTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const int MAX_QUEUE_DELAY_SECONDS = 900;
+
     #[Test]
     public function everyEmailIsQueuedAndRetriesWithABackoff(): void
     {
@@ -39,6 +41,14 @@ class QueuedEmailsTest extends TestCase
         foreach ($emails as $email) {
             $this->assertTrue(is_subclass_of($email, ShouldQueue::class), "{$email} should implement ShouldQueue.");
             $this->assertContains(RetriesEmailTrait::class, class_uses_recursive($email), "{$email} should use RetriesEmailTrait.");
+        }
+
+        // Laravel Cloud's managed queue can't delay a job by more than 15 minutes.
+        foreach ((new class
+        {
+            use RetriesEmailTrait;
+        })->backoff() as $seconds) {
+            $this->assertLessThanOrEqual(self::MAX_QUEUE_DELAY_SECONDS, $seconds);
         }
     }
 
