@@ -4,18 +4,64 @@ Everything that has to be true before RYH takes real households and real
 payments. Most of it is setup outside the code. Tick items off in the PR that
 does them, or note where they were done.
 
+RYH runs on **Laravel Cloud**, region **EU West (London)**, Starter plan.
+Cloud provides TLS, DDoS protection and the Cloudflare edge, deploys, the
+scheduler, queue workers, Reverb and database backups, so there are no
+servers, Supervisor, cron or Redis tuning to look after. Expected cost is
+about $32 (£25) a month at most. Upgrade to Growth ($20/month plus usage) for
+7-day logs, Pro compute and autoscaling once revenue covers it.
+
+## Laravel Cloud environment
+
+Create an application from the GitHub repo, with one `production` environment
+in London. On its canvas:
+
+- [ ] **PHP 8.4** in the environment settings, matching CI (typed class
+      constants need 8.3 or newer).
+- [ ] **App cluster:** Flex 1 GiB, **Scheduler** toggle on. It runs the 03:00
+      prunes: notifications over 90 days old, chores completed over 30 days
+      ago, and shopping items ticked off over a week ago. Decide on
+      scale-to-zero: it saves money while nobody's using the app, but the
+      first request after an idle spell waits about half a second. Cloud
+      wakes the app for scheduled tasks either way.
+- [ ] **Managed queue:** standard (not FIFO), Flex 256 MiB, 1–3 workers.
+      Cloud sets `QUEUE_CONNECTION=cloud`. Every email, live notification and
+      push goes through it. Flex jobs may run for at most 90s and wait at most
+      15 minutes between retries (`RetriesEmailTrait` stays within that).
+      Failed jobs are retried from the **Queues** dashboard: `queue:retry` and
+      `queue:failed` don't work with managed queues.
+- [ ] **MySQL:** flex 512 MB. Daily backups are included. Set
+      `LEGAL_BACKUP_RETENTION_DAYS` to Cloud's retention (the Privacy Policy
+      quotes it), and do a test restore once.
+- [ ] **Cache:** Laravel Valkey, flex 250 MB, eviction `allkeys-lru`. Set
+      `CACHE_STORE=redis` and `SESSION_DRIVER=redis`. A Flex cache that
+      sleeps snapshots to disk, so sessions survive it.
+- [ ] **WebSockets:** a Reverb cluster with 100 concurrent connections,
+      attached to the environment. Cloud injects `REVERB_*` and
+      `VITE_REVERB_*` (the build needs these) and allows the app's origins.
+- [ ] **Bucket:** Laravel Object Storage, **private**, disk name
+      `documents`, not the default disk. Set `DOCUMENTS_DISK=documents`.
+      Downloads use short-lived `temporaryUrl` links.
+- [ ] **Deploy command:** `php artisan migrate --force`. The build uses
+      Cloud's defaults: `composer install --no-dev` (this also leaves
+      Telescope out) and `npm ci && npm run build`.
+- [ ] **Custom domain** added and verified. Turn **HSTS** on under Edge
+      network once HTTPS works on the real domain. Push notifications and
+      installing the app both need HTTPS.
+- [ ] **Spending:** set alerts only (50/80/100% of about $40). Don't set a
+      spending *limit*: reaching it pauses compute, which takes a paid
+      product offline.
+
 ## Configuration
+
+Environment variables, set under the environment's settings.
 
 - [ ] `APP_ENV=production`, `APP_DEBUG=false`, a fresh `APP_KEY`, and `APP_URL`
       set to the real `https://` domain.
 - [ ] `SESSION_SECURE_COOKIE=true`.
-- [ ] `TRUSTED_PROXIES` set to the load balancer's addresses, if there is one
-      (not `*` in production unless the load balancer is the only way in).
-      Rate limits on sign-up and password reset count per IP, so if this is
-      wrong every visitor shares the load balancer's IP and one spammer
-      locks everyone out.
-- [ ] `LOG_LEVEL` at `info` or above, and `LOG_STACK` sent somewhere you'll
-      read it (e.g. `daily` plus an error tracker).
+- [ ] `LOG_LEVEL` at `info` or above. The Starter plan keeps logs for **one
+      day**, so an error tracker (Nightwatch, Sentry or Flare) is required,
+      not optional.
 - [ ] Stripe live keys: `STRIPE_KEY`, `STRIPE_SECRET`, `STRIPE_WEBHOOK_SECRET`,
       `STRIPE_PRICE_HOME_MONTHLY`, `STRIPE_PRICE_HOME_ANNUAL`. The webhook
       endpoint (`/stripe/webhook`) registered in the Stripe dashboard.
@@ -24,63 +70,48 @@ does them, or note where they were done.
 - [ ] `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` generated once
       (`php artisan webpush:vapid`) and kept: new keys stop every existing
       push subscription working. `VAPID_SUBJECT` set.
-- [ ] Real mail provider (`MAIL_*`) and a `MAIL_FROM_ADDRESS` on a domain
-      with SPF/DKIM set up.
-- [ ] Documents on S3: `DOCUMENTS_DISK=s3` and `AWS_*`. The bucket is
-      private (downloads use short-lived signed links).
+- [ ] Mail through an API provider (Postmark or Resend), with `MAIL_MAILER`
+      and its key, and a `MAIL_FROM_ADDRESS` on a domain with SPF/DKIM set up.
 - [ ] Every `LEGAL_*`, `SUPPORT_EMAIL` and `PRIVACY_EMAIL` filled in, so
       `/terms`, `/privacy` and `/support` show no "[… to be confirmed]".
+      `LEGAL_HOSTING_PROVIDER` is "Laravel Cloud (Laravel Holdings Inc.),
+      hosted on AWS in London".
+- [ ] Leave `TRUSTED_PROXIES` unset to begin with, and run the client-IP
+      check under Final checks. The app is only reachable through Cloud's
+      edge, but whether `request()->ip()` sees the visitor or a Cloudflare
+      address has to be checked live.
 
-## Infrastructure
+## Monitoring
 
-- [ ] **PHP 8.3 or newer** on the servers (typed class constants need it).
-- [ ] **Deploy steps:** `composer install --no-dev --optimize-autoloader`
-      (this also leaves Telescope out), `npm ci && npm run build`,
-      `php artisan migrate --force`, `php artisan optimize`. OPcache on.
-- [ ] **Queue workers** run under Supervisor (or Horizon), restarted on every
-      deploy (`php artisan queue:restart`), with limits so a leaking worker
-      recycles itself:
-      `php artisan queue:work redis --tries=3 --max-time=3600 --memory=256`.
-      Live notifications, pushes and emails all go through the queue, so at
-      least two workers.
-- [ ] **Request timeouts** of at least 60s everywhere a request passes:
-      nginx `fastcgi_read_timeout` (or `proxy_read_timeout`), PHP-FPM
-      `request_terminate_timeout`, and the load balancer's idle timeout. The
-      AI meal plan call gives up at 45s (`MealPlanAgent::TIMEOUT_SECONDS`)
-      and keeps the household's weekly plan. If something in front cuts it
-      off first, the user sees a 504 while PHP carries on and uses up the
-      plan they never saw.
-- [ ] **Scheduler:** cron runs `php artisan schedule:run` every minute on
-      one server. It runs the nightly prunes: notifications over 90 days old,
-      chores completed over 30 days ago, and shopping items ticked off over a
-      week ago.
-- [ ] **Redis** won't silently drop data: sessions, cache (including the
-      rate-limit counters) and the queue share it, so set `maxmemory-policy noeviction` (or move the cache to its own
-      Redis with `allkeys-lru`). Turn persistence (AOF) on so queued jobs
-      survive a restart.
-- [ ] **Reverb** (`php artisan reverb:start`) under Supervisor, behind the
-      TLS-terminating proxy (WebSocket upgrade allowed), with the open-file
-      limit raised (`ulimit -n 10000` or more) since each connection is a
-      file. Browser-facing `VITE_REVERB_HOST`/`PORT`/`SCHEME` point at the
-      public `wss://` address and are set *before* `npm run build`. If you
-      ever run more than one Reverb server, set `REVERB_SCALING_ENABLED=true`
-      so they share messages through Redis.
-- [ ] **MySQL:** automated daily backups kept for `LEGAL_BACKUP_RETENTION_DAYS`
-      (the Privacy Policy quotes it), and a test restore done once.
-- [ ] **Monitoring:** an uptime check on `/up`. Glance at `/status` after
-      deploy: it checks the database, cache, queue, Reverb, AI and documents.
-- [ ] **Edge protection** (optional, recommended): Cloudflare or the host's
-      WAF in front of the app. The app's own rate limits stop one person or
-      script hammering endpoints, but not a flood of traffic, which has to be
-      stopped before it reaches PHP.
-- [ ] **HTTPS** everywhere, with HTTP redirecting to HTTPS. Push notifications
-      and installing the app both need it.
+- [ ] An uptime check on `/up`.
+- [ ] After each deploy, glance at `/status`. It checks the database, cache,
+      queue (a heartbeat job through the managed queue), Reverb, AI and the
+      documents bucket.
 
 ## Final checks
 
-- [ ] Sign up a brand-new account on the live site: verification email
-      arrives, trial starts, a real card subscribes, and the Stripe webhook
-      lands (subscription shows as active).
+- [ ] **Rate limits see the real visitor.** Sign-up and password reset count
+      per IP. If the app sees a Cloudflare address instead, one spammer locks
+      everyone out.
+      1. From one machine, POST `/forgot-password` 6 times within a minute
+         (the 6th gets a 429).
+      2. From a different network (a phone on 4G), the form still works.
+      3. From the first machine, once the minute is up, POST 6 more times,
+         each with a different forged `X-Forwarded-For: 1.2.3.<n>` header.
+         The 6th must still get a 429.
+
+      If step 2 or 3 fails, trust only Cloudflare's published IP ranges
+      (`trustProxies(at: [...])` in `bootstrap/app.php`) and run the check
+      again.
+- [ ] Sign up a brand-new account on the live site: the verification email
+      arrives (it shows in the Queues dashboard), the trial starts, a real
+      card subscribes, and the Stripe webhook lands (subscription shows as
+      active).
+- [ ] The bell updates live when another account assigns you a chore. That
+      confirms Reverb, and that `VITE_REVERB_*` were set at build time.
 - [ ] Install the app on an Android and an iPhone, turn push on, and get a
       push from another account.
-- [ ] Upload and download a document (it should come from the S3 bucket).
+- [ ] Upload and download a document. The download should be a short-lived
+      link to the R2 bucket.
+- [ ] The day after launch, check the 03:00 prunes ran (the scheduler is
+      on).

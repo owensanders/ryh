@@ -161,8 +161,8 @@ flowchart LR
     browser["Browser / installed PWA<br/>Vue 3 + Inertia"]
     web["Web app<br/>PHP-FPM"]
     mysql[("MySQL<br/>all app data")]
-    redis[("Redis<br/>sessions · cache · queue")]
-    s3[("S3<br/>documents")]
+    redis[("Redis / Valkey<br/>sessions · cache")]
+    s3[("S3 / R2<br/>documents")]
     stripe(["Stripe"])
     anthropic(["Anthropic"])
 
@@ -182,7 +182,7 @@ user's action:
 
 ```mermaid
 flowchart LR
-    redis[("Redis queue")]
+    redis[("Queue<br/>Redis locally · managed on Cloud")]
     worker["Queue worker<br/>queue:work"]
     reverb["Reverb<br/>WebSockets"]
     push(["Web Push services"])
@@ -194,11 +194,51 @@ flowchart LR
     redis -->|"jobs"| worker
     worker -->|"live updates"| reverb
     worker -->|"pushes"| push
-    worker -->|"invites, billing emails"| mail
+    worker -->|"every email"| mail
     reverb -->|"bell"| browser
     push -->|"system notification"| browser
     scheduler -->|"nightly: prune old notifications,<br/>completed chores, bought items"| mysql
 ```
+
+### Where it runs
+
+Production is on [Laravel Cloud](https://laravel.com/cloud), in London.
+Each moving part above is a Cloud resource, so there's no server to
+maintain. Locally, Sail runs the same parts as containers. Setup and launch
+steps are in [`docs/go-live.md`](docs/go-live.md).
+
+```mermaid
+flowchart LR
+    browser["Browser / installed PWA"]
+    edge["Cloud edge<br/>Cloudflare: TLS · DDoS · CDN"]
+    subgraph cloud["Laravel Cloud · EU West (London)"]
+        app["App cluster<br/>web + scheduler"]
+        queue["Managed queue<br/>workers scale with jobs"]
+        mysql[("MySQL<br/>daily backups")]
+        valkey[("Valkey<br/>sessions · cache")]
+        reverb["Reverb cluster"]
+    end
+    r2[("Object storage (R2)<br/>documents, private")]
+
+    browser --> edge --> app
+    browser -->|"wss"| reverb
+    browser -->|"signed downloads"| r2
+    app --> mysql
+    app --> valkey
+    app -->|"dispatch"| queue
+    queue --> mysql
+    queue -->|"broadcast"| reverb
+    app -->|"uploads"| r2
+```
+
+| | Locally (Sail) | Production (Laravel Cloud) |
+| --- | --- | --- |
+| Queue | Redis, `ryh-queue` | Managed queue (`QUEUE_CONNECTION=cloud`) |
+| Sessions and cache | Redis | Valkey |
+| WebSockets | `ryh-websockets` | Reverb cluster |
+| Scheduler | `ryh-scheduler` | Scheduler toggle on the App cluster |
+| Documents | local disk | Private R2 bucket (disk `documents`) |
+| Mail | Mailpit | Postmark or Resend |
 
 ### A request, layer by layer
 
