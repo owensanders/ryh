@@ -42,9 +42,13 @@ These don't need Laravel Cloud and can be done first.
 - [ ] **Accountant** (optional but sensible) for the yearly accounts,
       confirmation statement and Corporation Tax. VAT isn't needed until
       turnover passes the registration threshold (£90,000 a year in 2026).
-- [ ] **ICO data protection fee**, registered to the company (about £50–80 a
-      year for a small organisation; check with the ICO's online
-      self-assessment). The number goes in `LEGAL_ICO_REGISTRATION`.
+- [ ] **ICO data protection fee**, registered in the company's name once it
+      exists. The self-assessment (October 2026) puts RYH in **Tier 1, £52 a
+      year** (£5 less by direct debit): a controller, not exempt, ten or
+      fewer staff, and none of the special sectors. Not-for-profit and
+      "household affairs" don't apply, because the service is commercial.
+      The registration number goes in `LEGAL_ICO_REGISTRATION`, which shows
+      it on `/privacy`. Renew it every year.
 - [ ] **Domain** bought. `APP_URL`, mail, Stripe and the custom domain on
       Cloud all use it.
 - [ ] **Stripe account** in the company's name, with live mode activated
