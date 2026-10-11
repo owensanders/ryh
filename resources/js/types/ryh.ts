@@ -357,6 +357,7 @@ export interface Legal {
     privacyEmail: string | null;
     hostingProvider: string | null;
     mailProvider: string | null;
+    errorTracker: string | null;
     backupRetentionDays: number;
     supportResponse: string;
     termsVersion: string;

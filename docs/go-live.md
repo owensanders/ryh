@@ -127,8 +127,10 @@ Environment variables, set under the environment's settings.
       and its key, and a `MAIL_FROM_ADDRESS` on a domain with SPF/DKIM set up.
 - [ ] Every `LEGAL_*`, `SUPPORT_EMAIL` and `PRIVACY_EMAIL` filled in, so
       `/terms`, `/privacy` and `/support` show no "[… to be confirmed]".
-      `LEGAL_HOSTING_PROVIDER` is "Laravel Cloud (Laravel Holdings Inc.),
-      hosted on AWS in London".
+      That includes `LEGAL_MAIL_PROVIDER` (e.g. "Postmark (ActiveCampaign
+      LLC)") and `LEGAL_ERROR_TRACKER` (e.g. "Sentry (Functional Software
+      Inc.)"), the processors named in the Privacy Policy.
+      `LEGAL_HOSTING_PROVIDER` already defaults to Laravel Cloud.
 - [ ] Leave `TRUSTED_PROXIES` unset to begin with, and run the client-IP
       check under Final checks. The app is only reachable through Cloud's
       edge, but whether `request()->ip()` sees the visitor or a Cloudflare
@@ -166,5 +168,11 @@ Environment variables, set under the environment's settings.
       push from another account.
 - [ ] Upload and download a document. The download should be a short-lived
       link to the R2 bucket.
+- [ ] **Cookies match the Cookie Policy.** In the browser's dev tools, look
+      at the cookies on the live domain after signing in. Expect the session
+      cookie, `XSRF-TOKEN`, `remember_web_…` (if you ticked Remember me) and
+      possibly Cloudflare's `__cf_bm`/`cf_clearance`. If anything else
+      appears, add it to `resources/js/pages/legal/Cookies.vue` and bump
+      `cookies_version` in `config/legal.php`.
 - [ ] The day after launch, check the 03:00 prunes ran (the scheduler is
       on).

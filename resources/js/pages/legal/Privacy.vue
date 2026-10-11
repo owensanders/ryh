@@ -234,15 +234,25 @@ const sections = [
                 <tbody>
                     <tr>
                         <td><Tbc :value="legal.hostingProvider" label="Hosting provider" /></td>
-                        <td>Hosting the application and its database</td>
+                        <td>
+                            Hosting the application, its database and live updates, on Amazon Web Services servers in London. Every visit passes
+                            through Cloudflare's network, which protects the site from attacks.
+                        </td>
                     </tr>
                     <tr>
-                        <td>Amazon Web Services</td>
-                        <td>Storing documents uploaded to the document vault</td>
+                        <td>Cloudflare (through our hosting provider)</td>
+                        <td>Storing documents uploaded to the document vault, in a private store that's only reachable through short-lived links</td>
                     </tr>
                     <tr>
                         <td><Tbc :value="legal.mailProvider" label="Email provider" /></td>
                         <td>Delivering account, invitation and billing emails</td>
+                    </tr>
+                    <tr>
+                        <td><Tbc :value="legal.errorTracker" label="Error monitoring provider" /></td>
+                        <td>
+                            Recording errors in the service so we can fix them. An error report can include your account's internal ID, your IP
+                            address and the page you were on, but not your household's content.
+                        </td>
                     </tr>
                     <tr>
                         <td>Stripe</td>
@@ -299,6 +309,10 @@ const sections = [
                 <strong>Billing records</strong> — invoices and payment records are kept for six years after the end of the tax year they relate to,
                 as UK tax law requires. Stripe keeps its own records under its own policy.
             </li>
+            <li>
+                <strong>Things that clear themselves</strong> — in-app notifications are deleted after 90 days, chores 30 days after they're
+                completed, and shopping list items a week after they're ticked off.
+            </li>
             <li><strong>Sign-in sessions</strong> — expire after a period of inactivity, or when you sign out.</li>
             <li>
                 <strong>Push notification addresses</strong> — kept until you turn notifications off on that device, sign out on it, or delete your
@@ -344,7 +358,8 @@ const sections = [
         <h2 id="security">Security</h2>
         <p>
             We protect your information with measures appropriate to the risk, including encryption in transit (HTTPS), hashed passwords, role-based
-            access within households, signed and expiring invitation links, limits on repeated sign-in attempts, and restricting access to production
+            access within households, signed and expiring invitation links, limits on repeated sign-in, sign-up and password reset attempts and on
+            how often any account can act, private document storage reached only through short-lived links, and restricting access to production
             systems to the people who run the service. No system is perfectly secure, but if a breach puts your rights at risk we will tell you and
             the ICO as the law requires.
         </p>
