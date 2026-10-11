@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Notifications\AiCreditsExhaustedNotification;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Ai\Exceptions\InsufficientCreditsException;
@@ -467,6 +468,21 @@ class MealPlannerTest extends TestCase
 
         $this->actingAs($user)
             ->post('/meals/ai-plan', ['people' => 4, 'budget' => null, 'diets' => [], 'avoid' => '', 'goals' => [], 'confidence' => 'comfortable'])
+            ->assertRedirect()
+            ->assertSessionHasErrors(['ai' => 'We couldn\'t generate a meal plan right now — please try again in a few minutes.']);
+
+        $this->assertNull($user->household->refresh()->ai_meal_plan_generated_at);
+    }
+
+    #[Test]
+    public function aTimedOutCallShowsAnErrorWithoutUsingUpTheWeeklyPlan(): void
+    {
+        config(['ai.providers.anthropic.key' => 'test-key']);
+        MealPlanAgent::fake(fn () => throw new ConnectionException('cURL error 28: Operation timed out after 45000 milliseconds'));
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/meals/ai-plan', $this->aiPlanPayload())
             ->assertRedirect()
             ->assertSessionHasErrors(['ai' => 'We couldn\'t generate a meal plan right now — please try again in a few minutes.']);
 

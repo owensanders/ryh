@@ -57,7 +57,7 @@ place.
 `php artisan reverb:start`) for live notifications — no separate step needed.
 
 Containers: `ryh-app` (PHP app + Vite), `ryh-websockets` (Reverb),
-`ryh-queue` (`queue:work`, e.g. invite emails and live notifications), `ryh-scheduler` (`schedule:work`: nightly prunes of old notifications, chores completed over 30 days ago and shopping items ticked off over 7 days ago), `ryh-mysql`,
+`ryh-queue` (`queue:work`: every email, including verification and password resets, plus live notifications and pushes), `ryh-scheduler` (`schedule:work`: nightly prunes of old notifications, chores completed over 30 days ago and shopping items ticked off over 7 days ago), `ryh-mysql`,
 `ryh-redis` (cache, sessions and queue), `ryh-mailpit` (catches all
 outgoing mail — inbox at <http://localhost:8025>). The Compose service names
 (`laravel.test`, `reverb`, `queue`, `scheduler`, `mysql`, `redis`, `mailpit`) are unchanged — they're the in-network hostnames and
