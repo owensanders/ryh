@@ -49,6 +49,27 @@ These don't need Laravel Cloud and can be done first.
       "household affairs" don't apply, because the service is commercial.
       The registration number goes in `LEGAL_ICO_REGISTRATION`, which shows
       it on `/privacy`. Renew it every year.
+
+      Answers to give when redoing it for the company:
+
+      | # | Question | Answer |
+      |---|---|---|
+      | 1 | What are you trying to find out? | If I need to pay the fee and how much |
+      | 2 | Public authority? | No |
+      | 3 | Currently trading? | Currently trading (register just before launch) |
+      | 4 | Not-for-profit exemption? | No |
+      | 5 | Using personal information? | Yes |
+      | 6 | Using it electronically? | Yes |
+      | 7 | Decide how it's used (controller)? | Yes |
+      | 8 | Legal or financial services? | No |
+      | 9 | Health, education or childcare services? | No |
+      | 10 | Property or land services? | No |
+      | 11 | Any of the listed reasons (membership, social networking, software development for others, …)? | No |
+      | 12 | Exempt from the fee? | No |
+      | 13 | Members of staff | Ten or fewer (the director counts) |
+      | 14 | Small pension scheme? | No |
+      | 15 | Charity? | No |
+      | 16 | Existing registration? | No, never paid before |
 - [ ] **Domain** bought. `APP_URL`, mail, Stripe and the custom domain on
       Cloud all use it.
 - [ ] **Stripe account** in the company's name, with live mode activated
