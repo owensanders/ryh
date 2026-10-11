@@ -35,8 +35,9 @@ return [
     'privacy_email' => env('PRIVACY_EMAIL', env('SUPPORT_EMAIL')),
 
     // Processors not otherwise configured in code — named in the Privacy Policy.
-    'hosting_provider' => env('LEGAL_HOSTING_PROVIDER'),
+    'hosting_provider' => env('LEGAL_HOSTING_PROVIDER', 'Laravel Cloud (Laravel Holdings Inc.)'),
     'mail_provider' => env('LEGAL_MAIL_PROVIDER'),
+    'error_tracker' => env('LEGAL_ERROR_TRACKER'),
 
     // How long deleted data can linger in backups before it is overwritten.
     'backup_retention_days' => (int) env('LEGAL_BACKUP_RETENTION_DAYS', 30),
@@ -47,7 +48,7 @@ return [
     // Bump these when the documents change materially. Registration records the
     // terms version a user accepted.
     'terms_version' => '2026-10-07',
-    'privacy_version' => '2026-10-07',
-    'cookies_version' => '2026-10-07',
+    'privacy_version' => '2026-10-11',
+    'cookies_version' => '2026-10-11',
 
 ];
