@@ -37,7 +37,7 @@ class QueuedEmailsTest extends TestCase
         $this->assertContains(AiCreditsExhaustedNotification::class, $emails);
 
         foreach ($emails as $email) {
-            $this->assertContains(ShouldQueue::class, class_implements($email), "{$email} should implement ShouldQueue.");
+            $this->assertTrue(is_subclass_of($email, ShouldQueue::class), "{$email} should implement ShouldQueue.");
             $this->assertContains(RetriesEmailTrait::class, class_uses_recursive($email), "{$email} should use RetriesEmailTrait.");
         }
     }
