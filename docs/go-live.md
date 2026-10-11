@@ -43,6 +43,13 @@ does them, or note where they were done.
       `php artisan queue:work redis --tries=3 --max-time=3600 --memory=256`.
       Live notifications, pushes and emails all go through the queue, so at
       least two workers.
+- [ ] **Request timeouts** of at least 60s everywhere a request passes:
+      nginx `fastcgi_read_timeout` (or `proxy_read_timeout`), PHP-FPM
+      `request_terminate_timeout`, and the load balancer's idle timeout. The
+      AI meal plan call gives up at 45s (`MealPlanAgent::TIMEOUT_SECONDS`)
+      and keeps the household's weekly plan. If something in front cuts it
+      off first, the user sees a 504 while PHP carries on and uses up the
+      plan they never saw.
 - [ ] **Scheduler:** cron runs `php artisan schedule:run` every minute on
       one server. It runs the nightly prunes: notifications over 90 days old,
       chores completed over 30 days ago, and shopping items ticked off over a

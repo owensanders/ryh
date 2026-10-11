@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mail;
 
 use App\Models\Household;
+use App\Traits\RetriesEmailTrait;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -15,7 +16,7 @@ use Illuminate\Queue\SerializesModels;
 /** Sent when a renewal payment fails, as the Terms of Service promise. */
 class PaymentFailedMail extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable, RetriesEmailTrait, SerializesModels;
 
     public function __construct(public readonly Household $household) {}
 

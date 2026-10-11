@@ -13,6 +13,7 @@ use App\Enums\CookingConfidenceEnum;
 use App\Models\Household;
 use App\Models\Recipe;
 use App\Notifications\AiCreditsExhaustedNotification;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -96,7 +97,7 @@ class GenerateAiMealPlanUseCase
                 $this->pauseForMissingCredit($e);
 
                 throw new RuntimeException('AI meal planning is taking a break — you can still plan meals by hand. Your weekly plan hasn\'t been used.');
-            } catch (AiException|RequestException $e) {
+            } catch (AiException|ConnectionException|RequestException $e) {
                 report($e);
 
                 throw new RuntimeException('We couldn\'t generate a meal plan right now — please try again in a few minutes.');

@@ -7,6 +7,8 @@ namespace App\Models;
 use App\Enums\HouseholdRoleEnum;
 use App\Enums\NotificationCategoryEnum;
 use App\Enums\PaletteEnum;
+use App\Notifications\ResetPasswordNotification;
+use App\Notifications\VerifyEmailNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -141,6 +143,22 @@ class User extends Authenticatable implements MustVerifyEmail
     public static function initialsFrom(string $name): string
     {
         return mb_strtoupper(mb_substr(trim($name), 0, 2));
+    }
+
+    /** Queued, unlike Laravel's default (VerifyEmailNotification). */
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmailNotification);
+    }
+
+    /**
+     * Queued, unlike Laravel's default (ResetPasswordNotification).
+     *
+     * @param  string  $token
+     */
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 
     /** Every category pushes unless this person has turned it off. */

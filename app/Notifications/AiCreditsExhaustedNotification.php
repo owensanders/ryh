@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Traits\RetriesEmailTrait;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /** Sent on-demand to the admin alert address when the AI provider runs out of credit. */
-class AiCreditsExhaustedNotification extends Notification
+class AiCreditsExhaustedNotification extends Notification implements ShouldQueue
 {
+    use Queueable, RetriesEmailTrait;
+
     public function __construct(private readonly string $provider) {}
 
     /** @return list<string> */

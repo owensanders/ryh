@@ -19,6 +19,10 @@ class MealPlanAgent implements Agent, HasStructuredOutput
     // the one free "regenerate" and per-day swaps without another API call.
     private const int POOL_SIZE = 14;
 
+    // Under laravel/ai's 60s default, so the call gives up (and the household
+    // keeps its weekly plan) before nginx or PHP-FPM cut the request off.
+    private const int TIMEOUT_SECONDS = 45;
+
     /**
      * @param  array<int, string>  $diets
      * @param  array<int, string>  $avoid
@@ -39,6 +43,11 @@ class MealPlanAgent implements Agent, HasStructuredOutput
         private readonly array $useUp,
         private readonly string $notes,
     ) {}
+
+    public function timeout(): int
+    {
+        return self::TIMEOUT_SECONDS;
+    }
 
     public function maxTokens(): int
     {
