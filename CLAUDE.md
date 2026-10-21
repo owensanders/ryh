@@ -45,9 +45,11 @@ Each layer only talks to the one below it.
 - **Actions** (`app/Actions/<Area>`): all business rules, one class per
   operation (`CreateChoreAction`), run by a public `handle()` method, the way
   Laravel's own Fortify and Jetstream actions work. They take models, enums,
-  scalars or `*InputData`, and return a `*Data` object or an
-  `array<int, *Data>`, never a shaped array. Transactions and notifications
-  start here.
+  scalars or `*InputData`, and return the model they worked on (or nothing),
+  never a shaped array. `*Data` is for what the browser receives, so view
+  models build it, not actions. The one exception is data flashed straight to
+  the page (`MealSuggestionData` from the meal plan actions). Transactions and
+  notifications start here.
 - **View models** (`app/ViewModels/<Area>`): everything one page needs, built
   by a public `toData()` that returns its `*ScreenData` (`ChoreBoardViewModel`).
   Plain classes over the Data layer, not `spatie/laravel-view-models`, which
@@ -85,7 +87,7 @@ N+1 case, throws in local, test and e2e. In production it logs a warning
 instead, so a miss never breaks a page. A single model loading its own
 relation isn't flagged.
 
-**Repositories are on their way out**, one area per PR (Chores went first).
+**Repositories are on their way out**, one area per PR (Chores and Shopping are done).
 Don't add methods to the ones left in `app/Repositories`. Policies and
 middleware still *read* through `MembershipRepository` until its turn.
 
@@ -98,7 +100,10 @@ middleware still *read* through `MembershipRepository` until its turn.
 - **Output**: `app/Data/*Data.php`, `spatie/laravel-data` classes. Anything a
   page receives is mirrored in `resources/js/types/ryh.ts` (or `index.ts`).
   Change both together.
-- Collections leave a repository or action as `->values()->all()`, typed
+- **Why Data and not models:** Inertia props are readable in the page source,
+  so a `*Data` class is the list of what the browser may see. Never hand a
+  model to a page.
+- Collections leave a view model as `->values()->all()`, typed
   `array<int, X>`.
 
 ## Transactions

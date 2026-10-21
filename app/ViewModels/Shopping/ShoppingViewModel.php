@@ -8,16 +8,13 @@ use App\Data\ShoppingListData;
 use App\Data\ShoppingScreenData;
 use App\Models\Household;
 use App\Models\ShoppingList;
-use App\Repositories\ShoppingRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ShoppingViewModel
 {
-    public function __construct(private readonly ShoppingRepository $shopping) {}
-
     public function toData(Household $household, ?string $slug = null): ShoppingScreenData
     {
-        $lists = $this->shopping->listsFor($household);
+        $lists = $household->shoppingLists()->with('items')->get();
         $active = $slug !== null ? $lists->firstWhere('slug', $slug) : $lists->first();
 
         if ($slug !== null && $active === null) {

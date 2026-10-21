@@ -11,13 +11,11 @@ use App\Enums\RecipeTagEnum;
 use App\Models\Household;
 use App\Models\ShoppingList;
 use App\Repositories\MealPlanRepository;
-use App\Repositories\ShoppingRepository;
 
 class RecipeLibraryViewModel
 {
     public function __construct(
         private readonly MealPlanRepository $meals,
-        private readonly ShoppingRepository $shopping,
     ) {}
 
     public function toData(Household $household): RecipeLibraryScreenData
@@ -28,7 +26,7 @@ class RecipeLibraryViewModel
                 ->values()
                 ->all(),
             tagOptions: RecipeTagEnum::options(),
-            shoppingLists: $this->shopping->listsFor($household)
+            shoppingLists: $household->shoppingLists()->with('items')->get()
                 ->map(fn (ShoppingList $list) => ShoppingListData::fromModel($list, withItems: false))
                 ->values()
                 ->all(),

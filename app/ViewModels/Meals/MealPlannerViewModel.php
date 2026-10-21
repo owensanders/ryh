@@ -23,7 +23,6 @@ use App\Models\ShoppingList;
 use App\Repositories\BudgetRepository;
 use App\Repositories\MealPlanRepository;
 use App\Repositories\MembershipRepository;
-use App\Repositories\ShoppingRepository;
 use Carbon\CarbonImmutable;
 
 class MealPlannerViewModel
@@ -36,7 +35,6 @@ class MealPlannerViewModel
         private readonly MealPlanRepository $meals,
         private readonly MembershipRepository $memberships,
         private readonly BudgetRepository $budget,
-        private readonly ShoppingRepository $shopping,
     ) {}
 
     public function toData(Household $household, CarbonImmutable $anyDayInWeek): MealPlannerScreenData
@@ -85,7 +83,7 @@ class MealPlannerViewModel
                 ? null
                 : $household->ai_meal_plan_generated_at?->addWeek()->toDateString(),
             aiSuggestedBudget: $this->suggestedWeeklyFoodBudget($household, $today),
-            shoppingLists: $this->shopping->listsFor($household)
+            shoppingLists: $household->shoppingLists()->with('items')->get()
                 ->map(fn (ShoppingList $list) => ShoppingListData::fromModel($list, withItems: false))
                 ->values()
                 ->all(),

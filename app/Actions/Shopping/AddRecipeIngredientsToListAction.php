@@ -4,26 +4,22 @@ declare(strict_types=1);
 
 namespace App\Actions\Shopping;
 
-use App\Data\ShoppingListData;
 use App\Models\Household;
 use App\Models\Recipe;
 use App\Models\ShoppingList;
-use App\Repositories\ShoppingRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 class AddRecipeIngredientsToListAction
 {
-    public function __construct(private readonly ShoppingRepository $shopping) {}
-
     /**
-     * @return ShoppingListData The updated list.
+     * @return ShoppingList The list they went on.
      *
      * @throws ModelNotFoundException When the list isn't one of the household's.
      */
-    public function handle(Household $household, Recipe $recipe, int $listId): ShoppingListData
+    public function handle(Household $household, Recipe $recipe, int $listId): ShoppingList
     {
-        $list = $this->shopping->findList($household, $listId);
+        $list = $household->shoppingLists()->with('items')->find($listId);
 
         if ($list === null) {
             throw (new ModelNotFoundException())->setModel(ShoppingList::class, [$listId]);
@@ -40,11 +36,15 @@ class AddRecipeIngredientsToListAction
                     continue;
                 }
 
-                $this->shopping->addItem($list, $ingredient['name'], $ingredient['quantity'] ?? null);
+                $list->items()->create([
+                    'name' => $ingredient['name'],
+                    'quantity' => $ingredient['quantity'] ?? null,
+                    'position' => $list->items()->nextPosition(),
+                ]);
                 $present[] = $name;
             }
         });
 
-        return ShoppingListData::fromModel($this->shopping->findList($household, $listId) ?? $list);
+        return $list;
     }
 }

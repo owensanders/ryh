@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions\Chores;
 
-use App\Data\ChoreData;
 use App\Data\Input\ChoreInputData;
 use App\Models\Chore;
 use App\Models\User;
@@ -14,7 +13,7 @@ use App\Support\RecipientsHelper;
 
 class UpdateChoreAction
 {
-    public function handle(Chore $chore, ChoreInputData $changes, User $actor): ChoreData
+    public function handle(Chore $chore, ChoreInputData $changes, User $actor): Chore
     {
         $previousAssignee = $chore->assigned_to;
 
@@ -31,7 +30,7 @@ class UpdateChoreAction
             $this->notifyInterestedParties($updated, $actor);
         }
 
-        return ChoreData::fromModel($updated);
+        return $updated;
     }
 
     /** Tells the assignee and/or creator when someone else edits their chore, without notifying either twice. */

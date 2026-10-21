@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Actions\Chores;
 
-use App\Data\ChoreData;
 use App\Data\Input\ChoreInputData;
 use App\Enums\ChoreStatusEnum;
+use App\Models\Chore;
 use App\Models\Household;
 use App\Models\User;
 use App\Notifications\ChoreAssignedNotification;
 
 class CreateChoreAction
 {
-    public function handle(Household $household, ChoreInputData $input, User $actor): ChoreData
+    public function handle(Household $household, ChoreInputData $input, User $actor): Chore
     {
         // New chores always start on the Today board, after what's already there.
         $chore = $household->chores()->create([
@@ -28,6 +28,6 @@ class CreateChoreAction
             $chore->assignee?->notify(new ChoreAssignedNotification($chore, $actor));
         }
 
-        return ChoreData::fromModel($chore);
+        return $chore;
     }
 }
