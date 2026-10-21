@@ -60,7 +60,7 @@ class ChoreController extends Controller
     {
         $updated = $toggle->handle($chore, $this->user($request));
 
-        return back()->with('toast', $updated->done ? "{$updated->name} — nice one" : null);
+        return back()->with('toast', $updated->status === ChoreStatusEnum::Done ? "{$updated->name} — nice one" : null);
     }
 
     public function move(MoveChoreRequest $request, Chore $chore, MoveChoreAction $move): RedirectResponse

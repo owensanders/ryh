@@ -5,16 +5,33 @@ declare(strict_types=1);
 namespace App\Actions\Shopping;
 
 use App\Data\Input\ShoppingListInputData;
-use App\Data\ShoppingListData;
 use App\Models\Household;
-use App\Repositories\ShoppingRepository;
+use App\Models\ShoppingList;
+use Illuminate\Support\Str;
 
 class CreateShoppingListAction
 {
-    public function __construct(private readonly ShoppingRepository $shopping) {}
-
-    public function handle(Household $household, ShoppingListInputData $input): ShoppingListData
+    public function handle(Household $household, ShoppingListInputData $input): ShoppingList
     {
-        return ShoppingListData::fromModel($this->shopping->createList($household, $input->name, $input->colour), withItems: false);
+        return $household->shoppingLists()->create([
+            'name' => $input->name,
+            'slug' => $this->uniqueSlug($household, $input->name),
+            'colour' => $input->colour,
+        ]);
+    }
+
+    /** Slugs are unique per household, so a name collision gets a numeric suffix. */
+    private function uniqueSlug(Household $household, string $name): string
+    {
+        $base = Str::slug($name);
+        $slug = $base;
+        $suffix = 2;
+
+        while ($household->shoppingLists()->where('slug', $slug)->exists()) {
+            $slug = "{$base}-{$suffix}";
+            $suffix++;
+        }
+
+        return $slug;
     }
 }

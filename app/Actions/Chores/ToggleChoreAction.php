@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions\Chores;
 
-use App\Data\ChoreData;
 use App\Enums\ChoreStatusEnum;
 use App\Models\Chore;
 use App\Models\User;
@@ -14,7 +13,7 @@ use App\Support\RecipientsHelper;
 /** Ticking a chore off moves it to Completed; un-ticking sends it back to Today. */
 class ToggleChoreAction
 {
-    public function handle(Chore $chore, User $actor): ChoreData
+    public function handle(Chore $chore, User $actor): Chore
     {
         $target = $chore->status === ChoreStatusEnum::Done
             ? ChoreStatusEnum::Today
@@ -25,7 +24,7 @@ class ToggleChoreAction
 
         $this->notifyInterestedParties($updated, $actor);
 
-        return ChoreData::fromModel($updated);
+        return $updated;
     }
 
     /** Tells the assignee and/or creator when someone else actions their chore, without notifying either twice. */

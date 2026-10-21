@@ -4,16 +4,14 @@ declare(strict_types=1);
 
 namespace App\Actions\Shopping;
 
-use App\Data\ShoppingItemData;
 use App\Models\ShoppingItem;
-use App\Repositories\ShoppingRepository;
 
 class UpdateShoppingItemAction
 {
-    public function __construct(private readonly ShoppingRepository $shopping) {}
-
-    public function handle(ShoppingItem $item, string $name, ?string $quantity): ShoppingItemData
+    public function handle(ShoppingItem $item, string $name, ?string $quantity): ShoppingItem
     {
-        return ShoppingItemData::fromModel($this->shopping->updateItem($item, trim($name), $quantity));
+        $item->update(['name' => trim($name), 'quantity' => $quantity]);
+
+        return $item->refresh();
     }
 }
