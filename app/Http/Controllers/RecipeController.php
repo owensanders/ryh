@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\Meals\AddRecipeAction;
+use App\Actions\Meals\DeleteRecipeAction;
+use App\Actions\Meals\UpdateRecipeAction;
+use App\Actions\Shopping\AddRecipeIngredientsToListAction;
 use App\Enums\RecipeTagEnum;
 use App\Http\Requests\AddRecipeIngredientsRequest;
 use App\Http\Requests\RecipeRequest;
 use App\Models\Recipe;
 use App\Traits\ResolvesHouseholdTrait;
-use App\UseCases\Meals\AddRecipeUseCase;
-use App\UseCases\Meals\DeleteRecipeUseCase;
 use App\UseCases\Meals\GetRecipeLibraryUseCase;
-use App\UseCases\Meals\UpdateRecipeUseCase;
-use App\UseCases\Shopping\AddRecipeIngredientsToListUseCase;
 use App\UseCases\Shopping\GetShoppingListOptionsUseCase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,24 +35,24 @@ class RecipeController extends Controller
         ]);
     }
 
-    public function store(RecipeRequest $request, AddRecipeUseCase $add): RedirectResponse
+    public function store(RecipeRequest $request, AddRecipeAction $add): RedirectResponse
     {
-        $recipe = $add->execute($this->household($request), $request->toData(), $request->shoppingListId());
+        $recipe = $add->handle($this->household($request), $request->toData(), $request->shoppingListId());
 
         return back()->with('toast', "{$recipe->name} added");
     }
 
-    public function update(RecipeRequest $request, Recipe $recipe, UpdateRecipeUseCase $update): RedirectResponse
+    public function update(RecipeRequest $request, Recipe $recipe, UpdateRecipeAction $update): RedirectResponse
     {
-        $updated = $update->execute($recipe, $request->toData());
+        $updated = $update->handle($recipe, $request->toData());
 
         return back()->with('toast', "{$updated->name} updated");
     }
 
-    public function destroy(Recipe $recipe, DeleteRecipeUseCase $delete): RedirectResponse
+    public function destroy(Recipe $recipe, DeleteRecipeAction $delete): RedirectResponse
     {
         $name = $recipe->name;
-        $delete->execute($recipe);
+        $delete->handle($recipe);
 
         return back()->with('toast', "{$name} deleted");
     }
@@ -60,9 +60,9 @@ class RecipeController extends Controller
     public function addToShoppingList(
         AddRecipeIngredientsRequest $request,
         Recipe $recipe,
-        AddRecipeIngredientsToListUseCase $addIngredients,
+        AddRecipeIngredientsToListAction $addIngredients,
     ): RedirectResponse {
-        $updated = $addIngredients->execute($this->household($request), $recipe, (int) $request->validated('shopping_list_id'));
+        $updated = $addIngredients->handle($this->household($request), $recipe, (int) $request->validated('shopping_list_id'));
 
         return back()->with('toast', "Ingredients added to {$updated->name}");
     }

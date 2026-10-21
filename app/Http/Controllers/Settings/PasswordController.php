@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Settings;
 
+use App\Actions\Settings\UpdatePasswordAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\UpdatePasswordRequest;
 use App\Traits\ResolvesUserTrait;
-use App\UseCases\Settings\UpdatePasswordUseCase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -24,9 +24,9 @@ class PasswordController extends Controller
         ]);
     }
 
-    public function update(UpdatePasswordRequest $request, UpdatePasswordUseCase $updatePassword): RedirectResponse
+    public function update(UpdatePasswordRequest $request, UpdatePasswordAction $updatePassword): RedirectResponse
     {
-        $updatePassword->execute($this->user($request), $request->validated('password'));
+        $updatePassword->handle($this->user($request), $request->validated('password'));
 
         return back();
     }

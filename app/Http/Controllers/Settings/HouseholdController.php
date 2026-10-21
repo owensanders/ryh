@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Settings;
 
+use App\Actions\House\LeaveHouseholdAction;
+use App\Actions\House\SwitchCurrentHouseholdAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\HouseholdSelectRequest;
 use App\Http\Requests\Settings\LeaveHouseholdRequest;
 use App\Traits\ResolvesUserTrait;
 use App\UseCases\House\GetHouseholdOptionsUseCase;
-use App\UseCases\House\LeaveHouseholdUseCase;
-use App\UseCases\House\SwitchCurrentHouseholdUseCase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -28,16 +28,16 @@ class HouseholdController extends Controller
         ]);
     }
 
-    public function switchCurrent(HouseholdSelectRequest $request, SwitchCurrentHouseholdUseCase $switch): RedirectResponse
+    public function switchCurrent(HouseholdSelectRequest $request, SwitchCurrentHouseholdAction $switch): RedirectResponse
     {
-        $switch->execute($this->user($request), (int) $request->validated('household_id'));
+        $switch->handle($this->user($request), (int) $request->validated('household_id'));
 
         return to_route('app');
     }
 
-    public function leave(LeaveHouseholdRequest $request, LeaveHouseholdUseCase $leave, GetHouseholdOptionsUseCase $getOptions): RedirectResponse
+    public function leave(LeaveHouseholdRequest $request, LeaveHouseholdAction $leave, GetHouseholdOptionsUseCase $getOptions): RedirectResponse
     {
-        $householdName = $leave->execute(
+        $householdName = $leave->handle(
             $this->user($request),
             (int) $request->validated('household_id'),
             $request->boolean('confirm_household_deletion'),

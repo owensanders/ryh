@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\Auth\JoinHouseholdFromInviteAction;
+use App\Actions\Auth\RegisterUserAction;
 use App\Enums\HouseholdRoleEnum;
 use App\Enums\InviteJoinOutcomeEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\UseCases\Auth\JoinHouseholdFromInviteUseCase;
-use App\UseCases\Auth\RegisterUserUseCase;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,10 +46,10 @@ class RegisteredUserController extends Controller
 
     public function store(
         RegisterRequest $request,
-        RegisterUserUseCase $register,
-        JoinHouseholdFromInviteUseCase $joinFromInvite,
+        RegisterUserAction $register,
+        JoinHouseholdFromInviteAction $joinFromInvite,
     ): RedirectResponse {
-        $user = $register->execute(
+        $user = $register->handle(
             $request->validated('name'),
             $request->validated('email'),
             $request->validated('password'),
@@ -62,7 +62,7 @@ class RegisteredUserController extends Controller
             return to_route('household.setup');
         }
 
-        $result = $joinFromInvite->execute(
+        $result = $joinFromInvite->handle(
             $user,
             (int) $invite['household_id'],
             HouseholdRoleEnum::from($invite['role']),

@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Actions\Shopping;
+
+use App\Data\Input\ShoppingListInputData;
+use App\Data\ShoppingListData;
+use App\Models\Household;
+use App\Repositories\ShoppingRepository;
+
+class CreateShoppingListAction
+{
+    public function __construct(private readonly ShoppingRepository $shopping) {}
+
+    public function handle(Household $household, ShoppingListInputData $input): ShoppingListData
+    {
+        return ShoppingListData::fromModel($this->shopping->createList($household, $input->name, $input->colour), withItems: false);
+    }
+}

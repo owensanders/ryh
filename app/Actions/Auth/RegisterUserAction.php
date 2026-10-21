@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Actions\Auth;
+
+use App\Models\User;
+use App\Repositories\UserRepository;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+
+class RegisterUserAction
+{
+    public function __construct(private readonly UserRepository $users) {}
+
+    public function handle(string $name, string $email, string $password): User
+    {
+        // Registration requires ticking the terms box, so record what was agreed to.
+        $user = $this->users->create($name, $email, Hash::make($password), (string) config('legal.terms_version'));
+
+        event(new Registered($user));
+
+        Auth::login($user);
+
+        return $user;
+    }
+}

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\House\CompleteCheckoutAction;
+use App\Actions\House\SubscribeHouseholdAction;
 use App\Data\PlanData;
 use App\Http\Requests\SubscribeRequest;
 use App\Models\Household;
 use App\Traits\ResolvesHouseholdTrait;
 use App\Traits\ResolvesUserTrait;
-use App\UseCases\House\CompleteCheckoutUseCase;
-use App\UseCases\House\SubscribeHouseholdUseCase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -42,11 +42,11 @@ class BillingController extends Controller
         ]);
     }
 
-    public function subscribe(SubscribeRequest $request, SubscribeHouseholdUseCase $subscribe): SymfonyResponse
+    public function subscribe(SubscribeRequest $request, SubscribeHouseholdAction $subscribe): SymfonyResponse
     {
         $interval = $request->validated('interval');
 
-        $checkoutUrl = $subscribe->execute(
+        $checkoutUrl = $subscribe->handle(
             $this->household($request),
             interval: $interval,
             successUrl: route('billing.checkout.complete'),
@@ -60,14 +60,14 @@ class BillingController extends Controller
      * Where Stripe Checkout sends the owner back to. `from=house` returns
      * them to the House tab they started on; otherwise the dashboard.
      */
-    public function complete(Request $request, CompleteCheckoutUseCase $complete): RedirectResponse
+    public function complete(Request $request, CompleteCheckoutAction $complete): RedirectResponse
     {
         $household = $this->household($request);
         $sessionId = $request->string('session_id')->toString();
 
         if ($sessionId !== '') {
             try {
-                $complete->execute($household, $sessionId);
+                $complete->handle($household, $sessionId);
             } catch (ApiErrorException $e) {
                 // The webhook will still sync the subscription; just log it.
                 Log::warning("Couldn't sync Stripe checkout session {$sessionId}: {$e->getMessage()}");

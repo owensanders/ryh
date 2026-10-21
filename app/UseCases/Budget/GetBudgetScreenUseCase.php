@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\UseCases\Budget;
 
+use App\Actions\Budget\CarryForwardRecurringCategoriesAction;
+use App\Actions\Budget\CarryForwardRecurringIncomeAction;
 use App\Data\BudgetCategoryData;
 use App\Data\BudgetMonthSummaryData;
 use App\Data\BudgetScreenData;
@@ -20,8 +22,8 @@ class GetBudgetScreenUseCase
 
     public function __construct(
         private readonly BudgetRepository $budget,
-        private readonly CarryForwardRecurringCategoriesUseCase $carryForwardCategories,
-        private readonly CarryForwardRecurringIncomeUseCase $carryForwardIncome,
+        private readonly CarryForwardRecurringCategoriesAction $carryForwardCategories,
+        private readonly CarryForwardRecurringIncomeAction $carryForwardIncome,
     ) {}
 
     public function execute(Household $household, CarbonImmutable $month): BudgetScreenData
@@ -29,8 +31,8 @@ class GetBudgetScreenUseCase
         $today = CarbonImmutable::today();
         $first = $month->startOfMonth();
 
-        $this->carryForwardCategories->execute($household, $first);
-        $this->carryForwardIncome->execute($household, $first);
+        $this->carryForwardCategories->handle($household, $first);
+        $this->carryForwardIncome->handle($household, $first);
 
         $categories = $this->budget->categoriesFor($household, $first);
         $income = $this->budget->incomeSourcesFor($household, $first);
