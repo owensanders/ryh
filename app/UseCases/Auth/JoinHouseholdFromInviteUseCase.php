@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\UseCases\Auth;
 
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
-use App\Contracts\Repositories\MembershipRepositoryInterface;
-use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Data\InviteJoinResultData;
 use App\Enums\HouseholdRoleEnum;
 use App\Enums\InviteJoinOutcomeEnum;
 use App\Enums\PaletteEnum;
 use App\Models\Household;
 use App\Models\User;
+use App\Repositories\HouseholdRepository;
+use App\Repositories\MembershipRepository;
+use App\Repositories\UserRepository;
 use DateTimeInterface;
 use Illuminate\Support\Facades\DB;
 
@@ -20,9 +20,9 @@ use Illuminate\Support\Facades\DB;
 class JoinHouseholdFromInviteUseCase
 {
     public function __construct(
-        private readonly HouseholdRepositoryInterface $households,
-        private readonly UserRepositoryInterface $users,
-        private readonly MembershipRepositoryInterface $memberships,
+        private readonly HouseholdRepository $households,
+        private readonly UserRepository $users,
+        private readonly MembershipRepository $memberships,
     ) {}
 
     public function execute(

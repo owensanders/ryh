@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Models\Household;
 use Carbon\CarbonInterface;
 
-class HouseholdRepository implements HouseholdRepositoryInterface
+class HouseholdRepository
 {
     public function create(string $name, ?CarbonInterface $trialEndsAt): Household
     {
@@ -44,6 +43,10 @@ class HouseholdRepository implements HouseholdRepositoryInterface
         $household->update(['last_chore_notification_sent_at' => now()]);
     }
 
+    /**
+     * Re-reads the household holding a row lock until the transaction ends,
+     * so checks like the member cap can't race another request.
+     */
     public function lockForUpdate(Household $household): Household
     {
         return Household::query()->whereKey($household->id)->lockForUpdate()->firstOrFail();
@@ -64,11 +67,13 @@ class HouseholdRepository implements HouseholdRepositoryInterface
         return Household::where('join_code', $joinCode)->first();
     }
 
+    /** The household billed under this Stripe customer ID, as named in webhook payloads. */
     public function findByStripeCustomer(string $customerId): ?Household
     {
         return Household::where('stripe_id', $customerId)->first();
     }
 
+    /** Households (app-wide) that generated an AI meal plan at or after the given moment. */
     public function countAiMealPlansSince(CarbonInterface $since): int
     {
         return Household::where('ai_meal_plan_generated_at', '>=', $since)->count();

@@ -6,14 +6,14 @@ namespace App\UseCases\Meals;
 
 use App\Ai\Agents\MealPlanAgent;
 use App\Ai\AiConfigService;
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
-use App\Contracts\Repositories\MealPlanRepositoryInterface;
 use App\Data\MealSuggestionData;
 use App\Enums\CookingConfidenceEnum;
 use App\Exceptions\MealPlanUnavailableException;
 use App\Models\Household;
 use App\Models\Recipe;
 use App\Notifications\AiCreditsExhaustedNotification;
+use App\Repositories\HouseholdRepository;
+use App\Repositories\MealPlanRepository;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
@@ -31,8 +31,8 @@ class GenerateAiMealPlanUseCase
     private const int LOCK_SECONDS = 120;
 
     public function __construct(
-        private readonly MealPlanRepositoryInterface $meals,
-        private readonly HouseholdRepositoryInterface $households,
+        private readonly MealPlanRepository $meals,
+        private readonly HouseholdRepository $households,
     ) {}
 
     /**

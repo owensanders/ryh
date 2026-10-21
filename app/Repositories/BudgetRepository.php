@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Contracts\Repositories\BudgetRepositoryInterface;
 use App\Data\Input\BudgetCategoryInputData;
 use App\Data\Input\IncomeSourceInputData;
 use App\Enums\PaletteEnum;
@@ -14,7 +13,7 @@ use App\Models\IncomeSource;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
-class BudgetRepository implements BudgetRepositoryInterface
+class BudgetRepository
 {
     /** @return Collection<int, BudgetCategory> */
     public function categoriesFor(Household $household, CarbonImmutable $month): Collection
@@ -24,7 +23,7 @@ class BudgetRepository implements BudgetRepositoryInterface
             ->get();
     }
 
-    /** @return Collection<int, BudgetCategory> */
+    /** @return Collection<int, BudgetCategory> Categories from the given month and earlier, newest month first. */
     public function categoriesUpTo(Household $household, CarbonImmutable $month): Collection
     {
         return $household->budgetCategories()
@@ -76,7 +75,7 @@ class BudgetRepository implements BudgetRepositoryInterface
         $category->delete();
     }
 
-    /** @return Collection<int, BudgetCategory> */
+    /** @return Collection<int, BudgetCategory> the nearest earlier month's recurring categories, or empty if none */
     public function recurringCategoriesBefore(Household $household, CarbonImmutable $month): Collection
     {
         $latestMonth = $household->budgetCategories()
@@ -132,7 +131,7 @@ class BudgetRepository implements BudgetRepositoryInterface
         $income->delete();
     }
 
-    /** @return Collection<int, IncomeSource> */
+    /** @return Collection<int, IncomeSource> the nearest earlier month's recurring income, or empty if none */
     public function recurringIncomeSourcesBefore(Household $household, CarbonImmutable $month): Collection
     {
         $latestMonth = $household->incomeSources()

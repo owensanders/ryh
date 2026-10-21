@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace App\UseCases\Meals;
 
 use App\Ai\AiConfigService;
-use App\Contracts\Repositories\BudgetRepositoryInterface;
-use App\Contracts\Repositories\MealPlanRepositoryInterface;
-use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Data\MealPlannerScreenData;
 use App\Data\MemberData;
 use App\Data\PlannedMealData;
@@ -16,6 +13,9 @@ use App\Data\RecipeData;
 use App\Models\BudgetCategory;
 use App\Models\Household;
 use App\Models\PlannedMeal;
+use App\Repositories\BudgetRepository;
+use App\Repositories\MealPlanRepository;
+use App\Repositories\MembershipRepository;
 use Carbon\CarbonImmutable;
 
 class GetMealPlannerUseCase
@@ -25,9 +25,9 @@ class GetMealPlannerUseCase
     private const string FOOD_BUDGET_LABEL = '/food|grocer|shopping/i';
 
     public function __construct(
-        private readonly MealPlanRepositoryInterface $meals,
-        private readonly MembershipRepositoryInterface $memberships,
-        private readonly BudgetRepositoryInterface $budget,
+        private readonly MealPlanRepository $meals,
+        private readonly MembershipRepository $memberships,
+        private readonly BudgetRepository $budget,
     ) {}
 
     public function execute(Household $household, CarbonImmutable $anyDayInWeek): MealPlannerScreenData

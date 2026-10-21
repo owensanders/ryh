@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\UseCases\Shopping;
 
-use App\Contracts\Repositories\ShoppingRepositoryInterface;
 use App\Data\ShoppingListData;
 use App\Models\Household;
 use App\Models\Recipe;
 use App\Models\ShoppingList;
+use App\Repositories\ShoppingRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 class AddRecipeIngredientsToListUseCase
 {
-    public function __construct(private readonly ShoppingRepositoryInterface $shopping) {}
+    public function __construct(private readonly ShoppingRepository $shopping) {}
 
     /**
      * @return ShoppingListData The updated list.

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Contracts\Repositories\DocumentRepositoryInterface;
 use App\Enums\PaletteEnum;
 use App\Models\Document;
 use App\Models\DocumentFolder;
@@ -14,7 +13,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
-class DocumentRepository implements DocumentRepositoryInterface
+class DocumentRepository
 {
     /** @return Collection<int, DocumentFolder> folders with a `documents_count` on each */
     public function foldersFor(Household $household): Collection
@@ -22,7 +21,7 @@ class DocumentRepository implements DocumentRepositoryInterface
         return $household->documentFolders()->withCount('documents')->get();
     }
 
-    /** @return Collection<int, Document> */
+    /** @return Collection<int, Document> documents with their uploader eager loaded */
     public function documentsFor(DocumentFolder $folder): Collection
     {
         return $folder->documents()->with('addedBy')->latest()->get();

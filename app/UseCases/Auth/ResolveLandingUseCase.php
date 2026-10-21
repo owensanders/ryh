@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\UseCases\Auth;
 
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
-use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Data\LandingData;
 use App\Models\User;
+use App\Repositories\HouseholdRepository;
+use App\Repositories\MembershipRepository;
 
 /**
  * For /app and links from before households were in the URL: back to the
@@ -17,8 +17,8 @@ use App\Models\User;
 class ResolveLandingUseCase
 {
     public function __construct(
-        private readonly MembershipRepositoryInterface $memberships,
-        private readonly HouseholdRepositoryInterface $households,
+        private readonly MembershipRepository $memberships,
+        private readonly HouseholdRepository $households,
     ) {}
 
     public function execute(User $user): LandingData

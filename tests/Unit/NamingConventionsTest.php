@@ -25,7 +25,6 @@ class NamingConventionsTest extends TestCase
         'Ai/Agents' => 'Agent',
         'Ai/Fakes' => 'Fake',
         'Ai' => 'Service',
-        'Contracts/Repositories' => 'RepositoryInterface',
         'Data' => 'Data',
         'Enums' => 'Enum',
         'Events' => 'Event',

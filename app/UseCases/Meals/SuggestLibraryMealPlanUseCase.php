@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\UseCases\Meals;
 
-use App\Contracts\Repositories\MealPlanRepositoryInterface;
 use App\Data\MealSuggestionData;
 use App\Enums\MealDietEnum;
 use App\Enums\RecipeTagEnum;
@@ -12,6 +11,7 @@ use App\Exceptions\MealPlanUnavailableException;
 use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\Recipe;
+use App\Repositories\MealPlanRepository;
 use Carbon\CarbonImmutable;
 
 /**
@@ -27,7 +27,7 @@ class SuggestLibraryMealPlanUseCase
     private const int RECENT_DAYS = 14;
 
     public function __construct(
-        private readonly MealPlanRepositoryInterface $meals,
+        private readonly MealPlanRepository $meals,
     ) {}
 
     /**

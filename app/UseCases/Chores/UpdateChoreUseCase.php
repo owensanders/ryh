@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\UseCases\Chores;
 
-use App\Contracts\Repositories\ChoreRepositoryInterface;
 use App\Data\ChoreData;
 use App\Data\Input\ChoreInputData;
 use App\Models\Chore;
 use App\Models\User;
 use App\Notifications\ChoreAssignedNotification;
 use App\Notifications\ChoreEditedNotification;
+use App\Repositories\ChoreRepository;
 use App\Support\RecipientsHelper;
 
 class UpdateChoreUseCase
 {
-    public function __construct(private readonly ChoreRepositoryInterface $chores) {}
+    public function __construct(private readonly ChoreRepository $chores) {}
 
     public function execute(Chore $chore, ChoreInputData $changes, User $actor): ChoreData
     {

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\UseCases\House;
 
-use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Data\HouseData;
 use App\Data\HouseMemberData;
 use App\Data\PlanStatusData;
@@ -13,11 +12,12 @@ use App\Data\StatData;
 use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
 use App\Models\User;
+use App\Repositories\MembershipRepository;
 
 class GetHouseUseCase
 {
     public function __construct(
-        private readonly MembershipRepositoryInterface $memberships,
+        private readonly MembershipRepository $memberships,
     ) {}
 
     public function execute(Household $household, int $viewerId): HouseData

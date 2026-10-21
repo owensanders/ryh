@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\UseCases\Auth;
 
-use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Models\User;
+use App\Repositories\UserRepository;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 
 class ResetPasswordUseCase
 {
-    public function __construct(private readonly UserRepositoryInterface $users) {}
+    public function __construct(private readonly UserRepository $users) {}
 
     /**
      * @param  array<string, string>  $credentials  email, token and the new password

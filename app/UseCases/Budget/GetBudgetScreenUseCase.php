@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\UseCases\Budget;
 
-use App\Contracts\Repositories\BudgetRepositoryInterface;
 use App\Data\BudgetCategoryData;
 use App\Data\BudgetMonthSummaryData;
 use App\Data\BudgetScreenData;
 use App\Data\IncomeSourceData;
 use App\Models\BudgetCategory;
 use App\Models\Household;
+use App\Repositories\BudgetRepository;
 use App\Support\MoneyHelper;
 use Carbon\CarbonImmutable;
 
@@ -19,7 +19,7 @@ class GetBudgetScreenUseCase
     private const int HISTORY_MONTHS = 3;
 
     public function __construct(
-        private readonly BudgetRepositoryInterface $budget,
+        private readonly BudgetRepository $budget,
         private readonly CarryForwardRecurringCategoriesUseCase $carryForwardCategories,
         private readonly CarryForwardRecurringIncomeUseCase $carryForwardIncome,
     ) {}

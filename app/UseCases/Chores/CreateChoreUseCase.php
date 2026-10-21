@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\UseCases\Chores;
 
-use App\Contracts\Repositories\ChoreRepositoryInterface;
 use App\Data\ChoreData;
 use App\Data\Input\ChoreInputData;
 use App\Enums\ChoreStatusEnum;
 use App\Models\Household;
 use App\Models\User;
 use App\Notifications\ChoreAssignedNotification;
+use App\Repositories\ChoreRepository;
 
 class CreateChoreUseCase
 {
-    public function __construct(private readonly ChoreRepositoryInterface $chores) {}
+    public function __construct(private readonly ChoreRepository $chores) {}
 
     public function execute(Household $household, ChoreInputData $input, User $actor): ChoreData
     {

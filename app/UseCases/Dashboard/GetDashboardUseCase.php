@@ -4,12 +4,6 @@ declare(strict_types=1);
 
 namespace App\UseCases\Dashboard;
 
-use App\Contracts\Repositories\BudgetRepositoryInterface;
-use App\Contracts\Repositories\CalendarEventRepositoryInterface;
-use App\Contracts\Repositories\ChoreRepositoryInterface;
-use App\Contracts\Repositories\MealPlanRepositoryInterface;
-use App\Contracts\Repositories\MembershipRepositoryInterface;
-use App\Contracts\Repositories\ShoppingRepositoryInterface;
 use App\Data\AgendaEntryData;
 use App\Data\AgendaGroupData;
 use App\Data\BudgetCategoryData;
@@ -26,6 +20,12 @@ use App\Models\BudgetCategory;
 use App\Models\CalendarEvent;
 use App\Models\Household;
 use App\Models\PlannedMeal;
+use App\Repositories\BudgetRepository;
+use App\Repositories\CalendarEventRepository;
+use App\Repositories\ChoreRepository;
+use App\Repositories\MealPlanRepository;
+use App\Repositories\MembershipRepository;
+use App\Repositories\ShoppingRepository;
 use App\Support\MoneyHelper;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -37,12 +37,12 @@ class GetDashboardUseCase
     private const int AGENDA_DAYS = 3;
 
     public function __construct(
-        private readonly ShoppingRepositoryInterface $shopping,
-        private readonly ChoreRepositoryInterface $chores,
-        private readonly MealPlanRepositoryInterface $meals,
-        private readonly MembershipRepositoryInterface $memberships,
-        private readonly CalendarEventRepositoryInterface $events,
-        private readonly BudgetRepositoryInterface $budget,
+        private readonly ShoppingRepository $shopping,
+        private readonly ChoreRepository $chores,
+        private readonly MealPlanRepository $meals,
+        private readonly MembershipRepository $memberships,
+        private readonly CalendarEventRepository $events,
+        private readonly BudgetRepository $budget,
     ) {}
 
     public function execute(Household $household, string $viewerName, CarbonImmutable $today): DashboardData

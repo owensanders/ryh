@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\UseCases\Documents;
 
-use App\Contracts\Repositories\DocumentRepositoryInterface;
 use App\Data\DocumentData;
 use App\Data\DocumentFolderData;
 use App\Data\DocumentsScreenData;
 use App\Models\Document;
 use App\Models\DocumentFolder;
 use App\Models\Household;
+use App\Repositories\DocumentRepository;
 use Illuminate\Support\Collection;
 
 class GetDocumentsScreenUseCase
 {
-    public function __construct(private readonly DocumentRepositoryInterface $documents) {}
+    public function __construct(private readonly DocumentRepository $documents) {}
 
     public function execute(Household $household, ?DocumentFolder $active): DocumentsScreenData
     {

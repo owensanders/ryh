@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace App\UseCases\House;
 
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
-use App\Contracts\Repositories\MembershipRepositoryInterface;
-use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Enums\HouseholdRoleEnum;
 use App\Enums\PaletteEnum;
 use App\Enums\PendingReasonEnum;
 use App\Models\Household;
 use App\Models\User;
+use App\Repositories\HouseholdRepository;
+use App\Repositories\MembershipRepository;
+use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class JoinHouseholdUseCase
 {
     public function __construct(
-        private readonly HouseholdRepositoryInterface $households,
-        private readonly UserRepositoryInterface $users,
-        private readonly MembershipRepositoryInterface $memberships,
+        private readonly HouseholdRepository $households,
+        private readonly UserRepository $users,
+        private readonly MembershipRepository $memberships,
     ) {}
 
     /** @throws ValidationException */

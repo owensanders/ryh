@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\UseCases\Meals;
 
-use App\Contracts\Repositories\MealPlanRepositoryInterface;
 use App\Data\Input\PlannedMealInputData;
 use App\Data\PlannedMealData;
 use App\Models\PlannedMeal;
 use App\Models\User;
 use App\Notifications\MealAssignedNotification;
 use App\Notifications\MealEditedNotification;
+use App\Repositories\MealPlanRepository;
 use App\UseCases\Shopping\AddRecipeIngredientsToListUseCase;
 use LogicException;
 
 class UpdatePlannedMealUseCase
 {
     public function __construct(
-        private readonly MealPlanRepositoryInterface $meals,
+        private readonly MealPlanRepository $meals,
         private readonly AddRecipeIngredientsToListUseCase $addIngredients,
     ) {}
 

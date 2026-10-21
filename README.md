@@ -275,7 +275,7 @@ Each layer only talks to the one below it:
 | Controllers | `app/Http/Controllers` | Call use cases, render pages, redirect with toasts | Query the database or use repositories |
 | Form requests | `app/Http/Requests` | Validate, then `toData()` into a typed `*InputData` | Pass `array $attributes` along |
 | Use cases | `app/UseCases/<Area>` | Business rules, transactions, sending notifications. Return `*Data` objects | Query the database directly |
-| Repositories | `app/Repositories` (interfaces in `app/Contracts/Repositories`) | Every query and write; map input objects to columns | Business rules |
+| Repositories | `app/Repositories` | Every query and write; map input objects to columns | Business rules |
 | Models | `app/Models` | Relations, casts, small helpers that don't query | Queries in helpers |
 | Data | `app/Data` (output), `app/Data/Input` (input) | Typed shapes between layers; output mirrored in `resources/js/types/ryh.ts` | — |
 

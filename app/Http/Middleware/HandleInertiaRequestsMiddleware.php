@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Data\AuthUserData;
 use App\Models\User;
+use App\Repositories\MembershipRepository;
 use App\Support\CurrentHouseholdHelper;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -26,7 +26,7 @@ class HandleInertiaRequestsMiddleware extends Middleware
         return parent::version($request);
     }
 
-    public function __construct(private readonly MembershipRepositoryInterface $memberships) {}
+    public function __construct(private readonly MembershipRepository $memberships) {}
 
     /**
      * @see https://inertiajs.com/shared-data

@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\UseCases\Budget;
 
-use App\Contracts\Repositories\BudgetRepositoryInterface;
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Data\Input\IncomeSourceInputData;
 use App\Models\Household;
+use App\Repositories\BudgetRepository;
+use App\Repositories\HouseholdRepository;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
 class CarryForwardRecurringIncomeUseCase
 {
     public function __construct(
-        private readonly BudgetRepositoryInterface $budget,
-        private readonly HouseholdRepositoryInterface $households,
+        private readonly BudgetRepository $budget,
+        private readonly HouseholdRepository $households,
     ) {}
 
     public function execute(Household $household, CarbonImmutable $month): void

@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace App\UseCases\House;
 
-use App\Contracts\Repositories\CalendarEventRepositoryInterface;
-use App\Contracts\Repositories\ChoreRepositoryInterface;
-use App\Contracts\Repositories\MealPlanRepositoryInterface;
-use App\Contracts\Repositories\MembershipRepositoryInterface;
-use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
 use App\Models\User;
+use App\Repositories\CalendarEventRepository;
+use App\Repositories\ChoreRepository;
+use App\Repositories\MealPlanRepository;
+use App\Repositories\MembershipRepository;
+use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class RemoveMemberUseCase
 {
     public function __construct(
-        private readonly UserRepositoryInterface $users,
-        private readonly ChoreRepositoryInterface $chores,
-        private readonly CalendarEventRepositoryInterface $events,
-        private readonly MealPlanRepositoryInterface $meals,
-        private readonly MembershipRepositoryInterface $memberships,
+        private readonly UserRepository $users,
+        private readonly ChoreRepository $chores,
+        private readonly CalendarEventRepository $events,
+        private readonly MealPlanRepository $meals,
+        private readonly MembershipRepository $memberships,
     ) {}
 
     /**
