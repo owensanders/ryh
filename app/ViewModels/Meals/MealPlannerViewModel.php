@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\UseCases\Meals;
+namespace App\ViewModels\Meals;
 
 use App\Ai\AiConfigService;
 use App\Data\MealPlannerScreenData;
@@ -10,15 +10,23 @@ use App\Data\MemberData;
 use App\Data\PlannedMealData;
 use App\Data\PlannerDayData;
 use App\Data\RecipeData;
+use App\Data\ShoppingListData;
+use App\Enums\CookingConfidenceEnum;
+use App\Enums\KitchenEquipmentEnum;
+use App\Enums\MealDietEnum;
+use App\Enums\MealGoalEnum;
+use App\Enums\RecipeTagEnum;
 use App\Models\BudgetCategory;
 use App\Models\Household;
 use App\Models\PlannedMeal;
+use App\Models\ShoppingList;
 use App\Repositories\BudgetRepository;
 use App\Repositories\MealPlanRepository;
 use App\Repositories\MembershipRepository;
+use App\Repositories\ShoppingRepository;
 use Carbon\CarbonImmutable;
 
-class GetMealPlannerUseCase
+class MealPlannerViewModel
 {
     private const int LIBRARY_SIZE = 6;
 
@@ -28,9 +36,10 @@ class GetMealPlannerUseCase
         private readonly MealPlanRepository $meals,
         private readonly MembershipRepository $memberships,
         private readonly BudgetRepository $budget,
+        private readonly ShoppingRepository $shopping,
     ) {}
 
-    public function execute(Household $household, CarbonImmutable $anyDayInWeek): MealPlannerScreenData
+    public function toData(Household $household, CarbonImmutable $anyDayInWeek): MealPlannerScreenData
     {
         $start = $anyDayInWeek->startOfWeek();
         $end = $start->addDays(6);
@@ -76,6 +85,17 @@ class GetMealPlannerUseCase
                 ? null
                 : $household->ai_meal_plan_generated_at?->addWeek()->toDateString(),
             aiSuggestedBudget: $this->suggestedWeeklyFoodBudget($household, $today),
+            shoppingLists: $this->shopping->listsFor($household)
+                ->map(fn (ShoppingList $list) => ShoppingListData::fromModel($list, withItems: false))
+                ->values()
+                ->all(),
+            tagOptions: RecipeTagEnum::options(),
+            aiOptions: [
+                'diets' => MealDietEnum::values(),
+                'goals' => MealGoalEnum::values(),
+                'confidence' => CookingConfidenceEnum::options(),
+                'equipment' => KitchenEquipmentEnum::values(),
+            ],
         );
     }
 

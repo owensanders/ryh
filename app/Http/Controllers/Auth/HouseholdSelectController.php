@@ -8,7 +8,7 @@ use App\Actions\House\SwitchCurrentHouseholdAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\HouseholdSelectRequest;
 use App\Traits\ResolvesUserTrait;
-use App\UseCases\House\GetHouseholdOptionsUseCase;
+use App\ViewModels\House\HouseholdOptionsViewModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -18,10 +18,10 @@ class HouseholdSelectController extends Controller
 {
     use ResolvesUserTrait;
 
-    public function show(Request $request, GetHouseholdOptionsUseCase $getOptions): Response
+    public function show(Request $request, HouseholdOptionsViewModel $getOptions): Response
     {
         return Inertia::render('auth/HouseholdSelect', [
-            'households' => $getOptions->execute($this->user($request)),
+            'households' => $getOptions->toData($this->user($request)),
             'currentHouseholdId' => $this->user($request)->last_household_id,
         ]);
     }

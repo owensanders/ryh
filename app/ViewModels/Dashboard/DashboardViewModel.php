@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\UseCases\Dashboard;
+namespace App\ViewModels\Dashboard;
 
 use App\Data\AgendaEntryData;
 use App\Data\AgendaGroupData;
@@ -31,7 +31,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
-class GetDashboardUseCase
+class DashboardViewModel
 {
     /** How many days of the calendar the "Coming up" card shows. */
     private const int AGENDA_DAYS = 3;
@@ -45,7 +45,7 @@ class GetDashboardUseCase
         private readonly BudgetRepository $budget,
     ) {}
 
-    public function execute(Household $household, string $viewerName, CarbonImmutable $today): DashboardData
+    public function toData(Household $household, string $viewerName, CarbonImmutable $today): DashboardData
     {
         $chores = $this->chores->allFor($household);
         $todays = $chores->whereIn('status', [ChoreStatusEnum::Today, ChoreStatusEnum::Done]);

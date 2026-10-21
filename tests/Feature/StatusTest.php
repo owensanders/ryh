@@ -8,7 +8,7 @@ use App\Ai\AiConfigService;
 use App\Enums\ServiceStateEnum;
 use App\Jobs\QueueHeartbeatJob;
 use App\Status\PlatformProbesService;
-use App\UseCases\Status\GetPlatformStatusUseCase;
+use App\ViewModels\Status\PlatformStatusViewModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -89,7 +89,7 @@ class StatusTest extends TestCase
         $this->get('/status')->assertOk();
         $this->assertSame(1, $probes->databaseChecks);
 
-        $this->travel(GetPlatformStatusUseCase::CACHE_SECONDS + 1)->seconds();
+        $this->travel(PlatformStatusViewModel::CACHE_SECONDS + 1)->seconds();
         $this->get('/status')->assertOk();
         $this->assertSame(2, $probes->databaseChecks);
     }

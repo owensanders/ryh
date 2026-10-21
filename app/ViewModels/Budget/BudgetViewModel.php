@@ -2,10 +2,8 @@
 
 declare(strict_types=1);
 
-namespace App\UseCases\Budget;
+namespace App\ViewModels\Budget;
 
-use App\Actions\Budget\CarryForwardRecurringCategoriesAction;
-use App\Actions\Budget\CarryForwardRecurringIncomeAction;
 use App\Data\BudgetCategoryData;
 use App\Data\BudgetMonthSummaryData;
 use App\Data\BudgetScreenData;
@@ -16,23 +14,16 @@ use App\Repositories\BudgetRepository;
 use App\Support\MoneyHelper;
 use Carbon\CarbonImmutable;
 
-class GetBudgetScreenUseCase
+class BudgetViewModel
 {
     private const int HISTORY_MONTHS = 3;
 
-    public function __construct(
-        private readonly BudgetRepository $budget,
-        private readonly CarryForwardRecurringCategoriesAction $carryForwardCategories,
-        private readonly CarryForwardRecurringIncomeAction $carryForwardIncome,
-    ) {}
+    public function __construct(private readonly BudgetRepository $budget) {}
 
-    public function execute(Household $household, CarbonImmutable $month): BudgetScreenData
+    public function toData(Household $household, CarbonImmutable $month): BudgetScreenData
     {
         $today = CarbonImmutable::today();
         $first = $month->startOfMonth();
-
-        $this->carryForwardCategories->handle($household, $first);
-        $this->carryForwardIncome->handle($household, $first);
 
         $categories = $this->budget->categoriesFor($household, $first);
         $income = $this->budget->incomeSourcesFor($household, $first);

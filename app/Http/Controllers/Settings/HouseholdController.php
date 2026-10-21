@@ -10,7 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\HouseholdSelectRequest;
 use App\Http\Requests\Settings\LeaveHouseholdRequest;
 use App\Traits\ResolvesUserTrait;
-use App\UseCases\House\GetHouseholdOptionsUseCase;
+use App\ViewModels\House\HouseholdOptionsViewModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -20,10 +20,10 @@ class HouseholdController extends Controller
 {
     use ResolvesUserTrait;
 
-    public function edit(Request $request, GetHouseholdOptionsUseCase $getOptions): Response
+    public function edit(Request $request, HouseholdOptionsViewModel $getOptions): Response
     {
         return Inertia::render('settings/Households', [
-            'households' => $getOptions->execute($this->user($request)),
+            'households' => $getOptions->toData($this->user($request)),
             'currentHouseholdId' => $this->user($request)->last_household_id,
         ]);
     }
@@ -35,7 +35,7 @@ class HouseholdController extends Controller
         return to_route('app');
     }
 
-    public function leave(LeaveHouseholdRequest $request, LeaveHouseholdAction $leave, GetHouseholdOptionsUseCase $getOptions): RedirectResponse
+    public function leave(LeaveHouseholdRequest $request, LeaveHouseholdAction $leave, HouseholdOptionsViewModel $getOptions): RedirectResponse
     {
         $householdName = $leave->handle(
             $this->user($request),
@@ -43,7 +43,7 @@ class HouseholdController extends Controller
             $request->boolean('confirm_household_deletion'),
         );
 
-        if ($getOptions->execute($this->user($request)) === []) {
+        if ($getOptions->toData($this->user($request)) === []) {
             return to_route('household.setup');
         }
 

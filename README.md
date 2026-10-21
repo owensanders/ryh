@@ -250,7 +250,8 @@ flowchart TD
     request["Form request — app/Http/Requests<br/>validates, then toData()"]
     input["*InputData — app/Data/Input<br/>typed input"]
     usecase["Action — app/Actions<br/>all business rules; one per operation"]
-    repo["Repository — app/Repositories<br/>every query, behind an interface"]
+    viewmodel["View model — app/ViewModels<br/>one page's props, read-only"]
+    repo["Repository — app/Repositories<br/>every query and write"]
     db[("MySQL")]
     data["*Data — app/Data<br/>typed output, mirrored in resources/js/types"]
     page["Inertia page — resources/js/pages"]
@@ -263,6 +264,8 @@ flowchart TD
     usecase --> repo --> db
     usecase --> notification
     usecase --> data --> controller
+    controller --> viewmodel --> repo
+    viewmodel --> data
     controller --> page
 ```
 
@@ -272,9 +275,10 @@ Each layer only talks to the one below it:
 |---|---|---|---|
 | Routes | `routes/web.php` | Middleware, and the policy ability for every household route (`->can(...)`). Household screens live under `/h/{household}`; `ResolveHouseholdMiddleware` checks membership (else 404) | Business rules |
 | Policies | `app/Policies/*Policy.php` | Is this record in the URL's household (else 404)? Does the role allow it (else 403)? | Writes |
-| Controllers | `app/Http/Controllers` | Call actions, render pages, redirect with toasts | Query the database or use repositories |
+| Controllers | `app/Http/Controllers` | Call actions and view models, render pages, redirect with toasts | Query the database or use repositories |
 | Form requests | `app/Http/Requests` | Validate, then `toData()` into a typed `*InputData` | Pass `array $attributes` along |
 | Actions | `app/Actions/<Area>` | Business rules, transactions, sending notifications; one class per operation with `handle()`. Return `*Data` objects | Query the database directly |
+| View models | `app/ViewModels/<Area>` | Build one page's props with `toData()`, returning its `*ScreenData` | Write anything |
 | Repositories | `app/Repositories` | Every query and write; map input objects to columns | Business rules |
 | Models | `app/Models` | Relations, casts, small helpers that don't query | Queries in helpers |
 | Data | `app/Data` (output), `app/Data/Input` (input) | Typed shapes between layers; output mirrored in `resources/js/types/ryh.ts` | — |

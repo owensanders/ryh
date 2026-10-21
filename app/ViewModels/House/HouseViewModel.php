@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\UseCases\House;
+namespace App\ViewModels\House;
 
 use App\Data\HouseData;
 use App\Data\HouseMemberData;
@@ -14,13 +14,13 @@ use App\Models\Household;
 use App\Models\User;
 use App\Repositories\MembershipRepository;
 
-class GetHouseUseCase
+class HouseViewModel
 {
     public function __construct(
         private readonly MembershipRepository $memberships,
     ) {}
 
-    public function execute(Household $household, int $viewerId): HouseData
+    public function toData(Household $household, int $viewerId): HouseData
     {
         $members = $this->memberships->members($household);
         $activeCount = $members->where('pivot.pending', false)->count();

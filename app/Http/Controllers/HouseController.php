@@ -19,7 +19,7 @@ use App\Http\Requests\SubscribeRequest;
 use App\Models\User;
 use App\Traits\ResolvesHouseholdTrait;
 use App\Traits\ResolvesUserTrait;
-use App\UseCases\House\GetHouseUseCase;
+use App\ViewModels\House\HouseViewModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -31,10 +31,10 @@ class HouseController extends Controller
     use ResolvesHouseholdTrait;
     use ResolvesUserTrait;
 
-    public function index(Request $request, GetHouseUseCase $getHouse): Response
+    public function index(Request $request, HouseViewModel $getHouse): Response
     {
         return Inertia::render('House', [
-            'house' => $getHouse->execute($this->household($request), $this->user($request)->id),
+            'house' => $getHouse->toData($this->household($request), $this->user($request)->id),
         ]);
     }
 

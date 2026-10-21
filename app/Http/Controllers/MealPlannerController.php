@@ -12,10 +12,6 @@ use App\Actions\Meals\SuggestLibraryMealPlanAction;
 use App\Actions\Meals\UpdatePlannedMealAction;
 use App\Data\MealSuggestionData;
 use App\Enums\CookingConfidenceEnum;
-use App\Enums\KitchenEquipmentEnum;
-use App\Enums\MealDietEnum;
-use App\Enums\MealGoalEnum;
-use App\Enums\RecipeTagEnum;
 use App\Http\Requests\GenerateAiMealPlanRequest;
 use App\Http\Requests\IndexMealPlannerRequest;
 use App\Http\Requests\PlannedMealRequest;
@@ -24,8 +20,7 @@ use App\Http\Requests\SuggestLibraryMealPlanRequest;
 use App\Models\PlannedMeal;
 use App\Traits\ResolvesHouseholdTrait;
 use App\Traits\ResolvesUserTrait;
-use App\UseCases\Meals\GetMealPlannerUseCase;
-use App\UseCases\Shopping\GetShoppingListOptionsUseCase;
+use App\ViewModels\Meals\MealPlannerViewModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -37,28 +32,14 @@ class MealPlannerController extends Controller
     use ResolvesHouseholdTrait;
     use ResolvesUserTrait;
 
-    public function index(
-        IndexMealPlannerRequest $request,
-        GetMealPlannerUseCase $getMealPlanner,
-        GetShoppingListOptionsUseCase $getShoppingLists,
-    ): Response {
+    public function index(IndexMealPlannerRequest $request, MealPlannerViewModel $mealPlanner): Response
+    {
         $week = $request->validated('week');
-        $household = $this->household($request);
 
-        return Inertia::render('MealPlanner', [
-            ...$getMealPlanner->execute(
-                $household,
-                $week !== null ? CarbonImmutable::createFromFormat('!Y-m-d', $week) ?? CarbonImmutable::now() : CarbonImmutable::now(),
-            )->toArray(),
-            'shoppingLists' => $getShoppingLists->execute($household),
-            'tagOptions' => RecipeTagEnum::options(),
-            'aiOptions' => [
-                'diets' => MealDietEnum::values(),
-                'goals' => MealGoalEnum::values(),
-                'confidence' => CookingConfidenceEnum::options(),
-                'equipment' => KitchenEquipmentEnum::values(),
-            ],
-        ]);
+        return Inertia::render('MealPlanner', $mealPlanner->toData(
+            $this->household($request),
+            $week !== null ? CarbonImmutable::createFromFormat('!Y-m-d', $week) ?? CarbonImmutable::now() : CarbonImmutable::now(),
+        ));
     }
 
     public function store(PlannedMealRequest $request, AddPlannedMealAction $add): RedirectResponse

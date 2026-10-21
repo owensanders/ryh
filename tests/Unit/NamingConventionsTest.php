@@ -46,7 +46,7 @@ class NamingConventionsTest extends TestCase
         'Status' => 'Service',
         'Support' => 'Helper',
         'Traits' => 'Trait',
-        'UseCases' => 'UseCase',
+        'ViewModels' => 'ViewModel',
     ];
 
     #[Test]

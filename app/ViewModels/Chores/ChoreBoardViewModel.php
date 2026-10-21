@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\UseCases\Chores;
+namespace App\ViewModels\Chores;
 
 use App\Data\ChoreBoardScreenData;
 use App\Data\ChoreColumnData;
@@ -15,14 +15,14 @@ use App\Models\User;
 use App\Repositories\ChoreRepository;
 use App\Repositories\MembershipRepository;
 
-class GetChoreBoardUseCase
+class ChoreBoardViewModel
 {
     public function __construct(
         private readonly ChoreRepository $chores,
         private readonly MembershipRepository $memberships,
     ) {}
 
-    public function execute(Household $household): ChoreBoardScreenData
+    public function toData(Household $household): ChoreBoardScreenData
     {
         $chores = $this->chores->allFor($household);
 

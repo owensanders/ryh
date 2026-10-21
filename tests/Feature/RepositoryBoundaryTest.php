@@ -22,7 +22,7 @@ class RepositoryBoundaryTest extends TestCase
     use DiscoversClassesTrait;
 
     /** Where queries must not appear. */
-    private const array LAYERS = ['app/Actions', 'app/UseCases', 'app/Http', 'app/Policies', 'app/Listeners'];
+    private const array LAYERS = ['app/Actions', 'app/ViewModels', 'app/Http', 'app/Policies', 'app/Listeners'];
 
     /** Static entry points into a query, on a model (filled in below) or the query builder. */
     private const string STATIC_QUERY = '/\b(%s)::(query|where\w*|find\w*|first\w*|create|firstOrCreate|updateOrCreate|all|count|exists|destroy|insert)\(|\bDB::(table|select|statement|insert|update|delete)\(/';

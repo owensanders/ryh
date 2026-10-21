@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\UseCases\House;
+namespace App\ViewModels\House;
 
 use App\Data\HouseholdOptionData;
 use App\Models\Household;
@@ -10,14 +10,14 @@ use App\Models\User;
 use App\Repositories\MembershipRepository;
 use LogicException;
 
-class GetHouseholdOptionsUseCase
+class HouseholdOptionsViewModel
 {
     public function __construct(
         private readonly MembershipRepository $memberships,
     ) {}
 
     /** @return array<int, HouseholdOptionData> */
-    public function execute(User $user): array
+    public function toData(User $user): array
     {
         $households = $this->memberships->householdsWithMembersFor($user);
 

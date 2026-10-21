@@ -8,7 +8,7 @@ use App\Actions\Notifications\ClearNotificationsAction;
 use App\Actions\Notifications\MarkAllNotificationsReadAction;
 use App\Actions\Notifications\OpenNotificationAction;
 use App\Traits\ResolvesUserTrait;
-use App\UseCases\Notifications\GetNotificationsUseCase;
+use App\ViewModels\Notifications\NotificationsViewModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,9 +17,9 @@ class NotificationController extends Controller
 {
     use ResolvesUserTrait;
 
-    public function index(Request $request, GetNotificationsUseCase $getNotifications): JsonResponse
+    public function index(Request $request, NotificationsViewModel $getNotifications): JsonResponse
     {
-        return response()->json($getNotifications->execute($this->user($request)));
+        return response()->json($getNotifications->toData($this->user($request)));
     }
 
     /**

@@ -6,14 +6,12 @@ namespace App\Http\Controllers;
 
 use App\Actions\House\CompleteCheckoutAction;
 use App\Actions\House\SubscribeHouseholdAction;
-use App\Data\PlanData;
 use App\Http\Requests\SubscribeRequest;
-use App\Models\Household;
 use App\Traits\ResolvesHouseholdTrait;
 use App\Traits\ResolvesUserTrait;
+use App\ViewModels\Billing\BillingRequiredViewModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -25,7 +23,7 @@ class BillingController extends Controller
     use ResolvesHouseholdTrait;
     use ResolvesUserTrait;
 
-    public function required(Request $request): Response|RedirectResponse
+    public function required(Request $request, BillingRequiredViewModel $billingRequired): Response|RedirectResponse
     {
         $household = $this->household($request);
 
@@ -33,13 +31,7 @@ class BillingController extends Controller
             return to_route('dashboard');
         }
 
-        return Inertia::render('BillingRequired', [
-            'plan' => PlanData::current(),
-            'isOwner' => Gate::allows('manage', Household::class),
-            'paymentIssue' => $household->hasPaymentIssue(),
-            'billingConfigured' => filled(config('plans.intervals.monthly.stripe_price'))
-                && filled(config('plans.intervals.annual.stripe_price')),
-        ]);
+        return Inertia::render('BillingRequired', $billingRequired->toData($household, $this->user($request)));
     }
 
     public function subscribe(SubscribeRequest $request, SubscribeHouseholdAction $subscribe): SymfonyResponse
