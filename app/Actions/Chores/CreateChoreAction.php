@@ -21,7 +21,7 @@ class CreateChoreAction
             'assigned_to' => $input->assignedTo,
             'created_by' => $actor->id,
             'status' => ChoreStatusEnum::Today,
-            'position' => $household->chores()->nextPositionIn(ChoreStatusEnum::Today),
+            'position' => (int) $household->chores()->where('status', ChoreStatusEnum::Today)->max('position') + 1,
         ]);
 
         if ($chore->assigned_to !== null && $chore->assigned_to !== $actor->id) {

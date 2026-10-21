@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Models\Builders\ShoppingItemBuilder;
 use Database\Factories\ShoppingItemFactory;
-use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
@@ -21,7 +20,6 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $completed_at
  * @property int $position
  */
-#[UseEloquentBuilder(ShoppingItemBuilder::class)]
 class ShoppingItem extends Model
 {
     /** @use HasFactory<ShoppingItemFactory> */
@@ -42,7 +40,8 @@ class ShoppingItem extends Model
         ];
     }
 
-    public function prunable(): ShoppingItemBuilder
+    /** @return Builder<static> */
+    public function prunable(): Builder
     {
         return static::query()->where('completed_at', '<', now()->subDays(self::KEEP_COMPLETED_DAYS));
     }

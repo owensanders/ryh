@@ -56,23 +56,22 @@ Each layer only talks to the one below it.
   is made for Blade. They only read: a write a page needs first (the budget's
   carry-forward) is an action the controller calls before rendering.
   `LayerShapeTest` checks actions have `handle()` and view models `toData()`.
-- **Models and builders** (`app/Models`, `app/Models/Builders`): Eloquent,
-  used directly by actions and view models; see "Where queries live" below.
-  Map input objects to columns where you write (`'assigned_to' =>
-  $input->assignedTo`), never pass an attribute array through from a request.
-  (The remaining `app/Repositories` are being retired.)
-- **Models** (`app/Models`): relations, casts, and small helpers that don't
-  query (`Household::canGenerateAiMealPlan()`). A helper that would query
-  belongs in a repository.
+- **Models** (`app/Models`): relations, casts, query scopes, and small
+  helpers (`Household::canGenerateAiMealPlan()`). Used directly by actions
+  and view models; see "Where queries live" below. Map input objects to
+  columns where you write (`'assigned_to' => $input->assignedTo`), never pass
+  an attribute array through from a request. (The remaining
+  `app/Repositories` are being retired.)
 
 ### Where queries live
 
 Actions and view models use Eloquent directly, the conventional Laravel way:
 `$household->chores()->create([...])`, `$chore->update([...])`. A query
-that more than one place needs goes on the model's custom builder in
-`app/Models/Builders` (`ChoreBuilder::forBoard()`), attached with
-`#[UseEloquentBuilder]`, and is reached through the household so it's already
-scoped: `$household->chores()->forBoard()->get()`.
+that more than one place needs becomes a local query scope on the model,
+written Laravel 12's way as a protected `#[Scope]` method (`Chore::forBoard()`),
+and is reached through the household so it's already scoped:
+`$household->chores()->forBoard()->get()`. Anything else stays inline where
+it's used.
 
 Controllers, middleware, form requests, policies and listeners never query:
 no `Model::where(...)`, no `$model->update(...)`, no relation methods like
@@ -140,7 +139,7 @@ everyone involved, once each, never the actor.
 ## Naming
 
 A class name ends with what it is: `ChoreStatusEnum`, `CreateChoreAction`,
-`ChoreBuilder`, `ChorePolicy`, `ChoreData`,
+`ChorePolicy`, `ChoreData`,
 `ChoreInputData`, `ChoreRequest`, `ChoreController`,
 `ChoreAssignedNotification`, `QueueHeartbeatJob`, `RecordLoginStreakListener`,
 `UserNotificationBroadcastEvent`, `ResolveHouseholdMiddleware`,

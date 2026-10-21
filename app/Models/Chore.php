@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\ChoreStatusEnum;
-use App\Models\Builders\ChoreBuilder;
 use Database\Factories\ChoreFactory;
-use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
@@ -26,7 +26,6 @@ use Illuminate\Support\Carbon;
  * @property User|null $assignee
  * @property User|null $creator
  */
-#[UseEloquentBuilder(ChoreBuilder::class)]
 class Chore extends Model
 {
     /** @use HasFactory<ChoreFactory> */
@@ -61,11 +60,41 @@ class Chore extends Model
         });
     }
 
-    public function prunable(): ChoreBuilder
+    /** @return Builder<static> */
+    public function prunable(): Builder
     {
         return static::query()
             ->where('status', ChoreStatusEnum::Done)
             ->where('completed_at', '<', now()->subDays(self::KEEP_COMPLETED_DAYS));
+    }
+
+    /**
+     * In board order, with who each is assigned to.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forBoard(Builder $query): void
+    {
+        $query->with('assignee')->orderBy('position')->orderBy('id');
+    }
+
+    /**
+     * Assigned chores still to do, with their assignee.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function outstandingAssigned(Builder $query): void
+    {
+        $query->with('assignee')->whereNotNull('assigned_to')->where('status', ChoreStatusEnum::Today);
+    }
+
+    /** @param  Builder<self>  $query */
+    #[Scope]
+    protected function assignedTo(Builder $query, User $member): void
+    {
+        $query->where('assigned_to', $member->id);
     }
 
     /** @return BelongsTo<Household, $this> */

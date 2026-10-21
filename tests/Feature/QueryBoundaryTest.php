@@ -59,7 +59,7 @@ class QueryBoundaryTest extends TestCase
             }
         }
 
-        $this->assertSame([], $found, 'Move these into an action or view model (reusable ones onto the model\'s builder in app/Models/Builders).');
+        $this->assertSame([], $found, 'Move these into an action or view model (reusable ones into a #[Scope] on the model).');
     }
 
     /** @return list<string> Every relation method on the app's models, found by return type. */
