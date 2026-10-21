@@ -11,7 +11,6 @@ use App\Data\MemberData;
 use App\Models\CalendarEvent;
 use App\Models\Household;
 use App\Models\User;
-use App\Repositories\CalendarEventRepository;
 use App\Repositories\MembershipRepository;
 use Carbon\CarbonImmutable;
 
@@ -21,7 +20,6 @@ class CalendarViewModel
     private const int CELLS = 42;
 
     public function __construct(
-        private readonly CalendarEventRepository $events,
         private readonly MembershipRepository $memberships,
     ) {}
 
@@ -34,7 +32,7 @@ class CalendarViewModel
 
         $eventsByDate = [];
 
-        foreach ($this->events->between($household, $start, $end) as $event) {
+        foreach ($household->calendarEvents()->with('attendees')->overlapping($start, $end)->get() as $event) {
             $spanStart = $event->starts_at->toImmutable()->max($start)->startOfDay();
             $spanEnd = ($event->ends_at ?? $event->starts_at)->toImmutable()->min($end)->startOfDay();
 

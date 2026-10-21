@@ -4,28 +4,41 @@ declare(strict_types=1);
 
 namespace App\Actions\Calendar;
 
-use App\Data\CalendarEventData;
-use App\Data\Input\CalendarEventInputData;
+use App\Enums\PaletteEnum;
 use App\Models\CalendarEvent;
 use App\Models\User;
 use App\Notifications\CalendarEventAssignedNotification;
 use App\Notifications\CalendarEventUpdatedNotification;
-use App\Repositories\CalendarEventRepository;
 use App\Support\RecipientsHelper;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 
 class UpdateCalendarEventAction
 {
-    public function __construct(private readonly CalendarEventRepository $events) {}
-
-    public function handle(CalendarEvent $event, CalendarEventInputData $changes, User $actor): CalendarEventData
+    /** @param  array<string, mixed>  $data  CalendarEventRequest's validated input; see AddCalendarEventAction. */
+    public function handle(CalendarEvent $event, array $data, User $actor): CalendarEvent
     {
-        $previousAttendeeIds = $this->events->attendeeIds($event);
+        $previousAttendeeIds = $event->attendees()->pluck('users.id')->map(fn (mixed $id): int => (int) $id)->all();
+        $isAllDay = (bool) ($data['is_all_day'] ?? false);
 
-        $updated = $this->events->update($event, $changes);
+        DB::transaction(function () use ($event, $data, $isAllDay): void {
+            $event->update([
+                'title' => $data['title'],
+                'starts_at' => CarbonImmutable::parse($data['starts_at']),
+                'ends_at' => ! $isAllDay && isset($data['ends_at']) ? CarbonImmutable::parse($data['ends_at']) : null,
+                'is_all_day' => $isAllDay,
+                'location' => $data['location'] ?? null,
+                'notes' => $data['notes'] ?? null,
+                'colour' => PaletteEnum::from($data['colour']),
+            ]);
+            $event->attendees()->sync($data['attendees'] ?? []);
+        });
 
-        $this->notifyInterestedParties($updated, $previousAttendeeIds, $actor);
+        $event->refresh()->load('attendees');
 
-        return CalendarEventData::fromModel($updated, $updated->starts_at->toDateString());
+        $this->notifyInterestedParties($event, $previousAttendeeIds, $actor);
+
+        return $event;
     }
 
     /**

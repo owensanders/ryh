@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Actions\House;
 
 use App\Enums\HouseholdRoleEnum;
+use App\Models\CalendarEvent;
 use App\Models\Household;
 use App\Models\User;
-use App\Repositories\CalendarEventRepository;
 use App\Repositories\MembershipRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +17,6 @@ class RemoveMemberAction
 {
     public function __construct(
         private readonly UserRepository $users,
-        private readonly CalendarEventRepository $events,
         private readonly MembershipRepository $memberships,
     ) {}
 
@@ -42,7 +41,11 @@ class RemoveMemberAction
 
         DB::transaction(function () use ($member, $household): void {
             $household->chores()->assignedTo($member)->delete();
-            $this->events->removeAttendeeFrom($member, $household);
+            // Events only they were going to go; the rest just lose them.
+            $member->attendingEvents()->where('household_id', $household->id)->with('attendees')->get()
+                ->each(fn (CalendarEvent $event) => $event->attendees->count() === 1
+                    ? $event->delete()
+                    : $event->attendees()->detach($member->id));
             // Their meals stay planned, just with nobody cooking.
             $household->plannedMeals()->where('cook_id', $member->id)->update(['cook_id' => null]);
 

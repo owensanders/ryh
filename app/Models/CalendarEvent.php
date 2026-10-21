@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\PaletteEnum;
+use Carbon\CarbonImmutable;
 use Database\Factories\CalendarEventFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -49,6 +52,24 @@ class CalendarEvent extends Model
     public function household(): BelongsTo
     {
         return $this->belongsTo(Household::class);
+    }
+
+    /**
+     * Events that touch the window: they start before it ends, and either end
+     * inside or after it, or (with no end time) start inside it. In date order.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function overlapping(Builder $query, CarbonImmutable $from, CarbonImmutable $to): void
+    {
+        $query->where('starts_at', '<=', $to)
+            ->where(function (Builder $query) use ($from): void {
+                $query->where('ends_at', '>=', $from)
+                    ->orWhere(fn (Builder $query) => $query->whereNull('ends_at')->where('starts_at', '>=', $from));
+            })
+            ->orderBy('starts_at')
+            ->orderBy('id');
     }
 
     /** @return BelongsTo<User, $this> */

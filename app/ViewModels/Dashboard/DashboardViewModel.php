@@ -22,7 +22,6 @@ use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\ShoppingList;
 use App\Repositories\BudgetRepository;
-use App\Repositories\CalendarEventRepository;
 use App\Repositories\MembershipRepository;
 use App\Support\MoneyHelper;
 use Carbon\CarbonImmutable;
@@ -36,7 +35,6 @@ class DashboardViewModel
 
     public function __construct(
         private readonly MembershipRepository $memberships,
-        private readonly CalendarEventRepository $events,
         private readonly BudgetRepository $budget,
     ) {}
 
@@ -57,11 +55,10 @@ class DashboardViewModel
         $remaining = $todays->count() - $done;
 
         // One read of the calendar covers both the summary line and the agenda card.
-        $events = $this->events->between(
-            $household,
+        $events = $household->calendarEvents()->with('attendees')->overlapping(
             $today->startOfDay(),
             $today->addDays(self::AGENDA_DAYS - 1)->endOfDay(),
-        );
+        )->get();
 
         return new DashboardData(
             greeting: $this->greeting($today).', '.$viewerName,

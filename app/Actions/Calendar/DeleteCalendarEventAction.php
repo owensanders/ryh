@@ -7,18 +7,15 @@ namespace App\Actions\Calendar;
 use App\Models\CalendarEvent;
 use App\Models\User;
 use App\Notifications\CalendarEventDeletedNotification;
-use App\Repositories\CalendarEventRepository;
 use App\Support\RecipientsHelper;
 
 class DeleteCalendarEventAction
 {
-    public function __construct(private readonly CalendarEventRepository $events) {}
-
     public function handle(CalendarEvent $event, User $actor): void
     {
         $this->notifyInterestedParties($event, $actor);
 
-        $this->events->delete($event);
+        $event->delete();
     }
 
     /** Tells attendees and/or the creator when someone else deletes their event, without notifying anyone twice. */
