@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\Budget\CreateBudgetCategoryAction;
+use App\Actions\Budget\DeleteBudgetCategoryAction;
+use App\Actions\Budget\UpdateBudgetCategoryAction;
 use App\Http\Requests\BudgetCategoryRequest;
 use App\Http\Requests\IndexBudgetRequest;
 use App\Models\BudgetCategory;
 use App\Traits\ResolvesHouseholdTrait;
-use App\UseCases\Budget\CreateBudgetCategoryUseCase;
-use App\UseCases\Budget\DeleteBudgetCategoryUseCase;
 use App\UseCases\Budget\GetBudgetScreenUseCase;
-use App\UseCases\Budget\UpdateBudgetCategoryUseCase;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -33,11 +33,11 @@ class BudgetController extends Controller
         ));
     }
 
-    public function storeCategory(BudgetCategoryRequest $request, CreateBudgetCategoryUseCase $create): RedirectResponse
+    public function storeCategory(BudgetCategoryRequest $request, CreateBudgetCategoryAction $create): RedirectResponse
     {
         $month = $request->query('month');
 
-        $category = $create->execute(
+        $category = $create->handle(
             $this->household($request),
             $month !== null ? CarbonImmutable::createFromFormat('!Y-m', (string) $month) ?? CarbonImmutable::now() : CarbonImmutable::now(),
             $request->toData(),
@@ -46,17 +46,17 @@ class BudgetController extends Controller
         return back()->with('toast', "{$category->label} added");
     }
 
-    public function updateCategory(BudgetCategoryRequest $request, BudgetCategory $category, UpdateBudgetCategoryUseCase $update): RedirectResponse
+    public function updateCategory(BudgetCategoryRequest $request, BudgetCategory $category, UpdateBudgetCategoryAction $update): RedirectResponse
     {
-        $updated = $update->execute($category, $request->toData());
+        $updated = $update->handle($category, $request->toData());
 
         return back()->with('toast', "{$updated->label} updated");
     }
 
-    public function destroyCategory(BudgetCategory $category, DeleteBudgetCategoryUseCase $delete): RedirectResponse
+    public function destroyCategory(BudgetCategory $category, DeleteBudgetCategoryAction $delete): RedirectResponse
     {
         $label = $category->label;
-        $delete->execute($category);
+        $delete->handle($category);
 
         return back()->with('toast', "{$label} removed");
     }

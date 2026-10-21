@@ -45,7 +45,7 @@ class UserRepository
         return $user->refresh();
     }
 
-    /** Already-hashed password in — hashing is the use case's job. */
+    /** Already-hashed password in — hashing is the Action's job. */
     public function updatePassword(User $user, string $hashedPassword): User
     {
         $user->forceFill(['password' => $hashedPassword])->save();
@@ -55,7 +55,7 @@ class UserRepository
 
     /**
      * As updatePassword(), and signs out every "remember me" session too — for a
-     * reset. Already-hashed password in — hashing is the use case's job.
+     * reset. Already-hashed password in — hashing is the Action's job.
      */
     public function setPassword(User $user, string $hashedPassword): User
     {

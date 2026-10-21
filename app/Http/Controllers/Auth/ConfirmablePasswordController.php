@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\Auth\ConfirmPasswordAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ConfirmPasswordRequest;
 use App\Traits\ResolvesUserTrait;
-use App\UseCases\Auth\ConfirmPasswordUseCase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -23,9 +23,9 @@ class ConfirmablePasswordController extends Controller
     }
 
     /** @throws ValidationException */
-    public function store(ConfirmPasswordRequest $request, ConfirmPasswordUseCase $confirm): RedirectResponse
+    public function store(ConfirmPasswordRequest $request, ConfirmPasswordAction $confirm): RedirectResponse
     {
-        if (! $confirm->execute($this->user($request), $request->validated('password'))) {
+        if (! $confirm->handle($this->user($request), $request->validated('password'))) {
             throw ValidationException::withMessages([
                 'password' => __('auth.password'),
             ]);

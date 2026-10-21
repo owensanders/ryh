@@ -10,7 +10,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
 /**
- * Use cases say what went wrong with an exception, never with HTTP: a
+ * Actions say what went wrong with an exception, never with HTTP: a
  * UserFacingException subclass for a message people should read, and
  * ModelNotFoundException for "not in this household" (CLAUDE.md, "Errors").
  * And nothing catches RuntimeException to show its message, because a
@@ -19,9 +19,11 @@ use RecursiveIteratorIterator;
 class UserFacingErrorsTest extends TestCase
 {
     #[Test]
-    public function useCasesNeverAbort(): void
+    public function actionsAndUseCasesNeverAbort(): void
     {
-        $this->assertSame([], $this->linesMatching('app/UseCases', '/\babort(_if|_unless)?\(/'), 'Throw a UserFacingException or ModelNotFoundException instead.');
+        foreach (['app/Actions', 'app/UseCases'] as $directory) {
+            $this->assertSame([], $this->linesMatching($directory, '/\babort(_if|_unless)?\(/'), 'Throw a UserFacingException or ModelNotFoundException instead.');
+        }
     }
 
     #[Test]

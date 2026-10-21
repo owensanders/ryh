@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\Calendar\AddCalendarEventAction;
+use App\Actions\Calendar\DeleteCalendarEventAction;
+use App\Actions\Calendar\UpdateCalendarEventAction;
 use App\Http\Requests\CalendarEventRequest;
 use App\Http\Requests\IndexCalendarRequest;
 use App\Models\CalendarEvent;
 use App\Traits\ResolvesHouseholdTrait;
 use App\Traits\ResolvesUserTrait;
-use App\UseCases\Calendar\AddCalendarEventUseCase;
-use App\UseCases\Calendar\DeleteCalendarEventUseCase;
 use App\UseCases\Calendar\GetCalendarMonthUseCase;
-use App\UseCases\Calendar\UpdateCalendarEventUseCase;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,9 +38,9 @@ class CalendarController extends Controller
         ]);
     }
 
-    public function store(CalendarEventRequest $request, AddCalendarEventUseCase $add): RedirectResponse
+    public function store(CalendarEventRequest $request, AddCalendarEventAction $add): RedirectResponse
     {
-        $event = $add->execute(
+        $event = $add->handle(
             $this->household($request),
             $request->toData(),
             $this->user($request),
@@ -49,17 +49,17 @@ class CalendarController extends Controller
         return back()->with('toast', "“{$event->title}” added");
     }
 
-    public function update(CalendarEventRequest $request, CalendarEvent $event, UpdateCalendarEventUseCase $update): RedirectResponse
+    public function update(CalendarEventRequest $request, CalendarEvent $event, UpdateCalendarEventAction $update): RedirectResponse
     {
-        $updated = $update->execute($event, $request->toData(), $this->user($request));
+        $updated = $update->handle($event, $request->toData(), $this->user($request));
 
         return back()->with('toast', "“{$updated->title}” updated");
     }
 
-    public function destroy(Request $request, CalendarEvent $event, DeleteCalendarEventUseCase $delete): RedirectResponse
+    public function destroy(Request $request, CalendarEvent $event, DeleteCalendarEventAction $delete): RedirectResponse
     {
         $title = $event->title;
-        $delete->execute($event, $this->user($request));
+        $delete->handle($event, $this->user($request));
 
         return back()->with('toast', "“{$title}” deleted");
     }

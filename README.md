@@ -249,7 +249,7 @@ flowchart TD
     controller["Controller — app/Http/Controllers<br/>thin: request in, response out"]
     request["Form request — app/Http/Requests<br/>validates, then toData()"]
     input["*InputData — app/Data/Input<br/>typed input"]
-    usecase["Use case — app/UseCases<br/>all business rules; one per screen or action"]
+    usecase["Action — app/Actions<br/>all business rules; one per operation"]
     repo["Repository — app/Repositories<br/>every query, behind an interface"]
     db[("MySQL")]
     data["*Data — app/Data<br/>typed output, mirrored in resources/js/types"]
@@ -272,9 +272,9 @@ Each layer only talks to the one below it:
 |---|---|---|---|
 | Routes | `routes/web.php` | Middleware, and the policy ability for every household route (`->can(...)`). Household screens live under `/h/{household}`; `ResolveHouseholdMiddleware` checks membership (else 404) | Business rules |
 | Policies | `app/Policies/*Policy.php` | Is this record in the URL's household (else 404)? Does the role allow it (else 403)? | Writes |
-| Controllers | `app/Http/Controllers` | Call use cases, render pages, redirect with toasts | Query the database or use repositories |
+| Controllers | `app/Http/Controllers` | Call actions, render pages, redirect with toasts | Query the database or use repositories |
 | Form requests | `app/Http/Requests` | Validate, then `toData()` into a typed `*InputData` | Pass `array $attributes` along |
-| Use cases | `app/UseCases/<Area>` | Business rules, transactions, sending notifications. Return `*Data` objects | Query the database directly |
+| Actions | `app/Actions/<Area>` | Business rules, transactions, sending notifications; one class per operation with `handle()`. Return `*Data` objects | Query the database directly |
 | Repositories | `app/Repositories` | Every query and write; map input objects to columns | Business rules |
 | Models | `app/Models` | Relations, casts, small helpers that don't query | Queries in helpers |
 | Data | `app/Data` (output), `app/Data/Input` (input) | Typed shapes between layers; output mirrored in `resources/js/types/ryh.ts` | — |
@@ -283,7 +283,7 @@ Each layer only talks to the one below it:
 
 ```mermaid
 sequenceDiagram
-    participant UC as Use case
+    participant UC as Action
     participant DB as MySQL
     participant Q as Queue (Redis)
     participant W as Queue worker

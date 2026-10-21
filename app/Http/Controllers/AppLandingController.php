@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\Auth\ResolveLandingAction;
 use App\Traits\ResolvesUserTrait;
-use App\UseCases\Auth\ResolveLandingUseCase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -18,9 +18,9 @@ class AppLandingController extends Controller
 {
     use ResolvesUserTrait;
 
-    public function __invoke(Request $request, ResolveLandingUseCase $resolveLanding, string $path = 'dashboard'): RedirectResponse
+    public function __invoke(Request $request, ResolveLandingAction $resolveLanding, string $path = 'dashboard'): RedirectResponse
     {
-        $landing = $resolveLanding->execute($this->user($request));
+        $landing = $resolveLanding->handle($this->user($request));
 
         if ($landing->needsSetup) {
             return to_route('household.setup');

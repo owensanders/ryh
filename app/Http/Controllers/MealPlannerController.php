@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\Meals\AddPlannedMealAction;
+use App\Actions\Meals\DeletePlannedMealAction;
+use App\Actions\Meals\GenerateAiMealPlanAction;
+use App\Actions\Meals\RescheduleMealAction;
+use App\Actions\Meals\SuggestLibraryMealPlanAction;
+use App\Actions\Meals\UpdatePlannedMealAction;
 use App\Data\MealSuggestionData;
 use App\Enums\CookingConfidenceEnum;
 use App\Enums\KitchenEquipmentEnum;
@@ -18,13 +24,7 @@ use App\Http\Requests\SuggestLibraryMealPlanRequest;
 use App\Models\PlannedMeal;
 use App\Traits\ResolvesHouseholdTrait;
 use App\Traits\ResolvesUserTrait;
-use App\UseCases\Meals\AddPlannedMealUseCase;
-use App\UseCases\Meals\DeletePlannedMealUseCase;
-use App\UseCases\Meals\GenerateAiMealPlanUseCase;
 use App\UseCases\Meals\GetMealPlannerUseCase;
-use App\UseCases\Meals\RescheduleMealUseCase;
-use App\UseCases\Meals\SuggestLibraryMealPlanUseCase;
-use App\UseCases\Meals\UpdatePlannedMealUseCase;
 use App\UseCases\Shopping\GetShoppingListOptionsUseCase;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
@@ -61,24 +61,24 @@ class MealPlannerController extends Controller
         ]);
     }
 
-    public function store(PlannedMealRequest $request, AddPlannedMealUseCase $add): RedirectResponse
+    public function store(PlannedMealRequest $request, AddPlannedMealAction $add): RedirectResponse
     {
-        $meal = $add->execute($this->household($request), $request->toData(), $this->user($request));
+        $meal = $add->handle($this->household($request), $request->toData(), $this->user($request));
 
         return back()->with('toast', "{$meal->name} added");
     }
 
-    public function update(PlannedMealRequest $request, PlannedMeal $meal, UpdatePlannedMealUseCase $update): RedirectResponse
+    public function update(PlannedMealRequest $request, PlannedMeal $meal, UpdatePlannedMealAction $update): RedirectResponse
     {
-        $updated = $update->execute($meal, $request->toData(), $this->user($request));
+        $updated = $update->handle($meal, $request->toData(), $this->user($request));
 
         return back()->with('toast', "{$updated->name} updated");
     }
 
-    public function destroy(Request $request, PlannedMeal $meal, DeletePlannedMealUseCase $delete): RedirectResponse
+    public function destroy(Request $request, PlannedMeal $meal, DeletePlannedMealAction $delete): RedirectResponse
     {
         $name = $meal->recipe->name;
-        $delete->execute($meal, $this->user($request));
+        $delete->handle($meal, $this->user($request));
 
         return back()->with('toast', "{$name} removed");
     }
@@ -86,16 +86,16 @@ class MealPlannerController extends Controller
     public function reschedule(
         RescheduleMealRequest $request,
         PlannedMeal $meal,
-        RescheduleMealUseCase $rescheduleMeal,
+        RescheduleMealAction $rescheduleMeal,
     ): RedirectResponse {
-        $moved = $rescheduleMeal->execute($meal, CarbonImmutable::parse($request->validated('planned_on')));
+        $moved = $rescheduleMeal->handle($meal, CarbonImmutable::parse($request->validated('planned_on')));
 
         return back()->with('toast', "{$moved->name} moved");
     }
 
-    public function generateAiPlan(GenerateAiMealPlanRequest $request, GenerateAiMealPlanUseCase $generate): RedirectResponse
+    public function generateAiPlan(GenerateAiMealPlanRequest $request, GenerateAiMealPlanAction $generate): RedirectResponse
     {
-        $meals = $generate->execute(
+        $meals = $generate->handle(
             $this->household($request),
             (int) $request->validated('people'),
             $request->validated('budget') !== null ? (float) $request->validated('budget') : null,
@@ -111,9 +111,9 @@ class MealPlannerController extends Controller
         return back()->with('aiMeals', array_map(fn (MealSuggestionData $meal) => $meal->toArray(), $meals));
     }
 
-    public function suggestLibraryPlan(SuggestLibraryMealPlanRequest $request, SuggestLibraryMealPlanUseCase $suggest): RedirectResponse
+    public function suggestLibraryPlan(SuggestLibraryMealPlanRequest $request, SuggestLibraryMealPlanAction $suggest): RedirectResponse
     {
-        $meals = $suggest->execute(
+        $meals = $suggest->handle(
             $this->household($request),
             $request->validated('diets', []),
             (string) $request->validated('avoid', ''),

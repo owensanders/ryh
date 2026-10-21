@@ -1,0 +1,46 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Actions\Chores;
+
+use App\Data\ChoreData;
+use App\Data\Input\ChoreInputData;
+use App\Models\Chore;
+use App\Models\User;
+use App\Notifications\ChoreAssignedNotification;
+use App\Notifications\ChoreEditedNotification;
+use App\Repositories\ChoreRepository;
+use App\Support\RecipientsHelper;
+
+class UpdateChoreAction
+{
+    public function __construct(private readonly ChoreRepository $chores) {}
+
+    public function handle(Chore $chore, ChoreInputData $changes, User $actor): ChoreData
+    {
+        $previousAssignee = $chore->assigned_to;
+
+        $updated = $this->chores->update($chore, $changes);
+
+        $reassigned = $updated->assigned_to !== null && $updated->assigned_to !== $previousAssignee;
+
+        if ($reassigned && $updated->assigned_to !== $actor->id) {
+            $updated->assignee?->notify(new ChoreAssignedNotification($updated, $actor));
+        }
+
+        if (! $reassigned) {
+            $this->notifyInterestedParties($updated, $actor);
+        }
+
+        return ChoreData::fromModel($updated);
+    }
+
+    /** Tells the assignee and/or creator when someone else edits their chore, without notifying either twice. */
+    private function notifyInterestedParties(Chore $chore, User $actor): void
+    {
+        foreach (RecipientsHelper::except($actor, [$chore->assignee, $chore->creator]) as $recipient) {
+            $recipient->notify(new ChoreEditedNotification($chore, $actor));
+        }
+    }
+}

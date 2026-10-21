@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\House\ApproveMemberAction;
+use App\Actions\House\ChangeMemberRoleAction;
+use App\Actions\House\InviteMemberAction;
+use App\Actions\House\RegenerateJoinCodeAction;
+use App\Actions\House\RemoveMemberAction;
+use App\Actions\House\SubscribeHouseholdAction;
+use App\Actions\House\ToggleJoinCodeAction;
 use App\Enums\HouseholdRoleEnum;
 use App\Http\Requests\InviteRequest;
 use App\Http\Requests\JoinCodeToggleRequest;
@@ -12,14 +19,7 @@ use App\Http\Requests\SubscribeRequest;
 use App\Models\User;
 use App\Traits\ResolvesHouseholdTrait;
 use App\Traits\ResolvesUserTrait;
-use App\UseCases\House\ApproveMemberUseCase;
-use App\UseCases\House\ChangeMemberRoleUseCase;
 use App\UseCases\House\GetHouseUseCase;
-use App\UseCases\House\InviteMemberUseCase;
-use App\UseCases\House\RegenerateJoinCodeUseCase;
-use App\UseCases\House\RemoveMemberUseCase;
-use App\UseCases\House\SubscribeHouseholdUseCase;
-use App\UseCases\House\ToggleJoinCodeUseCase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -38,62 +38,62 @@ class HouseController extends Controller
         ]);
     }
 
-    public function invite(InviteRequest $request, InviteMemberUseCase $invite): RedirectResponse
+    public function invite(InviteRequest $request, InviteMemberAction $invite): RedirectResponse
     {
         $input = $request->toData();
-        $invite->execute($this->household($request), $input, $this->user($request));
+        $invite->handle($this->household($request), $input, $this->user($request));
 
         return back()->with('toast', "Invite sent to {$input->email}");
     }
 
-    public function updateRole(RoleRequest $request, User $member, ChangeMemberRoleUseCase $change): RedirectResponse
+    public function updateRole(RoleRequest $request, User $member, ChangeMemberRoleAction $change): RedirectResponse
     {
         $household = $this->household($request);
 
         $role = HouseholdRoleEnum::from($request->validated('role'));
-        $change->execute($member, $household, $role, $this->user($request));
+        $change->handle($member, $household, $role, $this->user($request));
 
         return back()->with('toast', "{$member->name} is now {$role->label()}");
     }
 
-    public function approve(Request $request, User $member, ApproveMemberUseCase $approve): RedirectResponse
+    public function approve(Request $request, User $member, ApproveMemberAction $approve): RedirectResponse
     {
         $household = $this->household($request);
 
-        $approve->execute($member, $household);
+        $approve->handle($member, $household);
 
         return back()->with('toast', "{$member->name} approved — welcome to the household");
     }
 
-    public function destroy(Request $request, User $member, RemoveMemberUseCase $remove): RedirectResponse
+    public function destroy(Request $request, User $member, RemoveMemberAction $remove): RedirectResponse
     {
         $household = $this->household($request);
 
         $name = $member->name;
-        $wasPending = $remove->execute($member, $household);
+        $wasPending = $remove->handle($member, $household);
 
         return back()->with('toast', $wasPending ? "{$name} — invite cancelled" : "{$name} removed from the household");
     }
 
-    public function toggleJoinCode(JoinCodeToggleRequest $request, ToggleJoinCodeUseCase $toggle): RedirectResponse
+    public function toggleJoinCode(JoinCodeToggleRequest $request, ToggleJoinCodeAction $toggle): RedirectResponse
     {
-        $toggle->execute($this->household($request), (bool) $request->validated('enabled'));
+        $toggle->handle($this->household($request), (bool) $request->validated('enabled'));
 
         return back()->with('toast', $request->boolean('enabled') ? 'Invite code turned on' : 'Invite code turned off');
     }
 
-    public function regenerateJoinCode(Request $request, RegenerateJoinCodeUseCase $regenerate): RedirectResponse
+    public function regenerateJoinCode(Request $request, RegenerateJoinCodeAction $regenerate): RedirectResponse
     {
-        $regenerate->execute($this->household($request));
+        $regenerate->handle($this->household($request));
 
         return back()->with('toast', 'New invite code generated');
     }
 
-    public function subscribe(SubscribeRequest $request, SubscribeHouseholdUseCase $subscribe): SymfonyResponse
+    public function subscribe(SubscribeRequest $request, SubscribeHouseholdAction $subscribe): SymfonyResponse
     {
         $interval = $request->validated('interval');
 
-        $checkoutUrl = $subscribe->execute(
+        $checkoutUrl = $subscribe->handle(
             $this->household($request),
             interval: $interval,
             successUrl: route('billing.checkout.complete', ['from' => 'house']),

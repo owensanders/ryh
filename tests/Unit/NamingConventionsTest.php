@@ -22,6 +22,7 @@ class NamingConventionsTest extends TestCase
      * folder first; null means no suffix. A new folder needs a rule here.
      */
     private const array SUFFIXES = [
+        'Actions' => 'Action',
         'Ai/Agents' => 'Agent',
         'Ai/Fakes' => 'Fake',
         'Ai' => 'Service',

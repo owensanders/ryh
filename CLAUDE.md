@@ -17,7 +17,7 @@ households must never cross over (`HouseholdUrlTest`). On the frontend,
 page being shown. Anything built outside a request for that household (a
 notification's link, a queued email) names the household outright.
 
-A request goes route → policy → controller → form request → use case →
+A request goes route → policy → controller → form request → action →
 repository. Each layer only talks to the one below it.
 
 - **Routes** (`routes/web.php`): middleware, plus the policy ability for every
@@ -35,17 +35,19 @@ repository. Each layer only talks to the one below it.
   (never confirm it exists), and a role that can't act is a **403**. Role sets
   come from `HouseholdRoleEnum::managers()` / `managersAndTeens()`. No role or
   ownership checks anywhere else. When a model only arrives in the request
-  body, the use case checks it belongs to the same household.
-- **Controllers** (`app/Http/Controllers`): call use cases, render Inertia
+  body, the action checks it belongs to the same household.
+- **Controllers** (`app/Http/Controllers`): call actions, render Inertia
   pages, redirect with toasts. Nothing else: no repositories, no queries, no
   business rules.
 - **Form requests** (`app/Http/Requests`): validate, then `toData()` into a
   typed `*InputData`. Never pass `array $attributes` along.
-- **Use cases** (`app/UseCases/<Area>`): all business rules, one class per
-  screen or action, with an `execute()` method. They take models, enums,
+- **Actions** (`app/Actions/<Area>`): all business rules, one class per
+  operation (`CreateChoreAction`), run by a public `handle()` method, the way
+  Laravel's own Fortify and Jetstream actions work. They take models, enums,
   scalars or `*InputData`, and return a `*Data` object or an
   `array<int, *Data>`, never a shaped array. Transactions and notifications
-  start here.
+  start here. Enforced by `ActionsShapeTest`. (The page-building
+  `app/UseCases/*/Get*UseCase` classes are moving to view models.)
 - **Repositories** (`app/Repositories`): every query and write. They take
   input objects or named parameters, never attribute arrays, and map them to
   columns themselves. Concrete classes, type-hinted directly and autowired: no
@@ -57,7 +59,7 @@ repository. Each layer only talks to the one below it.
 
 ### Repositories own every query
 
-Use cases, controllers, policies, middleware and listeners never query the
+Actions, controllers, policies, middleware and listeners never query the
 database directly. That means no `Model::where(...)`, no `$model->update(...)`,
 and no relation methods like `$household->members()`. Enforced by
 `RepositoryBoundaryTest`. One exception: **route model binding**. Those models
@@ -82,12 +84,12 @@ Policies and middleware may *read* through repositories
 - **Output**: `app/Data/*Data.php`, `spatie/laravel-data` classes. Anything a
   page receives is mirrored in `resources/js/types/ryh.ts` (or `index.ts`).
   Change both together.
-- Collections leave a repository or use case as `->values()->all()`, typed
+- Collections leave a repository or action as `->values()->all()`, typed
   `array<int, X>`.
 
 ## Transactions
 
-A use case that writes more than once wraps the writes in `DB::transaction`.
+An action that writes more than once wraps the writes in `DB::transaction`.
 Calls to outside services (Stripe, mail, AI) happen outside the transaction:
 before it if a failure should stop the change, after it otherwise. Checks
 that two requests could race, like the member cap or budget carry-forward,
@@ -95,7 +97,7 @@ lock the household row first with `HouseholdRepository::lockForUpdate()`.
 
 ## Errors
 
-A use case says what went wrong by throwing, never with `abort()`:
+An action says what went wrong by throwing, never with `abort()`:
 
 - A message people should read: a `UserFacingException` subclass in
   `app/Exceptions`, with named constructors holding the wording
@@ -118,7 +120,7 @@ everyone involved, once each, never the actor.
 
 ## Naming
 
-A class name ends with what it is: `ChoreStatusEnum`, `CreateChoreUseCase`,
+A class name ends with what it is: `ChoreStatusEnum`, `CreateChoreAction`,
 `ChoreRepository`, `ChorePolicy`, `ChoreData`,
 `ChoreInputData`, `ChoreRequest`, `ChoreController`,
 `ChoreAssignedNotification`, `QueueHeartbeatJob`, `RecordLoginStreakListener`,

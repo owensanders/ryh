@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\Auth\ResetPasswordAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\NewPasswordRequest;
-use App\UseCases\Auth\ResetPasswordUseCase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -25,9 +25,9 @@ class NewPasswordController extends Controller
     }
 
     /** @throws ValidationException */
-    public function store(NewPasswordRequest $request, ResetPasswordUseCase $reset): RedirectResponse
+    public function store(NewPasswordRequest $request, ResetPasswordAction $reset): RedirectResponse
     {
-        $status = $reset->execute(
+        $status = $reset->handle(
             $request->safe()->only('email', 'password', 'token'),
             $request->validated('password'),
         );

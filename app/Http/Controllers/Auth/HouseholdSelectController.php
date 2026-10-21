@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\House\SwitchCurrentHouseholdAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\HouseholdSelectRequest;
 use App\Traits\ResolvesUserTrait;
 use App\UseCases\House\GetHouseholdOptionsUseCase;
-use App\UseCases\House\SwitchCurrentHouseholdUseCase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -26,9 +26,9 @@ class HouseholdSelectController extends Controller
         ]);
     }
 
-    public function store(HouseholdSelectRequest $request, SwitchCurrentHouseholdUseCase $switch): RedirectResponse
+    public function store(HouseholdSelectRequest $request, SwitchCurrentHouseholdAction $switch): RedirectResponse
     {
-        $switch->execute($this->user($request), (int) $request->validated('household_id'));
+        $switch->handle($this->user($request), (int) $request->validated('household_id'));
 
         return to_route('app');
     }

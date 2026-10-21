@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\Chores\CreateChoreAction;
+use App\Actions\Chores\DeleteChoreAction;
+use App\Actions\Chores\MoveChoreAction;
+use App\Actions\Chores\NotifyChoresAction;
+use App\Actions\Chores\ToggleChoreAction;
+use App\Actions\Chores\UpdateChoreAction;
 use App\Enums\ChoreStatusEnum;
 use App\Http\Requests\ChoreRequest;
 use App\Http\Requests\MoveChoreRequest;
 use App\Models\Chore;
 use App\Traits\ResolvesHouseholdTrait;
 use App\Traits\ResolvesUserTrait;
-use App\UseCases\Chores\CreateChoreUseCase;
-use App\UseCases\Chores\DeleteChoreUseCase;
 use App\UseCases\Chores\GetChoreBoardUseCase;
-use App\UseCases\Chores\MoveChoreUseCase;
-use App\UseCases\Chores\NotifyChoresUseCase;
-use App\UseCases\Chores\ToggleChoreUseCase;
-use App\UseCases\Chores\UpdateChoreUseCase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -34,48 +34,48 @@ class ChoreController extends Controller
         return Inertia::render('Chores', $getChoreBoard->execute($household));
     }
 
-    public function store(ChoreRequest $request, CreateChoreUseCase $create): RedirectResponse
+    public function store(ChoreRequest $request, CreateChoreAction $create): RedirectResponse
     {
-        $chore = $create->execute($this->household($request), $request->toData(), $this->user($request));
+        $chore = $create->handle($this->household($request), $request->toData(), $this->user($request));
 
         return back()->with('toast', "{$chore->name} added");
     }
 
-    public function update(ChoreRequest $request, Chore $chore, UpdateChoreUseCase $update): RedirectResponse
+    public function update(ChoreRequest $request, Chore $chore, UpdateChoreAction $update): RedirectResponse
     {
-        $updated = $update->execute($chore, $request->toData(), $this->user($request));
+        $updated = $update->handle($chore, $request->toData(), $this->user($request));
 
         return back()->with('toast', "{$updated->name} updated");
     }
 
-    public function destroy(Request $request, Chore $chore, DeleteChoreUseCase $delete): RedirectResponse
+    public function destroy(Request $request, Chore $chore, DeleteChoreAction $delete): RedirectResponse
     {
         $name = $chore->name;
-        $delete->execute($chore, $this->user($request));
+        $delete->handle($chore, $this->user($request));
 
         return back()->with('toast', "{$name} deleted");
     }
 
-    public function toggle(Request $request, Chore $chore, ToggleChoreUseCase $toggle): RedirectResponse
+    public function toggle(Request $request, Chore $chore, ToggleChoreAction $toggle): RedirectResponse
     {
-        $updated = $toggle->execute($chore, $this->user($request));
+        $updated = $toggle->handle($chore, $this->user($request));
 
         return back()->with('toast', $updated->done ? "{$updated->name} — nice one" : null);
     }
 
-    public function move(MoveChoreRequest $request, Chore $chore, MoveChoreUseCase $move): RedirectResponse
+    public function move(MoveChoreRequest $request, Chore $chore, MoveChoreAction $move): RedirectResponse
     {
         $status = ChoreStatusEnum::from($request->validated('status'));
-        $move->execute($chore, $status);
+        $move->handle($chore, $status);
 
         return back()->with('toast', "Moved to {$status->label()}");
     }
 
-    public function notify(Request $request, NotifyChoresUseCase $notify): RedirectResponse
+    public function notify(Request $request, NotifyChoresAction $notify): RedirectResponse
     {
         $household = $this->household($request);
 
-        $notify->execute($household);
+        $notify->handle($household);
 
         return back()->with('toast', 'Reminders sent');
     }

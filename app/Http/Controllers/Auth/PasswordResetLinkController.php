@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\Auth\SendPasswordResetLinkAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\PasswordResetLinkRequest;
-use App\UseCases\Auth\SendPasswordResetLinkUseCase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,11 +21,11 @@ class PasswordResetLinkController extends Controller
         ]);
     }
 
-    public function store(PasswordResetLinkRequest $request, SendPasswordResetLinkUseCase $sendLink): RedirectResponse
+    public function store(PasswordResetLinkRequest $request, SendPasswordResetLinkAction $sendLink): RedirectResponse
     {
         // The status is deliberately ignored — the response must not reveal whether
         // the address is registered.
-        $sendLink->execute($request->validated('email'));
+        $sendLink->handle($request->validated('email'));
 
         return back()->with('status', __('A reset link will be sent if the account exists.'));
     }

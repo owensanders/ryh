@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\House\CreateHouseholdAction;
+use App\Actions\House\JoinHouseholdAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\HouseholdJoinRequest;
 use App\Http\Requests\Auth\HouseholdSetupRequest;
 use App\Traits\ResolvesUserTrait;
 use App\UseCases\Auth\GetLastMembershipUseCase;
-use App\UseCases\House\CreateHouseholdUseCase;
-use App\UseCases\House\JoinHouseholdUseCase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -36,13 +36,13 @@ class HouseholdSetupController extends Controller
         ]);
     }
 
-    public function store(HouseholdSetupRequest $request, CreateHouseholdUseCase $createHousehold, GetLastMembershipUseCase $lastMembership): RedirectResponse
+    public function store(HouseholdSetupRequest $request, CreateHouseholdAction $createHousehold, GetLastMembershipUseCase $lastMembership): RedirectResponse
     {
         if ($lastMembership->execute($this->user($request))?->pending === true) {
             return to_route('household.done');
         }
 
-        $household = $createHousehold->execute($this->user($request), $request->toData());
+        $household = $createHousehold->handle($this->user($request), $request->toData());
 
         return to_route('household.done')->with('householdSetup', [
             'mode' => 'create',
@@ -51,13 +51,13 @@ class HouseholdSetupController extends Controller
         ]);
     }
 
-    public function join(HouseholdJoinRequest $request, JoinHouseholdUseCase $joinHousehold, GetLastMembershipUseCase $lastMembership): RedirectResponse
+    public function join(HouseholdJoinRequest $request, JoinHouseholdAction $joinHousehold, GetLastMembershipUseCase $lastMembership): RedirectResponse
     {
         if ($lastMembership->execute($this->user($request))?->pending === true) {
             return to_route('household.done');
         }
 
-        $household = $joinHousehold->execute($this->user($request), (string) $request->validated('code'));
+        $household = $joinHousehold->handle($this->user($request), (string) $request->validated('code'));
 
         return to_route('household.done')->with('householdSetup', [
             'mode' => 'join',
