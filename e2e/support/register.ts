@@ -19,7 +19,13 @@ export async function registerNewUser(page: Page, firstName: string, lastName: s
     return email;
 }
 
-/** Follows the verification link from the user's inbox. */
+/**
+ * Follows the verification link from the user's inbox. Signing up has to
+ * have finished first: the email can arrive before the browser has the new
+ * session cookie, and a link opened then is signed out and bounces to /login.
+ * Inertia only moves the page off /register once that response is in.
+ */
 export async function verifyEmail(page: Page, email: string): Promise<void> {
+    await expect(page).not.toHaveURL(/\/register(\?|$)/);
     await page.goto(await linkFromLatestEmail(email, '/verify-email/'));
 }
