@@ -12,19 +12,17 @@ use App\Data\MemberScoreData;
 use App\Enums\ChoreStatusEnum;
 use App\Models\Household;
 use App\Models\User;
-use App\Repositories\ChoreRepository;
 use App\Repositories\MembershipRepository;
 
 class ChoreBoardViewModel
 {
     public function __construct(
-        private readonly ChoreRepository $chores,
         private readonly MembershipRepository $memberships,
     ) {}
 
     public function toData(Household $household): ChoreBoardScreenData
     {
-        $chores = $this->chores->allFor($household);
+        $chores = $household->chores()->forBoard()->get();
 
         $columns = array_map(
             fn (ChoreStatusEnum $status) => new ChoreColumnData(

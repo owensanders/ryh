@@ -18,8 +18,8 @@ page being shown. Anything built outside a request for that household (a
 notification's link, a queued email) names the household outright.
 
 A write goes route → policy → controller → form request → action →
-repository; a page goes route → policy → controller → view model →
-repository. Each layer only talks to the one below it.
+Eloquent; a page goes route → policy → controller → view model → Eloquent.
+Each layer only talks to the one below it.
 
 - **Routes** (`routes/web.php`): middleware, plus the policy ability for every
   household route: `->can('update', 'chore')`, or
@@ -54,32 +54,40 @@ repository. Each layer only talks to the one below it.
   is made for Blade. They only read: a write a page needs first (the budget's
   carry-forward) is an action the controller calls before rendering.
   `LayerShapeTest` checks actions have `handle()` and view models `toData()`.
-- **Repositories** (`app/Repositories`): every query and write. They take
-  input objects or named parameters, never attribute arrays, and map them to
-  columns themselves. Concrete classes, type-hinted directly and autowired: no
-  interfaces, since there's only ever one implementation (tests use the real
-  database).
+- **Models and builders** (`app/Models`, `app/Models/Builders`): Eloquent,
+  used directly by actions and view models; see "Where queries live" below.
+  Map input objects to columns where you write (`'assigned_to' =>
+  $input->assignedTo`), never pass an attribute array through from a request.
+  (The remaining `app/Repositories` are being retired.)
 - **Models** (`app/Models`): relations, casts, and small helpers that don't
   query (`Household::canGenerateAiMealPlan()`). A helper that would query
   belongs in a repository.
 
-### Repositories own every query
+### Where queries live
 
-Actions, controllers, policies, middleware and listeners never query the
-database directly. That means no `Model::where(...)`, no `$model->update(...)`,
-and no relation methods like `$household->members()`. Enforced by
-`RepositoryBoundaryTest`. One exception: **route model binding**. Those models
-arrive ready, and reading their attributes is fine.
+Actions and view models use Eloquent directly, the conventional Laravel way:
+`$household->chores()->create([...])`, `$chore->update([...])`. A query
+that more than one place needs goes on the model's custom builder in
+`app/Models/Builders` (`ChoreBuilder::forBoard()`), attached with
+`#[UseEloquentBuilder]`, and is reached through the household so it's already
+scoped: `$household->chores()->forBoard()->get()`.
 
-**Relations are eager-loaded in the repository** that fetches the models,
-for example `->with('assignee')`. `Model::preventLazyLoading()` is on
+Controllers, middleware, form requests, policies and listeners never query:
+no `Model::where(...)`, no `$model->update(...)`, no relation methods like
+`$household->members()`. Enforced by `QueryBoundaryTest`. One exception:
+**route model binding**. Those models arrive ready, and reading their
+attributes is fine.
+
+**Relations are eager-loaded where the models are fetched**, for example
+`->with('assignee')`. `Model::preventLazyLoading()` is on
 (`AppServiceProvider`), so lazy-loading a relation across a collection, the
 N+1 case, throws in local, test and e2e. In production it logs a warning
 instead, so a miss never breaks a page. A single model loading its own
 relation isn't flagged.
 
-Policies and middleware may *read* through repositories
-(`MembershipRepository` is the usual one).
+**Repositories are on their way out**, one area per PR (Chores went first).
+Don't add methods to the ones left in `app/Repositories`. Policies and
+middleware still *read* through `MembershipRepository` until its turn.
 
 ## Data
 
@@ -127,7 +135,7 @@ everyone involved, once each, never the actor.
 ## Naming
 
 A class name ends with what it is: `ChoreStatusEnum`, `CreateChoreAction`,
-`ChoreRepository`, `ChorePolicy`, `ChoreData`,
+`ChoreBuilder`, `ChorePolicy`, `ChoreData`,
 `ChoreInputData`, `ChoreRequest`, `ChoreController`,
 `ChoreAssignedNotification`, `QueueHeartbeatJob`, `RecordLoginStreakListener`,
 `UserNotificationBroadcastEvent`, `ResolveHouseholdMiddleware`,

@@ -9,21 +9,19 @@ use App\Enums\ChoreStatusEnum;
 use App\Models\Chore;
 use App\Models\User;
 use App\Notifications\ChoreActionedNotification;
-use App\Repositories\ChoreRepository;
 use App\Support\RecipientsHelper;
 
 /** Ticking a chore off moves it to Completed; un-ticking sends it back to Today. */
 class ToggleChoreAction
 {
-    public function __construct(private readonly ChoreRepository $chores) {}
-
     public function handle(Chore $chore, User $actor): ChoreData
     {
         $target = $chore->status === ChoreStatusEnum::Done
             ? ChoreStatusEnum::Today
             : ChoreStatusEnum::Done;
 
-        $updated = $this->chores->moveTo($chore, $target);
+        $chore->update(['status' => $target]);
+        $updated = $chore->refresh();
 
         $this->notifyInterestedParties($updated, $actor);
 

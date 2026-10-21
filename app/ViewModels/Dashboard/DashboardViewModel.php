@@ -22,7 +22,6 @@ use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Repositories\BudgetRepository;
 use App\Repositories\CalendarEventRepository;
-use App\Repositories\ChoreRepository;
 use App\Repositories\MealPlanRepository;
 use App\Repositories\MembershipRepository;
 use App\Repositories\ShoppingRepository;
@@ -38,7 +37,6 @@ class DashboardViewModel
 
     public function __construct(
         private readonly ShoppingRepository $shopping,
-        private readonly ChoreRepository $chores,
         private readonly MealPlanRepository $meals,
         private readonly MembershipRepository $memberships,
         private readonly CalendarEventRepository $events,
@@ -47,7 +45,7 @@ class DashboardViewModel
 
     public function toData(Household $household, string $viewerName, CarbonImmutable $today): DashboardData
     {
-        $chores = $this->chores->allFor($household);
+        $chores = $household->chores()->forBoard()->get();
         $todays = $chores->whereIn('status', [ChoreStatusEnum::Today, ChoreStatusEnum::Done]);
         $done = $todays->where('status', ChoreStatusEnum::Done)->count();
 

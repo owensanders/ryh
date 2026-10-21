@@ -36,6 +36,7 @@ class NamingConventionsTest extends TestCase
         'Jobs' => 'Job',
         'Listeners' => 'Listener',
         'Mail' => 'Mail',
+        'Models/Builders' => 'Builder',
         'Models' => null,
         'Notifications/Channels' => 'Channel',
         'Notifications/Messages' => 'Message',

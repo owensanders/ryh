@@ -13,16 +13,17 @@ use Tests\Support\DiscoversClassesTrait;
 use Tests\TestCase;
 
 /**
- * Every query goes through a repository (CLAUDE.md, "Repositories"). Route
- * model binding's lookup by id is the one exception: those models arrive
- * ready, and their attributes are fine to read.
+ * Queries belong in actions, view models, models and their builders
+ * (CLAUDE.md, "Where queries live"), never in the HTTP layer, policies or
+ * listeners. Route model binding's lookup by id is the one exception: those
+ * models arrive ready, and their attributes are fine to read.
  */
-class RepositoryBoundaryTest extends TestCase
+class QueryBoundaryTest extends TestCase
 {
     use DiscoversClassesTrait;
 
     /** Where queries must not appear. */
-    private const array LAYERS = ['app/Actions', 'app/ViewModels', 'app/Http', 'app/Policies', 'app/Listeners'];
+    private const array LAYERS = ['app/Http', 'app/Policies', 'app/Listeners'];
 
     /** Static entry points into a query, on a model (filled in below) or the query builder. */
     private const string STATIC_QUERY = '/\b(%s)::(query|where\w*|find\w*|first\w*|create|firstOrCreate|updateOrCreate|all|count|exists|destroy|insert)\(|\bDB::(table|select|statement|insert|update|delete)\(/';
@@ -31,7 +32,7 @@ class RepositoryBoundaryTest extends TestCase
     private const string MODEL_WRITE = '/\$(?!this\b)\w+(?:\?)?->(save|update|delete|forceFill|forceDelete|refresh|fresh|load|loadMissing|increment|decrement|touch|push|markAsRead|markAsUnread)\(/';
 
     #[Test]
-    public function queriesOnlyHappenInRepositories(): void
+    public function theHttpLayerPoliciesAndListenersNeverQuery(): void
     {
         $models = array_map(fn (string $model) => class_basename($model), array_values($this->classesIn('App\\Models\\', 'app/Models')));
         $staticQuery = sprintf(self::STATIC_QUERY, implode('|', [...$models, 'DatabaseNotification']));
@@ -58,7 +59,7 @@ class RepositoryBoundaryTest extends TestCase
             }
         }
 
-        $this->assertSame([], $found, 'Move these into a repository in app/Repositories.');
+        $this->assertSame([], $found, 'Move these into an action or view model (reusable ones onto the model\'s builder in app/Models/Builders).');
     }
 
     /** @return list<string> Every relation method on the app's models, found by return type. */

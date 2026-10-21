@@ -8,7 +8,6 @@ use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
 use App\Models\User;
 use App\Repositories\CalendarEventRepository;
-use App\Repositories\ChoreRepository;
 use App\Repositories\MealPlanRepository;
 use App\Repositories\MembershipRepository;
 use App\Repositories\UserRepository;
@@ -19,7 +18,6 @@ class RemoveMemberAction
 {
     public function __construct(
         private readonly UserRepository $users,
-        private readonly ChoreRepository $chores,
         private readonly CalendarEventRepository $events,
         private readonly MealPlanRepository $meals,
         private readonly MembershipRepository $memberships,
@@ -45,7 +43,7 @@ class RemoveMemberAction
         }
 
         DB::transaction(function () use ($member, $household): void {
-            $this->chores->deleteAssignedTo($member, $household);
+            $household->chores()->assignedTo($member)->delete();
             $this->events->removeAttendeeFrom($member, $household);
             $this->meals->unassignCook($household, $member);
 
