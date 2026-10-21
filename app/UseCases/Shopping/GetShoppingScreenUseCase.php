@@ -21,7 +21,7 @@ class GetShoppingScreenUseCase
         $active = $slug !== null ? $lists->firstWhere('slug', $slug) : $lists->first();
 
         if ($slug !== null && $active === null) {
-            throw (new ModelNotFoundException)->setModel(ShoppingList::class);
+            throw (new ModelNotFoundException())->setModel(ShoppingList::class);
         }
 
         return new ShoppingScreenData(

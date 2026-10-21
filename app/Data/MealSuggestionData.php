@@ -27,9 +27,9 @@ class MealSuggestionData extends Data
         public ?float $estimated_cost,
         public array $tags,
         public array $ingredients,
-        public int|Optional $recipe_id = new Optional,
-        public int|Optional $tint = new Optional,
-        public bool|Optional $is_favourite = new Optional,
+        public int|Optional $recipe_id = new Optional(),
+        public int|Optional $tint = new Optional(),
+        public bool|Optional $is_favourite = new Optional(),
     ) {}
 
     public static function fromRecipe(Recipe $recipe): self

@@ -1,7 +1,8 @@
 <?php
 
-return [
+declare(strict_types=1);
 
+return [
     /*
     |--------------------------------------------------------------------------
     | Default Mailer
@@ -36,7 +37,6 @@ return [
     */
 
     'mailers' => [
-
         'smtp' => [
             'transport' => 'smtp',
             'scheme' => env('MAIL_SCHEME'),
@@ -94,7 +94,6 @@ return [
                 'postmark',
             ],
         ],
-
     ],
 
     /*
@@ -130,5 +129,4 @@ return [
             resource_path('views/vendor/mail'),
         ],
     ],
-
 ];

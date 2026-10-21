@@ -9,6 +9,7 @@ use App\Mail\PaymentFailedMail;
 use App\Mail\RenewalReminderMail;
 use App\Models\Household;
 use App\Models\User;
+use DateTimeInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Testing\TestResponse;
@@ -40,7 +41,7 @@ class BillingNoticesTest extends TestCase
         $this->household->forceFill(['stripe_id' => 'cus_test123'])->save();
     }
 
-    private function subscribe(string $price, ?\DateTimeInterface $endsAt = null): void
+    private function subscribe(string $price, ?DateTimeInterface $endsAt = null): void
     {
         Subscription::create([
             'household_id' => $this->household->id,
@@ -54,6 +55,7 @@ class BillingNoticesTest extends TestCase
 
     /**
      * @param  array<string, mixed>  $object
+     *
      * @return TestResponse<Response>
      */
     private function postSigned(string $type, array $object): TestResponse

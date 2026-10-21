@@ -37,16 +37,17 @@ class HouseTest extends TestCase
         $this->actingAs($owner)
             ->get($this->hh('/house'))
             ->assertOk()
-            ->assertInertia(fn ($page) => $page
-                ->component('House')
-                ->where('house.houseName', 'The Parkers')
-                ->where('house.memberCount', 3)
-                ->where('house.houseStats.0.value', '2')
-                ->where('house.houseStats.1.value', '1')
-                ->count('house.members', 3)
-                ->count('house.roles', 4)
-                ->where('house.planStatus.onTrial', true)
-                ->where('house.planStatus.subscribed', false)
+            ->assertInertia(
+                fn ($page) => $page
+                    ->component('House')
+                    ->where('house.houseName', 'The Parkers')
+                    ->where('house.memberCount', 3)
+                    ->where('house.houseStats.0.value', '2')
+                    ->where('house.houseStats.1.value', '1')
+                    ->count('house.members', 3)
+                    ->count('house.roles', 4)
+                    ->where('house.planStatus.onTrial', true)
+                    ->where('house.planStatus.subscribed', false),
             );
     }
 
@@ -67,10 +68,11 @@ class HouseTest extends TestCase
 
         $this->actingAs($owner)
             ->get($this->hh('/house'))
-            ->assertInertia(fn ($page) => $page
-                ->where('house.planStatus.subscribed', true)
-                ->where('house.planStatus.interval', 'annual')
-                ->where('house.planStatus.endsLabel', now()->addMonths(3)->format('j F Y'))
+            ->assertInertia(
+                fn ($page) => $page
+                    ->where('house.planStatus.subscribed', true)
+                    ->where('house.planStatus.interval', 'annual')
+                    ->where('house.planStatus.endsLabel', now()->addMonths(3)->format('j F Y')),
             );
     }
 
@@ -91,9 +93,10 @@ class HouseTest extends TestCase
         $this->actingAs($owner)
             ->get($this->hh('/house'))
             ->assertOk()
-            ->assertInertia(fn ($page) => $page
-                ->where('house.planStatus.subscribed', true)
-                ->where('house.planStatus.interval', 'monthly')
+            ->assertInertia(
+                fn ($page) => $page
+                    ->where('house.planStatus.subscribed', true)
+                    ->where('house.planStatus.interval', 'monthly'),
             );
     }
 

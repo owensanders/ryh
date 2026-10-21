@@ -7,8 +7,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Replaces the single `household_id` FK on `users` with real many-to-many
      * membership via `household_user`, plus a `current_household_id` "which

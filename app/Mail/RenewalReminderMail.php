@@ -16,7 +16,9 @@ use Illuminate\Queue\SerializesModels;
 /** Sent ahead of an annual renewal, as the Terms of Service promise. */
 class RenewalReminderMail extends Mailable implements ShouldQueue
 {
-    use Queueable, RetriesEmailTrait, SerializesModels;
+    use Queueable;
+    use RetriesEmailTrait;
+    use SerializesModels;
 
     public function __construct(
         public readonly Household $household,

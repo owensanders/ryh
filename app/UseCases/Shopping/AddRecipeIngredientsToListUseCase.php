@@ -26,7 +26,7 @@ class AddRecipeIngredientsToListUseCase
         $list = $this->shopping->findList($household, $listId);
 
         if ($list === null) {
-            throw (new ModelNotFoundException)->setModel(ShoppingList::class, [$listId]);
+            throw (new ModelNotFoundException())->setModel(ShoppingList::class, [$listId]);
         }
 
         $present = $list->items->reject->isDone()->map(fn ($item) => mb_strtolower(trim($item->name)))->all();

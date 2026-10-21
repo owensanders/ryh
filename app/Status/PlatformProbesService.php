@@ -10,6 +10,7 @@ use App\Jobs\QueueHeartbeatJob;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -38,7 +39,7 @@ class PlatformProbesService
             Cache::put('status:cache-probe', $token, 60);
 
             if (Cache::get('status:cache-probe') !== $token) {
-                throw new \RuntimeException('Cache did not return what was written.');
+                throw new RuntimeException('Cache did not return what was written.');
             }
         });
     }

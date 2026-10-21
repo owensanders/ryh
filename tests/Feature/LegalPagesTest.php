@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use ReflectionProperty;
 use Tests\TestCase;
 
 class LegalPagesTest extends TestCase
@@ -103,7 +104,7 @@ class LegalPagesTest extends TestCase
     #[Test]
     public function theRememberMeCookieLastsAsLongAsThePolicySays(): void
     {
-        $this->assertSame(400 * 24 * 60, (new \ReflectionProperty(SessionGuard::class, 'rememberDuration'))->getDefaultValue());
+        $this->assertSame(400 * 24 * 60, (new ReflectionProperty(SessionGuard::class, 'rememberDuration'))->getDefaultValue());
     }
 
     #[Test]

@@ -17,7 +17,7 @@ class E2eMealPlanTest extends TestCase
     public function itFillsTheWholePoolTheAgentAsksFor(): void
     {
         $agent = new MealPlanAgent(4, null, [], [], [], [], CookingConfidenceEnum::Comfortable, [], [], '');
-        $pool = $agent->schema(new JsonSchemaTypeFactory)['meals']->toArray();
+        $pool = $agent->schema(new JsonSchemaTypeFactory())['meals']->toArray();
         $meals = E2eMealPlanFake::meals();
 
         $this->assertCount($pool['minItems'], $meals);

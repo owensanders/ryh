@@ -62,15 +62,16 @@ class MealPlannerTest extends TestCase
         $this->actingAs($user)
             ->get($this->hh('/meals'))
             ->assertOk()
-            ->assertInertia(fn ($page) => $page
-                ->component('MealPlanner')
-                ->count('days', 7)
-                ->where('days.0.date', '2026-08-03')
-                ->where('days.0.dayLabel', 'Mon')
-                ->where('days.2.isToday', true)
-                ->count('days.4.meals', 1)
-                ->where('days.4.meals.0.name', 'Veg lasagne')
-                ->where('days.4.meals.0.missingLabel', 'All in')
+            ->assertInertia(
+                fn ($page) => $page
+                    ->component('MealPlanner')
+                    ->count('days', 7)
+                    ->where('days.0.date', '2026-08-03')
+                    ->where('days.0.dayLabel', 'Mon')
+                    ->where('days.2.isToday', true)
+                    ->count('days.4.meals', 1)
+                    ->where('days.4.meals.0.name', 'Veg lasagne')
+                    ->where('days.4.meals.0.missingLabel', 'All in'),
             );
     }
 

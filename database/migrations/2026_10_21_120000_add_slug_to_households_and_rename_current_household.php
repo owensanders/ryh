@@ -14,8 +14,7 @@ use Illuminate\Support\Str;
  * `current_household_id` stays only to pick where /app lands, so it's renamed
  * to say so.
  */
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::table('households', function (Blueprint $table): void {

@@ -17,6 +17,7 @@ class MealDeletedNotification extends HouseholdNotification
 
     /**
      * @param  User  $notifiable
+     *
      * @return array<string, mixed>
      */
     public function toArray(object $notifiable): array

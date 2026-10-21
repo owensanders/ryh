@@ -28,7 +28,8 @@ use Illuminate\Support\Carbon;
 class Chore extends Model
 {
     /** @use HasFactory<ChoreFactory> */
-    use HasFactory, MassPrunable;
+    use HasFactory;
+    use MassPrunable;
 
     /** How long a completed chore stays on the board before the nightly prune clears it. */
     public const int KEEP_COMPLETED_DAYS = 30;

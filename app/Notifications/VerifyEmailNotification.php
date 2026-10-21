@@ -12,5 +12,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 /** Laravel's verification email, sent from the queue so a slow or down mail provider can't fail sign-up. */
 class VerifyEmailNotification extends VerifyEmail implements ShouldQueue
 {
-    use Queueable, RetriesEmailTrait;
+    use Queueable;
+    use RetriesEmailTrait;
 }

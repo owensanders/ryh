@@ -41,7 +41,7 @@ class ResolveHouseholdMiddleware
         $membership = $household !== null ? $this->memberships->find($user, $household) : null;
 
         if ($household === null || $membership === null) {
-            throw (new ModelNotFoundException)->setModel(Household::class, is_string($slug) ? [$slug] : []);
+            throw (new ModelNotFoundException())->setModel(Household::class, is_string($slug) ? [$slug] : []);
         }
 
         // Joined by code but not approved yet: the owner has to let them in first.

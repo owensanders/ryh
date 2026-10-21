@@ -21,7 +21,7 @@ class SwitchCurrentHouseholdUseCase
     {
         // The request validates this too; a household they aren't in doesn't exist for them.
         if (! $this->memberships->belongsTo($user, $householdId)) {
-            throw (new ModelNotFoundException)->setModel(Household::class, [$householdId]);
+            throw (new ModelNotFoundException())->setModel(Household::class, [$householdId]);
         }
 
         $this->users->setLastHousehold($user, $householdId);

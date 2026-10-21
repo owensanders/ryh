@@ -21,7 +21,7 @@ class MoveDocumentUseCase
 
         // A document never leaves its household, so another household's folder doesn't exist here.
         if ($folder === null || $folder->household_id !== $document->household_id) {
-            throw (new ModelNotFoundException)->setModel(DocumentFolder::class, [$folderId]);
+            throw (new ModelNotFoundException())->setModel(DocumentFolder::class, [$folderId]);
         }
 
         return new DocumentMovedData(

@@ -23,12 +23,13 @@ class CalendarTest extends TestCase
         $this->actingAs($user)
             ->get($this->hh('/calendar'))
             ->assertOk()
-            ->assertInertia(fn ($page) => $page
-                ->component('Calendar')
-                ->count('calendar.days', 42)
-                ->count('calendar.weekdayLabels', 7)
-                ->where('calendar.month', CarbonImmutable::now()->format('Y-m'))
-                ->where('calendar.monthLabel', CarbonImmutable::now()->format('F Y'))
+            ->assertInertia(
+                fn ($page) => $page
+                    ->component('Calendar')
+                    ->count('calendar.days', 42)
+                    ->count('calendar.weekdayLabels', 7)
+                    ->where('calendar.month', CarbonImmutable::now()->format('Y-m'))
+                    ->where('calendar.monthLabel', CarbonImmutable::now()->format('F Y')),
             );
     }
 
@@ -88,11 +89,12 @@ class CalendarTest extends TestCase
 
         $this->actingAs($user)
             ->get($this->hh('/calendar?month=2026-09'))
-            ->assertInertia(fn ($page) => $page
-                ->where('calendar.month', '2026-09')
-                ->where('calendar.monthLabel', 'September 2026')
-                ->where('calendar.previousMonth', '2026-08')
-                ->where('calendar.nextMonth', '2026-10')
+            ->assertInertia(
+                fn ($page) => $page
+                    ->where('calendar.month', '2026-09')
+                    ->where('calendar.monthLabel', 'September 2026')
+                    ->where('calendar.previousMonth', '2026-08')
+                    ->where('calendar.nextMonth', '2026-10'),
             );
     }
 
@@ -121,9 +123,10 @@ class CalendarTest extends TestCase
         $this->actingAs($user)
             ->get($this->hh('/calendar?month=2026-09'))
             ->assertOk()
-            ->assertInertia(fn ($page) => $page
-                ->where('calendar.month', '2026-09')
-                ->where('calendar.monthLabel', 'September 2026')
+            ->assertInertia(
+                fn ($page) => $page
+                    ->where('calendar.month', '2026-09')
+                    ->where('calendar.monthLabel', 'September 2026'),
             );
 
         CarbonImmutable::setTestNow();

@@ -44,8 +44,7 @@ class QueuedEmailsTest extends TestCase
         }
 
         // Laravel Cloud's managed queue can't delay a job by more than 15 minutes.
-        foreach ((new class
-        {
+        foreach ((new class {
             use RetriesEmailTrait;
         })->backoff() as $seconds) {
             $this->assertLessThanOrEqual(self::MAX_QUEUE_DELAY_SECONDS, $seconds);

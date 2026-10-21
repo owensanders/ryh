@@ -24,13 +24,13 @@ class AcceptHouseholdInviteUseCase
         $household = $this->households->find($householdId);
 
         if ($household === null) {
-            throw (new ModelNotFoundException)->setModel(Household::class, [$householdId]);
+            throw (new ModelNotFoundException())->setModel(Household::class, [$householdId]);
         }
 
         $pivot = $this->memberships->find($user, $household);
 
         if ($pivot === null || $pivot->pending !== true) {
-            throw (new ModelNotFoundException)->setModel(Household::class, [$householdId]);
+            throw (new ModelNotFoundException())->setModel(Household::class, [$householdId]);
         }
 
         $this->approveMember->execute($user, $household);

@@ -35,7 +35,7 @@ class MealPlanAgentTest extends TestCase
     #[Test]
     public function itAsksForAnEstimatedCostPerRecipe(): void
     {
-        $schema = $this->agent(CookingConfidenceEnum::Comfortable, [])->schema(new JsonSchemaTypeFactory);
+        $schema = $this->agent(CookingConfidenceEnum::Comfortable, [])->schema(new JsonSchemaTypeFactory());
 
         $recipe = $schema['meals']->toArray()['items']['properties'];
 
@@ -50,7 +50,7 @@ class MealPlanAgentTest extends TestCase
 
         $this->assertStringContainsString('Suggest 14 distinct dinner recipes', (string) $agent->instructions());
 
-        $meals = $agent->schema(new JsonSchemaTypeFactory)['meals']->toArray();
+        $meals = $agent->schema(new JsonSchemaTypeFactory())['meals']->toArray();
         $this->assertSame(14, $meals['minItems']);
         $this->assertSame(14, $meals['maxItems']);
     }

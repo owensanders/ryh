@@ -15,7 +15,9 @@ use Illuminate\Queue\SerializesModels;
 
 class HouseholdInviteMail extends Mailable implements ShouldQueue
 {
-    use Queueable, RetriesEmailTrait, SerializesModels;
+    use Queueable;
+    use RetriesEmailTrait;
+    use SerializesModels;
 
     public function __construct(
         public readonly Household $household,

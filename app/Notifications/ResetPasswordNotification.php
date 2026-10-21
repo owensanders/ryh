@@ -12,5 +12,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 /** Laravel's password reset email, sent from the queue so a slow or down mail provider can't fail the request. */
 class ResetPasswordNotification extends ResetPassword implements ShouldQueue
 {
-    use Queueable, RetriesEmailTrait;
+    use Queueable;
+    use RetriesEmailTrait;
 }

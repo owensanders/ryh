@@ -102,10 +102,10 @@ class NotificationMessagesTest extends TestCase
     {
         config(['meal_planner.pause_hours' => 6]);
 
-        $mail = (new AiCreditsExhaustedNotification('Anthropic'))->toMail(new AnonymousNotifiable);
+        $mail = (new AiCreditsExhaustedNotification('Anthropic'))->toMail(new AnonymousNotifiable());
         $text = implode("\n", $mail->introLines);
 
-        $this->assertSame(['mail'], (new AiCreditsExhaustedNotification('Anthropic'))->via(new AnonymousNotifiable));
+        $this->assertSame(['mail'], (new AiCreditsExhaustedNotification('Anthropic'))->via(new AnonymousNotifiable()));
         $this->assertSame('RYH: AI meal planning paused — out of credit', $mail->subject);
         $this->assertStringContainsString('The Anthropic API reported the account is out of credit', $text);
         $this->assertStringContainsString('retries automatically after 6 hours', $text);

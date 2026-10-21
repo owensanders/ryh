@@ -31,11 +31,12 @@ class BudgetTest extends TestCase
         $this->actingAs($user)
             ->get($this->hh('/budget'))
             ->assertOk()
-            ->assertInertia(fn ($page) => $page
-                ->component('Budget')
-                ->count('categories', 1)
-                ->count('income', 1)
-                ->where('categories.0.label', 'Food & shopping')
+            ->assertInertia(
+                fn ($page) => $page
+                    ->component('Budget')
+                    ->count('categories', 1)
+                    ->count('income', 1)
+                    ->where('categories.0.label', 'Food & shopping'),
             );
     }
 
@@ -78,9 +79,10 @@ class BudgetTest extends TestCase
 
         $this->actingAs($user)
             ->get($this->hh('/budget'))
-            ->assertInertia(fn ($page) => $page
-                ->where('categories.0.icon', '')
-                ->where('categories.0.isRecurring', true)
+            ->assertInertia(
+                fn ($page) => $page
+                    ->where('categories.0.icon', '')
+                    ->where('categories.0.isRecurring', true),
             );
     }
 
@@ -454,12 +456,13 @@ class BudgetTest extends TestCase
         $this->actingAs($user)
             ->get($this->hh('/budget'))
             ->assertOk()
-            ->assertInertia(fn ($page) => $page
-                ->component('Budget')
-                ->count('history', 3)
-                ->where('history.2.totalPence', 50000)
-                ->where('history.1.totalPence', 30000)
-                ->where('history.0.totalPence', 0)
+            ->assertInertia(
+                fn ($page) => $page
+                    ->component('Budget')
+                    ->count('history', 3)
+                    ->where('history.2.totalPence', 50000)
+                    ->where('history.1.totalPence', 30000)
+                    ->where('history.0.totalPence', 0),
             );
     }
 }

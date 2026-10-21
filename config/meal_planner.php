@@ -1,7 +1,8 @@
 <?php
 
-return [
+declare(strict_types=1);
 
+return [
     /*
     |--------------------------------------------------------------------------
     | AI Meal Plan Guards
@@ -21,5 +22,4 @@ return [
 
     // Where to send the "out of AI credit" alert. Null logs it only.
     'alert_email' => env('AI_ALERT_EMAIL'),
-
 ];

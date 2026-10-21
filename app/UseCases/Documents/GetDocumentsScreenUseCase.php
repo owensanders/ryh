@@ -45,6 +45,7 @@ class GetDocumentsScreenUseCase
         $units = ['B', 'KB', 'MB', 'GB'];
         $value = max($bytes, 0);
         $i = 0;
+
         while ($value >= 1024 && $i < count($units) - 1) {
             $value /= 1024;
             $i++;

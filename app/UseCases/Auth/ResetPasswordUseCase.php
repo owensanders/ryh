@@ -16,6 +16,7 @@ class ResetPasswordUseCase
 
     /**
      * @param  array<string, string>  $credentials  email, token and the new password
+     *
      * @return string One of the `Password::` status constants.
      */
     public function execute(array $credentials, string $password): string

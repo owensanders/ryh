@@ -35,17 +35,18 @@ class ChoreBoardTest extends TestCase
         $this->actingAs($user)
             ->get($this->hh('/chores'))
             ->assertOk()
-            ->assertInertia(fn ($page) => $page
-                ->component('Chores')
-                ->count('columns', 2)
-                ->where('columns.0.status', 'today')
-                ->where('columns.0.count', 1)
-                ->where('columns.1.status', 'done')
-                ->where('columns.1.count', 2)
-                ->count('scores', 2)
-                ->where('scores.1.done', 2)
-                ->where('scores.1.total', 3)
-                ->where('scores.1.percentage', 67)
+            ->assertInertia(
+                fn ($page) => $page
+                    ->component('Chores')
+                    ->count('columns', 2)
+                    ->where('columns.0.status', 'today')
+                    ->where('columns.0.count', 1)
+                    ->where('columns.1.status', 'done')
+                    ->where('columns.1.count', 2)
+                    ->count('scores', 2)
+                    ->where('scores.1.done', 2)
+                    ->where('scores.1.total', 3)
+                    ->where('scores.1.percentage', 67),
             );
     }
 
