@@ -7,13 +7,13 @@ namespace App\Http\Controllers\Settings;
 use App\Actions\Settings\DeletePushSubscriptionAction;
 use App\Actions\Settings\SavePushSubscriptionAction;
 use App\Actions\Settings\SendTestPushAction;
-use App\Actions\Settings\ShowNotificationSettingsAction;
 use App\Actions\Settings\UpdatePushOptOutsAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\DestroyPushSubscriptionRequest;
 use App\Http\Requests\Settings\StorePushSubscriptionRequest;
 use App\Http\Requests\Settings\UpdatePushOptOutsRequest;
 use App\Traits\ResolvesUserTrait;
+use App\ViewModels\Settings\NotificationSettingsViewModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -25,9 +25,9 @@ class NotificationController extends Controller
 {
     use ResolvesUserTrait;
 
-    public function edit(Request $request, ShowNotificationSettingsAction $show): Response
+    public function edit(Request $request, NotificationSettingsViewModel $settings): Response
     {
-        return Inertia::render('settings/Notifications', $show->handle($this->user($request)));
+        return Inertia::render('settings/Notifications', $settings->toData($this->user($request)));
     }
 
     public function update(UpdatePushOptOutsRequest $request, UpdatePushOptOutsAction $update): RedirectResponse

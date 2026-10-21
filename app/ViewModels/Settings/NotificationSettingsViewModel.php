@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Settings;
+namespace App\ViewModels\Settings;
 
 use App\Data\NotificationSettingsData;
 use App\Data\PushCategoryData;
 use App\Enums\NotificationCategoryEnum;
 use App\Models\User;
 
-class ShowNotificationSettingsAction
+class NotificationSettingsViewModel
 {
-    public function handle(User $user): NotificationSettingsData
+    public function toData(User $user): NotificationSettingsData
     {
         return new NotificationSettingsData(
             categories: array_map(
