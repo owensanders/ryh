@@ -1,0 +1,5 @@
+# Formatting-only commits, skipped by `git blame` (GitHub does this automatically;
+# locally: git config blame.ignoreRevsFile .git-blame-ignore-revs).
+
+# Apply the PSR-12 Pint rules
+323ac87e94637c1ca6b3ef228d763a3f1db07f7f
