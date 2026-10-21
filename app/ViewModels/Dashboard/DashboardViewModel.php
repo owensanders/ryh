@@ -23,7 +23,6 @@ use App\Models\PlannedMeal;
 use App\Models\ShoppingList;
 use App\Repositories\BudgetRepository;
 use App\Repositories\CalendarEventRepository;
-use App\Repositories\MealPlanRepository;
 use App\Repositories\MembershipRepository;
 use App\Support\MoneyHelper;
 use Carbon\CarbonImmutable;
@@ -36,7 +35,6 @@ class DashboardViewModel
     private const int AGENDA_DAYS = 3;
 
     public function __construct(
-        private readonly MealPlanRepository $meals,
         private readonly MembershipRepository $memberships,
         private readonly CalendarEventRepository $events,
         private readonly BudgetRepository $budget,
@@ -48,7 +46,11 @@ class DashboardViewModel
         $todays = $chores->whereIn('status', [ChoreStatusEnum::Today, ChoreStatusEnum::Done]);
         $done = $todays->where('status', ChoreStatusEnum::Done)->count();
 
-        $tonight = $this->meals->forDay($household, $today, MealSlotEnum::Dinner);
+        $tonight = $household->plannedMeals()
+            ->with(['recipe', 'cook'])
+            ->whereDate('planned_on', $today->toDateString())
+            ->where('slot', MealSlotEnum::Dinner)
+            ->first();
         // A list that actually has items, so the dashboard doesn't spotlight an empty one.
         $list = $household->shoppingLists()->with('items')->get()
             ->first(fn (ShoppingList $list) => $list->items->isNotEmpty());

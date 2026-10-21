@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Data\Input\PlannedMealInputData;
-use App\Data\Input\RecipeDetailsInputData;
 use App\Enums\MealSlotEnum;
 use App\Enums\RecipeTagEnum;
 use App\Support\CurrentHouseholdHelper;
-use Carbon\CarbonImmutable;
+use App\Traits\NormalisesInputTrait;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Spatie\LaravelData\Optional;
 
 class PlannedMealRequest extends FormRequest
 {
+    use NormalisesInputTrait;
+
     /** @return array<string, mixed> */
     public function rules(): array
     {
@@ -69,29 +68,22 @@ class PlannedMealRequest extends FormRequest
         ];
     }
 
-    public function toData(): PlannedMealInputData
+    /**
+     * The new_recipe_* details are left out when they weren't sent, so an
+     * existing recipe planned by id alone keeps its details untouched
+     * (ResolvePlannedRecipeAction checks which keys are there).
+     */
+    protected function prepareForValidation(): void
     {
-        $validated = $this->validated();
-        // Recipe details are only passed on when the request sent them, so an
-        // existing recipe planned by id alone keeps its details untouched.
-        $sent = fn (string $key, callable $value) => array_key_exists($key, $validated) ? $value($validated[$key]) : Optional::create();
+        $this->merge([
+            'recipe_id' => $this->idOrNull('recipe_id'),
+            'new_recipe_name' => $this->trimmedOrNull('new_recipe_name'),
+            'new_recipe_shopping_list_id' => $this->idOrNull('new_recipe_shopping_list_id'),
+            'cook_id' => $this->idOrNull('cook_id'),
+        ]);
 
-        return new PlannedMealInputData(
-            recipeId: isset($validated['recipe_id']) ? (int) $validated['recipe_id'] : null,
-            newRecipeName: trim((string) ($validated['new_recipe_name'] ?? '')) ?: null,
-            recipeDetails: new RecipeDetailsInputData(
-                description: $sent('new_recipe_description', fn (mixed $value) => trim((string) $value) ?: null),
-                durationLabel: $sent('new_recipe_duration_label', fn (mixed $value) => $value),
-                difficulty: $sent('new_recipe_difficulty', fn (mixed $value) => $value),
-                tags: $sent('new_recipe_tags', fn (mixed $value) => array_values($value ?? [])),
-                ingredients: $sent('new_recipe_ingredients', fn (mixed $value) => array_values($value ?? [])),
-                tint: $sent('new_recipe_tint', fn (mixed $value) => (int) ($value ?? 0)),
-                isFavourite: $sent('new_recipe_is_favourite', fn (mixed $value) => (bool) $value),
-            ),
-            addIngredientsToListId: isset($validated['new_recipe_shopping_list_id']) ? (int) $validated['new_recipe_shopping_list_id'] : null,
-            plannedOn: CarbonImmutable::parse((string) $validated['planned_on']),
-            slot: MealSlotEnum::from((string) $validated['slot']),
-            cookId: isset($validated['cook_id']) ? (int) $validated['cook_id'] : null,
-        );
+        if ($this->has('new_recipe_description')) {
+            $this->merge(['new_recipe_description' => $this->trimmedOrNull('new_recipe_description')]);
+        }
     }
 }

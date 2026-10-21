@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Support\CurrentHouseholdHelper;
+use App\Traits\NormalisesInputTrait;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class ChoreRequest extends FormRequest
 {
+    use NormalisesInputTrait;
+
     /** @return array<string, mixed> */
     public function rules(): array
     {
@@ -34,15 +37,9 @@ class ChoreRequest extends FormRequest
     /** Validated as it'll be stored: a trimmed name, and an id or null for "nobody". */
     protected function prepareForValidation(): void
     {
-        $assignedTo = $this->input('assigned_to');
-
         $this->merge([
-            'name' => is_string($this->input('name')) ? trim($this->input('name')) : $this->input('name'),
-            'assigned_to' => match (true) {
-                $assignedTo === null, $assignedTo === '' => null,
-                is_numeric($assignedTo) => (int) $assignedTo,
-                default => $assignedTo,
-            },
+            'name' => $this->trimmed('name'),
+            'assigned_to' => $this->idOrNull('assigned_to'),
         ]);
     }
 }

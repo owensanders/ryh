@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Enums\PaletteEnum;
+use App\Traits\NormalisesInputTrait;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class ShoppingListRequest extends FormRequest
 {
+    use NormalisesInputTrait;
+
     /** @return array<string, mixed> */
     public function rules(): array
     {
@@ -31,7 +34,7 @@ class ShoppingListRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'name' => is_string($this->input('name')) ? trim($this->input('name')) : $this->input('name'),
+            'name' => $this->trimmed('name'),
             'colour' => $this->filled('colour') ? $this->input('colour') : PaletteEnum::Mint->value,
         ]);
     }

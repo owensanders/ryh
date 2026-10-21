@@ -10,18 +10,13 @@ use App\Data\ShoppingListData;
 use App\Enums\RecipeTagEnum;
 use App\Models\Household;
 use App\Models\ShoppingList;
-use App\Repositories\MealPlanRepository;
 
 class RecipeLibraryViewModel
 {
-    public function __construct(
-        private readonly MealPlanRepository $meals,
-    ) {}
-
     public function toData(Household $household): RecipeLibraryScreenData
     {
         return new RecipeLibraryScreenData(
-            recipes: $this->meals->allRecipes($household)
+            recipes: $household->recipes()->inLibraryOrder()->get()
                 ->map(RecipeData::fromModel(...))
                 ->values()
                 ->all(),

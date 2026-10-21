@@ -9,9 +9,7 @@ use App\Enums\MealDietEnum;
 use App\Enums\RecipeTagEnum;
 use App\Exceptions\MealPlanUnavailableException;
 use App\Models\Household;
-use App\Models\PlannedMeal;
 use App\Models\Recipe;
-use App\Repositories\MealPlanRepository;
 use Carbon\CarbonImmutable;
 
 /**
@@ -26,10 +24,6 @@ class SuggestLibraryMealPlanAction
 
     private const int RECENT_DAYS = 14;
 
-    public function __construct(
-        private readonly MealPlanRepository $meals,
-    ) {}
-
     /**
      * @param  array<int, string>  $diets
      *
@@ -39,11 +33,12 @@ class SuggestLibraryMealPlanAction
     {
         $avoidWords = collect(explode(',', $avoid))->map(fn (string $item) => mb_strtolower(trim($item)))->filter()->values();
         $today = CarbonImmutable::today();
-        $recentRecipeIds = $this->meals->between($household, $today->subDays(self::RECENT_DAYS), $today->addDays(self::RECENT_DAYS))
-            ->map(fn (PlannedMeal $meal) => $meal->recipe_id)
+        $recentRecipeIds = $household->plannedMeals()
+            ->whereBetween('planned_on', [$today->subDays(self::RECENT_DAYS)->toDateString(), $today->addDays(self::RECENT_DAYS)->toDateString()])
+            ->pluck('recipe_id')
             ->unique();
 
-        $eligible = $this->meals->allRecipes($household)
+        $eligible = $household->recipes()->inLibraryOrder()->get()
             ->filter(fn (Recipe $recipe) => $this->suitsDiets($recipe, $diets))
             ->reject(fn (Recipe $recipe) => $avoidWords->contains(fn (string $word) => $this->mentions($recipe, $word)));
 

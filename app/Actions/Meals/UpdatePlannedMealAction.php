@@ -5,42 +5,49 @@ declare(strict_types=1);
 namespace App\Actions\Meals;
 
 use App\Actions\Shopping\AddRecipeIngredientsToListAction;
-use App\Data\Input\PlannedMealInputData;
-use App\Data\PlannedMealData;
+use App\Enums\MealSlotEnum;
 use App\Models\PlannedMeal;
 use App\Models\User;
 use App\Notifications\MealAssignedNotification;
 use App\Notifications\MealEditedNotification;
-use App\Repositories\MealPlanRepository;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 use LogicException;
 
 class UpdatePlannedMealAction
 {
     public function __construct(
-        private readonly MealPlanRepository $meals,
+        private readonly ResolvePlannedRecipeAction $resolveRecipe,
         private readonly AddRecipeIngredientsToListAction $addIngredients,
     ) {}
 
-    public function handle(PlannedMeal $meal, PlannedMealInputData $changes, User $actor): PlannedMealData
+    /** @param  array<string, mixed>  $data  PlannedMealRequest's validated input; see AddPlannedMealAction. */
+    public function handle(PlannedMeal $meal, array $data, User $actor): PlannedMeal
     {
         $previousCookId = $meal->cook_id;
+        $household = $meal->household ?? throw new LogicException('A planned meal always belongs to a household.');
 
-        $updated = $this->meals->update($meal, $changes);
+        DB::transaction(fn () => $meal->update([
+            'recipe_id' => $this->resolveRecipe->handle($household, $data)->id,
+            'planned_on' => CarbonImmutable::parse($data['planned_on']),
+            'slot' => MealSlotEnum::from($data['slot']),
+            'cook_id' => $data['cook_id'],
+        ]));
 
-        $household = $updated->household ?? throw new LogicException('A planned meal always belongs to a household.');
+        $meal->refresh()->load(['recipe', 'cook']);
 
-        if ($changes->addIngredientsToListId !== null) {
-            $this->addIngredients->handle($household, $updated->recipe, $changes->addIngredientsToListId);
+        if ($data['new_recipe_shopping_list_id'] !== null) {
+            $this->addIngredients->handle($household, $meal->recipe, $data['new_recipe_shopping_list_id']);
         }
 
-        if ($updated->cook_id !== null && $updated->cook_id !== $actor->id) {
-            $notification = $updated->cook_id !== $previousCookId
-                ? new MealAssignedNotification($updated, $actor)
-                : new MealEditedNotification($updated, $actor);
+        if ($meal->cook_id !== null && $meal->cook_id !== $actor->id) {
+            $notification = $meal->cook_id !== $previousCookId
+                ? new MealAssignedNotification($meal, $actor)
+                : new MealEditedNotification($meal, $actor);
 
-            $updated->cook?->notify($notification);
+            $meal->cook?->notify($notification);
         }
 
-        return PlannedMealData::fromModel($updated);
+        return $meal;
     }
 }

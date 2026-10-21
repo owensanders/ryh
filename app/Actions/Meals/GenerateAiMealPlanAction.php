@@ -10,10 +10,8 @@ use App\Data\MealSuggestionData;
 use App\Enums\CookingConfidenceEnum;
 use App\Exceptions\MealPlanUnavailableException;
 use App\Models\Household;
-use App\Models\Recipe;
 use App\Notifications\AiCreditsExhaustedNotification;
 use App\Repositories\HouseholdRepository;
-use App\Repositories\MealPlanRepository;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
@@ -31,29 +29,18 @@ class GenerateAiMealPlanAction
     private const int LOCK_SECONDS = 120;
 
     public function __construct(
-        private readonly MealPlanRepository $meals,
         private readonly HouseholdRepository $households,
     ) {}
 
     /**
-     * @param  array<int, string>  $diets
-     * @param  array<int, string>  $goals
-     * @param  array<int, string>  $equipment
+     * @param  array<string, mixed>  $data  GenerateAiMealPlanRequest's validated input: people,
+     *                                      budget, diets, avoid, goals, confidence, equipment,
+     *                                      use_up, notes.
      *
      * @return array<int, MealSuggestionData>
      */
-    public function handle(
-        Household $household,
-        int $people,
-        ?float $weeklyBudget,
-        array $diets,
-        string $avoid,
-        array $goals,
-        CookingConfidenceEnum $confidence,
-        array $equipment,
-        string $useUp,
-        string $notes,
-    ): array {
+    public function handle(Household $household, array $data): array
+    {
         if (! AiConfigService::isConfigured()) {
             throw MealPlanUnavailableException::notConfigured();
         }
@@ -80,16 +67,16 @@ class GenerateAiMealPlanAction
 
         try {
             $agent = new MealPlanAgent(
-                $people,
-                $weeklyBudget,
-                $diets,
-                $this->splitList($avoid),
-                $goals,
+                (int) $data['people'],
+                isset($data['budget']) ? (float) $data['budget'] : null,
+                $data['diets'] ?? [],
+                $this->splitList((string) ($data['avoid'] ?? '')),
+                $data['goals'] ?? [],
                 $this->recentRecipeNames($household),
-                $confidence,
-                $equipment,
-                $this->splitList($useUp),
-                trim($notes),
+                CookingConfidenceEnum::from($data['confidence']),
+                $data['equipment'] ?? [],
+                $this->splitList((string) ($data['use_up'] ?? '')),
+                trim((string) ($data['notes'] ?? '')),
             );
 
             try {
@@ -132,12 +119,7 @@ class GenerateAiMealPlanAction
     /** @return array<int, string> */
     private function recentRecipeNames(Household $household): array
     {
-        return $this->meals->allRecipes($household)
-            ->sortByDesc('id')
-            ->take(self::RECENT_RECIPES)
-            ->map(fn (Recipe $recipe) => $recipe->name)
-            ->values()
-            ->all();
+        return $household->recipes()->latest('id')->limit(self::RECENT_RECIPES)->pluck('name')->all();
     }
 
     private function pauseForMissingCredit(InsufficientCreditsException $e): void
