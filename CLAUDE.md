@@ -38,8 +38,8 @@ Each layer only talks to the one below it.
   ownership checks anywhere else. When a model only arrives in the request
   body, the action checks it belongs to the same household.
 - **Controllers** (`app/Http/Controllers`): call actions and view models,
-  render Inertia pages, redirect with toasts. Nothing else: no repositories,
-  no queries, no business rules.
+  render Inertia pages, redirect with toasts. Nothing else: no queries, no
+  business rules.
 - **Form requests** (`app/Http/Requests`): validate, and normalise first in
   `prepareForValidation()` (trim text, `''` → null, cast ids to int,
   defaults), so `$request->validated()` is already what gets stored. The
@@ -60,12 +60,14 @@ Each layer only talks to the one below it.
   is made for Blade. They only read: a write a page needs first (the budget's
   carry-forward) is an action the controller calls before rendering.
   `LayerShapeTest` checks actions have `handle()` and view models `toData()`.
-- **Models** (`app/Models`): relations, casts, query scopes, and small
-  helpers (`Household::canGenerateAiMealPlan()`). Used directly by actions
-  and view models; see "Where queries live" below. Name each column where you
-  write (`'assigned_to' => $data['assigned_to']`) rather than passing the
-  validated array straight to `create()`, so a new form field never writes a
-  column by accident. (The remaining `app/Repositories` are being retired.)
+- **Models** (`app/Models`): relations (including constrained ones like
+  `Household::activeMembers()`), casts, query scopes, and methods that
+  answer a question about the model or change it (`$household->isFull()`,
+  `$user->belongsToHousehold($id)`, `$household->lockRow()`). Used directly
+  by actions and view models; see "Where queries live" below. Name each
+  column where you write (`'assigned_to' => $data['assigned_to']`) rather
+  than passing the validated array straight to `create()`, so a new form
+  field never writes a column by accident.
 
 ### Where queries live
 
@@ -77,8 +79,8 @@ and is reached through the household so it's already scoped:
 `$household->chores()->forBoard()->get()`. Anything else stays inline where
 it's used.
 
-Controllers, middleware, form requests, policies and listeners never query:
-no `Model::where(...)`, no `$model->update(...)`, no relation methods like
+Controllers, middleware, form requests, policies, listeners and mail never
+query: no `Model::where(...)`, no `$model->update(...)`, no relation methods like
 `$household->members()`. Enforced by `QueryBoundaryTest`. One exception:
 **route model binding**. Those models arrive ready, and reading their
 attributes is fine.
@@ -90,16 +92,16 @@ N+1 case, throws in local, test and e2e. In production it logs a warning
 instead, so a miss never breaks a page. A single model loading its own
 relation isn't flagged.
 
-**Repositories are on their way out**, one area per PR (Chores, Shopping and Meals are done).
-Don't add methods to the ones left in `app/Repositories`. Policies and
-middleware still *read* through `MembershipRepository` until its turn.
+Policies and middleware that need to know about membership ask the model
+(`$household->membershipOf($user)`, `$member->belongsToHousehold($id)`)
+rather than writing a query. `/h/{household}` is resolved by a route binding
+in `AppServiceProvider`.
 
 ## Data
 
 - **Input**: no DTOs: actions take `$request->validated()` (see Form
   requests). Where "not sent" must differ from "cleared", check
-  `array_key_exists()`. The `app/Data/Input/*InputData` classes that are left
-  go as each area moves to Eloquent.
+  `array_key_exists()`.
 - **Output**: `app/Data/*Data.php`, `spatie/laravel-data` classes. Anything a
   page receives is mirrored in `resources/js/types/ryh.ts` (or `index.ts`).
   Change both together.
@@ -115,7 +117,7 @@ An action that writes more than once wraps the writes in `DB::transaction`.
 Calls to outside services (Stripe, mail, AI) happen outside the transaction:
 before it if a failure should stop the change, after it otherwise. Checks
 that two requests could race, like the member cap or budget carry-forward,
-lock the household row first with `HouseholdRepository::lockForUpdate()`.
+lock the household row first with `$household->lockRow()`.
 
 ## Errors
 

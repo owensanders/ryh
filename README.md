@@ -247,8 +247,7 @@ flowchart TD
     route["Route — routes/web.php, under /h/{household}<br/>auth · verified · household · trial.active"]
     policy{"Policy — app/Policies<br/>->can('update', 'chore')"}
     controller["Controller — app/Http/Controllers<br/>thin: request in, response out"]
-    request["Form request — app/Http/Requests<br/>validates, then toData()"]
-    input["*InputData — app/Data/Input<br/>typed input"]
+    request["Form request — app/Http/Requests<br/>validates and normalises; validated()"]
     usecase["Action — app/Actions<br/>all business rules; one per operation"]
     viewmodel["View model — app/ViewModels<br/>one page's props, read-only"]
     repo["Eloquent — app/Models<br/>reusable queries as #[Scope] methods"]
@@ -260,10 +259,9 @@ flowchart TD
     route --> policy
     policy -- "other household: 404<br/>role not allowed: 403" --> stop(("✕"))
     policy -- "allowed" --> controller
-    controller --> request --> input --> usecase
+    controller --> request --> usecase
     usecase --> repo --> db
     usecase --> notification
-    usecase --> data --> controller
     controller --> viewmodel --> repo
     viewmodel --> data
     controller --> page
@@ -276,13 +274,11 @@ Each layer only talks to the one below it:
 | Routes | `routes/web.php` | Middleware, and the policy ability for every household route (`->can(...)`). Household screens live under `/h/{household}`; `ResolveHouseholdMiddleware` checks membership (else 404) | Business rules |
 | Policies | `app/Policies/*Policy.php` | Is this record in the URL's household (else 404)? Does the role allow it (else 403)? | Writes |
 | Controllers | `app/Http/Controllers` | Call actions and view models, render pages, redirect with toasts | Query the database |
-| Form requests | `app/Http/Requests` | Validate, then `toData()` into a typed `*InputData` | Pass `array $attributes` along |
+| Form requests | `app/Http/Requests` | Validate, and normalise in `prepareForValidation()`; the controller passes `validated()` to the action | Business rules |
 | Actions | `app/Actions/<Area>` | Business rules, transactions, sending notifications; one class per operation with `handle()`. Use Eloquent directly. Return `*Data` objects | Pass request arrays straight to the database |
 | View models | `app/ViewModels/<Area>` | Build one page's props with `toData()`, returning its `*ScreenData`; Eloquent directly | Write anything |
 | Models | `app/Models` | Relations, casts, `#[Scope]` query scopes for queries more than one place needs, small helpers | Business rules |
-| Data | `app/Data` (output), `app/Data/Input` (input) | Typed shapes between layers; output mirrored in `resources/js/types/ryh.ts` | — |
-
-The repositories left in `app/Repositories` are being replaced by Eloquent and builders, one area at a time.
+| Data | `app/Data` | What a page receives (built by view models); mirrored in `resources/js/types/ryh.ts` | Carry models to the page |
 
 ### How a notification reaches someone
 
