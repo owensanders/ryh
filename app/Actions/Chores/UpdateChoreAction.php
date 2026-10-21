@@ -10,18 +10,16 @@ use App\Models\Chore;
 use App\Models\User;
 use App\Notifications\ChoreAssignedNotification;
 use App\Notifications\ChoreEditedNotification;
-use App\Repositories\ChoreRepository;
 use App\Support\RecipientsHelper;
 
 class UpdateChoreAction
 {
-    public function __construct(private readonly ChoreRepository $chores) {}
-
     public function handle(Chore $chore, ChoreInputData $changes, User $actor): ChoreData
     {
         $previousAssignee = $chore->assigned_to;
 
-        $updated = $this->chores->update($chore, $changes);
+        $chore->update(['name' => $changes->name, 'assigned_to' => $changes->assignedTo]);
+        $updated = $chore->refresh();
 
         $reassigned = $updated->assigned_to !== null && $updated->assigned_to !== $previousAssignee;
 

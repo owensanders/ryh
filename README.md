@@ -251,7 +251,7 @@ flowchart TD
     input["*InputData — app/Data/Input<br/>typed input"]
     usecase["Action — app/Actions<br/>all business rules; one per operation"]
     viewmodel["View model — app/ViewModels<br/>one page's props, read-only"]
-    repo["Repository — app/Repositories<br/>every query and write"]
+    repo["Eloquent — app/Models<br/>reusable queries on builders in app/Models/Builders"]
     db[("MySQL")]
     data["*Data — app/Data<br/>typed output, mirrored in resources/js/types"]
     page["Inertia page — resources/js/pages"]
@@ -275,13 +275,15 @@ Each layer only talks to the one below it:
 |---|---|---|---|
 | Routes | `routes/web.php` | Middleware, and the policy ability for every household route (`->can(...)`). Household screens live under `/h/{household}`; `ResolveHouseholdMiddleware` checks membership (else 404) | Business rules |
 | Policies | `app/Policies/*Policy.php` | Is this record in the URL's household (else 404)? Does the role allow it (else 403)? | Writes |
-| Controllers | `app/Http/Controllers` | Call actions and view models, render pages, redirect with toasts | Query the database or use repositories |
+| Controllers | `app/Http/Controllers` | Call actions and view models, render pages, redirect with toasts | Query the database |
 | Form requests | `app/Http/Requests` | Validate, then `toData()` into a typed `*InputData` | Pass `array $attributes` along |
-| Actions | `app/Actions/<Area>` | Business rules, transactions, sending notifications; one class per operation with `handle()`. Return `*Data` objects | Query the database directly |
-| View models | `app/ViewModels/<Area>` | Build one page's props with `toData()`, returning its `*ScreenData` | Write anything |
-| Repositories | `app/Repositories` | Every query and write; map input objects to columns | Business rules |
+| Actions | `app/Actions/<Area>` | Business rules, transactions, sending notifications; one class per operation with `handle()`. Use Eloquent directly. Return `*Data` objects | Pass request arrays straight to the database |
+| View models | `app/ViewModels/<Area>` | Build one page's props with `toData()`, returning its `*ScreenData`; Eloquent directly | Write anything |
+| Builders | `app/Models/Builders` | Queries more than one place needs (`ChoreBuilder::forBoard()`) | Business rules |
 | Models | `app/Models` | Relations, casts, small helpers that don't query | Queries in helpers |
 | Data | `app/Data` (output), `app/Data/Input` (input) | Typed shapes between layers; output mirrored in `resources/js/types/ryh.ts` | — |
+
+The repositories left in `app/Repositories` are being replaced by Eloquent and builders, one area at a time.
 
 ### How a notification reaches someone
 

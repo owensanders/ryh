@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\ChoreStatusEnum;
+use App\Models\Builders\ChoreBuilder;
 use Database\Factories\ChoreFactory;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +26,7 @@ use Illuminate\Support\Carbon;
  * @property User|null $assignee
  * @property User|null $creator
  */
+#[UseEloquentBuilder(ChoreBuilder::class)]
 class Chore extends Model
 {
     /** @use HasFactory<ChoreFactory> */
@@ -59,8 +61,7 @@ class Chore extends Model
         });
     }
 
-    /** @return Builder<static> */
-    public function prunable(): Builder
+    public function prunable(): ChoreBuilder
     {
         return static::query()
             ->where('status', ChoreStatusEnum::Done)
