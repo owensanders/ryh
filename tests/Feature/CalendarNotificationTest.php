@@ -27,7 +27,7 @@ class CalendarNotificationTest extends TestCase
         $owner = User::factory()->create();
         $attendee = User::factory()->create(['household_id' => $owner->household_id]);
 
-        $this->actingAs($owner)->post('/calendar/events', [
+        $this->actingAs($owner)->post($this->hh('/calendar/events'), [
             'title' => 'Football practice',
             'starts_at' => CarbonImmutable::tomorrow()->setTime(18, 0)->format('Y-m-d\TH:i'),
             'attendees' => [$owner->id, $attendee->id],
@@ -44,7 +44,7 @@ class CalendarNotificationTest extends TestCase
 
         $owner = User::factory()->create();
 
-        $this->actingAs($owner)->post('/calendar/events', [
+        $this->actingAs($owner)->post($this->hh('/calendar/events'), [
             'title' => 'Family dinner',
             'starts_at' => CarbonImmutable::tomorrow()->setTime(18, 0)->format('Y-m-d\TH:i'),
         ]);
@@ -63,7 +63,7 @@ class CalendarNotificationTest extends TestCase
         $event = CalendarEvent::factory()->create(['household_id' => $owner->household_id, 'created_by' => $owner->id]);
         $event->attendees()->sync([$existing->id]);
 
-        $this->actingAs($owner)->patch("/calendar/events/{$event->id}", [
+        $this->actingAs($owner)->patch($this->hh("/calendar/events/{$event->id}"), [
             'title' => 'Football practice — moved',
             'starts_at' => CarbonImmutable::tomorrow()->setTime(18, 0)->format('Y-m-d\TH:i'),
             'attendees' => [$existing->id, $newAttendee->id],
@@ -84,7 +84,7 @@ class CalendarNotificationTest extends TestCase
         $actor = User::factory()->create(['household_id' => $creator->household_id]);
         $event = CalendarEvent::factory()->create(['household_id' => $creator->household_id, 'created_by' => $creator->id]);
 
-        $this->actingAs($actor)->patch("/calendar/events/{$event->id}", [
+        $this->actingAs($actor)->patch($this->hh("/calendar/events/{$event->id}"), [
             'title' => 'Football practice — moved',
             'starts_at' => CarbonImmutable::tomorrow()->setTime(18, 0)->format('Y-m-d\TH:i'),
         ]);
@@ -104,7 +104,7 @@ class CalendarNotificationTest extends TestCase
         $event = CalendarEvent::factory()->create(['household_id' => $creator->household_id, 'created_by' => $creator->id]);
         $event->attendees()->sync([$attendee->id]);
 
-        $this->actingAs($actor)->delete("/calendar/events/{$event->id}");
+        $this->actingAs($actor)->delete($this->hh("/calendar/events/{$event->id}"));
 
         Notification::assertSentTo($attendee, CalendarEventDeletedNotification::class);
         Notification::assertSentTo($creator, CalendarEventDeletedNotification::class);

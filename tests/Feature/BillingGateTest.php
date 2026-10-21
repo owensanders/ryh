@@ -22,7 +22,7 @@ class BillingGateTest extends TestCase
         $household = Household::factory()->create(['trial_ends_at' => now()->subDay()]);
         $user = User::factory()->create(['household_id' => $household->id]);
 
-        $this->actingAs($user)->get('/dashboard')->assertRedirect(route('billing.required', absolute: false));
+        $this->actingAs($user)->get($this->hh('/dashboard'))->assertRedirect(route('billing.required', absolute: false));
     }
 
     #[Test]
@@ -31,7 +31,7 @@ class BillingGateTest extends TestCase
         $household = Household::factory()->create(['trial_ends_at' => now()->addDays(10)]);
         $user = User::factory()->create(['household_id' => $household->id]);
 
-        $this->actingAs($user)->get('/dashboard')->assertOk();
+        $this->actingAs($user)->get($this->hh('/dashboard'))->assertOk();
     }
 
     #[Test]
@@ -47,7 +47,7 @@ class BillingGateTest extends TestCase
         ]);
         $user = User::factory()->create(['household_id' => $household->id]);
 
-        $this->actingAs($user)->get('/dashboard')->assertOk();
+        $this->actingAs($user)->get($this->hh('/dashboard'))->assertOk();
     }
 
     #[Test]
@@ -56,7 +56,7 @@ class BillingGateTest extends TestCase
         $household = Household::factory()->create(['trial_ends_at' => now()->subDay()]);
         $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
 
-        $this->actingAs($user)->get('/billing/required')->assertOk();
+        $this->actingAs($user)->get($this->hh('/billing/required'))->assertOk();
     }
 
     #[Test]
@@ -65,7 +65,7 @@ class BillingGateTest extends TestCase
         $household = Household::factory()->create(['trial_ends_at' => now()->subDay()]);
         $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Adult]);
 
-        $this->actingAs($user)->post('/billing/subscribe')->assertForbidden();
+        $this->actingAs($user)->post($this->hh('/billing/subscribe'))->assertForbidden();
     }
 
     #[Test]
@@ -74,7 +74,7 @@ class BillingGateTest extends TestCase
         $household = Household::factory()->create(['trial_ends_at' => now()->subDay()]);
         $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
 
-        $this->actingAs($user)->post('/billing/subscribe', ['interval' => 'weekly'])
+        $this->actingAs($user)->post($this->hh('/billing/subscribe'), ['interval' => 'weekly'])
             ->assertSessionHasErrors('interval');
     }
 
@@ -84,7 +84,7 @@ class BillingGateTest extends TestCase
         $household = Household::factory()->create(['trial_ends_at' => now()->subDay()]);
         $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
 
-        $this->actingAs($user)->post('/billing/subscribe', ['interval' => 'annual'])
+        $this->actingAs($user)->post($this->hh('/billing/subscribe'), ['interval' => 'annual'])
             ->assertSessionHasErrors('plan');
     }
 
@@ -94,7 +94,7 @@ class BillingGateTest extends TestCase
         $household = Household::factory()->create(['trial_ends_at' => now()->addDays(10)]);
         $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Adult]);
 
-        $this->actingAs($user)->post('/billing/portal')->assertForbidden();
+        $this->actingAs($user)->post($this->hh('/billing/portal'))->assertForbidden();
     }
 
     #[Test]
@@ -103,7 +103,7 @@ class BillingGateTest extends TestCase
         $household = Household::factory()->create(['trial_ends_at' => now()->addDays(10)]);
         $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
 
-        $this->actingAs($user)->post('/billing/portal')->assertSessionHasErrors('plan');
+        $this->actingAs($user)->post($this->hh('/billing/portal'))->assertSessionHasErrors('plan');
     }
 
     #[Test]
@@ -112,7 +112,7 @@ class BillingGateTest extends TestCase
         $household = Household::factory()->create(['trial_ends_at' => now()->subDay()]);
         $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Adult]);
 
-        $this->actingAs($user)->get('/billing/checkout/complete')->assertForbidden();
+        $this->actingAs($user)->get($this->hh('/billing/checkout/complete'))->assertForbidden();
     }
 
     #[Test]
@@ -121,9 +121,9 @@ class BillingGateTest extends TestCase
         $household = Household::factory()->create(['trial_ends_at' => now()->addDays(10)]);
         $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
 
-        $this->actingAs($user)->get('/billing/checkout/complete')
-            ->assertRedirect(route('dashboard', absolute: false));
-        $this->actingAs($user)->get('/billing/checkout/complete?from=house')
+        $this->actingAs($user)->get($this->hh('/billing/checkout/complete'))
+            ->assertRedirect($this->hh('/dashboard'));
+        $this->actingAs($user)->get($this->hh('/billing/checkout/complete?from=house'))
             ->assertRedirect(route('house.index', absolute: false));
     }
 
@@ -140,8 +140,8 @@ class BillingGateTest extends TestCase
         ]);
         $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
 
-        $this->actingAs($user)->get('/dashboard')->assertRedirect(route('billing.required', absolute: false));
-        $this->actingAs($user)->get('/billing/required')
+        $this->actingAs($user)->get($this->hh('/dashboard'))->assertRedirect(route('billing.required', absolute: false));
+        $this->actingAs($user)->get($this->hh('/billing/required'))
             ->assertInertia(fn ($page) => $page->where('paymentIssue', true));
     }
 
@@ -151,6 +151,6 @@ class BillingGateTest extends TestCase
         $household = Household::factory()->create(['trial_ends_at' => now()->addDays(10)]);
         $user = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
 
-        $this->actingAs($user)->get('/billing/required')->assertRedirect(route('dashboard', absolute: false));
+        $this->actingAs($user)->get($this->hh('/billing/required'))->assertRedirect($this->hh('/dashboard'));
     }
 }

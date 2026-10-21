@@ -24,7 +24,7 @@ class DocumentTest extends TestCase
         $user = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($user)
-            ->post('/document-folders', ['name' => 'Insurance'])
+            ->post($this->hh('/document-folders'), ['name' => 'Insurance'])
             ->assertRedirect();
 
         $this->assertDatabaseHas('document_folders', ['household_id' => $user->household_id, 'name' => 'Insurance']);
@@ -36,7 +36,7 @@ class DocumentTest extends TestCase
         $user = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
 
         $this->actingAs($user)
-            ->post('/document-folders', ['name' => '   '])
+            ->post($this->hh('/document-folders'), ['name' => '   '])
             ->assertSessionHasErrors('name');
 
         $this->assertDatabaseCount('document_folders', 0);
@@ -58,7 +58,7 @@ class DocumentTest extends TestCase
         Storage::disk('local')->put($document->path, 'contents');
 
         $this->actingAs($user)
-            ->delete("/document-folders/{$folder->id}")
+            ->delete($this->hh("/document-folders/{$folder->id}"))
             ->assertRedirect(route('documents.index'));
 
         $this->assertDatabaseMissing('document_folders', ['id' => $folder->id]);
@@ -74,7 +74,7 @@ class DocumentTest extends TestCase
         $folder = DocumentFolder::create(['household_id' => $user->household_id, 'name' => 'Property']);
 
         $this->actingAs($user)
-            ->post("/document-folders/{$folder->id}/documents", [
+            ->post($this->hh("/document-folders/{$folder->id}/documents"), [
                 'file' => UploadedFile::fake()->create('deed.pdf', 500, 'application/pdf'),
             ])
             ->assertRedirect();
@@ -102,12 +102,12 @@ class DocumentTest extends TestCase
         Storage::disk('local')->put($document->path, 'contents');
 
         $this->actingAs($owner)
-            ->get("/documents/{$document->id}/download")
+            ->get($this->hh("/documents/{$document->id}/download"))
             ->assertOk();
 
         $stranger = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $this->actingAs($stranger)
-            ->get("/documents/{$document->id}/download")
+            ->get($this->hh("/documents/{$document->id}/download"))
             ->assertNotFound();
     }
 
@@ -131,7 +131,7 @@ class DocumentTest extends TestCase
         ]);
 
         $this->actingAs($owner)
-            ->get("/documents/{$document->id}/download")
+            ->get($this->hh("/documents/{$document->id}/download"))
             ->assertRedirect('https://bucket.example/documents/1/deed.pdf?disposition='.rawurlencode('attachment; filename=Deed.pdf'));
     }
 
@@ -144,7 +144,7 @@ class DocumentTest extends TestCase
         $document = $this->documentIn($property, 'Policy.pdf');
 
         $this->actingAs($owner)
-            ->patch("/documents/{$document->id}/move", ['folder_id' => $insurance->id])
+            ->patch($this->hh("/documents/{$document->id}/move"), ['folder_id' => $insurance->id])
             ->assertRedirect()
             ->assertSessionHas('toast', '“Policy.pdf” moved to Insurance');
 
@@ -162,7 +162,7 @@ class DocumentTest extends TestCase
         $theirFolder = DocumentFolder::create(['household_id' => $stranger->household_id, 'name' => 'Theirs']);
 
         $this->actingAs($owner)
-            ->patch("/documents/{$document->id}/move", ['folder_id' => $theirFolder->id])
+            ->patch($this->hh("/documents/{$document->id}/move"), ['folder_id' => $theirFolder->id])
             ->assertNotFound();
 
         $this->assertSame($folder->id, $document->fresh()->document_folder_id);
@@ -179,7 +179,7 @@ class DocumentTest extends TestCase
         $theirFolder = DocumentFolder::create(['household_id' => $stranger->household_id, 'name' => 'Theirs']);
 
         $this->actingAs($stranger)
-            ->patch("/documents/{$document->id}/move", ['folder_id' => $theirFolder->id])
+            ->patch($this->hh("/documents/{$document->id}/move"), ['folder_id' => $theirFolder->id])
             ->assertNotFound();
 
         $this->assertSame($folder->id, $document->fresh()->document_folder_id);
@@ -192,8 +192,8 @@ class DocumentTest extends TestCase
         $folder = DocumentFolder::create(['household_id' => $owner->household_id, 'name' => 'Property']);
         $document = $this->documentIn($folder, 'Deed.pdf');
 
-        $this->actingAs($owner)->patch("/documents/{$document->id}/move", [])->assertSessionHasErrors('folder_id');
-        $this->actingAs($owner)->patch("/documents/{$document->id}/move", ['folder_id' => 999999])->assertSessionHasErrors('folder_id');
+        $this->actingAs($owner)->patch($this->hh("/documents/{$document->id}/move"), [])->assertSessionHasErrors('folder_id');
+        $this->actingAs($owner)->patch($this->hh("/documents/{$document->id}/move"), ['folder_id' => 999999])->assertSessionHasErrors('folder_id');
 
         $this->assertSame($folder->id, $document->fresh()->document_folder_id);
     }
@@ -214,7 +214,7 @@ class DocumentTest extends TestCase
         Storage::disk('local')->put($document->path, 'contents');
 
         $this->actingAs($user)
-            ->delete("/documents/{$document->id}")
+            ->delete($this->hh("/documents/{$document->id}"))
             ->assertRedirect();
 
         $this->assertDatabaseMissing('documents', ['id' => $document->id]);
@@ -232,7 +232,7 @@ class DocumentTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get('/documents')
+            ->get($this->hh('/documents'))
             ->assertInertia(fn ($page) => $page
                 ->where('storageLabel', '1.0 GB of 20.0 GB')
             );
@@ -249,7 +249,7 @@ class DocumentTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get('/documents')
+            ->get($this->hh('/documents'))
             ->assertInertia(fn ($page) => $page
                 ->where('storageLabel', '900.0 KB of 20.0 GB')
             );
@@ -264,10 +264,10 @@ class DocumentTest extends TestCase
         $document = $this->documentIn($folder, 'Deed.pdf');
 
         foreach ([$teen, $child] as $user) {
-            $this->actingAs($user)->get('/documents')->assertForbidden();
-            $this->actingAs($user)->post('/document-folders', ['name' => 'Nope'])->assertForbidden();
-            $this->actingAs($user)->delete("/document-folders/{$folder->id}")->assertForbidden();
-            $this->actingAs($user)->patch("/documents/{$document->id}/move", ['folder_id' => $folder->id])->assertForbidden();
+            $this->actingAs($user)->get($this->hh('/documents'))->assertForbidden();
+            $this->actingAs($user)->post($this->hh('/document-folders'), ['name' => 'Nope'])->assertForbidden();
+            $this->actingAs($user)->delete($this->hh("/document-folders/{$folder->id}"))->assertForbidden();
+            $this->actingAs($user)->patch($this->hh("/documents/{$document->id}/move"), ['folder_id' => $folder->id])->assertForbidden();
         }
     }
 

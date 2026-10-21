@@ -62,7 +62,7 @@ class HouseholdMemberCapTest extends TestCase
         $existing = User::factory()->create(['email' => 'margaret@parkerhouse.co.uk']);
 
         $this->actingAs($owner)
-            ->post('/house/invite', ['email' => 'margaret@parkerhouse.co.uk', 'role' => 'adult'])
+            ->post($this->hh('/house/invite'), ['email' => 'margaret@parkerhouse.co.uk', 'role' => 'adult'])
             ->assertSessionHasNoErrors()
             ->assertSessionHas('toast', 'Invite sent to margaret@parkerhouse.co.uk');
 
@@ -78,7 +78,7 @@ class HouseholdMemberCapTest extends TestCase
         $owner = $this->ownerWithMembers(7);
 
         $this->actingAs($owner)
-            ->post('/house/invite', ['email' => 'margaret@parkerhouse.co.uk', 'role' => 'adult'])
+            ->post($this->hh('/house/invite'), ['email' => 'margaret@parkerhouse.co.uk', 'role' => 'adult'])
             ->assertSessionHasErrors(['email' => self::FULL_INVITE_ERROR]);
 
         Mail::assertNothingQueued();
@@ -93,7 +93,7 @@ class HouseholdMemberCapTest extends TestCase
         $existing = User::factory()->create(['email' => 'margaret@parkerhouse.co.uk']);
 
         $this->actingAs($owner)
-            ->post('/house/invite', ['email' => 'margaret@parkerhouse.co.uk', 'role' => 'adult'])
+            ->post($this->hh('/house/invite'), ['email' => 'margaret@parkerhouse.co.uk', 'role' => 'adult'])
             ->assertSessionHasErrors(['email' => self::FULL_INVITE_ERROR]);
 
         $this->assertDatabaseMissing('household_user', ['household_id' => $owner->household_id, 'user_id' => $existing->id]);
@@ -107,7 +107,7 @@ class HouseholdMemberCapTest extends TestCase
         $member = User::factory()->create(['household_id' => $owner->household_id]);
 
         $this->actingAs($owner)
-            ->post('/house/invite', ['email' => $member->email, 'role' => 'adult'])
+            ->post($this->hh('/house/invite'), ['email' => $member->email, 'role' => 'adult'])
             ->assertSessionHasErrors(['email' => 'This person is already part of the household.']);
     }
 
@@ -117,12 +117,12 @@ class HouseholdMemberCapTest extends TestCase
         Mail::fake();
 
         $owner = $this->ownerWithMembers(7);
-        $leaving = $owner->household->members()->where('users.id', '!=', $owner->id)->firstOrFail();
+        $leaving = $owner->lastHousehold->members()->where('users.id', '!=', $owner->id)->firstOrFail();
 
-        $this->actingAs($owner)->delete(route('house.members.destroy', ['member' => $leaving->id]));
+        $this->actingAs($owner)->delete($this->hh("/house/members/{$leaving->id}"));
 
         $this->actingAs($owner)
-            ->post('/house/invite', ['email' => 'margaret@parkerhouse.co.uk', 'role' => 'adult'])
+            ->post($this->hh('/house/invite'), ['email' => 'margaret@parkerhouse.co.uk', 'role' => 'adult'])
             ->assertSessionHasNoErrors();
 
         Mail::assertQueued(HouseholdInviteMail::class);
@@ -153,7 +153,7 @@ class HouseholdMemberCapTest extends TestCase
             ->assertSessionHasErrors(['code' => 'That household is full, so it can\'t take any more members.']);
 
         $this->assertDatabaseMissing('household_user', ['household_id' => $owner->household_id, 'user_id' => $user->id]);
-        $this->assertNull($user->refresh()->current_household_id);
+        $this->assertNull($user->refresh()->last_household_id);
     }
 
     #[Test]
@@ -161,7 +161,7 @@ class HouseholdMemberCapTest extends TestCase
     {
         $owner = $this->ownerWithMembers(7, ['name' => 'The Parkers']);
 
-        $this->get($this->registerInviteUrl($owner->household, 'margaret@parkerhouse.co.uk'))->assertOk();
+        $this->get($this->registerInviteUrl($owner->lastHousehold, 'margaret@parkerhouse.co.uk'))->assertOk();
 
         $this->post('/register', [
             'name' => 'Margaret Parker',
@@ -176,7 +176,7 @@ class HouseholdMemberCapTest extends TestCase
         $this->assertAuthenticated();
         $user = User::where('email', 'margaret@parkerhouse.co.uk')->firstOrFail();
         $this->assertDatabaseMissing('household_user', ['household_id' => $owner->household_id, 'user_id' => $user->id]);
-        $this->assertNull($user->current_household_id);
+        $this->assertNull($user->last_household_id);
     }
 
     #[Test]
@@ -209,14 +209,14 @@ class HouseholdMemberCapTest extends TestCase
     {
         $owner = $this->ownerWithMembers(6);
 
-        $this->get($this->registerInviteUrl($owner->household, 'margaret@parkerhouse.co.uk'));
+        $this->get($this->registerInviteUrl($owner->lastHousehold, 'margaret@parkerhouse.co.uk'));
 
         $this->post('/register', [
             'name' => 'Margaret Parker',
             'email' => 'margaret@parkerhouse.co.uk',
             'password' => 'a-very-strong-password',
             'terms' => true,
-        ])->assertRedirect(route('dashboard', absolute: false));
+        ])->assertRedirect(route('app', absolute: false));
 
         $this->assertTrue($this->isFull($owner));
     }
@@ -257,7 +257,7 @@ class HouseholdMemberCapTest extends TestCase
         User::factory()->create(['household_id' => $owner->household_id, 'pending' => true, 'pending_reason' => PendingReasonEnum::Invited]);
 
         $this->actingAs($owner)
-            ->get('/house')
+            ->get($this->hh('/house'))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('house.memberCount', 6)
                 ->where('house.maxMembers', 8)
@@ -284,7 +284,7 @@ class HouseholdMemberCapTest extends TestCase
         $owner = $this->ownerWithMembers(2);
 
         $this->actingAs($owner)
-            ->post('/house/invite', ['email' => 'margaret@parkerhouse.co.uk', 'role' => 'adult'])
+            ->post($this->hh('/house/invite'), ['email' => 'margaret@parkerhouse.co.uk', 'role' => 'adult'])
             ->assertSessionHasErrors(['email' => 'Your household is full — it can have up to 3 members, including pending invites.']);
     }
 
@@ -322,6 +322,6 @@ class HouseholdMemberCapTest extends TestCase
 
     private function isFull(User $owner): bool
     {
-        return app(MembershipRepositoryInterface::class)->isFull($owner->household()->firstOrFail());
+        return app(MembershipRepositoryInterface::class)->isFull($owner->lastHousehold()->firstOrFail());
     }
 }

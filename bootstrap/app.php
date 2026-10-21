@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Middleware\EnsureHasHouseholdMiddleware;
 use App\Http\Middleware\EnsureTrialActiveMiddleware;
 use App\Http\Middleware\HandleInertiaRequestsMiddleware;
+use App\Http\Middleware\ResolveHouseholdMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -29,7 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'household' => EnsureHasHouseholdMiddleware::class,
+            'household' => ResolveHouseholdMiddleware::class,
             'trial.active' => EnsureTrialActiveMiddleware::class,
         ]);
     })

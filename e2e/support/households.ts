@@ -29,7 +29,7 @@ export async function ownerOfNewHousehold(page: Page, firstName: string, lastNam
  */
 export function addMembers(ownerEmail: string, count: number): void {
     const code = `
-        $household = App\\Models\\Household::findOrFail(App\\Models\\User::where('email', '${ownerEmail}')->value('current_household_id'));
+        $household = App\\Models\\Household::findOrFail(App\\Models\\User::where('email', '${ownerEmail}')->value('last_household_id'));
         foreach (range(1, ${count}) as $i) {
             $user = App\\Models\\User::forceCreate([
                 'name' => "Filler {$i}",

@@ -22,7 +22,7 @@ class HouseholdSelectController extends Controller
     {
         return Inertia::render('auth/HouseholdSelect', [
             'households' => $getOptions->execute($this->user($request)),
-            'currentHouseholdId' => $this->user($request)->current_household_id,
+            'currentHouseholdId' => $this->user($request)->last_household_id,
         ]);
     }
 
@@ -30,6 +30,6 @@ class HouseholdSelectController extends Controller
     {
         $switch->execute($this->user($request), (int) $request->validated('household_id'));
 
-        return to_route('dashboard');
+        return to_route('app');
     }
 }

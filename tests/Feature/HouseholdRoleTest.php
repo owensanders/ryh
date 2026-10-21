@@ -30,12 +30,12 @@ class HouseholdRoleTest extends TestCase
         foreach ([HouseholdRoleEnum::Teen, HouseholdRoleEnum::Child] as $role) {
             $user = User::factory()->create(['role' => $role]);
 
-            $this->actingAs($user)->get('/dashboard')->assertOk();
-            $this->actingAs($user)->get('/meals')->assertOk();
-            $this->actingAs($user)->get('/recipes')->assertOk();
-            $this->actingAs($user)->get('/shopping')->assertOk();
-            $this->actingAs($user)->get('/calendar')->assertOk();
-            $this->actingAs($user)->get('/chores')->assertOk();
+            $this->actingAs($user)->get($this->hh('/dashboard'))->assertOk();
+            $this->actingAs($user)->get($this->hh('/meals'))->assertOk();
+            $this->actingAs($user)->get($this->hh('/recipes'))->assertOk();
+            $this->actingAs($user)->get($this->hh('/shopping'))->assertOk();
+            $this->actingAs($user)->get($this->hh('/calendar'))->assertOk();
+            $this->actingAs($user)->get($this->hh('/chores'))->assertOk();
         }
     }
 
@@ -45,8 +45,8 @@ class HouseholdRoleTest extends TestCase
         foreach ([HouseholdRoleEnum::Teen, HouseholdRoleEnum::Child] as $role) {
             $user = User::factory()->create(['role' => $role]);
 
-            $this->actingAs($user)->get('/budget')->assertForbidden();
-            $this->actingAs($user)->get('/house')->assertForbidden();
+            $this->actingAs($user)->get($this->hh('/budget'))->assertForbidden();
+            $this->actingAs($user)->get($this->hh('/house'))->assertForbidden();
         }
     }
 
@@ -55,7 +55,7 @@ class HouseholdRoleTest extends TestCase
     {
         foreach ([HouseholdRoleEnum::Teen, HouseholdRoleEnum::Child] as $role) {
             $user = User::factory()->create(['role' => $role]);
-            $household = $user->household;
+            $household = $user->lastHousehold;
 
             $meal = PlannedMeal::factory()->create(['household_id' => $household->id]);
             $recipe = Recipe::factory()->create(['household_id' => $household->id]);
@@ -65,32 +65,32 @@ class HouseholdRoleTest extends TestCase
             $category = BudgetCategory::factory()->create(['household_id' => $household->id]);
             $income = IncomeSource::factory()->create(['household_id' => $household->id]);
 
-            $this->actingAs($user)->post('/meals', [])->assertForbidden();
-            $this->actingAs($user)->patch("/meals/{$meal->id}", [])->assertForbidden();
-            $this->actingAs($user)->delete("/meals/{$meal->id}")->assertForbidden();
+            $this->actingAs($user)->post($this->hh('/meals'), [])->assertForbidden();
+            $this->actingAs($user)->patch($this->hh("/meals/{$meal->id}"), [])->assertForbidden();
+            $this->actingAs($user)->delete($this->hh("/meals/{$meal->id}"))->assertForbidden();
 
-            $this->actingAs($user)->post('/recipes', [])->assertForbidden();
-            $this->actingAs($user)->patch("/recipes/{$recipe->id}", [])->assertForbidden();
-            $this->actingAs($user)->delete("/recipes/{$recipe->id}")->assertForbidden();
+            $this->actingAs($user)->post($this->hh('/recipes'), [])->assertForbidden();
+            $this->actingAs($user)->patch($this->hh("/recipes/{$recipe->id}"), [])->assertForbidden();
+            $this->actingAs($user)->delete($this->hh("/recipes/{$recipe->id}"))->assertForbidden();
 
-            $this->actingAs($user)->post('/shopping/tesco/items', [])->assertForbidden();
-            $this->actingAs($user)->patch("/shopping-items/{$item->id}", [])->assertForbidden();
-            $this->actingAs($user)->delete("/shopping-items/{$item->id}")->assertForbidden();
-            $this->actingAs($user)->post('/shopping-lists', [])->assertForbidden();
-            $this->actingAs($user)->patch("/shopping-lists/{$list->id}", [])->assertForbidden();
-            $this->actingAs($user)->delete("/shopping-lists/{$list->id}")->assertForbidden();
+            $this->actingAs($user)->post($this->hh('/shopping/tesco/items'), [])->assertForbidden();
+            $this->actingAs($user)->patch($this->hh("/shopping-items/{$item->id}"), [])->assertForbidden();
+            $this->actingAs($user)->delete($this->hh("/shopping-items/{$item->id}"))->assertForbidden();
+            $this->actingAs($user)->post($this->hh('/shopping-lists'), [])->assertForbidden();
+            $this->actingAs($user)->patch($this->hh("/shopping-lists/{$list->id}"), [])->assertForbidden();
+            $this->actingAs($user)->delete($this->hh("/shopping-lists/{$list->id}"))->assertForbidden();
 
-            $this->actingAs($user)->post('/chores', [])->assertForbidden();
-            $this->actingAs($user)->patch("/chores/{$chore->id}", [])->assertForbidden();
-            $this->actingAs($user)->delete("/chores/{$chore->id}")->assertForbidden();
-            $this->actingAs($user)->patch("/chores/{$chore->id}/move", [])->assertForbidden();
+            $this->actingAs($user)->post($this->hh('/chores'), [])->assertForbidden();
+            $this->actingAs($user)->patch($this->hh("/chores/{$chore->id}"), [])->assertForbidden();
+            $this->actingAs($user)->delete($this->hh("/chores/{$chore->id}"))->assertForbidden();
+            $this->actingAs($user)->patch($this->hh("/chores/{$chore->id}/move"), [])->assertForbidden();
 
-            $this->actingAs($user)->post('/budget/categories', [])->assertForbidden();
-            $this->actingAs($user)->patch("/budget/categories/{$category->id}", [])->assertForbidden();
-            $this->actingAs($user)->delete("/budget/categories/{$category->id}")->assertForbidden();
-            $this->actingAs($user)->post('/budget/income', [])->assertForbidden();
-            $this->actingAs($user)->patch("/budget/income/{$income->id}", [])->assertForbidden();
-            $this->actingAs($user)->delete("/budget/income/{$income->id}")->assertForbidden();
+            $this->actingAs($user)->post($this->hh('/budget/categories'), [])->assertForbidden();
+            $this->actingAs($user)->patch($this->hh("/budget/categories/{$category->id}"), [])->assertForbidden();
+            $this->actingAs($user)->delete($this->hh("/budget/categories/{$category->id}"))->assertForbidden();
+            $this->actingAs($user)->post($this->hh('/budget/income'), [])->assertForbidden();
+            $this->actingAs($user)->patch($this->hh("/budget/income/{$income->id}"), [])->assertForbidden();
+            $this->actingAs($user)->delete($this->hh("/budget/income/{$income->id}"))->assertForbidden();
         }
     }
 
@@ -100,9 +100,9 @@ class HouseholdRoleTest extends TestCase
         $child = User::factory()->create(['role' => HouseholdRoleEnum::Child]);
         $event = CalendarEvent::factory()->create(['household_id' => $child->household_id]);
 
-        $this->actingAs($child)->post('/calendar/events', [])->assertForbidden();
-        $this->actingAs($child)->patch("/calendar/events/{$event->id}", [])->assertForbidden();
-        $this->actingAs($child)->delete("/calendar/events/{$event->id}")->assertForbidden();
+        $this->actingAs($child)->post($this->hh('/calendar/events'), [])->assertForbidden();
+        $this->actingAs($child)->patch($this->hh("/calendar/events/{$event->id}"), [])->assertForbidden();
+        $this->actingAs($child)->delete($this->hh("/calendar/events/{$event->id}"))->assertForbidden();
     }
 
     #[Test]
@@ -111,7 +111,7 @@ class HouseholdRoleTest extends TestCase
         $teen = User::factory()->create(['role' => HouseholdRoleEnum::Teen]);
 
         $this->actingAs($teen)
-            ->post('/calendar/events', [
+            ->post($this->hh('/calendar/events'), [
                 'title' => 'Football practice',
                 'starts_at' => now()->addDay()->format('Y-m-d\TH:i'),
             ])
@@ -120,13 +120,13 @@ class HouseholdRoleTest extends TestCase
         $event = CalendarEvent::query()->firstOrFail();
 
         $this->actingAs($teen)
-            ->patch("/calendar/events/{$event->id}", [
+            ->patch($this->hh("/calendar/events/{$event->id}"), [
                 'title' => 'Football practice (moved)',
                 'starts_at' => now()->addDay()->format('Y-m-d\TH:i'),
             ])
             ->assertRedirect();
 
-        $this->actingAs($teen)->delete("/calendar/events/{$event->id}")->assertRedirect();
+        $this->actingAs($teen)->delete($this->hh("/calendar/events/{$event->id}"))->assertRedirect();
     }
 
     #[Test]
@@ -137,8 +137,8 @@ class HouseholdRoleTest extends TestCase
         $ownChore = Chore::factory()->create(['household_id' => $household->id, 'assigned_to' => $child->id, 'status' => ChoreStatusEnum::Today]);
         $othersChore = Chore::factory()->create(['household_id' => $household->id, 'status' => ChoreStatusEnum::Today]);
 
-        $this->actingAs($child)->patch("/chores/{$othersChore->id}/toggle")->assertForbidden();
-        $this->actingAs($child)->patch("/chores/{$ownChore->id}/toggle")->assertRedirect();
+        $this->actingAs($child)->patch($this->hh("/chores/{$othersChore->id}/toggle"))->assertForbidden();
+        $this->actingAs($child)->patch($this->hh("/chores/{$ownChore->id}/toggle"))->assertRedirect();
     }
 
     #[Test]
@@ -149,8 +149,8 @@ class HouseholdRoleTest extends TestCase
         $ownChore = Chore::factory()->create(['household_id' => $household->id, 'assigned_to' => $teen->id, 'status' => ChoreStatusEnum::Today]);
         $othersChore = Chore::factory()->create(['household_id' => $household->id, 'status' => ChoreStatusEnum::Today]);
 
-        $this->actingAs($teen)->patch("/chores/{$othersChore->id}/toggle")->assertForbidden();
-        $this->actingAs($teen)->patch("/chores/{$ownChore->id}/toggle")->assertRedirect();
+        $this->actingAs($teen)->patch($this->hh("/chores/{$othersChore->id}/toggle"))->assertForbidden();
+        $this->actingAs($teen)->patch($this->hh("/chores/{$ownChore->id}/toggle"))->assertRedirect();
     }
 
     #[Test]
@@ -162,8 +162,8 @@ class HouseholdRoleTest extends TestCase
         $teen = User::factory()->create(['household_id' => $list->household_id, 'role' => HouseholdRoleEnum::Teen]);
         $child = User::factory()->create(['household_id' => $list->household_id, 'role' => HouseholdRoleEnum::Child]);
 
-        $this->actingAs($teen)->patch("/shopping-items/{$item->id}/toggle")->assertRedirect();
-        $this->actingAs($child)->patch("/shopping-items/{$item->id}/toggle")->assertForbidden();
+        $this->actingAs($teen)->patch($this->hh("/shopping-items/{$item->id}/toggle"))->assertRedirect();
+        $this->actingAs($child)->patch($this->hh("/shopping-items/{$item->id}/toggle"))->assertForbidden();
     }
 
     #[Test]
@@ -172,10 +172,10 @@ class HouseholdRoleTest extends TestCase
         foreach ([HouseholdRoleEnum::Owner, HouseholdRoleEnum::Adult] as $role) {
             $user = User::factory()->create(['role' => $role]);
 
-            $this->actingAs($user)->get('/budget')->assertOk();
+            $this->actingAs($user)->get($this->hh('/budget'))->assertOk();
 
             $chore = Chore::factory()->create(['household_id' => $user->household_id, 'status' => ChoreStatusEnum::Today]);
-            $this->actingAs($user)->patch("/chores/{$chore->id}/toggle")->assertRedirect();
+            $this->actingAs($user)->patch($this->hh("/chores/{$chore->id}/toggle"))->assertRedirect();
         }
     }
 
@@ -183,10 +183,10 @@ class HouseholdRoleTest extends TestCase
     public function onlyOwnerCanAccessTheHouseTab(): void
     {
         $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
-        $this->actingAs($owner)->get('/house')->assertOk();
+        $this->actingAs($owner)->get($this->hh('/house'))->assertOk();
 
         $adult = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRoleEnum::Adult]);
-        $this->actingAs($adult)->get('/house')->assertForbidden();
+        $this->actingAs($adult)->get($this->hh('/house'))->assertForbidden();
     }
 
     #[Test]
@@ -195,12 +195,12 @@ class HouseholdRoleTest extends TestCase
         $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $adult = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRoleEnum::Adult]);
 
-        $this->actingAs($adult)->patch("/house/members/{$owner->id}/role", ['role' => 'adult'])->assertForbidden();
-        $this->actingAs($adult)->patch("/house/members/{$adult->id}/role", ['role' => 'owner'])->assertForbidden();
-        $this->actingAs($adult)->delete("/house/members/{$owner->id}")->assertForbidden();
-        $this->actingAs($adult)->post('/house/invite', ['email' => 'someone@example.com', 'role' => 'adult'])->assertForbidden();
+        $this->actingAs($adult)->patch($this->hh("/house/members/{$owner->id}/role"), ['role' => 'adult'])->assertForbidden();
+        $this->actingAs($adult)->patch($this->hh("/house/members/{$adult->id}/role"), ['role' => 'owner'])->assertForbidden();
+        $this->actingAs($adult)->delete($this->hh("/house/members/{$owner->id}"))->assertForbidden();
+        $this->actingAs($adult)->post($this->hh('/house/invite'), ['email' => 'someone@example.com', 'role' => 'adult'])->assertForbidden();
 
-        $this->assertSame(HouseholdRoleEnum::Owner, $owner->refresh()->currentRole());
+        $this->assertSame(HouseholdRoleEnum::Owner, $this->membership($owner)->role);
         $this->assertDatabaseHas('users', ['id' => $owner->id]);
     }
 }

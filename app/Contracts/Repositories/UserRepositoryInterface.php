@@ -26,9 +26,9 @@ interface UserRepositoryInterface
     /** As updatePassword(), and signs out every "remember me" session too — for a reset. */
     public function setPassword(User $user, string $hashedPassword): User;
 
-    public function setCurrentHousehold(User $user, ?int $householdId): void;
+    public function setLastHousehold(User $user, ?int $householdId): void;
 
-    /** Makes the household their current one, with the colour they'll show in it. */
+    /** Makes the household the one they were last in, with the colour they'll show in it. */
     public function moveIntoHousehold(User $user, Household $household, PaletteEnum $colour): void;
 
     /** Their one free trial is used; a later household won't get another. */

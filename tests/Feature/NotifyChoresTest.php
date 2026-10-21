@@ -31,10 +31,10 @@ class NotifyChoresTest extends TestCase
         Chore::factory()->create(['household_id' => $owner->household_id, 'assigned_to' => $member->id, 'status' => ChoreStatusEnum::Done]);
         Chore::factory()->create(['household_id' => $owner->household_id, 'assigned_to' => null, 'status' => ChoreStatusEnum::Today]);
 
-        $this->actingAs($owner)->post('/chores/notify')->assertRedirect();
+        $this->actingAs($owner)->post($this->hh('/chores/notify'))->assertRedirect();
 
         Notification::assertSentTo($member, ChoresReminderNotification::class);
-        $this->assertNotNull($owner->household->refresh()->last_chore_notification_sent_at);
+        $this->assertNotNull($owner->lastHousehold->refresh()->last_chore_notification_sent_at);
     }
 
     #[Test]
@@ -44,12 +44,12 @@ class NotifyChoresTest extends TestCase
 
         $owner = User::factory()->create();
 
-        $this->actingAs($owner)->post('/chores/notify')->assertRedirect();
-        $this->actingAs($owner)->post('/chores/notify')->assertStatus(429);
+        $this->actingAs($owner)->post($this->hh('/chores/notify'))->assertRedirect();
+        $this->actingAs($owner)->post($this->hh('/chores/notify'))->assertStatus(429);
 
         Carbon::setTestNow(now()->addMinutes(config('notifications.chore_reminder_cooldown_minutes') + 1));
 
-        $this->actingAs($owner)->post('/chores/notify')->assertRedirect();
+        $this->actingAs($owner)->post($this->hh('/chores/notify'))->assertRedirect();
 
         Carbon::setTestNow();
     }
@@ -61,12 +61,12 @@ class NotifyChoresTest extends TestCase
 
         $owner = User::factory()->create();
 
-        $this->actingAs($owner)->post('/chores/notify')->assertRedirect();
+        $this->actingAs($owner)->post($this->hh('/chores/notify'))->assertRedirect();
 
         $this->actingAs($owner)
-            ->from('/chores')
-            ->post('/chores/notify', [], ['X-Inertia' => 'true'])
-            ->assertRedirect('/chores')
+            ->from($this->hh('/chores'))
+            ->post($this->hh('/chores/notify'), [], ['X-Inertia' => 'true'])
+            ->assertRedirect($this->hh('/chores'))
             ->assertSessionHas('toastError');
     }
 
@@ -77,7 +77,7 @@ class NotifyChoresTest extends TestCase
         $teen = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRoleEnum::Teen]);
         $child = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRoleEnum::Child]);
 
-        $this->actingAs($teen)->post('/chores/notify')->assertForbidden();
-        $this->actingAs($child)->post('/chores/notify')->assertForbidden();
+        $this->actingAs($teen)->post($this->hh('/chores/notify'))->assertForbidden();
+        $this->actingAs($child)->post($this->hh('/chores/notify'))->assertForbidden();
     }
 }

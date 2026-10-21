@@ -27,7 +27,7 @@ class HouseholdInviteAcceptTest extends TestCase
             'pending' => true,
             'pending_reason' => PendingReasonEnum::Invited,
         ]);
-        $originalHouseholdId = $user->current_household_id;
+        $originalHouseholdId = $user->last_household_id;
 
         $url = URL::temporarySignedRoute('household-invites.accept', now()->addDays(7), [
             'household' => $household->id,
@@ -45,7 +45,7 @@ class HouseholdInviteAcceptTest extends TestCase
             'pending' => false,
             'pending_reason' => null,
         ]);
-        $this->assertSame($originalHouseholdId, $user->refresh()->current_household_id);
+        $this->assertSame($originalHouseholdId, $user->refresh()->last_household_id);
     }
 
     #[Test]
@@ -130,8 +130,8 @@ class HouseholdInviteAcceptTest extends TestCase
 
         $this->actingAs($user)
             ->post('/household/select', ['household_id' => $household->id])
-            ->assertRedirect(route('dashboard', absolute: false));
+            ->assertRedirect(route('app', absolute: false));
 
-        $this->actingAs($user->refresh())->get('/dashboard')->assertOk();
+        $this->actingAs($user->refresh())->get($this->hh('/dashboard'))->assertOk();
     }
 }

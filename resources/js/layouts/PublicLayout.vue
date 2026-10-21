@@ -73,7 +73,7 @@ function toggleTheme(): void {
 
                 <Link
                     v-if="user"
-                    :href="route('dashboard')"
+                    :href="route('app')"
                     class="flex h-10 items-center whitespace-nowrap rounded-xl bg-ryh-coral px-4 text-sm font-bold text-white transition hover:-translate-y-0.5 sm:px-5"
                 >
                     Go to dashboard

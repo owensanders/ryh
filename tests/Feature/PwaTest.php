@@ -29,7 +29,8 @@ class PwaTest extends TestCase
 
         $this->assertSame('RYH', $manifest['name']);
         $this->assertSame('standalone', $manifest['display']);
-        $this->assertSame('/dashboard', $manifest['start_url']);
+        // /app lands on whichever household they were last in.
+        $this->assertSame('/app', $manifest['start_url']);
 
         $sizes = array_column($manifest['icons'], 'sizes');
         $this->assertContains('192x192', $sizes);

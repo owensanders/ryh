@@ -36,10 +36,10 @@ class StripeBillingTest extends TestCase
             ->respond('POST', '/v1/checkout/sessions', $this->checkoutSession());
         $owner = $this->owner(['trial_ends_at' => now()->subDay()]);
 
-        $this->actingAs($owner)->post('/billing/subscribe', ['interval' => 'monthly'])
+        $this->actingAs($owner)->post($this->hh('/billing/subscribe'), ['interval' => 'monthly'])
             ->assertRedirect('https://checkout.stripe.com/c/pay/cs_test');
 
-        $this->assertSame('cus_new', $owner->household->fresh()->stripe_id);
+        $this->assertSame('cus_new', $owner->lastHousehold->fresh()->stripe_id);
         $params = $stripe->assertRequested('POST', '/v1/checkout/sessions');
         $this->assertSame('cus_new', $params['customer']);
         $this->assertSame('subscription', $params['mode']);
@@ -56,7 +56,7 @@ class StripeBillingTest extends TestCase
             ->respond('POST', '/v1/checkout/sessions', $this->checkoutSession());
         $owner = $this->owner(['stripe_id' => 'cus_existing']);
 
-        $this->actingAs($owner)->post('/house/subscribe', ['interval' => 'annual'])
+        $this->actingAs($owner)->post($this->hh('/house/subscribe'), ['interval' => 'annual'])
             ->assertRedirect('https://checkout.stripe.com/c/pay/cs_test');
 
         $stripe->assertNotRequested('POST', '/v1/customers');
@@ -74,7 +74,7 @@ class StripeBillingTest extends TestCase
         $owner = $this->owner(['trial_ends_at' => now()->subDay()]);
 
         $this->actingAs($owner)
-            ->post('/billing/subscribe', ['interval' => 'monthly'], ['X-Inertia' => 'true'])
+            ->post($this->hh('/billing/subscribe'), ['interval' => 'monthly'], ['X-Inertia' => 'true'])
             ->assertStatus(409)
             ->assertHeader('X-Inertia-Location', 'https://checkout.stripe.com/c/pay/cs_test');
     }
@@ -84,9 +84,9 @@ class StripeBillingTest extends TestCase
     {
         $stripe = $this->fakeStripe();
         $owner = $this->owner(['stripe_id' => 'cus_existing']);
-        $this->subscribe($owner->household);
+        $this->subscribe($owner->lastHousehold);
 
-        $this->actingAs($owner)->post('/house/subscribe', ['interval' => 'monthly'])
+        $this->actingAs($owner)->post($this->hh('/house/subscribe'), ['interval' => 'monthly'])
             ->assertSessionHas('toast', 'You are already subscribed');
 
         $stripe->assertNothingRequested();
@@ -98,9 +98,9 @@ class StripeBillingTest extends TestCase
         $stripe = $this->fakeStripe()
             ->respond('POST', '/v1/billing_portal/sessions', $this->portalSession());
         $owner = $this->owner(['stripe_id' => 'cus_existing', 'trial_ends_at' => null]);
-        $this->subscribe($owner->household, status: 'past_due');
+        $this->subscribe($owner->lastHousehold, status: 'past_due');
 
-        $this->actingAs($owner)->post('/billing/subscribe', ['interval' => 'monthly'])
+        $this->actingAs($owner)->post($this->hh('/billing/subscribe'), ['interval' => 'monthly'])
             ->assertRedirect('https://billing.stripe.com/p/session/test');
 
         $stripe->assertNotRequested('POST', '/v1/checkout/sessions');
@@ -117,7 +117,7 @@ class StripeBillingTest extends TestCase
             ->respond('POST', '/v1/checkout/sessions', ['error' => ['type' => 'invalid_request_error', 'message' => 'No such price']], 400);
         $owner = $this->owner(['trial_ends_at' => now()->subDay()]);
 
-        $this->actingAs($owner)->post('/billing/subscribe', ['interval' => 'monthly'])
+        $this->actingAs($owner)->post($this->hh('/billing/subscribe'), ['interval' => 'monthly'])
             ->assertSessionHasErrors(['plan' => "We couldn't reach our payment provider. Please try again in a moment."]);
     }
 
@@ -128,7 +128,7 @@ class StripeBillingTest extends TestCase
             ->respond('POST', '/v1/billing_portal/sessions', ['error' => ['type' => 'api_error', 'message' => 'Something went wrong']], 500);
         $owner = $this->owner(['stripe_id' => 'cus_existing']);
 
-        $this->actingAs($owner)->post('/billing/portal')
+        $this->actingAs($owner)->post($this->hh('/billing/portal'))
             ->assertSessionHasErrors(['plan' => "We couldn't reach our payment provider. Please try again in a moment."]);
     }
 
@@ -141,11 +141,11 @@ class StripeBillingTest extends TestCase
             ));
         $owner = $this->owner(['stripe_id' => 'cus_existing', 'trial_ends_at' => now()->subDay()]);
 
-        $this->actingAs($owner)->get('/billing/checkout/complete?session_id=cs_test')
-            ->assertRedirect(route('dashboard', absolute: false))
+        $this->actingAs($owner)->get($this->hh('/billing/checkout/complete?session_id=cs_test'))
+            ->assertRedirect($this->hh('/dashboard'))
             ->assertSessionHas('toast');
 
-        $household = $owner->household->fresh();
+        $household = $owner->lastHousehold->fresh();
         $this->assertTrue($household->subscribed('default'));
         $this->assertTrue($household->subscription('default')->hasPrice('price_annual'));
         $this->assertSame('sub_new', $household->subscription('default')->stripe_id);
@@ -153,7 +153,7 @@ class StripeBillingTest extends TestCase
         $this->assertSame(['subscription'], $stripe->assertRequested('GET', '/v1/checkout/sessions/cs_test')['expand']);
 
         // A fresh user, since $owner's cached household predates the subscription.
-        $this->actingAs($owner->fresh())->get('/dashboard')->assertOk();
+        $this->actingAs($owner->fresh())->get($this->hh('/dashboard'))->assertOk();
     }
 
     #[Test]
@@ -166,9 +166,9 @@ class StripeBillingTest extends TestCase
             ));
         $owner = $this->owner(['stripe_id' => 'cus_existing', 'trial_ends_at' => now()->subDay()]);
 
-        $this->actingAs($owner)->get('/billing/checkout/complete?session_id=cs_test');
+        $this->actingAs($owner)->get($this->hh('/billing/checkout/complete?session_id=cs_test'));
 
-        $this->assertFalse($owner->household->fresh()->subscribed('default'));
+        $this->assertFalse($owner->lastHousehold->fresh()->subscribed('default'));
         $this->assertDatabaseMissing('subscriptions', ['stripe_id' => 'sub_theirs']);
     }
 
@@ -179,9 +179,9 @@ class StripeBillingTest extends TestCase
             ->respond('GET', '/v1/checkout/sessions/cs_test', $this->checkoutSession(status: 'open'));
         $owner = $this->owner(['stripe_id' => 'cus_existing', 'trial_ends_at' => now()->subDay()]);
 
-        $this->actingAs($owner)->get('/billing/checkout/complete?session_id=cs_test');
+        $this->actingAs($owner)->get($this->hh('/billing/checkout/complete?session_id=cs_test'));
 
-        $this->assertFalse($owner->household->fresh()->subscribed('default'));
+        $this->assertFalse($owner->lastHousehold->fresh()->subscribed('default'));
     }
 
     #[Test]
@@ -191,10 +191,10 @@ class StripeBillingTest extends TestCase
             ->respond('GET', '/v1/checkout/sessions/cs_bogus', ['error' => ['type' => 'invalid_request_error', 'code' => 'resource_missing', 'message' => 'No such checkout.session']], 404);
         $owner = $this->owner(['stripe_id' => 'cus_existing']);
 
-        $this->actingAs($owner)->get('/billing/checkout/complete?session_id=cs_bogus&from=house')
+        $this->actingAs($owner)->get($this->hh('/billing/checkout/complete?session_id=cs_bogus&from=house'))
             ->assertRedirect(route('house.index', absolute: false));
 
-        $this->assertFalse($owner->household->fresh()->subscribed('default'));
+        $this->assertFalse($owner->lastHousehold->fresh()->subscribed('default'));
     }
 
     #[Test]
@@ -202,13 +202,13 @@ class StripeBillingTest extends TestCase
     {
         $stripe = $this->fakeStripe();
         $owner = $this->owner(['stripe_id' => 'cus_existing']);
-        $this->subscribe($owner->household);
+        $this->subscribe($owner->lastHousehold);
 
-        $this->actingAs($owner)->get('/billing/checkout/complete?session_id=cs_test')
-            ->assertRedirect(route('dashboard', absolute: false));
+        $this->actingAs($owner)->get($this->hh('/billing/checkout/complete?session_id=cs_test'))
+            ->assertRedirect($this->hh('/dashboard'));
 
         $stripe->assertNothingRequested();
-        $this->assertSame(1, $owner->household->subscriptions()->count());
+        $this->assertSame(1, $owner->lastHousehold->subscriptions()->count());
     }
 
     #[Test]
@@ -217,9 +217,9 @@ class StripeBillingTest extends TestCase
         $stripe = $this->fakeStripe()
             ->respond('POST', '/v1/billing_portal/sessions', $this->portalSession());
         $owner = $this->owner(['stripe_id' => 'cus_existing']);
-        $this->subscribe($owner->household);
+        $this->subscribe($owner->lastHousehold);
 
-        $this->actingAs($owner)->post('/billing/portal', [], ['X-Inertia' => 'true'])
+        $this->actingAs($owner)->post($this->hh('/billing/portal'), [], ['X-Inertia' => 'true'])
             ->assertStatus(409)
             ->assertHeader('X-Inertia-Location', 'https://billing.stripe.com/p/session/test');
 

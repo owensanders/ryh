@@ -32,17 +32,17 @@ class RemoveMemberKeepsAccountTest extends TestCase
         $victim = User::factory()->create(['household_id' => $theirHousehold->id, 'role' => HouseholdRoleEnum::Owner]);
 
         $stranger = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
-        $this->actingAs($stranger)->post('/house/invite', ['email' => $victim->email, 'role' => 'adult']);
+        $this->actingAs($stranger)->post($this->hh('/house/invite'), ['email' => $victim->email, 'role' => 'adult']);
         $this->assertDatabaseHas('household_user', ['household_id' => $stranger->household_id, 'user_id' => $victim->id, 'pending' => true]);
 
         $this->actingAs($stranger)
-            ->delete("/house/members/{$victim->id}")
+            ->delete($this->hh("/house/members/{$victim->id}"))
             ->assertSessionHas('toast', "{$victim->name} — invite cancelled");
 
         $this->assertDatabaseHas('users', ['id' => $victim->id]);
         $this->assertDatabaseMissing('household_user', ['household_id' => $stranger->household_id, 'user_id' => $victim->id]);
         $this->assertDatabaseHas('household_user', ['household_id' => $theirHousehold->id, 'user_id' => $victim->id, 'role' => 'owner']);
-        $this->assertSame($theirHousehold->id, $victim->refresh()->current_household_id);
+        $this->assertSame($theirHousehold->id, $victim->refresh()->last_household_id);
     }
 
     #[Test]
@@ -50,24 +50,24 @@ class RemoveMemberKeepsAccountTest extends TestCase
     {
         [$owner, $member, $otherHousehold] = $this->memberOfTwoHouseholds();
 
-        $this->actingAs($owner)->delete("/house/members/{$member->id}")->assertRedirect();
+        $this->actingAs($owner)->delete($this->hh("/house/members/{$member->id}"))->assertRedirect();
 
         $this->post('/logout');
         $this->post('/login', ['email' => $member->email, 'password' => 'password'])
-            ->assertRedirect(route('dashboard', absolute: false));
-        $this->get('/dashboard')->assertOk();
-        $this->assertSame($otherHousehold->id, $member->refresh()->current_household_id);
+            ->assertRedirect(route('app', absolute: false));
+        $this->get('/app')->assertRedirect($this->hh('/dashboard', $otherHousehold));
+        $this->assertSame($otherHousehold->id, $member->refresh()->last_household_id);
     }
 
     #[Test]
     public function removingSomeoneWhoWasViewingThatHouseholdMovesThemToTheirOtherOne(): void
     {
         [$owner, $member, $otherHousehold] = $this->memberOfTwoHouseholds();
-        $member->forceFill(['current_household_id' => $owner->household_id])->save();
+        $member->forceFill(['last_household_id' => $owner->household_id])->save();
 
-        $this->actingAs($owner)->delete("/house/members/{$member->id}");
+        $this->actingAs($owner)->delete($this->hh("/house/members/{$member->id}"));
 
-        $this->assertSame($otherHousehold->id, $member->refresh()->current_household_id);
+        $this->assertSame($otherHousehold->id, $member->refresh()->last_household_id);
     }
 
     #[Test]
@@ -76,9 +76,9 @@ class RemoveMemberKeepsAccountTest extends TestCase
         $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $member = User::factory()->create(['household_id' => $owner->household_id]);
 
-        $this->actingAs($owner)->delete("/house/members/{$member->id}");
+        $this->actingAs($owner)->delete($this->hh("/house/members/{$member->id}"));
 
-        $this->assertNull($member->refresh()->current_household_id);
+        $this->assertNull($member->refresh()->last_household_id);
         // So next time they sign in they're sent to set one up, rather than into ours.
         $this->actingAs($member)->get('/dashboard')->assertRedirect(route('household.setup', absolute: false));
     }
@@ -89,9 +89,10 @@ class RemoveMemberKeepsAccountTest extends TestCase
         $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $member = User::factory()->create(['household_id' => $owner->household_id]);
 
-        $this->actingAs($owner)->delete("/house/members/{$member->id}");
+        $this->actingAs($owner)->delete($this->hh("/house/members/{$member->id}"));
 
-        $this->actingAs($member->refresh())->get('/chores')->assertRedirect();
+        // Their old household's pages don't exist for them now.
+        $this->actingAs($member->refresh())->get($this->hh('/chores', $owner->household_id))->assertNotFound();
         $this->assertFalse($member->households()->where('households.id', $owner->household_id)->exists());
     }
 
@@ -102,7 +103,7 @@ class RemoveMemberKeepsAccountTest extends TestCase
         $here = Chore::factory()->create(['household_id' => $owner->household_id, 'assigned_to' => $member->id]);
         $there = Chore::factory()->create(['household_id' => $otherHousehold->id, 'assigned_to' => $member->id]);
 
-        $this->actingAs($owner)->delete("/house/members/{$member->id}");
+        $this->actingAs($owner)->delete($this->hh("/house/members/{$member->id}"));
 
         $this->assertDatabaseMissing('chores', ['id' => $here->id]);
         $this->assertDatabaseHas('chores', ['id' => $there->id, 'assigned_to' => $member->id]);
@@ -117,7 +118,7 @@ class RemoveMemberKeepsAccountTest extends TestCase
         $soloThere = CalendarEvent::factory()->create(['household_id' => $otherHousehold->id]);
         $soloThere->attendees()->attach($member->id);
 
-        $this->actingAs($owner)->delete("/house/members/{$member->id}");
+        $this->actingAs($owner)->delete($this->hh("/house/members/{$member->id}"));
 
         $this->assertDatabaseMissing('calendar_events', ['id' => $soloHere->id]);
         $this->assertDatabaseHas('calendar_event_user', ['calendar_event_id' => $soloThere->id, 'user_id' => $member->id]);
@@ -127,10 +128,10 @@ class RemoveMemberKeepsAccountTest extends TestCase
     public function theyStayTheCookOnOtherHouseholdsMeals(): void
     {
         [$owner, $member, $otherHousehold] = $this->memberOfTwoHouseholds();
-        $here = $this->mealCookedBy($member, $owner->household);
+        $here = $this->mealCookedBy($member, $owner->lastHousehold);
         $there = $this->mealCookedBy($member, $otherHousehold);
 
-        $this->actingAs($owner)->delete("/house/members/{$member->id}");
+        $this->actingAs($owner)->delete($this->hh("/house/members/{$member->id}"));
 
         $this->assertDatabaseHas('planned_meals', ['id' => $here->id, 'cook_id' => null]);
         $this->assertDatabaseHas('planned_meals', ['id' => $there->id, 'cook_id' => $member->id]);
@@ -142,9 +143,9 @@ class RemoveMemberKeepsAccountTest extends TestCase
         $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $member = User::factory()->create(['household_id' => $owner->household_id]);
 
-        $this->actingAs($owner)->delete("/house/members/{$member->id}");
+        $this->actingAs($owner)->delete($this->hh("/house/members/{$member->id}"));
         $this->actingAs($owner)
-            ->post('/house/invite', ['email' => $member->email, 'role' => 'adult'])
+            ->post($this->hh('/house/invite'), ['email' => $member->email, 'role' => 'adult'])
             ->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('household_user', [

@@ -31,7 +31,7 @@ class PaymentFailedMail extends Mailable implements ShouldQueue
             markdown: 'emails.payment-failed',
             with: [
                 'householdName' => $this->household->name,
-                'billingUrl' => route('house.index'),
+                'billingUrl' => route('house.index', ['household' => $this->household->slug]),
             ],
         );
     }

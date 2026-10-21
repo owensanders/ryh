@@ -51,8 +51,8 @@ class RemoveMemberUseCase
 
             $this->memberships->remove($member, $household);
 
-            if ($member->current_household_id === $household->id) {
-                $this->users->setCurrentHousehold($member, $this->memberships->firstHouseholdIdFor($member));
+            if ($member->last_household_id === $household->id) {
+                $this->users->setLastHousehold($member, $this->memberships->firstHouseholdIdFor($member));
             }
         });
 

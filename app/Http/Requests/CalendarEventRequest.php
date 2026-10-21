@@ -6,6 +6,7 @@ namespace App\Http\Requests;
 
 use App\Data\Input\CalendarEventInputData;
 use App\Enums\PaletteEnum;
+use App\Support\CurrentHouseholdHelper;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -28,7 +29,7 @@ class CalendarEventRequest extends FormRequest
             // Scoped to the household so an event can't be pinned on an outsider.
             'attendees.*' => [
                 'integer',
-                Rule::exists('household_user', 'user_id')->where('household_id', $this->user()?->current_household_id)->where('pending', false),
+                Rule::exists('household_user', 'user_id')->where('household_id', CurrentHouseholdHelper::id($this))->where('pending', false),
             ],
         ];
     }

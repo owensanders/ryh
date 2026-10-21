@@ -5,9 +5,9 @@ import { configureEcho } from '@laravel/echo-vue';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
-import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import OfflineBanner from './components/OfflineBanner.vue';
 import { initializeTheme } from './composables/useAppearance';
+import { HouseholdRoutes } from './lib/householdRoute';
 import { initOfflineDetection } from './lib/offline';
 import { initPwa } from './lib/pwa';
 
@@ -24,7 +24,7 @@ createInertiaApp({
         // The offline banner sits beside every page, sign-in screens included.
         createApp({ render: () => [h(App, props), h(OfflineBanner)] })
             .use(plugin)
-            .use(ZiggyVue)
+            .use(HouseholdRoutes)
             .mount(el);
     },
     progress: {

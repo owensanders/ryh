@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\HouseholdJoinRequest;
 use App\Http\Requests\Auth\HouseholdSetupRequest;
 use App\Traits\ResolvesUserTrait;
+use App\UseCases\Auth\GetLastMembershipUseCase;
 use App\UseCases\House\CreateHouseholdUseCase;
 use App\UseCases\House\JoinHouseholdUseCase;
 use Illuminate\Http\RedirectResponse;
@@ -19,9 +20,9 @@ class HouseholdSetupController extends Controller
 {
     use ResolvesUserTrait;
 
-    public function create(Request $request): Response|RedirectResponse
+    public function create(Request $request, GetLastMembershipUseCase $lastMembership): Response|RedirectResponse
     {
-        if ($this->user($request)->currentMembership()?->pending === true) {
+        if ($lastMembership->execute($this->user($request))?->pending === true) {
             return to_route('household.done');
         }
 
@@ -35,9 +36,9 @@ class HouseholdSetupController extends Controller
         ]);
     }
 
-    public function store(HouseholdSetupRequest $request, CreateHouseholdUseCase $createHousehold): RedirectResponse
+    public function store(HouseholdSetupRequest $request, CreateHouseholdUseCase $createHousehold, GetLastMembershipUseCase $lastMembership): RedirectResponse
     {
-        if ($this->user($request)->currentMembership()?->pending === true) {
+        if ($lastMembership->execute($this->user($request))?->pending === true) {
             return to_route('household.done');
         }
 
@@ -50,9 +51,9 @@ class HouseholdSetupController extends Controller
         ]);
     }
 
-    public function join(HouseholdJoinRequest $request, JoinHouseholdUseCase $joinHousehold): RedirectResponse
+    public function join(HouseholdJoinRequest $request, JoinHouseholdUseCase $joinHousehold, GetLastMembershipUseCase $lastMembership): RedirectResponse
     {
-        if ($this->user($request)->currentMembership()?->pending === true) {
+        if ($lastMembership->execute($this->user($request))?->pending === true) {
             return to_route('household.done');
         }
 
@@ -65,14 +66,14 @@ class HouseholdSetupController extends Controller
         ]);
     }
 
-    public function done(Request $request): Response
+    public function done(Request $request, GetLastMembershipUseCase $lastMembership): Response
     {
         /** @var array{mode: string, householdName: string, inviteCount: int}|null $setup */
         $setup = $request->session()->get('householdSetup');
         $user = $this->user($request);
-        $household = $user->household;
+        $household = $user->lastHousehold;
 
-        $pending = $user->currentMembership()?->pending === true;
+        $pending = $lastMembership->execute($user)?->pending === true;
 
         return Inertia::render('auth/HouseholdDone', [
             'mode' => $setup['mode'] ?? ($pending ? 'join' : 'create'),

@@ -16,7 +16,7 @@ class RecordLoginStreakUseCase
 
     public function execute(User $user): void
     {
-        $household = $user->currentHousehold;
+        $household = $user->lastHousehold;
 
         if ($household === null) {
             return;

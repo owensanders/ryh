@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Data\PlanData;
+use App\Http\Controllers\AppLandingController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\CalendarController;
@@ -43,12 +44,30 @@ Route::get('household-invites/accept', [HouseholdInviteController::class, 'accep
     ->middleware(['auth', 'signed', 'throttle:app'])
     ->name('household-invites.accept');
 
+// The bell: each person's own notifications, across all their households, so
+// nothing to authorize beyond signing in.
+Route::middleware(['auth', 'verified', 'throttle:app'])->group(function (): void {
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
+    Route::delete('notifications', [NotificationController::class, 'destroyAll'])->name('notifications.destroyAll');
+
+    // Somewhere to land without a household in the URL: the installed app's
+    // start page, and links from before households moved under /h/{household}.
+    Route::get('app', AppLandingController::class)->name('app');
+    Route::get('{path}', AppLandingController::class)
+        ->where('path', '(dashboard|meals|recipes|shopping|calendar|chores|budget|documents|house|billing)(/.*)?');
+});
+
+// Every household screen is under /h/{household}: the household a request acts
+// on is the one in its URL (ResolveHouseholdMiddleware checks they belong to
+// it), so two tabs on two households never cross over.
 // Authorization lives in app/Policies: every route below names its ability
 // with ->can(), and RouteAuthorizationTest
 // fails if one doesn't. A record from another household is a 404.
 // throttle:app caps each person's requests; RouteThrottleTest fails if a
 // write route has no limit.
-Route::middleware(['auth', 'verified', 'household', 'throttle:app'])->group(function (): void {
+Route::prefix('h/{household}')->middleware(['auth', 'verified', 'household', 'throttle:app'])->group(function (): void {
     // Reachable even once the trial has lapsed — this is the only place a
     // household without a subscription can go.
     Route::get('billing/required', [BillingController::class, 'required'])->name('billing.required')->can('view', Household::class);
@@ -58,12 +77,6 @@ Route::middleware(['auth', 'verified', 'household', 'throttle:app'])->group(func
 
     Route::middleware('trial.active')->group(function (): void {
         Route::get('dashboard', DashboardController::class)->name('dashboard')->can('view', Household::class);
-
-        // The bell: each person's own notifications, so nothing to authorize beyond signing in.
-        Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
-        Route::patch('notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
-        Route::post('notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
-        Route::delete('notifications', [NotificationController::class, 'destroyAll'])->name('notifications.destroyAll');
 
         Route::get('meals', [MealPlannerController::class, 'index'])->name('meals.index')->can('viewAny', PlannedMeal::class);
         Route::post('meals/ai-plan', [MealPlannerController::class, 'generateAiPlan'])->middleware('throttle:ai')->name('meals.aiPlan')->can('create', PlannedMeal::class);

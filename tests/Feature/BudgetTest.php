@@ -29,7 +29,7 @@ class BudgetTest extends TestCase
         IncomeSource::factory()->create(['household_id' => $user->household_id, 'amount_pence' => 200000]);
 
         $this->actingAs($user)
-            ->get('/budget')
+            ->get($this->hh('/budget'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Budget')
@@ -45,7 +45,7 @@ class BudgetTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->post('/budget/categories', ['label' => 'Pets', 'budgeted' => '75'])
+            ->post($this->hh('/budget/categories'), ['label' => 'Pets', 'budgeted' => '75'])
             ->assertRedirect()
             ->assertSessionHas('toast', 'Pets added');
 
@@ -62,7 +62,7 @@ class BudgetTest extends TestCase
         $user = User::factory()->create();
 
         foreach (['Food', 'Utilities', 'Fuel', 'Pets', 'Gifts', 'Holidays'] as $label) {
-            $this->actingAs($user)->post('/budget/categories', ['label' => $label, 'budgeted' => '50']);
+            $this->actingAs($user)->post($this->hh('/budget/categories'), ['label' => $label, 'budgeted' => '50']);
         }
 
         $colours = BudgetCategory::query()->orderBy('position')->pluck('colour')->map->value->all();
@@ -77,7 +77,7 @@ class BudgetTest extends TestCase
         BudgetCategory::factory()->recurring()->create(['household_id' => $user->household_id]);
 
         $this->actingAs($user)
-            ->get('/budget')
+            ->get($this->hh('/budget'))
             ->assertInertia(fn ($page) => $page
                 ->where('categories.0.icon', '')
                 ->where('categories.0.isRecurring', true)
@@ -90,7 +90,7 @@ class BudgetTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->post('/budget/categories', ['label' => 'Rent', 'budgeted' => '900', 'is_recurring' => '1'])
+            ->post($this->hh('/budget/categories'), ['label' => 'Rent', 'budgeted' => '900', 'is_recurring' => '1'])
             ->assertRedirect();
 
         $this->assertDatabaseHas('budget_categories', [
@@ -107,7 +107,7 @@ class BudgetTest extends TestCase
         $category = BudgetCategory::factory()->create(['household_id' => $user->household_id, 'label' => 'Fuel']);
 
         $this->actingAs($user)
-            ->patch("/budget/categories/{$category->id}", ['label' => 'Transport & fuel', 'budgeted' => '220'])
+            ->patch($this->hh("/budget/categories/{$category->id}"), ['label' => 'Transport & fuel', 'budgeted' => '220'])
             ->assertRedirect()
             ->assertSessionHas('toast', 'Transport & fuel updated');
 
@@ -124,7 +124,7 @@ class BudgetTest extends TestCase
         $category = BudgetCategory::factory()->create(['household_id' => $stranger->household_id, 'label' => 'Fuel']);
 
         $this->actingAs($user)
-            ->patch("/budget/categories/{$category->id}", ['label' => 'Hijacked', 'budgeted' => '10'])
+            ->patch($this->hh("/budget/categories/{$category->id}"), ['label' => 'Hijacked', 'budgeted' => '10'])
             ->assertNotFound();
 
         $this->assertSame('Fuel', $category->refresh()->label);
@@ -137,7 +137,7 @@ class BudgetTest extends TestCase
         $category = BudgetCategory::factory()->create(['household_id' => $user->household_id, 'label' => 'Subscriptions']);
 
         $this->actingAs($user)
-            ->delete("/budget/categories/{$category->id}")
+            ->delete($this->hh("/budget/categories/{$category->id}"))
             ->assertRedirect()
             ->assertSessionHas('toast', 'Subscriptions removed');
 
@@ -152,7 +152,7 @@ class BudgetTest extends TestCase
         $category = BudgetCategory::factory()->create(['household_id' => $stranger->household_id]);
 
         $this->actingAs($user)
-            ->delete("/budget/categories/{$category->id}")
+            ->delete($this->hh("/budget/categories/{$category->id}"))
             ->assertNotFound();
 
         $this->assertDatabaseHas('budget_categories', ['id' => $category->id]);
@@ -164,7 +164,7 @@ class BudgetTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->post('/budget/income', ['label' => 'Salary', 'meta' => 'Paid 28th', 'amount' => '2480'])
+            ->post($this->hh('/budget/income'), ['label' => 'Salary', 'meta' => 'Paid 28th', 'amount' => '2480'])
             ->assertRedirect()
             ->assertSessionHas('toast', 'Salary added');
 
@@ -182,7 +182,7 @@ class BudgetTest extends TestCase
         $income = IncomeSource::factory()->create(['household_id' => $user->household_id, 'label' => 'Salary']);
 
         $this->actingAs($user)
-            ->patch("/budget/income/{$income->id}", ['label' => 'Sarah — salary', 'amount' => '2500'])
+            ->patch($this->hh("/budget/income/{$income->id}"), ['label' => 'Sarah — salary', 'amount' => '2500'])
             ->assertRedirect()
             ->assertSessionHas('toast', 'Sarah — salary updated');
 
@@ -197,7 +197,7 @@ class BudgetTest extends TestCase
         $income = IncomeSource::factory()->create(['household_id' => $stranger->household_id, 'label' => 'Salary']);
 
         $this->actingAs($user)
-            ->patch("/budget/income/{$income->id}", ['label' => 'Hijacked', 'amount' => '10'])
+            ->patch($this->hh("/budget/income/{$income->id}"), ['label' => 'Hijacked', 'amount' => '10'])
             ->assertNotFound();
 
         $this->assertSame('Salary', $income->refresh()->label);
@@ -210,7 +210,7 @@ class BudgetTest extends TestCase
         $income = IncomeSource::factory()->create(['household_id' => $user->household_id, 'label' => 'Airbnb']);
 
         $this->actingAs($user)
-            ->delete("/budget/income/{$income->id}")
+            ->delete($this->hh("/budget/income/{$income->id}"))
             ->assertRedirect()
             ->assertSessionHas('toast', 'Airbnb removed');
 
@@ -225,7 +225,7 @@ class BudgetTest extends TestCase
         $income = IncomeSource::factory()->create(['household_id' => $stranger->household_id]);
 
         $this->actingAs($user)
-            ->delete("/budget/income/{$income->id}")
+            ->delete($this->hh("/budget/income/{$income->id}"))
             ->assertNotFound();
 
         $this->assertDatabaseHas('income_sources', ['id' => $income->id]);
@@ -237,7 +237,7 @@ class BudgetTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->post('/budget/income', ['label' => 'Salary', 'amount' => '2480', 'is_recurring' => '1'])
+            ->post($this->hh('/budget/income'), ['label' => 'Salary', 'amount' => '2480', 'is_recurring' => '1'])
             ->assertRedirect();
 
         $this->assertDatabaseHas('income_sources', [
@@ -266,7 +266,7 @@ class BudgetTest extends TestCase
             'month' => $thisMonth,
         ]);
 
-        $this->actingAs($user)->get('/budget?month='.$nextMonth->format('Y-m'))->assertOk();
+        $this->actingAs($user)->get($this->hh('/budget?month=').$nextMonth->format('Y-m'))->assertOk();
 
         $this->assertDatabaseHas('income_sources', [
             'household_id' => $user->household_id,
@@ -295,8 +295,8 @@ class BudgetTest extends TestCase
             'month' => $thisMonth,
         ]);
 
-        $this->actingAs($user)->get('/budget?month='.$nextMonth->format('Y-m'))->assertOk();
-        $this->actingAs($user)->get('/budget?month='.$nextMonth->format('Y-m'))->assertOk();
+        $this->actingAs($user)->get($this->hh('/budget?month=').$nextMonth->format('Y-m'))->assertOk();
+        $this->actingAs($user)->get($this->hh('/budget?month=').$nextMonth->format('Y-m'))->assertOk();
 
         $this->assertDatabaseCount('income_sources', 2);
     }
@@ -315,7 +315,7 @@ class BudgetTest extends TestCase
         ]);
 
         // The month in between is never visited, so it's genuinely empty.
-        $this->actingAs($user)->get('/budget?month='.$twoMonthsAhead->format('Y-m'))->assertOk();
+        $this->actingAs($user)->get($this->hh('/budget?month=').$twoMonthsAhead->format('Y-m'))->assertOk();
 
         $this->assertDatabaseHas('income_sources', [
             'household_id' => $user->household_id,
@@ -344,7 +344,7 @@ class BudgetTest extends TestCase
             'month' => $thisMonth,
         ]);
 
-        $this->actingAs($user)->get('/budget?month='.$nextMonth->format('Y-m'))->assertOk();
+        $this->actingAs($user)->get($this->hh('/budget?month=').$nextMonth->format('Y-m'))->assertOk();
 
         $this->assertDatabaseHas('budget_categories', [
             'household_id' => $user->household_id,
@@ -374,8 +374,8 @@ class BudgetTest extends TestCase
             'month' => $thisMonth,
         ]);
 
-        $this->actingAs($user)->get('/budget?month='.$nextMonth->format('Y-m'))->assertOk();
-        $this->actingAs($user)->get('/budget?month='.$nextMonth->format('Y-m'))->assertOk();
+        $this->actingAs($user)->get($this->hh('/budget?month=').$nextMonth->format('Y-m'))->assertOk();
+        $this->actingAs($user)->get($this->hh('/budget?month=').$nextMonth->format('Y-m'))->assertOk();
 
         $this->assertDatabaseCount('budget_categories', 2);
     }
@@ -395,7 +395,7 @@ class BudgetTest extends TestCase
         ]);
 
         // The month in between is never visited, so it's genuinely empty.
-        $this->actingAs($user)->get('/budget?month='.$twoMonthsAhead->format('Y-m'))->assertOk();
+        $this->actingAs($user)->get($this->hh('/budget?month=').$twoMonthsAhead->format('Y-m'))->assertOk();
 
         $this->assertDatabaseHas('budget_categories', [
             'household_id' => $user->household_id,
@@ -418,12 +418,12 @@ class BudgetTest extends TestCase
             'month' => $thisMonth,
         ]);
 
-        $this->actingAs($user)->get('/budget?month='.$nextMonth->format('Y-m'))->assertOk();
+        $this->actingAs($user)->get($this->hh('/budget?month=').$nextMonth->format('Y-m'))->assertOk();
 
         $carried = BudgetCategory::query()->whereDate('month', $nextMonth->toDateString())->firstOrFail();
 
         $this->actingAs($user)
-            ->patch("/budget/categories/{$carried->id}", ['label' => 'Rent', 'budgeted' => '950'])
+            ->patch($this->hh("/budget/categories/{$carried->id}"), ['label' => 'Rent', 'budgeted' => '950'])
             ->assertRedirect();
 
         $this->assertSame(95000, $carried->refresh()->budgeted_pence);
@@ -452,7 +452,7 @@ class BudgetTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get('/budget')
+            ->get($this->hh('/budget'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Budget')

@@ -32,6 +32,44 @@ class DeleteAccountTest extends TestCase
     }
 
     #[Test]
+    public function itDeletesEveryHouseholdTheyAreTheOnlyOwnerOfNotJustTheLastOne(): void
+    {
+        $last = Household::factory()->create();
+        $other = Household::factory()->create();
+        $shared = Household::factory()->create();
+        $owner = User::factory()->create(['household_id' => $last->id, 'role' => HouseholdRoleEnum::Owner]);
+        $owner->households()->attach($other->id, ['role' => HouseholdRoleEnum::Owner, 'pending' => false]);
+        $owner->households()->attach($shared->id, ['role' => HouseholdRoleEnum::Owner, 'pending' => false]);
+        User::factory()->create(['household_id' => $shared->id, 'role' => HouseholdRoleEnum::Owner]);
+
+        $this->actingAs($owner)
+            ->delete('/settings/profile', ['password' => 'password'])
+            ->assertRedirect('/');
+
+        $this->assertDatabaseMissing('households', ['id' => $last->id]);
+        $this->assertDatabaseMissing('households', ['id' => $other->id]);
+        // Someone else still owns this one.
+        $this->assertDatabaseHas('households', ['id' => $shared->id]);
+    }
+
+    #[Test]
+    public function itAsksBeforeDeletingAnyOfTheirHouseholdsOthersStillUse(): void
+    {
+        $last = Household::factory()->create();
+        $other = Household::factory()->create(['name' => 'The Cottage']);
+        $owner = User::factory()->create(['household_id' => $last->id, 'role' => HouseholdRoleEnum::Owner]);
+        $owner->households()->attach($other->id, ['role' => HouseholdRoleEnum::Owner, 'pending' => false]);
+        User::factory()->create(['household_id' => $other->id, 'role' => HouseholdRoleEnum::Adult]);
+
+        $this->actingAs($owner)
+            ->delete('/settings/profile', ['password' => 'password'])
+            ->assertSessionHasErrors('household');
+
+        $this->assertDatabaseHas('users', ['id' => $owner->id]);
+        $this->assertDatabaseHas('households', ['id' => $other->id]);
+    }
+
+    #[Test]
     public function itDeletesANonOwnerMemberWithoutTouchingTheHousehold(): void
     {
         $household = Household::factory()->create();
@@ -110,7 +148,7 @@ class DeleteAccountTest extends TestCase
         $this->assertDatabaseMissing('households', ['id' => $household->id]);
         $this->assertDatabaseMissing('chores', ['id' => $chore->id]);
 
-        $this->assertDatabaseHas('users', ['id' => $member->id, 'current_household_id' => null]);
+        $this->assertDatabaseHas('users', ['id' => $member->id, 'last_household_id' => null]);
         $this->assertDatabaseMissing('household_user', ['user_id' => $member->id, 'household_id' => $household->id]);
     }
 
@@ -137,13 +175,13 @@ class DeleteAccountTest extends TestCase
         $this->actingAs($member)->delete('/settings/profile', ['password' => 'password']);
 
         $stripe->assertNothingRequested();
-        $this->assertTrue($owner->household->fresh()->subscribed('default'));
+        $this->assertTrue($owner->lastHousehold->fresh()->subscribed('default'));
     }
 
     private function ownerOfPaidHousehold(): User
     {
         $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
-        $owner->household->update(['stripe_id' => 'cus_test123']);
+        $owner->lastHousehold->update(['stripe_id' => 'cus_test123']);
         Subscription::create([
             'household_id' => $owner->household_id,
             'type' => 'default',

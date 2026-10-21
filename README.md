@@ -244,7 +244,7 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    route["Route — routes/web.php<br/>auth · verified · household · trial.active"]
+    route["Route — routes/web.php, under /h/{household}<br/>auth · verified · household · trial.active"]
     policy{"Policy — app/Policies<br/>->can('update', 'chore')"}
     controller["Controller — app/Http/Controllers<br/>thin: request in, response out"]
     request["Form request — app/Http/Requests<br/>validates, then toData()"]
@@ -270,8 +270,8 @@ Each layer only talks to the one below it:
 
 | Layer | Where | Does | Never |
 |---|---|---|---|
-| Routes | `routes/web.php` | Middleware, and the policy ability for every household route (`->can(...)`) | Business rules |
-| Policies | `app/Policies/*Policy.php` | Is this record in the current household (else 404)? Does the role allow it (else 403)? | Writes |
+| Routes | `routes/web.php` | Middleware, and the policy ability for every household route (`->can(...)`). Household screens live under `/h/{household}`; `ResolveHouseholdMiddleware` checks membership (else 404) | Business rules |
+| Policies | `app/Policies/*Policy.php` | Is this record in the URL's household (else 404)? Does the role allow it (else 403)? | Writes |
 | Controllers | `app/Http/Controllers` | Call use cases, render pages, redirect with toasts | Query the database or use repositories |
 | Form requests | `app/Http/Requests` | Validate, then `toData()` into a typed `*InputData` | Pass `array $attributes` along |
 | Use cases | `app/UseCases/<Area>` | Business rules, transactions, sending notifications. Return `*Data` objects | Query the database directly |

@@ -42,7 +42,7 @@ class LiveNotificationTest extends TestCase
         $owner = User::factory()->create(['name' => 'Sarah Parker']);
         $partner = User::factory()->create(['household_id' => $owner->household_id]);
 
-        $this->actingAs($owner)->post('/chores', ['name' => 'Clean the gutters', 'assigned_to' => $partner->id]);
+        $this->actingAs($owner)->post($this->hh('/chores'), ['name' => 'Clean the gutters', 'assigned_to' => $partner->id]);
 
         $stored = $partner->notifications()->sole();
 
@@ -69,7 +69,7 @@ class LiveNotificationTest extends TestCase
             'status' => ChoreStatusEnum::Today,
         ]);
 
-        $this->actingAs($owner)->patch("/chores/{$chore->id}/toggle")->assertRedirect();
+        $this->actingAs($owner)->patch($this->hh("/chores/{$chore->id}/toggle"))->assertRedirect();
 
         $this->assertSame(ChoreStatusEnum::Done, $chore->fresh()?->status);
         $this->assertCount(1, $partner->notifications);
@@ -85,7 +85,7 @@ class LiveNotificationTest extends TestCase
         $partner = User::factory()->create(['household_id' => $owner->household_id]);
         $chore = Chore::factory()->create(['household_id' => $owner->household_id, 'assigned_to' => $partner->id]);
 
-        $this->actingAs($owner)->delete("/chores/{$chore->id}");
+        $this->actingAs($owner)->delete($this->hh("/chores/{$chore->id}"));
 
         // The queued job must not need the chore back from the database.
         Queue::assertPushed(BroadcastEvent::class, function (BroadcastEvent $job): bool {

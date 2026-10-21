@@ -20,8 +20,8 @@ class NotificationEndpointsTest extends TestCase
         $user = User::factory()->create();
         $other = User::factory()->create();
 
-        $user->notify(new ChoresReminderNotification($user->household, 2));
-        $other->notify(new ChoresReminderNotification($other->household, 3));
+        $user->notify(new ChoresReminderNotification($user->lastHousehold, 2));
+        $other->notify(new ChoresReminderNotification($other->lastHousehold, 3));
 
         $response = $this->actingAs($user)->getJson('/notifications')->assertOk();
 
@@ -32,10 +32,10 @@ class NotificationEndpointsTest extends TestCase
     public function markAsReadFlipsReadAt(): void
     {
         $user = User::factory()->create();
-        $user->notify(new ChoresReminderNotification($user->household, 1));
+        $user->notify(new ChoresReminderNotification($user->lastHousehold, 1));
         $notification = $user->notifications()->firstOrFail();
 
-        $this->actingAs($user)->patch("/notifications/{$notification->id}/read")->assertRedirect(route('chores.index'));
+        $this->actingAs($user)->patch("/notifications/{$notification->id}/read")->assertRedirect($this->hh('/chores', $user->lastHousehold));
 
         $this->assertNotNull($notification->refresh()->read_at);
     }
@@ -44,8 +44,8 @@ class NotificationEndpointsTest extends TestCase
     public function markAllAsReadClearsEveryUnreadNotification(): void
     {
         $user = User::factory()->create();
-        $user->notify(new ChoresReminderNotification($user->household, 1));
-        $user->notify(new ChoresReminderNotification($user->household, 2));
+        $user->notify(new ChoresReminderNotification($user->lastHousehold, 1));
+        $user->notify(new ChoresReminderNotification($user->lastHousehold, 2));
 
         $this->actingAs($user)->post('/notifications/read-all')->assertRedirect();
 
@@ -57,8 +57,8 @@ class NotificationEndpointsTest extends TestCase
     {
         $user = User::factory()->create();
         $other = User::factory()->create();
-        $user->notify(new ChoresReminderNotification($user->household, 1));
-        $other->notify(new ChoresReminderNotification($other->household, 1));
+        $user->notify(new ChoresReminderNotification($user->lastHousehold, 1));
+        $other->notify(new ChoresReminderNotification($other->lastHousehold, 1));
 
         $this->actingAs($user)->delete('/notifications')->assertRedirect();
 

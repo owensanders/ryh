@@ -28,7 +28,7 @@ class MealNotificationTest extends TestCase
         $cook = User::factory()->create(['household_id' => $owner->household_id]);
         $recipe = Recipe::factory()->create(['household_id' => $owner->household_id]);
 
-        $this->actingAs($owner)->post('/meals', [
+        $this->actingAs($owner)->post($this->hh('/meals'), [
             'recipe_id' => $recipe->id,
             'planned_on' => now()->toDateString(),
             'slot' => 'dinner',
@@ -47,7 +47,7 @@ class MealNotificationTest extends TestCase
         $owner = User::factory()->create();
         $recipe = Recipe::factory()->create(['household_id' => $owner->household_id]);
 
-        $this->actingAs($owner)->post('/meals', [
+        $this->actingAs($owner)->post($this->hh('/meals'), [
             'recipe_id' => $recipe->id,
             'planned_on' => now()->toDateString(),
             'slot' => 'dinner',
@@ -72,7 +72,7 @@ class MealNotificationTest extends TestCase
             'cook_id' => $first->id,
         ]);
 
-        $this->actingAs($owner)->patch("/meals/{$meal->id}", [
+        $this->actingAs($owner)->patch($this->hh("/meals/{$meal->id}"), [
             'recipe_id' => $recipe->id,
             'planned_on' => $meal->planned_on->toDateString(),
             'slot' => $meal->slot->value,
@@ -97,7 +97,7 @@ class MealNotificationTest extends TestCase
             'cook_id' => $cook->id,
         ]);
 
-        $this->actingAs($owner)->patch("/meals/{$meal->id}", [
+        $this->actingAs($owner)->patch($this->hh("/meals/{$meal->id}"), [
             'recipe_id' => $recipe->id,
             'planned_on' => $meal->planned_on->addDay()->toDateString(),
             'slot' => $meal->slot->value,
@@ -122,7 +122,7 @@ class MealNotificationTest extends TestCase
             'cook_id' => $cook->id,
         ]);
 
-        $this->actingAs($owner)->delete("/meals/{$meal->id}");
+        $this->actingAs($owner)->delete($this->hh("/meals/{$meal->id}"));
 
         Notification::assertSentTo($cook, MealDeletedNotification::class);
         Notification::assertNotSentTo($owner, MealDeletedNotification::class);
@@ -141,7 +141,7 @@ class MealNotificationTest extends TestCase
             'cook_id' => $owner->id,
         ]);
 
-        $this->actingAs($owner)->delete("/meals/{$meal->id}");
+        $this->actingAs($owner)->delete($this->hh("/meals/{$meal->id}"));
 
         Notification::assertNothingSent();
     }

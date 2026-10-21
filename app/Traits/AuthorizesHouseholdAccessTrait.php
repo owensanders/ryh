@@ -6,11 +6,12 @@ namespace App\Traits;
 
 use App\Enums\HouseholdRoleEnum;
 use App\Models\User;
+use App\Support\CurrentHouseholdHelper;
 use Illuminate\Auth\Access\Response;
 
 /**
- * The two questions every policy asks: is this record in the household the
- * person is using, and does their role there allow this?
+ * The two questions every policy asks: is this record in the household this
+ * request is for (its /h/{household} URL), and does their role there allow this?
  */
 trait AuthorizesHouseholdAccessTrait
 {
@@ -22,7 +23,7 @@ trait AuthorizesHouseholdAccessTrait
      */
     protected function inHouseholdAs(User $user, ?int $householdId, array $roles): Response
     {
-        if ($householdId === null || $householdId !== $user->current_household_id) {
+        if ($householdId === null || $householdId !== CurrentHouseholdHelper::id()) {
             return Response::denyAsNotFound();
         }
 
@@ -32,7 +33,7 @@ trait AuthorizesHouseholdAccessTrait
     /** @param  list<HouseholdRoleEnum>  $roles */
     protected function as(User $user, array $roles): Response
     {
-        return in_array($user->currentRole(), $roles, true)
+        return in_array(CurrentHouseholdHelper::role(), $roles, true)
             ? Response::allow()
             : Response::deny();
     }

@@ -26,7 +26,7 @@ class CalendarEventUpdatedNotification extends HouseholdNotification
             'event_id' => $this->event->id,
             'user_id' => $notifiable->id,
             'body' => "{$this->actor->name} updated \"{$this->event->title}\"",
-            'url' => route('calendar.index'),
+            'url' => $this->householdUrl('calendar.index'),
         ];
     }
 

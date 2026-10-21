@@ -39,11 +39,27 @@ abstract class HouseholdNotification extends Notification
         $data = $this->toArray($notifiable);
 
         return new PushMessage(
-            title: Household::find($this->householdId())->name ?? config('app.name'),
+            title: $this->household()->name ?? config('app.name'),
             body: $data['body'],
             url: $data['url'],
             tag: "{$this->notificationType()}-{$notifiable->id}",
         );
+    }
+
+    /**
+     * A screen in the household this is about, named outright: the bell entry
+     * may be built outside any request for that household.
+     */
+    protected function householdUrl(string $route): string
+    {
+        return route($route, ['household' => $this->household()?->slug]);
+    }
+
+    private ?Household $household = null;
+
+    private function household(): ?Household
+    {
+        return $this->household ??= Household::find($this->householdId());
     }
 
     /** @return array<string, mixed> */

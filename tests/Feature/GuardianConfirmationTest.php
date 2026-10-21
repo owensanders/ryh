@@ -24,12 +24,6 @@ class GuardianConfirmationTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function membership(User $member, int $householdId): HouseholdUser
-    {
-        /** @var HouseholdUser */
-        return $member->households()->where('households.id', $householdId)->firstOrFail()->pivot;
-    }
-
     #[Test]
     public function invitingATeenOrChildNeedsTheGuardianConfirmation(): void
     {
@@ -38,7 +32,7 @@ class GuardianConfirmationTest extends TestCase
 
         foreach (['teen', 'child'] as $role) {
             $this->actingAs($owner)
-                ->post('/house/invite', ['email' => "kid-{$role}@parkerhouse.co.uk", 'role' => $role])
+                ->post($this->hh('/house/invite'), ['email' => "kid-{$role}@parkerhouse.co.uk", 'role' => $role])
                 ->assertSessionHasErrors('guardian_confirmed');
         }
 
@@ -53,7 +47,7 @@ class GuardianConfirmationTest extends TestCase
         $adult = User::factory()->create(['household_id' => null]);
 
         $this->actingAs($owner)
-            ->post('/house/invite', ['email' => $adult->email, 'role' => 'adult'])
+            ->post($this->hh('/house/invite'), ['email' => $adult->email, 'role' => 'adult'])
             ->assertSessionHasNoErrors();
 
         $membership = $this->membership($adult, $owner->household_id);
@@ -70,7 +64,7 @@ class GuardianConfirmationTest extends TestCase
         $child = User::factory()->create(['household_id' => null]);
 
         $this->actingAs($owner)
-            ->post('/house/invite', ['email' => $child->email, 'role' => 'child', 'guardian_confirmed' => true])
+            ->post($this->hh('/house/invite'), ['email' => $child->email, 'role' => 'child', 'guardian_confirmed' => true])
             ->assertSessionHasNoErrors();
 
         $membership = $this->membership($child, $owner->household_id);
@@ -88,7 +82,7 @@ class GuardianConfirmationTest extends TestCase
         $this->travelTo($invitedAt);
 
         $this->actingAs($owner)
-            ->post('/house/invite', ['email' => 'mia@parkerhouse.co.uk', 'role' => 'child', 'guardian_confirmed' => true])
+            ->post($this->hh('/house/invite'), ['email' => 'mia@parkerhouse.co.uk', 'role' => 'child', 'guardian_confirmed' => true])
             ->assertSessionHasNoErrors();
 
         $actionUrl = null;
@@ -107,7 +101,7 @@ class GuardianConfirmationTest extends TestCase
             'email' => 'mia@parkerhouse.co.uk',
             'password' => 'a-very-strong-password',
             'terms' => true,
-        ])->assertRedirect(route('dashboard', absolute: false));
+        ])->assertRedirect(route('app', absolute: false));
 
         $mia = User::where('email', 'mia@parkerhouse.co.uk')->firstOrFail();
         $membership = $this->membership($mia, $owner->household_id);
@@ -137,7 +131,7 @@ class GuardianConfirmationTest extends TestCase
             ->assertRedirect(route('household.setup', absolute: false))
             ->assertSessionHas('reinviteHousehold', 'The Parkers');
 
-        $this->assertNull(User::where('email', 'noah@parkerhouse.co.uk')->firstOrFail()->current_household_id);
+        $this->assertNull(User::where('email', 'noah@parkerhouse.co.uk')->firstOrFail()->last_household_id);
     }
 
     #[Test]
@@ -147,10 +141,10 @@ class GuardianConfirmationTest extends TestCase
         $member = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRoleEnum::Adult]);
 
         $this->actingAs($owner)
-            ->patch("/house/members/{$member->id}/role", ['role' => 'child'])
+            ->patch($this->hh("/house/members/{$member->id}/role"), ['role' => 'child'])
             ->assertSessionHasErrors('guardian_confirmed');
 
-        $this->assertSame(HouseholdRoleEnum::Adult, $member->refresh()->currentRole());
+        $this->assertSame(HouseholdRoleEnum::Adult, $this->membership($member)->role);
     }
 
     #[Test]
@@ -160,14 +154,14 @@ class GuardianConfirmationTest extends TestCase
         $member = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRoleEnum::Adult]);
 
         $this->actingAs($owner)
-            ->patch("/house/members/{$member->id}/role", ['role' => 'teen', 'guardian_confirmed' => true])
+            ->patch($this->hh("/house/members/{$member->id}/role"), ['role' => 'teen', 'guardian_confirmed' => true])
             ->assertSessionHasNoErrors();
 
         $this->assertSame($owner->id, $this->membership($member, $owner->household_id)->guardian_confirmed_by);
 
         // Turning 18: back to Adult, and the guardian record goes with the role.
         $this->actingAs($owner)
-            ->patch("/house/members/{$member->id}/role", ['role' => 'adult'])
+            ->patch($this->hh("/house/members/{$member->id}/role"), ['role' => 'adult'])
             ->assertSessionHasNoErrors();
 
         $membership = $this->membership($member, $owner->household_id);
@@ -188,7 +182,7 @@ class GuardianConfirmationTest extends TestCase
         $this->actingAs($owner)
             ->post('/household/setup', ['name' => 'The Parkers', 'invites' => $invites])
             ->assertSessionHasErrors('guardian_confirmed');
-        $this->assertNull($owner->refresh()->current_household_id);
+        $this->assertNull($owner->refresh()->last_household_id);
 
         $this->actingAs($owner)
             ->post('/household/setup', ['name' => 'The Parkers', 'invites' => $invites, 'guardian_confirmed' => true])

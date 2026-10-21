@@ -26,7 +26,7 @@ class MealEditedNotification extends HouseholdNotification
             'meal_id' => $this->meal->id,
             'user_id' => $notifiable->id,
             'body' => "{$this->actor->name} updated \"{$this->meal->recipe->name}\"",
-            'url' => route('meals.index'),
+            'url' => $this->householdUrl('meals.index'),
         ];
     }
 

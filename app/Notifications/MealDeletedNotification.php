@@ -25,7 +25,7 @@ class MealDeletedNotification extends HouseholdNotification
             'type' => $this->notificationType(),
             'user_id' => $notifiable->id,
             'body' => "{$this->actor->name} removed \"{$this->meal->recipe->name}\" from the meal plan",
-            'url' => route('meals.index'),
+            'url' => $this->householdUrl('meals.index'),
         ];
     }
 

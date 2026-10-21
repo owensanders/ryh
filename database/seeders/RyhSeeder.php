@@ -80,7 +80,7 @@ class RyhSeeder extends Seeder
 
         foreach ($people as [$key, $name, $initials, $colour, $status, $role]) {
             $members[$key] = User::create([
-                'current_household_id' => $household->id,
+                'last_household_id' => $household->id,
                 'name' => $name,
                 'initials' => $initials,
                 'colour' => $colour,
@@ -93,7 +93,7 @@ class RyhSeeder extends Seeder
         }
 
         $margaret = User::create([
-            'current_household_id' => $household->id,
+            'last_household_id' => $household->id,
             'name' => 'Margaret Parker',
             'initials' => 'MP',
             'colour' => PaletteEnum::Coral,

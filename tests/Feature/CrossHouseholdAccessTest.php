@@ -50,6 +50,6 @@ class CrossHouseholdAccessTest extends TestCase
     {
         $owner = User::factory()->create();
 
-        $this->actingAs($owner)->{$method}($url())->assertNotFound();
+        $this->actingAs($owner)->{$method}($this->hh($url()))->assertNotFound();
     }
 }
