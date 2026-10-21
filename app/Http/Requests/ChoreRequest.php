@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Data\Input\ChoreInputData;
 use App\Support\CurrentHouseholdHelper;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -32,11 +31,18 @@ class ChoreRequest extends FormRequest
         ];
     }
 
-    public function toData(): ChoreInputData
+    /** Validated as it'll be stored: a trimmed name, and an id or null for "nobody". */
+    protected function prepareForValidation(): void
     {
-        return new ChoreInputData(
-            name: trim((string) $this->validated('name')),
-            assignedTo: $this->filled('assigned_to') ? (int) $this->validated('assigned_to') : null,
-        );
+        $assignedTo = $this->input('assigned_to');
+
+        $this->merge([
+            'name' => is_string($this->input('name')) ? trim($this->input('name')) : $this->input('name'),
+            'assigned_to' => match (true) {
+                $assignedTo === null, $assignedTo === '' => null,
+                is_numeric($assignedTo) => (int) $assignedTo,
+                default => $assignedTo,
+            },
+        ]);
     }
 }

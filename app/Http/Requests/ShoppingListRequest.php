@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Data\Input\ShoppingListInputData;
 use App\Enums\PaletteEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -16,7 +15,7 @@ class ShoppingListRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:120'],
-            'colour' => ['nullable', Rule::enum(PaletteEnum::class)],
+            'colour' => ['required', Rule::enum(PaletteEnum::class)],
         ];
     }
 
@@ -28,11 +27,12 @@ class ShoppingListRequest extends FormRequest
         ];
     }
 
-    public function toData(): ShoppingListInputData
+    /** A trimmed name, and mint when no colour is picked. */
+    protected function prepareForValidation(): void
     {
-        return new ShoppingListInputData(
-            name: trim((string) $this->validated('name')),
-            colour: PaletteEnum::tryFrom((string) $this->validated('colour')) ?? PaletteEnum::Mint,
-        );
+        $this->merge([
+            'name' => is_string($this->input('name')) ? trim($this->input('name')) : $this->input('name'),
+            'colour' => $this->filled('colour') ? $this->input('colour') : PaletteEnum::Mint->value,
+        ]);
     }
 }
