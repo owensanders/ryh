@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\UseCases\Meals;
 
-use App\Contracts\Repositories\MealPlanRepositoryInterface;
 use App\Models\PlannedMeal;
 use App\Models\User;
 use App\Notifications\MealDeletedNotification;
+use App\Repositories\MealPlanRepository;
 
 class DeletePlannedMealUseCase
 {
-    public function __construct(private readonly MealPlanRepositoryInterface $meals) {}
+    public function __construct(private readonly MealPlanRepository $meals) {}
 
     public function execute(PlannedMeal $meal, User $actor): void
     {

@@ -46,10 +46,11 @@ repository. Each layer only talks to the one below it.
   scalars or `*InputData`, and return a `*Data` object or an
   `array<int, *Data>`, never a shaped array. Transactions and notifications
   start here.
-- **Repositories** (`app/Repositories`, interfaces in
-  `app/Contracts/Repositories`, bound in `RepositoryServiceProvider`): every
-  query and write. They take input objects or named parameters, never
-  attribute arrays, and map them to columns themselves.
+- **Repositories** (`app/Repositories`): every query and write. They take
+  input objects or named parameters, never attribute arrays, and map them to
+  columns themselves. Concrete classes, type-hinted directly and autowired: no
+  interfaces, since there's only ever one implementation (tests use the real
+  database).
 - **Models** (`app/Models`): relations, casts, and small helpers that don't
   query (`Household::canGenerateAiMealPlan()`). A helper that would query
   belongs in a repository.
@@ -90,7 +91,7 @@ A use case that writes more than once wraps the writes in `DB::transaction`.
 Calls to outside services (Stripe, mail, AI) happen outside the transaction:
 before it if a failure should stop the change, after it otherwise. Checks
 that two requests could race, like the member cap or budget carry-forward,
-lock the household row first with `HouseholdRepositoryInterface::lockForUpdate()`.
+lock the household row first with `HouseholdRepository::lockForUpdate()`.
 
 ## Errors
 
@@ -118,7 +119,7 @@ everyone involved, once each, never the actor.
 ## Naming
 
 A class name ends with what it is: `ChoreStatusEnum`, `CreateChoreUseCase`,
-`ChoreRepository`, `ChoreRepositoryInterface`, `ChorePolicy`, `ChoreData`,
+`ChoreRepository`, `ChorePolicy`, `ChoreData`,
 `ChoreInputData`, `ChoreRequest`, `ChoreController`,
 `ChoreAssignedNotification`, `QueueHeartbeatJob`, `RecordLoginStreakListener`,
 `UserNotificationBroadcastEvent`, `ResolveHouseholdMiddleware`,

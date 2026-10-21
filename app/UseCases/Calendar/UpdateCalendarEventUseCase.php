@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\UseCases\Calendar;
 
-use App\Contracts\Repositories\CalendarEventRepositoryInterface;
 use App\Data\CalendarEventData;
 use App\Data\Input\CalendarEventInputData;
 use App\Models\CalendarEvent;
 use App\Models\User;
 use App\Notifications\CalendarEventAssignedNotification;
 use App\Notifications\CalendarEventUpdatedNotification;
+use App\Repositories\CalendarEventRepository;
 use App\Support\RecipientsHelper;
 
 class UpdateCalendarEventUseCase
 {
-    public function __construct(private readonly CalendarEventRepositoryInterface $events) {}
+    public function __construct(private readonly CalendarEventRepository $events) {}
 
     public function execute(CalendarEvent $event, CalendarEventInputData $changes, User $actor): CalendarEventData
     {

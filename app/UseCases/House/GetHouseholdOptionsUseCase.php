@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\UseCases\House;
 
-use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Data\HouseholdOptionData;
 use App\Models\Household;
 use App\Models\User;
+use App\Repositories\MembershipRepository;
 use LogicException;
 
 class GetHouseholdOptionsUseCase
 {
     public function __construct(
-        private readonly MembershipRepositoryInterface $memberships,
+        private readonly MembershipRepository $memberships,
     ) {}
 
     /** @return array<int, HouseholdOptionData> */

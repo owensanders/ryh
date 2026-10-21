@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\UseCases\Calendar;
 
-use App\Contracts\Repositories\CalendarEventRepositoryInterface;
 use App\Data\CalendarEventData;
 use App\Data\Input\CalendarEventInputData;
 use App\Models\Household;
 use App\Models\User;
 use App\Notifications\CalendarEventAssignedNotification;
+use App\Repositories\CalendarEventRepository;
 
 class AddCalendarEventUseCase
 {
-    public function __construct(private readonly CalendarEventRepositoryInterface $events) {}
+    public function __construct(private readonly CalendarEventRepository $events) {}
 
     public function execute(Household $household, CalendarEventInputData $input, User $actor): CalendarEventData
     {

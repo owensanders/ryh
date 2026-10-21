@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\UseCases\Auth;
 
-use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Models\User;
+use App\Repositories\UserRepository;
 use Illuminate\Auth\Events\Verified;
 
 class VerifyEmailUseCase
 {
-    public function __construct(private readonly UserRepositoryInterface $users) {}
+    public function __construct(private readonly UserRepository $users) {}
 
     /** False when the address was already verified, so nothing changed. */
     public function execute(User $user): bool

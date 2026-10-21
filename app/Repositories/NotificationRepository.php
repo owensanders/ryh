@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Contracts\Repositories\NotificationRepositoryInterface;
 use App\Models\User;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Collection;
 
-class NotificationRepository implements NotificationRepositoryInterface
+class NotificationRepository
 {
-    /** @return Collection<int, DatabaseNotification> */
+    /** @return Collection<int, DatabaseNotification> Newest first. */
     public function latestFor(User $user, int $limit): Collection
     {
         return $user->notifications()->latest()->limit($limit)->get();
     }
 
+    /** One of their own notifications — null for anyone else's. */
     public function findFor(User $user, string $id): ?DatabaseNotification
     {
         return $user->notifications()->find($id);

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\UseCases\House;
 
-use App\Contracts\Repositories\MembershipRepositoryInterface;
-use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Models\Household;
 use App\Models\User;
+use App\Repositories\MembershipRepository;
+use App\Repositories\UserRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class SwitchCurrentHouseholdUseCase
 {
     public function __construct(
-        private readonly UserRepositoryInterface $users,
-        private readonly MembershipRepositoryInterface $memberships,
+        private readonly UserRepository $users,
+        private readonly MembershipRepository $memberships,
     ) {}
 
     public function execute(User $user, int $householdId): void

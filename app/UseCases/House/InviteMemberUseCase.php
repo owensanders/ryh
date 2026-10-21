@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\UseCases\House;
 
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
-use App\Contracts\Repositories\MembershipRepositoryInterface;
-use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Data\Input\InviteInputData;
 use App\Enums\PendingReasonEnum;
 use App\Mail\HouseholdInviteMail;
 use App\Models\Household;
 use App\Models\User;
+use App\Repositories\HouseholdRepository;
+use App\Repositories\MembershipRepository;
+use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
@@ -20,9 +20,9 @@ use Illuminate\Validation\ValidationException;
 class InviteMemberUseCase
 {
     public function __construct(
-        private readonly UserRepositoryInterface $users,
-        private readonly HouseholdRepositoryInterface $households,
-        private readonly MembershipRepositoryInterface $memberships,
+        private readonly UserRepository $users,
+        private readonly HouseholdRepository $households,
+        private readonly MembershipRepository $memberships,
     ) {}
 
     /**

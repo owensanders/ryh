@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\UseCases\Settings;
 
-use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Data\Input\ProfileInputData;
 use App\Models\User;
+use App\Repositories\UserRepository;
 
 class UpdateProfileUseCase
 {
-    public function __construct(private readonly UserRepositoryInterface $users) {}
+    public function __construct(private readonly UserRepository $users) {}
 
     public function execute(User $user, ProfileInputData $profile): User
     {

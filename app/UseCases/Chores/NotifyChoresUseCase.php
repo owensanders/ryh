@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\UseCases\Chores;
 
-use App\Contracts\Repositories\ChoreRepositoryInterface;
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Exceptions\ChoreReminderCooldownException;
 use App\Models\Household;
 use App\Notifications\ChoresReminderNotification;
+use App\Repositories\ChoreRepository;
+use App\Repositories\HouseholdRepository;
 
 /** Reminds every member with at least one outstanding chore, then starts the household's cooldown. */
 class NotifyChoresUseCase
 {
     public function __construct(
-        private readonly ChoreRepositoryInterface $chores,
-        private readonly HouseholdRepositoryInterface $households,
+        private readonly ChoreRepository $chores,
+        private readonly HouseholdRepository $households,
     ) {}
 
     public function execute(Household $household): void

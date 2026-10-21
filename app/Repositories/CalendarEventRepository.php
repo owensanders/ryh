@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Contracts\Repositories\CalendarEventRepositoryInterface;
 use App\Data\Input\CalendarEventInputData;
 use App\Models\CalendarEvent;
 use App\Models\Household;
@@ -13,7 +12,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-class CalendarEventRepository implements CalendarEventRepositoryInterface
+class CalendarEventRepository
 {
     /** @return Collection<int, CalendarEvent> */
     public function between(Household $household, CarbonImmutable $from, CarbonImmutable $to): Collection
@@ -61,6 +60,10 @@ class CalendarEventRepository implements CalendarEventRepositoryInterface
         $event->delete();
     }
 
+    /**
+     * Takes this member off this household's events: ones they were the sole
+     * attendee of are deleted, the rest just lose them. Other households' events are untouched.
+     */
     public function removeAttendeeFrom(User $member, Household $household): void
     {
         $member->attendingEvents()->where('household_id', $household->id)->with('attendees')->get()

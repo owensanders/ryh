@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\UseCases\Settings;
 
-use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Models\User;
+use App\Repositories\UserRepository;
 
 /**
  * Turns push on for one browser. An endpoint already registered to someone
@@ -13,7 +13,7 @@ use App\Models\User;
  */
 class SavePushSubscriptionUseCase
 {
-    public function __construct(private readonly UserRepositoryInterface $users) {}
+    public function __construct(private readonly UserRepository $users) {}
 
     public function execute(User $user, string $endpoint, string $publicKey, string $authToken, ?string $contentEncoding): void
     {

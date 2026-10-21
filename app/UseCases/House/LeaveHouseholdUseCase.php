@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\UseCases\House;
 
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
-use App\Contracts\Repositories\MembershipRepositoryInterface;
-use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
 use App\Models\User;
+use App\Repositories\HouseholdRepository;
+use App\Repositories\MembershipRepository;
+use App\Repositories\UserRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -17,10 +17,10 @@ use Illuminate\Validation\ValidationException;
 class LeaveHouseholdUseCase
 {
     public function __construct(
-        private readonly UserRepositoryInterface $users,
-        private readonly HouseholdRepositoryInterface $households,
+        private readonly UserRepository $users,
+        private readonly HouseholdRepository $households,
         private readonly CancelHouseholdSubscriptionUseCase $cancelSubscription,
-        private readonly MembershipRepositoryInterface $memberships,
+        private readonly MembershipRepository $memberships,
     ) {}
 
     /** @throws ValidationException */

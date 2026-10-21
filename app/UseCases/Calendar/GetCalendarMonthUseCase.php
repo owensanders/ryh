@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\UseCases\Calendar;
 
-use App\Contracts\Repositories\CalendarEventRepositoryInterface;
-use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Data\CalendarDayData;
 use App\Data\CalendarEventData;
 use App\Data\CalendarMonthData;
@@ -13,6 +11,8 @@ use App\Data\MemberData;
 use App\Models\CalendarEvent;
 use App\Models\Household;
 use App\Models\User;
+use App\Repositories\CalendarEventRepository;
+use App\Repositories\MembershipRepository;
 use Carbon\CarbonImmutable;
 
 class GetCalendarMonthUseCase
@@ -21,8 +21,8 @@ class GetCalendarMonthUseCase
     private const int CELLS = 42;
 
     public function __construct(
-        private readonly CalendarEventRepositoryInterface $events,
-        private readonly MembershipRepositoryInterface $memberships,
+        private readonly CalendarEventRepository $events,
+        private readonly MembershipRepository $memberships,
     ) {}
 
     public function execute(Household $household, CarbonImmutable $month): CalendarMonthData

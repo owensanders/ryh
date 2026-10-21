@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Contracts\Repositories\ChoreRepositoryInterface;
 use App\Data\Input\ChoreInputData;
 use App\Enums\ChoreStatusEnum;
 use App\Models\Chore;
@@ -12,7 +11,7 @@ use App\Models\Household;
 use App\Models\User;
 use Illuminate\Support\Collection;
 
-class ChoreRepository implements ChoreRepositoryInterface
+class ChoreRepository
 {
     /** @return Collection<int, Chore> */
     public function allFor(Household $household): Collection
@@ -51,7 +50,7 @@ class ChoreRepository implements ChoreRepositoryInterface
         return $chore->refresh();
     }
 
-    /** @return Collection<int, Chore> */
+    /** @return Collection<int, Chore> Assigned chores still to do, with their assignee. */
     public function outstandingAssigned(Household $household): Collection
     {
         return $household->chores()
@@ -66,6 +65,7 @@ class ChoreRepository implements ChoreRepositoryInterface
         $chore->delete();
     }
 
+    /** Deletes the chores assigned to this member in this household — their other households keep theirs. */
     public function deleteAssignedTo(User $member, Household $household): void
     {
         $member->assignedChores()->where('household_id', $household->id)->delete();

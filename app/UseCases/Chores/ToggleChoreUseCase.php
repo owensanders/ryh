@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\UseCases\Chores;
 
-use App\Contracts\Repositories\ChoreRepositoryInterface;
 use App\Data\ChoreData;
 use App\Enums\ChoreStatusEnum;
 use App\Models\Chore;
 use App\Models\User;
 use App\Notifications\ChoreActionedNotification;
+use App\Repositories\ChoreRepository;
 use App\Support\RecipientsHelper;
 
 /** Ticking a chore off moves it to Completed; un-ticking sends it back to Today. */
 class ToggleChoreUseCase
 {
-    public function __construct(private readonly ChoreRepositoryInterface $chores) {}
+    public function __construct(private readonly ChoreRepository $chores) {}
 
     public function execute(Chore $chore, User $actor): ChoreData
     {

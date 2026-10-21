@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Contracts\Repositories\ShoppingRepositoryInterface;
 use App\Enums\PaletteEnum;
 use App\Models\Household;
 use App\Models\ShoppingItem;
@@ -12,9 +11,9 @@ use App\Models\ShoppingList;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
-class ShoppingRepository implements ShoppingRepositoryInterface
+class ShoppingRepository
 {
-    /** @return Collection<int, ShoppingList> */
+    /** @return Collection<int, ShoppingList> lists with their items eager loaded */
     public function listsFor(Household $household): Collection
     {
         return $household->shoppingLists()->with('items')->get();
@@ -25,6 +24,7 @@ class ShoppingRepository implements ShoppingRepositoryInterface
         return $household->shoppingLists()->with('items')->where('slug', $slug)->first();
     }
 
+    /** One of the household's lists by id, with its items — null for another household's. */
     public function findList(Household $household, int $id): ?ShoppingList
     {
         return $household->shoppingLists()->with('items')->find($id);

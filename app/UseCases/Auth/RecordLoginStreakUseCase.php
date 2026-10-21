@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\UseCases\Auth;
 
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Models\User;
+use App\Repositories\HouseholdRepository;
 use Carbon\CarbonImmutable;
 
 class RecordLoginStreakUseCase
 {
     public function __construct(
-        private readonly HouseholdRepositoryInterface $households,
+        private readonly HouseholdRepository $households,
     ) {}
 
     public function execute(User $user): void

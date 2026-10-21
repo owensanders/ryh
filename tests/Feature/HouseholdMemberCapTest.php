@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Enums\HouseholdRoleEnum;
 use App\Enums\PendingReasonEnum;
 use App\Mail\HouseholdInviteMail;
 use App\Models\Household;
 use App\Models\User;
+use App\Repositories\MembershipRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
@@ -326,6 +326,6 @@ class HouseholdMemberCapTest extends TestCase
 
     private function isFull(User $owner): bool
     {
-        return app(MembershipRepositoryInterface::class)->isFull($owner->lastHousehold()->firstOrFail());
+        return app(MembershipRepository::class)->isFull($owner->lastHousehold()->firstOrFail());
     }
 }

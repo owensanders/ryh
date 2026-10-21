@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Contracts\Repositories\MealPlanRepositoryInterface;
 use App\Data\Input\PlannedMealInputData;
 use App\Data\Input\RecipeDetailsInputData;
 use App\Data\Input\RecipeInputData;
@@ -19,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 use LogicException;
 use Spatie\LaravelData\Optional;
 
-class MealPlanRepository implements MealPlanRepositoryInterface
+class MealPlanRepository
 {
     /** @return Collection<int, PlannedMeal> */
     public function between(Household $household, CarbonImmutable $from, CarbonImmutable $to): Collection
@@ -79,6 +78,7 @@ class MealPlanRepository implements MealPlanRepositoryInterface
         $meal->delete();
     }
 
+    /** Clears this member as cook on this household's planned meals, leaving the meals in place. */
     public function unassignCook(Household $household, User $cook): void
     {
         PlannedMeal::where('household_id', $household->id)->where('cook_id', $cook->id)->update(['cook_id' => null]);

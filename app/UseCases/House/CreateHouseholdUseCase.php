@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace App\UseCases\House;
 
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
-use App\Contracts\Repositories\MembershipRepositoryInterface;
-use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Data\Input\HouseholdSetupInputData;
 use App\Enums\HouseholdRoleEnum;
 use App\Enums\PaletteEnum;
 use App\Models\Household;
 use App\Models\User;
+use App\Repositories\HouseholdRepository;
+use App\Repositories\MembershipRepository;
+use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\DB;
 
 class CreateHouseholdUseCase
 {
     public function __construct(
-        private readonly HouseholdRepositoryInterface $households,
-        private readonly UserRepositoryInterface $users,
+        private readonly HouseholdRepository $households,
+        private readonly UserRepository $users,
         private readonly InviteMemberUseCase $inviteMember,
-        private readonly MembershipRepositoryInterface $memberships,
+        private readonly MembershipRepository $memberships,
     ) {}
 
     public function execute(User $owner, HouseholdSetupInputData $setup): Household

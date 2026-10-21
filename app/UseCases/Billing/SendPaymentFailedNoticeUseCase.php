@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\UseCases\Billing;
 
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
-use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Mail\PaymentFailedMail;
+use App\Repositories\HouseholdRepository;
+use App\Repositories\MembershipRepository;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Mail;
 class SendPaymentFailedNoticeUseCase
 {
     public function __construct(
-        private readonly HouseholdRepositoryInterface $households,
-        private readonly MembershipRepositoryInterface $memberships,
+        private readonly HouseholdRepository $households,
+        private readonly MembershipRepository $memberships,
     ) {}
 
     /** @param  array<string, mixed>  $invoice  The failed invoice from the webhook payload. */

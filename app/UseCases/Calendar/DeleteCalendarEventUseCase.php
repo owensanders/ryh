@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\UseCases\Calendar;
 
-use App\Contracts\Repositories\CalendarEventRepositoryInterface;
 use App\Models\CalendarEvent;
 use App\Models\User;
 use App\Notifications\CalendarEventDeletedNotification;
+use App\Repositories\CalendarEventRepository;
 use App\Support\RecipientsHelper;
 
 class DeleteCalendarEventUseCase
 {
-    public function __construct(private readonly CalendarEventRepositoryInterface $events) {}
+    public function __construct(private readonly CalendarEventRepository $events) {}
 
     public function execute(CalendarEvent $event, User $actor): void
     {

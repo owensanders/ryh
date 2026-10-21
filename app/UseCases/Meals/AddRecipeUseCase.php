@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\UseCases\Meals;
 
-use App\Contracts\Repositories\MealPlanRepositoryInterface;
 use App\Data\Input\RecipeInputData;
 use App\Data\RecipeData;
 use App\Models\Household;
+use App\Repositories\MealPlanRepository;
 use App\UseCases\Shopping\AddRecipeIngredientsToListUseCase;
 
 class AddRecipeUseCase
 {
     public function __construct(
-        private readonly MealPlanRepositoryInterface $meals,
+        private readonly MealPlanRepository $meals,
         private readonly AddRecipeIngredientsToListUseCase $addIngredients,
     ) {}
 

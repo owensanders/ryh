@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Enums\HouseholdRoleEnum;
 use App\Enums\PendingReasonEnum;
 use App\Models\Household;
@@ -13,7 +12,7 @@ use App\Models\User;
 use DateTimeInterface;
 use Illuminate\Support\Collection;
 
-class MembershipRepository implements MembershipRepositoryInterface
+class MembershipRepository
 {
     public function find(User $user, Household $household): ?HouseholdUser
     {
@@ -23,6 +22,7 @@ class MembershipRepository implements MembershipRepositoryInterface
             ->first();
     }
 
+    /** Their membership of the household they were last in, if they still have one. */
     public function lastFor(User $user): ?HouseholdUser
     {
         if ($user->last_household_id === null) {
@@ -51,30 +51,39 @@ class MembershipRepository implements MembershipRepositoryInterface
         return $user->households()->pluck('households.id')->map(fn (mixed $id): int => (int) $id);
     }
 
+    /** The household to fall back to when they leave their current one, if they have another. */
     public function firstHouseholdIdFor(User $user): ?int
     {
         return $user->households()->first()?->id;
     }
 
-    /** @return Collection<int, Household> */
+    /** @return Collection<int, Household> Their households, each with its membership as `pivot` and its members loaded. */
     public function householdsWithMembersFor(User $user): Collection
     {
         return $user->households()->withCount('members')->with(['members', 'subscriptions'])->get();
     }
 
-    /** @return Collection<int, User> */
+    /**
+     * Everyone in the household, pending invites and join requests included, each with their membership as `pivot`.
+     *
+     * @return Collection<int, User>
+     */
     public function members(Household $household): Collection
     {
         return $household->members()->get();
     }
 
-    /** @return Collection<int, User> */
+    /**
+     * Approved members only — excludes anyone still `pending` approval/invite.
+     *
+     * @return Collection<int, User>
+     */
     public function activeMembers(Household $household): Collection
     {
         return $household->members()->wherePivot('pending', false)->get();
     }
 
-    /** @return Collection<int, User> */
+    /** @return Collection<int, User> Owners who have joined (not pending) — who billing emails go to. */
     public function activeOwners(Household $household): Collection
     {
         return $household->members()
@@ -83,6 +92,7 @@ class MembershipRepository implements MembershipRepositoryInterface
             ->get();
     }
 
+    /** True if `$member` is the only Owner-role member of `$household`. */
     public function isSoleOwner(Household $household, User $member): bool
     {
         return $this->members($household)
@@ -101,11 +111,13 @@ class MembershipRepository implements MembershipRepositoryInterface
         return $household->members()->count();
     }
 
+    /** True once the household has no room left — pending invites and join requests hold a place too. */
     public function isFull(Household $household): bool
     {
         return $this->count($household) >= config('plans.max_members');
     }
 
+    /** A Teen or Child needs a guardian's confirmation; see HouseholdUser::guardianAttributes(). */
     public function add(
         User $user,
         Household $household,

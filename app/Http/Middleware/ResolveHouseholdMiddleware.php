@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Contracts\Repositories\HouseholdRepositoryInterface;
-use App\Contracts\Repositories\MembershipRepositoryInterface;
-use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Models\Household;
+use App\Repositories\HouseholdRepository;
+use App\Repositories\MembershipRepository;
+use App\Repositories\UserRepository;
 use App\Support\CurrentHouseholdHelper;
 use App\Traits\ResolvesUserTrait;
 use Closure;
@@ -26,9 +26,9 @@ class ResolveHouseholdMiddleware
     use ResolvesUserTrait;
 
     public function __construct(
-        private readonly HouseholdRepositoryInterface $households,
-        private readonly MembershipRepositoryInterface $memberships,
-        private readonly UserRepositoryInterface $users,
+        private readonly HouseholdRepository $households,
+        private readonly MembershipRepository $memberships,
+        private readonly UserRepository $users,
     ) {}
 
     public function handle(Request $request, Closure $next): Response

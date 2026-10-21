@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\UseCases\Chores;
 
-use App\Contracts\Repositories\ChoreRepositoryInterface;
-use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Data\ChoreBoardScreenData;
 use App\Data\ChoreColumnData;
 use App\Data\ChoreData;
@@ -14,12 +12,14 @@ use App\Data\MemberScoreData;
 use App\Enums\ChoreStatusEnum;
 use App\Models\Household;
 use App\Models\User;
+use App\Repositories\ChoreRepository;
+use App\Repositories\MembershipRepository;
 
 class GetChoreBoardUseCase
 {
     public function __construct(
-        private readonly ChoreRepositoryInterface $chores,
-        private readonly MembershipRepositoryInterface $memberships,
+        private readonly ChoreRepository $chores,
+        private readonly MembershipRepository $memberships,
     ) {}
 
     public function execute(Household $household): ChoreBoardScreenData
