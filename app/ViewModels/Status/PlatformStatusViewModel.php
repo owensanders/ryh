@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\UseCases\Status;
+namespace App\ViewModels\Status;
 
 use App\Data\PlatformStatusData;
 use App\Data\ServiceStatusData;
@@ -10,7 +10,7 @@ use App\Enums\ServiceStateEnum;
 use App\Status\PlatformProbesService;
 use Illuminate\Support\Facades\Cache;
 
-class GetPlatformStatusUseCase
+class PlatformStatusViewModel
 {
     public const string CACHE_KEY = 'status:platform';
 
@@ -19,7 +19,7 @@ class GetPlatformStatusUseCase
 
     public function __construct(private readonly PlatformProbesService $probes) {}
 
-    public function execute(): PlatformStatusData
+    public function toData(): PlatformStatusData
     {
         /** @var array{checkedAt: string, states: array<string, string>} $result */
         $result = Cache::remember(self::CACHE_KEY, self::CACHE_SECONDS, fn (): array => [

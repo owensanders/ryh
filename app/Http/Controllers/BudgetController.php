@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\Budget\CarryForwardRecurringCategoriesAction;
+use App\Actions\Budget\CarryForwardRecurringIncomeAction;
 use App\Actions\Budget\CreateBudgetCategoryAction;
 use App\Actions\Budget\DeleteBudgetCategoryAction;
 use App\Actions\Budget\UpdateBudgetCategoryAction;
@@ -11,7 +13,7 @@ use App\Http\Requests\BudgetCategoryRequest;
 use App\Http\Requests\IndexBudgetRequest;
 use App\Models\BudgetCategory;
 use App\Traits\ResolvesHouseholdTrait;
-use App\UseCases\Budget\GetBudgetScreenUseCase;
+use App\ViewModels\Budget\BudgetViewModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -21,16 +23,25 @@ class BudgetController extends Controller
 {
     use ResolvesHouseholdTrait;
 
-    public function index(IndexBudgetRequest $request, GetBudgetScreenUseCase $getBudgetScreen): Response
-    {
+    public function index(
+        IndexBudgetRequest $request,
+        CarryForwardRecurringCategoriesAction $carryForwardCategories,
+        CarryForwardRecurringIncomeAction $carryForwardIncome,
+        BudgetViewModel $budget,
+    ): Response {
         $month = $request->validated('month');
+        $household = $this->household($request);
+        // `!` resets the unspecified day/time — without it PHP fills the day from
+        // today, so on the 31st "2026-09" would roll over into October.
+        $first = ($month !== null ? CarbonImmutable::createFromFormat('!Y-m', $month) ?? CarbonImmutable::now() : CarbonImmutable::now())->startOfMonth();
 
-        return Inertia::render('Budget', $getBudgetScreen->execute(
-            $this->household($request),
-            // `!` resets the unspecified day/time — without it PHP fills the day from
-            // today, so on the 31st "2026-09" would roll over into October.
-            $month !== null ? CarbonImmutable::createFromFormat('!Y-m', $month) ?? CarbonImmutable::now() : CarbonImmutable::now(),
-        ));
+        // Opening a month that hasn't been set up copies the recurring
+        // categories and income forward into it. View models only read, so
+        // that happens here, first.
+        $carryForwardCategories->handle($household, $first);
+        $carryForwardIncome->handle($household, $first);
+
+        return Inertia::render('Budget', $budget->toData($household, $first));
     }
 
     public function storeCategory(BudgetCategoryRequest $request, CreateBudgetCategoryAction $create): RedirectResponse

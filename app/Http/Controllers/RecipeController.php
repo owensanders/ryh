@@ -8,13 +8,11 @@ use App\Actions\Meals\AddRecipeAction;
 use App\Actions\Meals\DeleteRecipeAction;
 use App\Actions\Meals\UpdateRecipeAction;
 use App\Actions\Shopping\AddRecipeIngredientsToListAction;
-use App\Enums\RecipeTagEnum;
 use App\Http\Requests\AddRecipeIngredientsRequest;
 use App\Http\Requests\RecipeRequest;
 use App\Models\Recipe;
 use App\Traits\ResolvesHouseholdTrait;
-use App\UseCases\Meals\GetRecipeLibraryUseCase;
-use App\UseCases\Shopping\GetShoppingListOptionsUseCase;
+use App\ViewModels\Meals\RecipeLibraryViewModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -24,15 +22,9 @@ class RecipeController extends Controller
 {
     use ResolvesHouseholdTrait;
 
-    public function index(Request $request, GetRecipeLibraryUseCase $getLibrary, GetShoppingListOptionsUseCase $getShoppingLists): Response
+    public function index(Request $request, RecipeLibraryViewModel $recipeLibrary): Response
     {
-        $household = $this->household($request);
-
-        return Inertia::render('Recipes', [
-            'recipes' => $getLibrary->execute($household),
-            'tagOptions' => RecipeTagEnum::options(),
-            'shoppingLists' => $getShoppingLists->execute($household),
-        ]);
+        return Inertia::render('Recipes', $recipeLibrary->toData($this->household($request)));
     }
 
     public function store(RecipeRequest $request, AddRecipeAction $add): RedirectResponse

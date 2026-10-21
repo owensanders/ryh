@@ -19,9 +19,9 @@ use RecursiveIteratorIterator;
 class UserFacingErrorsTest extends TestCase
 {
     #[Test]
-    public function actionsAndUseCasesNeverAbort(): void
+    public function actionsAndViewModelsNeverAbort(): void
     {
-        foreach (['app/Actions', 'app/UseCases'] as $directory) {
+        foreach (['app/Actions', 'app/ViewModels'] as $directory) {
             $this->assertSame([], $this->linesMatching($directory, '/\babort(_if|_unless)?\(/'), 'Throw a UserFacingException or ModelNotFoundException instead.');
         }
     }

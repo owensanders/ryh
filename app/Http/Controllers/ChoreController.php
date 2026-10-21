@@ -16,7 +16,7 @@ use App\Http\Requests\MoveChoreRequest;
 use App\Models\Chore;
 use App\Traits\ResolvesHouseholdTrait;
 use App\Traits\ResolvesUserTrait;
-use App\UseCases\Chores\GetChoreBoardUseCase;
+use App\ViewModels\Chores\ChoreBoardViewModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,11 +27,11 @@ class ChoreController extends Controller
     use ResolvesHouseholdTrait;
     use ResolvesUserTrait;
 
-    public function index(Request $request, GetChoreBoardUseCase $getChoreBoard): Response
+    public function index(Request $request, ChoreBoardViewModel $getChoreBoard): Response
     {
         $household = $this->household($request);
 
-        return Inertia::render('Chores', $getChoreBoard->execute($household));
+        return Inertia::render('Chores', $getChoreBoard->toData($household));
     }
 
     public function store(ChoreRequest $request, CreateChoreAction $create): RedirectResponse

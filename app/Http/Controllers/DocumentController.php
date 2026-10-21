@@ -16,7 +16,7 @@ use App\Models\Document;
 use App\Models\DocumentFolder;
 use App\Traits\ResolvesHouseholdTrait;
 use App\Traits\ResolvesUserTrait;
-use App\UseCases\Documents\GetDocumentsScreenUseCase;
+use App\ViewModels\Documents\DocumentsViewModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -34,11 +34,11 @@ class DocumentController extends Controller
     /** How long an S3 download link works for — long enough to start the download, short enough not to be worth sharing. */
     private const int DOWNLOAD_LINK_MINUTES = 5;
 
-    public function index(Request $request, GetDocumentsScreenUseCase $getScreen, ?DocumentFolder $folder = null): Response
+    public function index(Request $request, DocumentsViewModel $getScreen, ?DocumentFolder $folder = null): Response
     {
         $household = $this->household($request);
 
-        return Inertia::render('Documents', $getScreen->execute($household, $folder));
+        return Inertia::render('Documents', $getScreen->toData($household, $folder));
     }
 
     public function storeFolder(DocumentFolderRequest $request, CreateDocumentFolderAction $create): RedirectResponse

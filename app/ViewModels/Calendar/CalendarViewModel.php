@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\UseCases\Calendar;
+namespace App\ViewModels\Calendar;
 
 use App\Data\CalendarDayData;
 use App\Data\CalendarEventData;
@@ -15,7 +15,7 @@ use App\Repositories\CalendarEventRepository;
 use App\Repositories\MembershipRepository;
 use Carbon\CarbonImmutable;
 
-class GetCalendarMonthUseCase
+class CalendarViewModel
 {
     /** Six rows of seven, so the grid never changes height as you page through months. */
     private const int CELLS = 42;
@@ -25,7 +25,7 @@ class GetCalendarMonthUseCase
         private readonly MembershipRepository $memberships,
     ) {}
 
-    public function execute(Household $household, CarbonImmutable $month): CalendarMonthData
+    public function toData(Household $household, CarbonImmutable $month): CalendarMonthData
     {
         $today = CarbonImmutable::today();
         $first = $month->startOfMonth();

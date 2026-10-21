@@ -12,7 +12,7 @@ use App\Http\Requests\IndexCalendarRequest;
 use App\Models\CalendarEvent;
 use App\Traits\ResolvesHouseholdTrait;
 use App\Traits\ResolvesUserTrait;
-use App\UseCases\Calendar\GetCalendarMonthUseCase;
+use App\ViewModels\Calendar\CalendarViewModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,12 +24,12 @@ class CalendarController extends Controller
     use ResolvesHouseholdTrait;
     use ResolvesUserTrait;
 
-    public function index(IndexCalendarRequest $request, GetCalendarMonthUseCase $getCalendarMonth): Response
+    public function index(IndexCalendarRequest $request, CalendarViewModel $getCalendarMonth): Response
     {
         $month = $request->validated('month');
 
         return Inertia::render('Calendar', [
-            'calendar' => $getCalendarMonth->execute(
+            'calendar' => $getCalendarMonth->toData(
                 $this->household($request),
                 // `!` resets the unspecified day/time — without it PHP fills the day from
                 // today, so on the 31st "2026-09" would roll over into October.

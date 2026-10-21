@@ -17,7 +17,8 @@ households must never cross over (`HouseholdUrlTest`). On the frontend,
 page being shown. Anything built outside a request for that household (a
 notification's link, a queued email) names the household outright.
 
-A request goes route → policy → controller → form request → action →
+A write goes route → policy → controller → form request → action →
+repository; a page goes route → policy → controller → view model →
 repository. Each layer only talks to the one below it.
 
 - **Routes** (`routes/web.php`): middleware, plus the policy ability for every
@@ -36,9 +37,9 @@ repository. Each layer only talks to the one below it.
   come from `HouseholdRoleEnum::managers()` / `managersAndTeens()`. No role or
   ownership checks anywhere else. When a model only arrives in the request
   body, the action checks it belongs to the same household.
-- **Controllers** (`app/Http/Controllers`): call actions, render Inertia
-  pages, redirect with toasts. Nothing else: no repositories, no queries, no
-  business rules.
+- **Controllers** (`app/Http/Controllers`): call actions and view models,
+  render Inertia pages, redirect with toasts. Nothing else: no repositories,
+  no queries, no business rules.
 - **Form requests** (`app/Http/Requests`): validate, then `toData()` into a
   typed `*InputData`. Never pass `array $attributes` along.
 - **Actions** (`app/Actions/<Area>`): all business rules, one class per
@@ -46,8 +47,13 @@ repository. Each layer only talks to the one below it.
   Laravel's own Fortify and Jetstream actions work. They take models, enums,
   scalars or `*InputData`, and return a `*Data` object or an
   `array<int, *Data>`, never a shaped array. Transactions and notifications
-  start here. Enforced by `ActionsShapeTest`. (The page-building
-  `app/UseCases/*/Get*UseCase` classes are moving to view models.)
+  start here.
+- **View models** (`app/ViewModels/<Area>`): everything one page needs, built
+  by a public `toData()` that returns its `*ScreenData` (`ChoreBoardViewModel`).
+  Plain classes over the Data layer, not `spatie/laravel-view-models`, which
+  is made for Blade. They only read: a write a page needs first (the budget's
+  carry-forward) is an action the controller calls before rendering.
+  `LayerShapeTest` checks actions have `handle()` and view models `toData()`.
 - **Repositories** (`app/Repositories`): every query and write. They take
   input objects or named parameters, never attribute arrays, and map them to
   columns themselves. Concrete classes, type-hinted directly and autowired: no

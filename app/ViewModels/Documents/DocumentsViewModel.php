@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\UseCases\Documents;
+namespace App\ViewModels\Documents;
 
 use App\Data\DocumentData;
 use App\Data\DocumentFolderData;
@@ -13,11 +13,11 @@ use App\Models\Household;
 use App\Repositories\DocumentRepository;
 use Illuminate\Support\Collection;
 
-class GetDocumentsScreenUseCase
+class DocumentsViewModel
 {
     public function __construct(private readonly DocumentRepository $documents) {}
 
-    public function execute(Household $household, ?DocumentFolder $active): DocumentsScreenData
+    public function toData(Household $household, ?DocumentFolder $active): DocumentsScreenData
     {
         $folders = $this->documents->foldersFor($household);
         $active ??= $folders->first();

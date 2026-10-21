@@ -14,6 +14,9 @@ class MealPlannerScreenData extends Data
      * @param  array<int, RecipeData>  $library
      * @param  array<int, RecipeData>  $recipes
      * @param  array<int, MemberData>  $members
+     * @param  array<int, ShoppingListData>  $shoppingLists  Where a recipe's ingredients can be sent.
+     * @param  list<array{value: string, label: string}>  $tagOptions
+     * @param  array{diets: list<string>, goals: list<string>, confidence: list<array{value: string, label: string}>, equipment: list<string>}  $aiOptions  What the AI plan form offers.
      */
     public function __construct(
         public string $weekOf,
@@ -26,5 +29,8 @@ class MealPlannerScreenData extends Data
         public bool $aiPaused,
         public ?string $aiAvailableFrom,
         public ?int $aiSuggestedBudget,
+        public array $shoppingLists,
+        public array $tagOptions,
+        public array $aiOptions,
     ) {}
 }
