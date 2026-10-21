@@ -11,7 +11,6 @@ use App\Actions\Meals\RescheduleMealAction;
 use App\Actions\Meals\SuggestLibraryMealPlanAction;
 use App\Actions\Meals\UpdatePlannedMealAction;
 use App\Data\MealSuggestionData;
-use App\Enums\CookingConfidenceEnum;
 use App\Http\Requests\GenerateAiMealPlanRequest;
 use App\Http\Requests\IndexMealPlannerRequest;
 use App\Http\Requests\PlannedMealRequest;
@@ -44,16 +43,16 @@ class MealPlannerController extends Controller
 
     public function store(PlannedMealRequest $request, AddPlannedMealAction $add): RedirectResponse
     {
-        $meal = $add->handle($this->household($request), $request->toData(), $this->user($request));
+        $meal = $add->handle($this->household($request), $request->validated(), $this->user($request));
 
-        return back()->with('toast', "{$meal->name} added");
+        return back()->with('toast', "{$meal->recipe->name} added");
     }
 
     public function update(PlannedMealRequest $request, PlannedMeal $meal, UpdatePlannedMealAction $update): RedirectResponse
     {
-        $updated = $update->handle($meal, $request->toData(), $this->user($request));
+        $updated = $update->handle($meal, $request->validated(), $this->user($request));
 
-        return back()->with('toast', "{$updated->name} updated");
+        return back()->with('toast', "{$updated->recipe->name} updated");
     }
 
     public function destroy(Request $request, PlannedMeal $meal, DeletePlannedMealAction $delete): RedirectResponse
@@ -71,23 +70,12 @@ class MealPlannerController extends Controller
     ): RedirectResponse {
         $moved = $rescheduleMeal->handle($meal, CarbonImmutable::parse($request->validated('planned_on')));
 
-        return back()->with('toast', "{$moved->name} moved");
+        return back()->with('toast', "{$moved->recipe->name} moved");
     }
 
     public function generateAiPlan(GenerateAiMealPlanRequest $request, GenerateAiMealPlanAction $generate): RedirectResponse
     {
-        $meals = $generate->handle(
-            $this->household($request),
-            (int) $request->validated('people'),
-            $request->validated('budget') !== null ? (float) $request->validated('budget') : null,
-            $request->validated('diets', []),
-            (string) $request->validated('avoid', ''),
-            $request->validated('goals', []),
-            CookingConfidenceEnum::from($request->validated('confidence')),
-            $request->validated('equipment', []),
-            (string) $request->validated('use_up', ''),
-            (string) $request->validated('notes', ''),
-        );
+        $meals = $generate->handle($this->household($request), $request->validated());
 
         return back()->with('aiMeals', array_map(fn (MealSuggestionData $meal) => $meal->toArray(), $meals));
     }

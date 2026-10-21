@@ -21,7 +21,6 @@ use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\ShoppingList;
 use App\Repositories\BudgetRepository;
-use App\Repositories\MealPlanRepository;
 use App\Repositories\MembershipRepository;
 use Carbon\CarbonImmutable;
 
@@ -32,7 +31,6 @@ class MealPlannerViewModel
     private const string FOOD_BUDGET_LABEL = '/food|grocer|shopping/i';
 
     public function __construct(
-        private readonly MealPlanRepository $meals,
         private readonly MembershipRepository $memberships,
         private readonly BudgetRepository $budget,
     ) {}
@@ -43,7 +41,12 @@ class MealPlannerViewModel
         $end = $start->addDays(6);
         $today = CarbonImmutable::today();
 
-        $planned = $this->meals->between($household, $start, $end)
+        $planned = $household->plannedMeals()
+            ->with(['recipe', 'cook'])
+            ->whereBetween('planned_on', [$start->toDateString(), $end->toDateString()])
+            ->orderBy('planned_on')
+            ->orderBy('id')
+            ->get()
             ->groupBy(fn (PlannedMeal $meal) => $meal->planned_on->toDateString());
 
         $days = [];
@@ -64,12 +67,12 @@ class MealPlannerViewModel
         return new MealPlannerScreenData(
             weekOf: $start->format('j F'),
             days: $days,
-            library: $this->meals->favouriteRecipes($household, self::LIBRARY_SIZE)
+            library: $household->recipes()->where('is_favourite', true)->orderBy('name')->limit(self::LIBRARY_SIZE)->get()
                 ->map(RecipeData::fromModel(...))
                 ->values()
                 ->all(),
-            recipeCount: $this->meals->countRecipes($household),
-            recipes: $this->meals->allRecipes($household)
+            recipeCount: $household->recipes()->count(),
+            recipes: $household->recipes()->inLibraryOrder()->get()
                 ->map(RecipeData::fromModel(...))
                 ->values()
                 ->all(),

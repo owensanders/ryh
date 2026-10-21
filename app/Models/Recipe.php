@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Database\Factories\RecipeFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -40,6 +42,17 @@ class Recipe extends Model
             'tint' => 'integer',
             'is_favourite' => 'boolean',
         ];
+    }
+
+    /**
+     * The library's order: favourites first, then by name.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inLibraryOrder(Builder $query): void
+    {
+        $query->orderByDesc('is_favourite')->orderBy('name');
     }
 
     /** @return BelongsTo<Household, $this> */

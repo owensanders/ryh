@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Data\Input\RecipeInputData;
 use App\Enums\RecipeTagEnum;
 use App\Support\CurrentHouseholdHelper;
+use App\Traits\NormalisesInputTrait;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class RecipeRequest extends FormRequest
 {
+    use NormalisesInputTrait;
+
     /** @return array<string, mixed> */
     public function rules(): array
     {
@@ -49,23 +51,11 @@ class RecipeRequest extends FormRequest
         ];
     }
 
-    public function toData(): RecipeInputData
+    protected function prepareForValidation(): void
     {
-        return new RecipeInputData(
-            name: trim((string) $this->validated('name')),
-            description: $this->validated('description'),
-            durationLabel: $this->validated('duration_label'),
-            difficulty: $this->validated('difficulty'),
-            tags: array_values($this->validated('tags', [])),
-            ingredients: array_values($this->validated('ingredients', [])),
-            tint: (int) ($this->validated('tint') ?? 0),
-            isFavourite: (bool) $this->validated('is_favourite', false),
-        );
-    }
-
-    /** The list to put the new recipe's ingredients on, if one was picked. */
-    public function shoppingListId(): ?int
-    {
-        return $this->filled('shopping_list_id') ? (int) $this->validated('shopping_list_id') : null;
+        $this->merge([
+            'name' => $this->trimmed('name'),
+            'shopping_list_id' => $this->idOrNull('shopping_list_id'),
+        ]);
     }
 }

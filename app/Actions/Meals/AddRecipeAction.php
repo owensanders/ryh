@@ -5,27 +5,37 @@ declare(strict_types=1);
 namespace App\Actions\Meals;
 
 use App\Actions\Shopping\AddRecipeIngredientsToListAction;
-use App\Data\Input\RecipeInputData;
-use App\Data\RecipeData;
 use App\Models\Household;
-use App\Repositories\MealPlanRepository;
+use App\Models\Recipe;
 
 class AddRecipeAction
 {
-    public function __construct(
-        private readonly MealPlanRepository $meals,
-        private readonly AddRecipeIngredientsToListAction $addIngredients,
-    ) {}
+    public function __construct(private readonly AddRecipeIngredientsToListAction $addIngredients) {}
 
-    /** With a list picked, the new recipe's ingredients go straight onto it. */
-    public function handle(Household $household, RecipeInputData $input, ?int $shoppingListId = null): RecipeData
+    /**
+     * With a list picked, the new recipe's ingredients go straight onto it.
+     *
+     * @param  array<string, mixed>  $data  RecipeRequest's validated input: name, description,
+     *                                      duration_label, difficulty, tags, ingredients, tint,
+     *                                      is_favourite, shopping_list_id.
+     */
+    public function handle(Household $household, array $data): Recipe
     {
-        $recipe = $this->meals->createRecipe($household, $input);
+        $recipe = $household->recipes()->create([
+            'name' => $data['name'],
+            'description' => $data['description'] ?? null,
+            'duration_label' => $data['duration_label'] ?? null,
+            'difficulty' => $data['difficulty'] ?? null,
+            'tags' => array_values($data['tags'] ?? []),
+            'ingredients' => array_values($data['ingredients'] ?? []),
+            'tint' => (int) ($data['tint'] ?? 0),
+            'is_favourite' => (bool) ($data['is_favourite'] ?? false),
+        ]);
 
-        if ($shoppingListId !== null) {
-            $this->addIngredients->handle($household, $recipe, $shoppingListId);
+        if ($data['shopping_list_id'] !== null) {
+            $this->addIngredients->handle($household, $recipe, $data['shopping_list_id']);
         }
 
-        return RecipeData::fromModel($recipe);
+        return $recipe;
     }
 }

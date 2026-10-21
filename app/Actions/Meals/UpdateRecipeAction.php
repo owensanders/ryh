@@ -4,17 +4,24 @@ declare(strict_types=1);
 
 namespace App\Actions\Meals;
 
-use App\Data\Input\RecipeInputData;
-use App\Data\RecipeData;
 use App\Models\Recipe;
-use App\Repositories\MealPlanRepository;
 
 class UpdateRecipeAction
 {
-    public function __construct(private readonly MealPlanRepository $meals) {}
-
-    public function handle(Recipe $recipe, RecipeInputData $changes): RecipeData
+    /** @param  array<string, mixed>  $data  RecipeRequest's validated input; see AddRecipeAction. */
+    public function handle(Recipe $recipe, array $data): Recipe
     {
-        return RecipeData::fromModel($this->meals->updateRecipe($recipe, $changes));
+        $recipe->update([
+            'name' => $data['name'],
+            'description' => $data['description'] ?? null,
+            'duration_label' => $data['duration_label'] ?? null,
+            'difficulty' => $data['difficulty'] ?? null,
+            'tags' => array_values($data['tags'] ?? []),
+            'ingredients' => array_values($data['ingredients'] ?? []),
+            'tint' => (int) ($data['tint'] ?? 0),
+            'is_favourite' => (bool) ($data['is_favourite'] ?? false),
+        ]);
+
+        return $recipe->refresh();
     }
 }

@@ -90,7 +90,7 @@ N+1 case, throws in local, test and e2e. In production it logs a warning
 instead, so a miss never breaks a page. A single model loading its own
 relation isn't flagged.
 
-**Repositories are on their way out**, one area per PR (Chores and Shopping are done).
+**Repositories are on their way out**, one area per PR (Chores, Shopping and Meals are done).
 Don't add methods to the ones left in `app/Repositories`. Policies and
 middleware still *read* through `MembershipRepository` until its turn.
 
