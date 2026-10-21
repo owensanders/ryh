@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Billing;
 
 use App\Mail\PaymentFailedMail;
-use App\Repositories\HouseholdRepository;
-use App\Repositories\MembershipRepository;
+use App\Models\Household;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -15,11 +14,6 @@ use Illuminate\Support\Facades\Mail;
  */
 class SendPaymentFailedNoticeAction
 {
-    public function __construct(
-        private readonly HouseholdRepository $households,
-        private readonly MembershipRepository $memberships,
-    ) {}
-
     /** @param  array<string, mixed>  $invoice  The failed invoice from the webhook payload. */
     public function handle(array $invoice): void
     {
@@ -30,13 +24,13 @@ class SendPaymentFailedNoticeAction
         }
 
         $customer = $invoice['customer'] ?? null;
-        $household = is_string($customer) ? $this->households->findByStripeCustomer($customer) : null;
+        $household = is_string($customer) ? Household::query()->where('stripe_id', $customer)->first() : null;
 
         if ($household === null) {
             return;
         }
 
-        foreach ($this->memberships->activeOwners($household) as $owner) {
+        foreach ($household->activeOwners()->get() as $owner) {
             Mail::to($owner->email)->queue(new PaymentFailedMail($household));
         }
     }

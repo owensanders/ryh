@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Cashier\Cashier;
@@ -54,6 +55,10 @@ class AppServiceProvider extends ServiceProvider
         Cashier::useCustomerModel(Household::class);
 
         $this->configureRateLimiting();
+
+        // /h/{household} is the household's slug. A slug that doesn't exist is a
+        // 404; one they aren't a member of is ResolveHouseholdMiddleware's to refuse.
+        Route::bind('household', fn (string $slug): Household => Household::query()->where('slug', $slug)->firstOrFail());
 
         // Repositories eager-load what their callers use (CLAUDE.md,
         // "Repositories own every query"). A lazy load throws everywhere but

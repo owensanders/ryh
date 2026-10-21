@@ -11,7 +11,6 @@ use App\Enums\CookingConfidenceEnum;
 use App\Exceptions\MealPlanUnavailableException;
 use App\Models\Household;
 use App\Notifications\AiCreditsExhaustedNotification;
-use App\Repositories\HouseholdRepository;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
@@ -27,10 +26,6 @@ class GenerateAiMealPlanAction
     private const int RECENT_RECIPES = 10;
 
     private const int LOCK_SECONDS = 120;
-
-    public function __construct(
-        private readonly HouseholdRepository $households,
-    ) {}
 
     /**
      * @param  array<string, mixed>  $data  GenerateAiMealPlanRequest's validated input: people,
@@ -53,7 +48,7 @@ class GenerateAiMealPlanAction
             throw MealPlanUnavailableException::weeklyLimitReached();
         }
 
-        if ($this->households->countAiMealPlansSince(today()) >= (int) config('meal_planner.daily_cap')) {
+        if (Household::query()->where('ai_meal_plan_generated_at', '>=', today())->count() >= (int) config('meal_planner.daily_cap')) {
             throw MealPlanUnavailableException::dailyCapReached();
         }
 
@@ -96,7 +91,7 @@ class GenerateAiMealPlanAction
                 throw new LogicException('MealPlanAgent answered without its structured schema.');
             }
 
-            $this->households->markAiMealPlanGenerated($household);
+            $household->update(['ai_meal_plan_generated_at' => now()]);
 
             Log::info('AI meal plan generated', [
                 'household_id' => $household->id,

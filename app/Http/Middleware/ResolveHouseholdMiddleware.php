@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Models\Household;
-use App\Repositories\HouseholdRepository;
-use App\Repositories\MembershipRepository;
-use App\Repositories\UserRepository;
 use App\Support\CurrentHouseholdHelper;
 use App\Traits\ResolvesUserTrait;
 use Closure;
@@ -25,23 +22,17 @@ class ResolveHouseholdMiddleware
 {
     use ResolvesUserTrait;
 
-    public function __construct(
-        private readonly HouseholdRepository $households,
-        private readonly MembershipRepository $memberships,
-        private readonly UserRepository $users,
-    ) {}
-
     public function handle(Request $request, Closure $next): Response
     {
         $user = $this->user($request);
-        $slug = $request->route('household');
-        $household = is_string($slug) ? $this->households->findBySlug($slug) : null;
+        $household = $request->route('household');
 
-        // Someone else's household doesn't exist, as far as they can tell.
-        $membership = $household !== null ? $this->memberships->find($user, $household) : null;
+        // Bound from the slug in AppServiceProvider. Someone else's household
+        // doesn't exist, as far as they can tell.
+        $membership = $household instanceof Household ? $household->membershipOf($user) : null;
 
-        if ($household === null || $membership === null) {
-            throw (new ModelNotFoundException())->setModel(Household::class, is_string($slug) ? [$slug] : []);
+        if (! $household instanceof Household || $membership === null) {
+            throw (new ModelNotFoundException())->setModel(Household::class);
         }
 
         // Joined by code but not approved yet: the owner has to let them in first.
@@ -58,7 +49,7 @@ class ResolveHouseholdMiddleware
         $request->route()?->forgetParameter('household');
 
         if ($user->last_household_id !== $household->id) {
-            $this->users->setLastHousehold($user, $household->id);
+            $user->rememberHousehold($household->id);
         }
 
         return $next($request);

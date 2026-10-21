@@ -8,18 +8,11 @@ use App\Enums\HouseholdRoleEnum;
 use App\Models\CalendarEvent;
 use App\Models\Household;
 use App\Models\User;
-use App\Repositories\MembershipRepository;
-use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class RemoveMemberAction
 {
-    public function __construct(
-        private readonly UserRepository $users,
-        private readonly MembershipRepository $memberships,
-    ) {}
-
     /**
      * Covers both removing an active member and cancelling a pending invite.
      * Takes them out of this household only — their account and any other
@@ -32,10 +25,10 @@ class RemoveMemberAction
     /** @return bool Whether they were still pending: an invite cancelled rather than a member removed. */
     public function handle(User $member, Household $household): bool
     {
-        $membership = $this->memberships->find($member, $household);
+        $membership = $household->membershipOf($member);
         $currentRole = $membership?->role;
 
-        if ($currentRole === HouseholdRoleEnum::Owner && $this->memberships->isSoleOwner($household, $member)) {
+        if ($currentRole === HouseholdRoleEnum::Owner && $household->isSoleOwner($member)) {
             throw ValidationException::withMessages(['member' => "You're the only owner — promote someone else first."]);
         }
 
@@ -49,10 +42,10 @@ class RemoveMemberAction
             // Their meals stay planned, just with nobody cooking.
             $household->plannedMeals()->where('cook_id', $member->id)->update(['cook_id' => null]);
 
-            $this->memberships->remove($member, $household);
+            $household->members()->detach($member->id);
 
             if ($member->last_household_id === $household->id) {
-                $this->users->setLastHousehold($member, $this->memberships->firstHouseholdIdFor($member));
+                $member->rememberHousehold($member->firstHouseholdId());
             }
         });
 

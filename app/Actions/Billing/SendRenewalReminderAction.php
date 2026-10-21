@@ -6,8 +6,6 @@ namespace App\Actions\Billing;
 
 use App\Mail\RenewalReminderMail;
 use App\Models\Household;
-use App\Repositories\HouseholdRepository;
-use App\Repositories\MembershipRepository;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Mail;
 
@@ -19,16 +17,11 @@ use Illuminate\Support\Facades\Mail;
  */
 class SendRenewalReminderAction
 {
-    public function __construct(
-        private readonly HouseholdRepository $households,
-        private readonly MembershipRepository $memberships,
-    ) {}
-
     /** @param  array<string, mixed>  $invoice  The upcoming invoice from the webhook payload. */
     public function handle(array $invoice): void
     {
         $customer = $invoice['customer'] ?? null;
-        $household = is_string($customer) ? $this->households->findByStripeCustomer($customer) : null;
+        $household = is_string($customer) ? Household::query()->where('stripe_id', $customer)->first() : null;
 
         if ($household === null || ! $this->renewsAnnually($household)) {
             return;
@@ -43,7 +36,7 @@ class SendRenewalReminderAction
         $amount = (int) ($invoice['amount_due'] ?? 0) / 100;
         $renewsOn = CarbonImmutable::createFromTimestamp($renewsAt)->format('j F Y');
 
-        foreach ($this->memberships->activeOwners($household) as $owner) {
+        foreach ($household->activeOwners()->get() as $owner) {
             Mail::to($owner->email)->queue(new RenewalReminderMail($household, '£'.number_format($amount, 2), $renewsOn));
         }
     }

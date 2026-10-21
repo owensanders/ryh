@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 use SensitiveParameter;
 
@@ -98,6 +99,49 @@ class User extends Authenticatable implements MustVerifyEmail
             ->using(HouseholdUser::class)
             ->withPivot(['role', 'pending', 'pending_reason', 'guardian_confirmed_by', 'guardian_confirmed_at'])
             ->withTimestamps();
+    }
+
+    /** Their membership of the household they were last in, if they still have one. */
+    public function lastMembership(): ?HouseholdUser
+    {
+        return $this->last_household_id === null
+            ? null
+            : HouseholdUser::query()->where('user_id', $this->id)->where('household_id', $this->last_household_id)->first();
+    }
+
+    public function belongsToHousehold(int $householdId): bool
+    {
+        return $this->households()->where('households.id', $householdId)->exists();
+    }
+
+    /** @return Collection<int, int> */
+    public function householdIds(): Collection
+    {
+        return $this->households()->pluck('households.id')->map(fn (mixed $id): int => (int) $id);
+    }
+
+    /** Where to fall back to when they leave the household they were last in: another one, if they have it. */
+    public function firstHouseholdId(): ?int
+    {
+        $id = $this->households()->value('households.id');
+
+        return $id === null ? null : (int) $id;
+    }
+
+    /** They've just joined this household: /app lands there, and they show in it with this colour. */
+    public function moveInto(Household $household, PaletteEnum $colour): void
+    {
+        $this->update([
+            'last_household_id' => $household->id,
+            'initials' => self::initialsFrom($this->name),
+            'colour' => $colour,
+        ]);
+    }
+
+    /** /app lands them here next time. Null when they have nowhere left. */
+    public function rememberHousehold(?int $householdId): void
+    {
+        $this->forceFill(['last_household_id' => $householdId])->save();
     }
 
     /** The two letters shown on someone's avatar. */

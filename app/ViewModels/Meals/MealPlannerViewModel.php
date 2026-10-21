@@ -20,7 +20,6 @@ use App\Models\BudgetCategory;
 use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\ShoppingList;
-use App\Repositories\MembershipRepository;
 use Carbon\CarbonImmutable;
 
 class MealPlannerViewModel
@@ -28,10 +27,6 @@ class MealPlannerViewModel
     private const int LIBRARY_SIZE = 6;
 
     private const string FOOD_BUDGET_LABEL = '/food|grocer|shopping/i';
-
-    public function __construct(
-        private readonly MembershipRepository $memberships,
-    ) {}
 
     public function toData(Household $household, CarbonImmutable $anyDayInWeek): MealPlannerScreenData
     {
@@ -74,7 +69,7 @@ class MealPlannerViewModel
                 ->map(RecipeData::fromModel(...))
                 ->values()
                 ->all(),
-            members: $this->memberships->activeMembers($household)
+            members: $household->activeMembers()->get()
                 ->map(MemberData::fromModel(...))
                 ->values()
                 ->all(),

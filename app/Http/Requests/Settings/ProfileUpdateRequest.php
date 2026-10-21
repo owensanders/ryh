@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Settings;
 
-use App\Data\Input\ProfileInputData;
 use App\Models\User;
+use App\Traits\NormalisesInputTrait;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class ProfileUpdateRequest extends FormRequest
 {
+    use NormalisesInputTrait;
+
     /** @return array<string, ValidationRule|array<mixed>|string> */
     public function rules(): array
     {
@@ -28,11 +30,8 @@ class ProfileUpdateRequest extends FormRequest
         ];
     }
 
-    public function toData(): ProfileInputData
+    protected function prepareForValidation(): void
     {
-        return new ProfileInputData(
-            name: (string) $this->validated('name'),
-            email: (string) $this->validated('email'),
-        );
+        $this->merge(['name' => $this->trimmed('name'), 'email' => $this->trimmed('email')]);
     }
 }

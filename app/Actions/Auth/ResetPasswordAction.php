@@ -5,15 +5,13 @@ declare(strict_types=1);
 namespace App\Actions\Auth;
 
 use App\Models\User;
-use App\Repositories\UserRepository;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 
 class ResetPasswordAction
 {
-    public function __construct(private readonly UserRepository $users) {}
-
     /**
      * @param  array<string, string>  $credentials  email, token and the new password
      *
@@ -22,7 +20,8 @@ class ResetPasswordAction
     public function handle(array $credentials, string $password): string
     {
         $status = Password::reset($credentials, function (User $user) use ($password): void {
-            $this->users->setPassword($user, Hash::make($password));
+            // A reset signs out every "remember me" session too.
+            $user->forceFill(['password' => Hash::make($password), 'remember_token' => Str::random(60)])->save();
 
             event(new PasswordReset($user));
         });

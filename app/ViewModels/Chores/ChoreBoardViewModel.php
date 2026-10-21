@@ -12,14 +12,9 @@ use App\Data\MemberScoreData;
 use App\Enums\ChoreStatusEnum;
 use App\Models\Household;
 use App\Models\User;
-use App\Repositories\MembershipRepository;
 
 class ChoreBoardViewModel
 {
-    public function __construct(
-        private readonly MembershipRepository $memberships,
-    ) {}
-
     public function toData(Household $household): ChoreBoardScreenData
     {
         $chores = $household->chores()->forBoard()->get();
@@ -36,7 +31,7 @@ class ChoreBoardViewModel
 
         return new ChoreBoardScreenData(
             columns: $columns,
-            scores: $this->memberships->activeMembers($household)
+            scores: $household->activeMembers()->get()
                 ->map(fn (User $member) => MemberScoreData::make(
                     member: MemberData::fromModel($member),
                     done: $chores->where('assigned_to', $member->id)->where('status', ChoreStatusEnum::Done)->count(),
@@ -44,7 +39,7 @@ class ChoreBoardViewModel
                 ))
                 ->values()
                 ->all(),
-            members: $this->memberships->members($household)->map(MemberData::fromModel(...))->values()->all(),
+            members: $household->members()->get()->map(MemberData::fromModel(...))->values()->all(),
             notifyChoresAvailableAt: $household->choreRemindersAvailableAt()?->toJSON(),
         );
     }

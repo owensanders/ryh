@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace App\Actions\House;
 
 use App\Models\Household;
-use App\Repositories\HouseholdRepository;
 
 class RegenerateJoinCodeAction
 {
-    public function __construct(private readonly HouseholdRepository $households) {}
-
     public function handle(Household $household): Household
     {
-        return $this->households->setJoinCode($household, Household::generateJoinCode($household->name));
+        return tap($household)->update(['join_code' => Household::generateJoinCode($household->name)])->refresh();
     }
 }

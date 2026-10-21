@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Actions\Auth;
 
 use App\Data\LandingData;
+use App\Models\Household;
 use App\Models\User;
-use App\Repositories\HouseholdRepository;
-use App\Repositories\MembershipRepository;
 
 /**
  * For /app and links from before households were in the URL: back to the
@@ -16,14 +15,9 @@ use App\Repositories\MembershipRepository;
  */
 class ResolveLandingAction
 {
-    public function __construct(
-        private readonly MembershipRepository $memberships,
-        private readonly HouseholdRepository $households,
-    ) {}
-
     public function handle(User $user): LandingData
     {
-        $householdIds = $this->memberships->householdIdsFor($user);
+        $householdIds = $user->householdIds();
 
         if ($householdIds->isEmpty()) {
             return new LandingData(needsSetup: true, needsChoice: false, householdSlug: null);
@@ -38,7 +32,7 @@ class ResolveLandingAction
         return new LandingData(
             needsSetup: false,
             needsChoice: $householdId === null,
-            householdSlug: $householdId !== null ? $this->households->find($householdId)?->slug : null,
+            householdSlug: $householdId !== null ? Household::find($householdId)?->slug : null,
         );
     }
 }

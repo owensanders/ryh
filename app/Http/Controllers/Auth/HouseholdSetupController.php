@@ -42,7 +42,7 @@ class HouseholdSetupController extends Controller
             return to_route('household.done');
         }
 
-        $household = $createHousehold->handle($this->user($request), $request->toData());
+        $household = $createHousehold->handle($this->user($request), $request->validated());
 
         return to_route('household.done')->with('householdSetup', [
             'mode' => 'create',

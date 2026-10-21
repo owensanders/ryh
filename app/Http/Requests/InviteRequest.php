@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Data\Input\InviteInputData;
 use App\Enums\HouseholdRoleEnum;
+use App\Traits\NormalisesInputTrait;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class InviteRequest extends FormRequest
 {
+    use NormalisesInputTrait;
+
     /** @return array<string, mixed> */
     public function rules(): array
     {
@@ -31,11 +33,8 @@ class InviteRequest extends FormRequest
         ];
     }
 
-    public function toData(): InviteInputData
+    protected function prepareForValidation(): void
     {
-        return new InviteInputData(
-            email: (string) $this->validated('email'),
-            role: HouseholdRoleEnum::from((string) $this->validated('role')),
-        );
+        $this->merge(['email' => $this->trimmed('email')]);
     }
 }

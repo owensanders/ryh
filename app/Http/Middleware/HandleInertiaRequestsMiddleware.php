@@ -6,7 +6,6 @@ namespace App\Http\Middleware;
 
 use App\Data\AuthUserData;
 use App\Models\User;
-use App\Repositories\MembershipRepository;
 use App\Support\CurrentHouseholdHelper;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -25,8 +24,6 @@ class HandleInertiaRequestsMiddleware extends Middleware
     {
         return parent::version($request);
     }
-
-    public function __construct(private readonly MembershipRepository $memberships) {}
 
     /**
      * @see https://inertiajs.com/shared-data
@@ -65,7 +62,7 @@ class HandleInertiaRequestsMiddleware extends Middleware
         $role = CurrentHouseholdHelper::role($request);
 
         if ($household === null && $request->user() instanceof User) {
-            $membership = $this->memberships->lastFor($request->user());
+            $membership = $request->user()->lastMembership();
             $household = $membership !== null && ! $membership->pending ? $request->user()->lastHousehold : null;
             $role = $household !== null ? $membership->role : null;
         }

@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace App\Actions\House;
 
 use App\Models\Household;
-use App\Repositories\HouseholdRepository;
 
 class ToggleJoinCodeAction
 {
-    public function __construct(private readonly HouseholdRepository $households) {}
-
     public function handle(Household $household, bool $enabled): Household
     {
-        return $this->households->setJoinCodeEnabled($household, $enabled);
+        return tap($household)->update(['join_code_enabled' => $enabled])->refresh();
     }
 }

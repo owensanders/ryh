@@ -12,17 +12,12 @@ use App\Data\StatData;
 use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
 use App\Models\User;
-use App\Repositories\MembershipRepository;
 
 class HouseViewModel
 {
-    public function __construct(
-        private readonly MembershipRepository $memberships,
-    ) {}
-
     public function toData(Household $household, int $viewerId): HouseData
     {
-        $members = $this->memberships->members($household);
+        $members = $household->members()->get();
         $activeCount = $members->where('pivot.pending', false)->count();
         $pendingCount = $members->where('pivot.pending', true)->count();
         $planStatus = PlanStatusData::fromHousehold($household);
