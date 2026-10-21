@@ -8,6 +8,8 @@ use App\Contracts\Repositories\DocumentRepositoryInterface;
 use App\Data\DocumentData;
 use App\Data\DocumentMovedData;
 use App\Models\Document;
+use App\Models\DocumentFolder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class MoveDocumentUseCase
 {
@@ -18,7 +20,9 @@ class MoveDocumentUseCase
         $folder = $this->documents->findFolder($folderId);
 
         // A document never leaves its household, so another household's folder doesn't exist here.
-        abort_if($folder === null || $folder->household_id !== $document->household_id, 404);
+        if ($folder === null || $folder->household_id !== $document->household_id) {
+            throw (new ModelNotFoundException)->setModel(DocumentFolder::class, [$folderId]);
+        }
 
         return new DocumentMovedData(
             DocumentData::fromModel($this->documents->moveDocument($document, $folder)),

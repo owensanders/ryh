@@ -10,6 +10,7 @@ use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Contracts\Repositories\MealPlanRepositoryInterface;
 use App\Data\MealSuggestionData;
 use App\Enums\CookingConfidenceEnum;
+use App\Exceptions\MealPlanUnavailableException;
 use App\Models\Household;
 use App\Models\Recipe;
 use App\Notifications\AiCreditsExhaustedNotification;
@@ -22,7 +23,6 @@ use Laravel\Ai\Exceptions\AiException;
 use Laravel\Ai\Exceptions\InsufficientCreditsException;
 use Laravel\Ai\Responses\StructuredAgentResponse;
 use LogicException;
-use RuntimeException;
 
 class GenerateAiMealPlanUseCase
 {
@@ -54,19 +54,19 @@ class GenerateAiMealPlanUseCase
         string $notes,
     ): array {
         if (! AiConfigService::isConfigured()) {
-            throw new RuntimeException('AI meal planning is not set up yet.');
+            throw MealPlanUnavailableException::notConfigured();
         }
 
         if (AiConfigService::isPaused()) {
-            throw new RuntimeException('AI meal planning is taking a break — you can still plan meals by hand.');
+            throw MealPlanUnavailableException::paused();
         }
 
         if (! $household->canGenerateAiMealPlan()) {
-            throw new RuntimeException('Your household can generate one AI meal plan per week — check back soon.');
+            throw MealPlanUnavailableException::weeklyLimitReached();
         }
 
         if ($this->households->countAiMealPlansSince(today()) >= (int) config('meal_planner.daily_cap')) {
-            throw new RuntimeException('AI meal planning has hit its limit for today — try again tomorrow.');
+            throw MealPlanUnavailableException::dailyCapReached();
         }
 
         // Two adults pressing Generate at once would otherwise both pass the
@@ -74,7 +74,7 @@ class GenerateAiMealPlanUseCase
         $lock = Cache::lock("ai-meal-plan:{$household->id}", self::LOCK_SECONDS);
 
         if (! $lock->get()) {
-            throw new RuntimeException('A meal plan is already being generated for your household.');
+            throw MealPlanUnavailableException::alreadyGenerating();
         }
 
         try {
@@ -96,11 +96,11 @@ class GenerateAiMealPlanUseCase
             } catch (InsufficientCreditsException $e) {
                 $this->pauseForMissingCredit($e);
 
-                throw new RuntimeException('AI meal planning is taking a break — you can still plan meals by hand. Your weekly plan hasn\'t been used.');
+                throw MealPlanUnavailableException::outOfCredit($e);
             } catch (AiException|ConnectionException|RequestException $e) {
                 report($e);
 
-                throw new RuntimeException('We couldn\'t generate a meal plan right now — please try again in a few minutes.');
+                throw MealPlanUnavailableException::providerFailed($e);
             }
 
             // MealPlanAgent declares a schema, so its answer is always structured.

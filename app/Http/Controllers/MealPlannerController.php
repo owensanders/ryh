@@ -31,7 +31,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use RuntimeException;
 
 class MealPlannerController extends Controller
 {
@@ -94,39 +93,31 @@ class MealPlannerController extends Controller
         return back()->with('toast', "{$moved->name} moved");
     }
 
-    public function generateAiPlan(GenerateAiMealPlanRequest $request, GenerateAiMealPlanUseCase $generate): RedirectResponse|Response
+    public function generateAiPlan(GenerateAiMealPlanRequest $request, GenerateAiMealPlanUseCase $generate): RedirectResponse
     {
-        try {
-            $meals = $generate->execute(
-                $this->household($request),
-                (int) $request->validated('people'),
-                $request->validated('budget') !== null ? (float) $request->validated('budget') : null,
-                $request->validated('diets', []),
-                (string) $request->validated('avoid', ''),
-                $request->validated('goals', []),
-                CookingConfidenceEnum::from($request->validated('confidence')),
-                $request->validated('equipment', []),
-                (string) $request->validated('use_up', ''),
-                (string) $request->validated('notes', ''),
-            );
-        } catch (RuntimeException $e) {
-            return back()->withErrors(['ai' => $e->getMessage()]);
-        }
+        $meals = $generate->execute(
+            $this->household($request),
+            (int) $request->validated('people'),
+            $request->validated('budget') !== null ? (float) $request->validated('budget') : null,
+            $request->validated('diets', []),
+            (string) $request->validated('avoid', ''),
+            $request->validated('goals', []),
+            CookingConfidenceEnum::from($request->validated('confidence')),
+            $request->validated('equipment', []),
+            (string) $request->validated('use_up', ''),
+            (string) $request->validated('notes', ''),
+        );
 
         return back()->with('aiMeals', array_map(fn (MealSuggestionData $meal) => $meal->toArray(), $meals));
     }
 
     public function suggestLibraryPlan(SuggestLibraryMealPlanRequest $request, SuggestLibraryMealPlanUseCase $suggest): RedirectResponse
     {
-        try {
-            $meals = $suggest->execute(
-                $this->household($request),
-                $request->validated('diets', []),
-                (string) $request->validated('avoid', ''),
-            );
-        } catch (RuntimeException $e) {
-            return back()->withErrors(['ai' => $e->getMessage()]);
-        }
+        $meals = $suggest->execute(
+            $this->household($request),
+            $request->validated('diets', []),
+            (string) $request->validated('avoid', ''),
+        );
 
         return back()->with('libraryMeals', array_map(fn (MealSuggestionData $meal) => $meal->toArray(), $meals));
     }

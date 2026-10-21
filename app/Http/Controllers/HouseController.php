@@ -24,7 +24,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use RuntimeException;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class HouseController extends Controller
@@ -94,16 +93,12 @@ class HouseController extends Controller
     {
         $interval = $request->validated('interval');
 
-        try {
-            $checkoutUrl = $subscribe->execute(
-                $this->household($request),
-                interval: $interval,
-                successUrl: route('billing.checkout.complete', ['from' => 'house']),
-                cancelUrl: route('house.index'),
-            );
-        } catch (RuntimeException $e) {
-            return back()->withErrors(['plan' => $e->getMessage()]);
-        }
+        $checkoutUrl = $subscribe->execute(
+            $this->household($request),
+            interval: $interval,
+            successUrl: route('billing.checkout.complete', ['from' => 'house']),
+            cancelUrl: route('house.index'),
+        );
 
         if ($checkoutUrl !== null) {
             return Inertia::location($checkoutUrl);

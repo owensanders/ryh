@@ -7,6 +7,8 @@ namespace App\UseCases\Shopping;
 use App\Contracts\Repositories\ShoppingRepositoryInterface;
 use App\Data\ShoppingListData;
 use App\Models\Household;
+use App\Models\ShoppingList;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class AddShoppingItemUseCase
 {
@@ -17,7 +19,9 @@ class AddShoppingItemUseCase
     {
         $list = $this->shopping->findListBySlug($household, $listSlug);
 
-        abort_if($list === null, 404);
+        if ($list === null) {
+            throw (new ModelNotFoundException)->setModel(ShoppingList::class);
+        }
 
         $this->shopping->addItem($list, trim($name), $quantity ?? 'x1');
 

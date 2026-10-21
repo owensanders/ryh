@@ -6,6 +6,7 @@ namespace App\UseCases\Chores;
 
 use App\Contracts\Repositories\ChoreRepositoryInterface;
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
+use App\Exceptions\ChoreReminderCooldownException;
 use App\Models\Household;
 use App\Notifications\ChoresReminderNotification;
 
@@ -19,7 +20,11 @@ class NotifyChoresUseCase
 
     public function execute(Household $household): void
     {
-        abort_if($household->choreRemindersAvailableAt() !== null, 429);
+        $availableAt = $household->choreRemindersAvailableAt();
+
+        if ($availableAt !== null) {
+            throw new ChoreReminderCooldownException($availableAt);
+        }
 
         foreach ($this->chores->outstandingAssigned($household)->groupBy('assigned_to') as $chores) {
             $chores->first()?->assignee?->notify(new ChoresReminderNotification($household, $chores->count()));

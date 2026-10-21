@@ -64,8 +64,6 @@ class RecipeController extends Controller
     ): RedirectResponse {
         $updated = $addIngredients->execute($this->household($request), $recipe, (int) $request->validated('shopping_list_id'));
 
-        abort_if($updated === null, 404);
-
         return back()->with('toast', "Ingredients added to {$updated->name}");
     }
 }

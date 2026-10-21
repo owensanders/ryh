@@ -6,7 +6,9 @@ namespace App\UseCases\House;
 
 use App\Contracts\Repositories\HouseholdRepositoryInterface;
 use App\Contracts\Repositories\MembershipRepositoryInterface;
+use App\Models\Household;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class AcceptHouseholdInviteUseCase
 {
@@ -21,11 +23,15 @@ class AcceptHouseholdInviteUseCase
     {
         $household = $this->households->find($householdId);
 
-        abort_if($household === null, 404);
+        if ($household === null) {
+            throw (new ModelNotFoundException)->setModel(Household::class, [$householdId]);
+        }
 
         $pivot = $this->memberships->find($user, $household);
 
-        abort_if($pivot === null || $pivot->pending !== true, 404);
+        if ($pivot === null || $pivot->pending !== true) {
+            throw (new ModelNotFoundException)->setModel(Household::class, [$householdId]);
+        }
 
         $this->approveMember->execute($user, $household);
 

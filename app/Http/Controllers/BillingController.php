@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
-use RuntimeException;
 use Stripe\Exception\ApiErrorException;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -47,16 +46,12 @@ class BillingController extends Controller
     {
         $interval = $request->validated('interval');
 
-        try {
-            $checkoutUrl = $subscribe->execute(
-                $this->household($request),
-                interval: $interval,
-                successUrl: route('billing.checkout.complete'),
-                cancelUrl: route('billing.required'),
-            );
-        } catch (RuntimeException $e) {
-            return back()->withErrors(['plan' => $e->getMessage()]);
-        }
+        $checkoutUrl = $subscribe->execute(
+            $this->household($request),
+            interval: $interval,
+            successUrl: route('billing.checkout.complete'),
+            cancelUrl: route('billing.required'),
+        );
 
         return $checkoutUrl !== null ? Inertia::location($checkoutUrl) : to_route('dashboard');
     }

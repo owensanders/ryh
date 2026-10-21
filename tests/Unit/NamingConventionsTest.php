@@ -29,6 +29,7 @@ class NamingConventionsTest extends TestCase
         'Data' => 'Data',
         'Enums' => 'Enum',
         'Events' => 'Event',
+        'Exceptions' => 'Exception',
         'Http/Controllers' => 'Controller',
         'Http/Middleware' => 'Middleware',
         'Http/Requests' => 'Request',

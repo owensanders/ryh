@@ -10,6 +10,7 @@ use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -28,11 +29,15 @@ class LeaveHouseholdUseCase
     {
         $household = $this->households->find($householdId);
 
-        abort_if($household === null, 404);
+        if ($household === null) {
+            throw (new ModelNotFoundException)->setModel(Household::class, [$householdId]);
+        }
 
         $membership = $this->memberships->find($user, $household);
 
-        abort_if($membership === null, 404);
+        if ($membership === null) {
+            throw (new ModelNotFoundException)->setModel(Household::class, [$householdId]);
+        }
 
         if ($membership->role === HouseholdRoleEnum::Owner && $this->memberships->isSoleOwner($household, $user)) {
             $hasOtherMembers = $this->memberships->members($household)->contains(fn (User $m) => $m->id !== $user->id);
