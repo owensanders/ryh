@@ -29,7 +29,7 @@ class ChoreNotificationTest extends TestCase
         $owner = User::factory()->create();
         $partner = User::factory()->create(['household_id' => $owner->household_id]);
 
-        $this->actingAs($owner)->post('/chores', ['name' => 'Clean the gutters', 'assigned_to' => $partner->id]);
+        $this->actingAs($owner)->post($this->hh('/chores'), ['name' => 'Clean the gutters', 'assigned_to' => $partner->id]);
 
         Notification::assertSentTo($partner, ChoreAssignedNotification::class);
         Notification::assertNotSentTo($owner, ChoreAssignedNotification::class);
@@ -42,7 +42,7 @@ class ChoreNotificationTest extends TestCase
 
         $owner = User::factory()->create();
 
-        $this->actingAs($owner)->post('/chores', ['name' => 'Clean the gutters', 'assigned_to' => $owner->id]);
+        $this->actingAs($owner)->post($this->hh('/chores'), ['name' => 'Clean the gutters', 'assigned_to' => $owner->id]);
 
         Notification::assertNothingSent();
     }
@@ -57,7 +57,7 @@ class ChoreNotificationTest extends TestCase
         $second = User::factory()->create(['household_id' => $owner->household_id]);
         $chore = Chore::factory()->create(['household_id' => $owner->household_id, 'assigned_to' => $first->id]);
 
-        $this->actingAs($owner)->patch("/chores/{$chore->id}", ['name' => $chore->name, 'assigned_to' => $second->id]);
+        $this->actingAs($owner)->patch($this->hh("/chores/{$chore->id}"), ['name' => $chore->name, 'assigned_to' => $second->id]);
 
         Notification::assertSentTo($second, ChoreAssignedNotification::class);
         Notification::assertNotSentTo($first, ChoreAssignedNotification::class);
@@ -78,7 +78,7 @@ class ChoreNotificationTest extends TestCase
             'status' => ChoreStatusEnum::Today,
         ]);
 
-        $this->actingAs($actor)->patch("/chores/{$chore->id}/toggle");
+        $this->actingAs($actor)->patch($this->hh("/chores/{$chore->id}/toggle"));
 
         Notification::assertSentTo($assignee, ChoreActionedNotification::class);
         Notification::assertSentTo($creator, ChoreActionedNotification::class);
@@ -98,7 +98,7 @@ class ChoreNotificationTest extends TestCase
             'status' => ChoreStatusEnum::Today,
         ]);
 
-        $this->actingAs($owner)->patch("/chores/{$chore->id}/toggle");
+        $this->actingAs($owner)->patch($this->hh("/chores/{$chore->id}/toggle"));
 
         Notification::assertNothingSent();
     }
@@ -117,7 +117,7 @@ class ChoreNotificationTest extends TestCase
             'created_by' => $creator->id,
         ]);
 
-        $this->actingAs($actor)->patch("/chores/{$chore->id}", ['name' => 'Clean the gutters', 'assigned_to' => $assignee->id]);
+        $this->actingAs($actor)->patch($this->hh("/chores/{$chore->id}"), ['name' => 'Clean the gutters', 'assigned_to' => $assignee->id]);
 
         Notification::assertSentTo($assignee, ChoreEditedNotification::class);
         Notification::assertSentTo($creator, ChoreEditedNotification::class);
@@ -135,7 +135,7 @@ class ChoreNotificationTest extends TestCase
         $second = User::factory()->create(['household_id' => $owner->household_id]);
         $chore = Chore::factory()->create(['household_id' => $owner->household_id, 'assigned_to' => $first->id]);
 
-        $this->actingAs($owner)->patch("/chores/{$chore->id}", ['name' => $chore->name, 'assigned_to' => $second->id]);
+        $this->actingAs($owner)->patch($this->hh("/chores/{$chore->id}"), ['name' => $chore->name, 'assigned_to' => $second->id]);
 
         Notification::assertNotSentTo($second, ChoreEditedNotification::class);
         Notification::assertNotSentTo($first, ChoreEditedNotification::class);
@@ -155,7 +155,7 @@ class ChoreNotificationTest extends TestCase
             'created_by' => $creator->id,
         ]);
 
-        $this->actingAs($actor)->delete("/chores/{$chore->id}");
+        $this->actingAs($actor)->delete($this->hh("/chores/{$chore->id}"));
 
         Notification::assertSentTo($assignee, ChoreDeletedNotification::class);
         Notification::assertSentTo($creator, ChoreDeletedNotification::class);
@@ -174,7 +174,7 @@ class ChoreNotificationTest extends TestCase
             'created_by' => $owner->id,
         ]);
 
-        $this->actingAs($owner)->delete("/chores/{$chore->id}");
+        $this->actingAs($owner)->delete($this->hh("/chores/{$chore->id}"));
 
         Notification::assertNothingSent();
     }

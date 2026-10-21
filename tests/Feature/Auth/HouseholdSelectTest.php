@@ -20,7 +20,8 @@ class HouseholdSelectTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->actingAs($user)->get('/dashboard')->assertOk();
+        $this->actingAs($user)->get('/app')->assertRedirect($this->hh('/dashboard'));
+        $this->actingAs($user)->get($this->hh('/dashboard'))->assertOk();
     }
 
     #[Test]
@@ -37,7 +38,7 @@ class HouseholdSelectTest extends TestCase
         $user = User::factory()->create();
         $second = Household::factory()->create();
         $user->households()->attach($second->id, ['role' => HouseholdRoleEnum::Adult, 'pending' => false]);
-        $user->forceFill(['current_household_id' => null])->save();
+        $user->forceFill(['last_household_id' => null])->save();
 
         $this->actingAs($user)->get('/dashboard')->assertRedirect(route('household.select', absolute: false));
     }
@@ -49,7 +50,7 @@ class HouseholdSelectTest extends TestCase
         $second = Household::factory()->create();
         $user->households()->attach($second->id, ['role' => HouseholdRoleEnum::Adult, 'pending' => false]);
 
-        $this->actingAs($user)->get('/dashboard')->assertOk();
+        $this->actingAs($user)->get('/app')->assertRedirect($this->hh('/dashboard'));
     }
 
     #[Test]
@@ -58,7 +59,7 @@ class HouseholdSelectTest extends TestCase
         $user = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $second = Household::factory()->create();
         $user->households()->attach($second->id, ['role' => HouseholdRoleEnum::Adult, 'pending' => false]);
-        $user->forceFill(['current_household_id' => null])->save();
+        $user->forceFill(['last_household_id' => null])->save();
 
         $this->actingAs($user)
             ->get('/household/select')
@@ -77,9 +78,9 @@ class HouseholdSelectTest extends TestCase
 
         $this->actingAs($user)
             ->post('/household/select', ['household_id' => $second->id])
-            ->assertRedirect(route('dashboard', absolute: false));
+            ->assertRedirect(route('app', absolute: false));
 
-        $this->assertDatabaseHas('users', ['id' => $user->id, 'current_household_id' => $second->id]);
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'last_household_id' => $second->id]);
     }
 
     #[Test]
@@ -104,7 +105,7 @@ class HouseholdSelectTest extends TestCase
         // A household the user isn't (or is no longer) a member of — e.g. they
         // were removed from it after it became their current pick.
         $noLongerAMember = Household::factory()->create();
-        $user->forceFill(['current_household_id' => $noLongerAMember->id])->save();
+        $user->forceFill(['last_household_id' => $noLongerAMember->id])->save();
 
         $this->actingAs($user)->get('/dashboard')->assertRedirect(route('household.select', absolute: false));
     }

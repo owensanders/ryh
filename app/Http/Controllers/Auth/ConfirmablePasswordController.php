@@ -31,6 +31,6 @@ class ConfirmablePasswordController extends Controller
             ]);
         }
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->intended(route('app', absolute: false));
     }
 }

@@ -25,7 +25,7 @@ class CalendarEventDeletedNotification extends HouseholdNotification
             'type' => $this->notificationType(),
             'user_id' => $notifiable->id,
             'body' => "{$this->actor->name} deleted \"{$this->event->title}\"",
-            'url' => route('calendar.index'),
+            'url' => $this->householdUrl('calendar.index'),
         ];
     }
 

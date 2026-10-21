@@ -27,21 +27,18 @@ class DeleteAccountUseCase
     /** @throws ValidationException */
     public function execute(User $user, bool $confirmHouseholdDeletion = false): void
     {
-        $household = $user->currentHousehold;
-        $deleteHousehold = $household !== null
-            && $user->currentRole() === HouseholdRoleEnum::Owner
-            && $this->householdGoesWithThem($user, $household, $confirmHouseholdDeletion);
+        $goingWithThem = $this->householdsGoingWithThem($user, $confirmHouseholdDeletion);
 
-        // Stripe can't take part in the transaction, so its subscription is
-        // stopped first: a failure here leaves the account and household intact.
-        if ($deleteHousehold) {
+        // Stripe can't take part in the transaction, so their subscriptions are
+        // stopped first: a failure here leaves the account and households intact.
+        foreach ($goingWithThem as $household) {
             $this->cancelSubscription->execute($household);
         }
 
         Auth::logout();
 
-        DB::transaction(function () use ($user, $household, $deleteHousehold): void {
-            if ($deleteHousehold) {
+        DB::transaction(function () use ($user, $goingWithThem): void {
+            foreach ($goingWithThem as $household) {
                 $this->households->delete($household);
             }
 
@@ -55,27 +52,43 @@ class DeleteAccountUseCase
     }
 
     /**
-     * True when they're the household's only owner, so it can't outlive them.
+     * Every household they're the only owner of, in any of their households,
+     * so none is left behind with nobody able to run it.
      *
-     * @throws ValidationException when others would lose it too and they haven't confirmed that
+     * @return list<Household>
+     *
+     * @throws ValidationException when others would lose a household too and they haven't confirmed that
      */
-    private function householdGoesWithThem(User $user, Household $household, bool $confirmHouseholdDeletion): bool
+    private function householdsGoingWithThem(User $user, bool $confirmHouseholdDeletion): array
     {
-        $members = $this->memberships->members($household);
-        $hasOtherOwners = $members->contains(fn (User $m) => $m->pivot?->role === HouseholdRoleEnum::Owner && $m->id !== $user->id);
+        $goingWithThem = [];
+        $sharedWithOthers = [];
 
-        if ($hasOtherOwners) {
-            return false;
+        foreach ($this->memberships->householdsWithMembersFor($user) as $household) {
+            $members = $household->members;
+            $isOwner = $members->contains(fn (User $m) => $m->id === $user->id && $m->pivot?->role === HouseholdRoleEnum::Owner);
+            $hasOtherOwners = $members->contains(fn (User $m) => $m->id !== $user->id && $m->pivot?->role === HouseholdRoleEnum::Owner);
+
+            if (! $isOwner || $hasOtherOwners) {
+                continue;
+            }
+
+            $goingWithThem[] = $household;
+
+            if ($members->contains(fn (User $m) => $m->id !== $user->id)) {
+                $sharedWithOthers[] = $household->name;
+            }
         }
 
-        $hasOtherMembers = $members->contains(fn (User $m) => $m->id !== $user->id);
+        if ($sharedWithOthers !== [] && ! $confirmHouseholdDeletion) {
+            $which = count($sharedWithOthers) === 1 ? 'this household' : 'these households ('.implode(', ', $sharedWithOthers).')';
+            $them = count($sharedWithOthers) === 1 ? 'the household and all its data' : 'them and all their data';
 
-        if ($hasOtherMembers && ! $confirmHouseholdDeletion) {
             throw ValidationException::withMessages([
-                'household' => "You're the sole owner of this household. Deleting your account will permanently delete the household and all its data (chores, meals, shopping lists, calendar, budget, documents). Consider promoting another member to Owner instead, or confirm to delete everything.",
+                'household' => "You're the sole owner of {$which}. Deleting your account will permanently delete {$them} (chores, meals, shopping lists, calendar, budget, documents). Consider promoting another member to Owner instead, or confirm to delete everything.",
             ]);
         }
 
-        return true;
+        return $goingWithThem;
     }
 }

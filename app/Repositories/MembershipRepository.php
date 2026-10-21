@@ -23,6 +23,18 @@ class MembershipRepository implements MembershipRepositoryInterface
             ->first();
     }
 
+    public function lastFor(User $user): ?HouseholdUser
+    {
+        if ($user->last_household_id === null) {
+            return null;
+        }
+
+        return HouseholdUser::query()
+            ->where('user_id', $user->id)
+            ->where('household_id', $user->last_household_id)
+            ->first();
+    }
+
     public function belongsTo(User $user, int $householdId): bool
     {
         return $user->households()->where('households.id', $householdId)->exists();
@@ -47,7 +59,7 @@ class MembershipRepository implements MembershipRepositoryInterface
     /** @return Collection<int, Household> */
     public function householdsWithMembersFor(User $user): Collection
     {
-        return $user->households()->withCount('members')->with('members')->get();
+        return $user->households()->withCount('members')->with(['members', 'subscriptions'])->get();
     }
 
     /** @return Collection<int, User> */

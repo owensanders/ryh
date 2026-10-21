@@ -23,7 +23,7 @@ class ShoppingListTest extends TestCase
         ShoppingList::factory()->create(['household_id' => $user->household_id, 'name' => 'Aldi', 'position' => 1]);
 
         $this->actingAs($user)
-            ->get('/shopping')
+            ->get($this->hh('/shopping'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page->where('active.name', 'Tesco')->count('lists', 2));
     }
@@ -36,7 +36,7 @@ class ShoppingListTest extends TestCase
         ShoppingItem::factory()->create(['shopping_list_id' => $list->id, 'position' => 4]);
 
         $this->actingAs($user)
-            ->post('/shopping/tesco/items', ['name' => 'Olive oil'])
+            ->post($this->hh('/shopping/tesco/items'), ['name' => 'Olive oil'])
             ->assertRedirect()
             ->assertSessionHas('toast');
 
@@ -54,7 +54,7 @@ class ShoppingListTest extends TestCase
         ShoppingList::factory()->create(['household_id' => $user->household_id, 'slug' => 'tesco']);
 
         $this->actingAs($user)
-            ->post('/shopping/tesco/items', ['name' => ''])
+            ->post($this->hh('/shopping/tesco/items'), ['name' => ''])
             ->assertSessionHasErrors('name');
     }
 
@@ -65,10 +65,10 @@ class ShoppingListTest extends TestCase
         $list = ShoppingList::factory()->create(['household_id' => $user->household_id]);
         $item = ShoppingItem::factory()->create(['shopping_list_id' => $list->id]);
 
-        $this->actingAs($user)->patch("/shopping-items/{$item->id}/toggle")->assertRedirect();
+        $this->actingAs($user)->patch($this->hh("/shopping-items/{$item->id}/toggle"))->assertRedirect();
         $this->assertTrue($item->refresh()->isDone());
 
-        $this->actingAs($user)->patch("/shopping-items/{$item->id}/toggle")->assertRedirect();
+        $this->actingAs($user)->patch($this->hh("/shopping-items/{$item->id}/toggle"))->assertRedirect();
         $this->assertFalse($item->refresh()->isDone());
     }
 
@@ -78,7 +78,7 @@ class ShoppingListTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->post('/shopping-lists', ['name' => 'Aldi', 'colour' => 'sun'])
+            ->post($this->hh('/shopping-lists'), ['name' => 'Aldi', 'colour' => 'sun'])
             ->assertRedirect()
             ->assertSessionHas('toast');
 
@@ -97,7 +97,7 @@ class ShoppingListTest extends TestCase
         $list = ShoppingList::factory()->create(['household_id' => $user->household_id, 'name' => 'Tesco', 'slug' => 'tesco', 'colour' => 'mint']);
 
         $this->actingAs($user)
-            ->patch("/shopping-lists/{$list->id}", ['name' => 'Big Tesco', 'colour' => 'sky'])
+            ->patch($this->hh("/shopping-lists/{$list->id}"), ['name' => 'Big Tesco', 'colour' => 'sky'])
             ->assertRedirect()
             ->assertSessionHas('toast');
 
@@ -115,7 +115,7 @@ class ShoppingListTest extends TestCase
         $theirList = ShoppingList::factory()->create(['household_id' => $stranger->household_id, 'name' => 'Theirs']);
 
         $this->actingAs($user)
-            ->patch("/shopping-lists/{$theirList->id}", ['name' => 'Hijacked'])
+            ->patch($this->hh("/shopping-lists/{$theirList->id}"), ['name' => 'Hijacked'])
             ->assertNotFound();
 
         $this->assertSame('Theirs', $theirList->refresh()->name);
@@ -129,7 +129,7 @@ class ShoppingListTest extends TestCase
         $item = ShoppingItem::factory()->create(['shopping_list_id' => $list->id]);
 
         $this->actingAs($user)
-            ->delete("/shopping-lists/{$list->id}")
+            ->delete($this->hh("/shopping-lists/{$list->id}"))
             ->assertRedirect()
             ->assertSessionHas('toast');
 
@@ -144,7 +144,7 @@ class ShoppingListTest extends TestCase
         $stranger = User::factory()->create();
         $theirList = ShoppingList::factory()->create(['household_id' => $stranger->household_id]);
 
-        $this->actingAs($user)->delete("/shopping-lists/{$theirList->id}")->assertNotFound();
+        $this->actingAs($user)->delete($this->hh("/shopping-lists/{$theirList->id}"))->assertNotFound();
 
         $this->assertDatabaseHas('shopping_lists', ['id' => $theirList->id]);
     }
@@ -157,7 +157,7 @@ class ShoppingListTest extends TestCase
         $item = ShoppingItem::factory()->create(['shopping_list_id' => $list->id, 'name' => 'Milk']);
 
         $this->actingAs($user)
-            ->patch("/shopping-items/{$item->id}", ['name' => 'Oat milk', 'quantity' => 'x2'])
+            ->patch($this->hh("/shopping-items/{$item->id}"), ['name' => 'Oat milk', 'quantity' => 'x2'])
             ->assertRedirect()
             ->assertSessionHas('toast');
 
@@ -175,7 +175,7 @@ class ShoppingListTest extends TestCase
         $theirItem = ShoppingItem::factory()->create(['shopping_list_id' => $theirList->id, 'name' => 'Theirs']);
 
         $this->actingAs($user)
-            ->patch("/shopping-items/{$theirItem->id}", ['name' => 'Hijacked'])
+            ->patch($this->hh("/shopping-items/{$theirItem->id}"), ['name' => 'Hijacked'])
             ->assertNotFound();
 
         $this->assertSame('Theirs', $theirItem->refresh()->name);
@@ -189,7 +189,7 @@ class ShoppingListTest extends TestCase
         $item = ShoppingItem::factory()->create(['shopping_list_id' => $list->id]);
 
         $this->actingAs($user)
-            ->delete("/shopping-items/{$item->id}")
+            ->delete($this->hh("/shopping-items/{$item->id}"))
             ->assertRedirect()
             ->assertSessionHas('toast');
 
@@ -204,7 +204,7 @@ class ShoppingListTest extends TestCase
         $theirList = ShoppingList::factory()->create(['household_id' => $stranger->household_id]);
         $theirItem = ShoppingItem::factory()->create(['shopping_list_id' => $theirList->id]);
 
-        $this->actingAs($user)->delete("/shopping-items/{$theirItem->id}")->assertNotFound();
+        $this->actingAs($user)->delete($this->hh("/shopping-items/{$theirItem->id}"))->assertNotFound();
 
         $this->assertDatabaseHas('shopping_items', ['id' => $theirItem->id]);
     }
@@ -218,9 +218,9 @@ class ShoppingListTest extends TestCase
         $theirList = ShoppingList::factory()->create(['household_id' => $stranger->household_id, 'slug' => 'theirs']);
         $theirItem = ShoppingItem::factory()->create(['shopping_list_id' => $theirList->id]);
 
-        $this->actingAs($user)->get('/shopping/theirs')->assertNotFound();
-        $this->actingAs($user)->post('/shopping/theirs/items', ['name' => 'Milk'])->assertNotFound();
-        $this->actingAs($user)->patch("/shopping-items/{$theirItem->id}/toggle")->assertNotFound();
+        $this->actingAs($user)->get($this->hh('/shopping/theirs'))->assertNotFound();
+        $this->actingAs($user)->post($this->hh('/shopping/theirs/items'), ['name' => 'Milk'])->assertNotFound();
+        $this->actingAs($user)->patch($this->hh("/shopping-items/{$theirItem->id}/toggle"))->assertNotFound();
 
         $this->assertFalse($theirItem->refresh()->isDone());
     }

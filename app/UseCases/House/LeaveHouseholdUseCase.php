@@ -55,12 +55,12 @@ class LeaveHouseholdUseCase
         }
 
         DB::transaction(function () use ($user, $household): void {
-            $wasCurrent = $user->current_household_id === $household->id;
+            $wasCurrent = $user->last_household_id === $household->id;
 
             $this->memberships->remove($user, $household);
 
             if ($wasCurrent) {
-                $this->users->setCurrentHousehold($user, $this->memberships->firstHouseholdIdFor($user));
+                $this->users->setLastHousehold($user, $this->memberships->firstHouseholdIdFor($user));
             }
         });
 

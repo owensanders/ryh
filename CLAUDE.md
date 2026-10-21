@@ -6,12 +6,24 @@ Where a test enforces a rule, it's named; a change that breaks the rule fails CI
 
 ## Layers
 
+**The household comes from the URL.** Every household screen is under
+`/h/{household}` (its slug). `ResolveHouseholdMiddleware` checks the person
+belongs to it (else 404), puts it in `CurrentHouseholdHelper`, and sets the
+URL default so `route('chores.index')` stays in that household. Read the
+household from there (controllers: `ResolvesHouseholdTrait`), never from the
+user: `users.last_household_id` only says where `/app` lands. Two tabs on two
+households must never cross over (`HouseholdUrlTest`). On the frontend,
+`route()` (`resources/js/lib/householdRoute.ts`) fills `{household}` from the
+page being shown. Anything built outside a request for that household (a
+notification's link, a queued email) names the household outright.
+
 A request goes route → policy → controller → form request → use case →
 repository. Each layer only talks to the one below it.
 
 - **Routes** (`routes/web.php`): middleware, plus the policy ability for every
   household route: `->can('update', 'chore')`, or
-  `->can('create', Chore::class)` when there's no record yet.
+  `->can('create', Chore::class)` when there's no record yet. Household routes
+  go in the `h/{household}` group.
   Enforced by `RouteAuthorizationTest`.
   Every write route is also rate limited: signed-in groups carry
   `throttle:app`, and routes that send email, upload files, call the AI or
@@ -109,7 +121,7 @@ A class name ends with what it is: `ChoreStatusEnum`, `CreateChoreUseCase`,
 `ChoreRepository`, `ChoreRepositoryInterface`, `ChorePolicy`, `ChoreData`,
 `ChoreInputData`, `ChoreRequest`, `ChoreController`,
 `ChoreAssignedNotification`, `QueueHeartbeatJob`, `RecordLoginStreakListener`,
-`UserNotificationBroadcastEvent`, `EnsureHasHouseholdMiddleware`,
+`UserNotificationBroadcastEvent`, `ResolveHouseholdMiddleware`,
 `MoneyHelper`, `PlatformProbesService`, `AuthorizesHouseholdAccessTrait`.
 **Models are the one exception.** Their class names are stored in the database
 (`notifications.notifiable_type`) and used in channel names. Enforced by

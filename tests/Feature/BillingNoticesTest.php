@@ -36,7 +36,7 @@ class BillingNoticesTest extends TestCase
         config(['plans.intervals.annual.stripe_price' => 'price_annual', 'plans.intervals.monthly.stripe_price' => 'price_monthly']);
 
         $this->owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
-        $this->household = $this->owner->household;
+        $this->household = $this->owner->lastHousehold;
         $this->household->forceFill(['stripe_id' => 'cus_test123'])->save();
     }
 

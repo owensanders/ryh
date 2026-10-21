@@ -24,6 +24,7 @@ class DashboardTest extends TestCase
     #[Test]
     public function guestsAreRedirectedToTheLoginPage(): void
     {
+        $this->get('/h/anyone/dashboard')->assertRedirect('/login');
         $this->get('/dashboard')->assertRedirect('/login');
     }
 
@@ -42,7 +43,7 @@ class DashboardTest extends TestCase
         User::factory()->create(['household_id' => $user->household_id, 'name' => 'Margaret Parker', 'pending' => true]);
 
         $this->actingAs($user)
-            ->get('/dashboard')
+            ->get($this->hh('/dashboard'))
             ->assertOk()
             ->assertInertia(function ($page) {
                 /** @var list<array<string, mixed>> $family */
@@ -78,7 +79,7 @@ class DashboardTest extends TestCase
         Chore::factory()->create(['household_id' => $household->id, 'status' => ChoreStatusEnum::Done]);
 
         $this->actingAs($user)
-            ->get('/dashboard')
+            ->get($this->hh('/dashboard'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Dashboard')
@@ -105,7 +106,7 @@ class DashboardTest extends TestCase
         ShoppingItem::factory()->create(['shopping_list_id' => $withItems->id]);
 
         $this->actingAs($user)
-            ->get('/dashboard')
+            ->get($this->hh('/dashboard'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page->where('dashboard.shoppingList.name', 'Has stuff'));
     }
@@ -120,7 +121,7 @@ class DashboardTest extends TestCase
         ShoppingList::factory()->create(['household_id' => $household->id]);
 
         $this->actingAs($user)
-            ->get('/dashboard')
+            ->get($this->hh('/dashboard'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page->where('dashboard.shoppingList', null));
     }
@@ -133,7 +134,7 @@ class DashboardTest extends TestCase
 
         DB::enableQueryLog();
 
-        $this->actingAs($user)->get('/dashboard')->assertOk();
+        $this->actingAs($user)->get($this->hh('/dashboard'))->assertOk();
 
         $lookups = collect(DB::getQueryLog())
             ->filter(fn (array $query) => str_starts_with($query['query'], 'select * from `household_user` where `user_id`'));

@@ -26,7 +26,7 @@ class MealAssignedNotification extends HouseholdNotification
             'meal_id' => $this->meal->id,
             'user_id' => $notifiable->id,
             'body' => "{$this->actor->name} assigned you to cook \"{$this->meal->recipe->name}\"",
-            'url' => route('meals.index'),
+            'url' => $this->householdUrl('meals.index'),
         ];
     }
 

@@ -25,7 +25,7 @@ class ChoreDeletedNotification extends HouseholdNotification
             'type' => $this->notificationType(),
             'user_id' => $notifiable->id,
             'body' => "{$this->actor->name} deleted \"{$this->chore->name}\"",
-            'url' => route('chores.index'),
+            'url' => $this->householdUrl('chores.index'),
         ];
     }
 

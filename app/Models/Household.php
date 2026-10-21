@@ -18,6 +18,7 @@ use Laravel\Cashier\Subscription;
 /**
  * @property int $id
  * @property string $name
+ * @property string $slug The household's part of its URLs (/h/{slug}/...). Set once, never changed, so links keep working.
  * @property string|null $join_code
  * @property bool $join_code_enabled
  * @property string|null $location
@@ -37,7 +38,7 @@ class Household extends Model
     use HasFactory;
 
     /** @var list<string> */
-    protected $fillable = ['name', 'join_code', 'join_code_enabled', 'location', 'streak_days', 'streak_last_active_date', 'trial_ends_at', 'ai_meal_plan_generated_at', 'last_chore_notification_sent_at'];
+    protected $fillable = ['name', 'slug', 'join_code', 'join_code_enabled', 'location', 'streak_days', 'streak_last_active_date', 'trial_ends_at', 'ai_meal_plan_generated_at', 'last_chore_notification_sent_at'];
 
     protected function casts(): array
     {
@@ -59,6 +60,10 @@ class Household extends Model
             if (blank($household->join_code)) {
                 $household->join_code = self::generateJoinCode($household->name);
             }
+
+            if (blank($household->slug)) {
+                $household->slug = self::generateSlug($household->name);
+            }
         });
     }
 
@@ -72,6 +77,18 @@ class Household extends Model
         } while (static::where('join_code', $code)->exists());
 
         return $code;
+    }
+
+    /** Readable but not guessable, e.g. "the-parkers-x7k2". Not the join code: that one's semi-secret. */
+    public static function generateSlug(string $householdName): string
+    {
+        $base = Str::slug(Str::limit($householdName, 30, '')) ?: 'home';
+
+        do {
+            $slug = $base.'-'.Str::lower(Str::random(4));
+        } while (static::where('slug', $slug)->exists());
+
+        return $slug;
     }
 
     /** @return BelongsToMany<User, $this, HouseholdUser> */

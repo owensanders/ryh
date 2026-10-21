@@ -24,7 +24,7 @@ class RecipeTest extends TestCase
         Recipe::factory()->count(2)->create(['household_id' => $user->household_id, 'is_favourite' => false]);
 
         $this->actingAs($user)
-            ->get('/recipes')
+            ->get($this->hh('/recipes'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page->component('Recipes')->count('recipes', 3));
     }
@@ -35,7 +35,7 @@ class RecipeTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->post('/recipes', [
+            ->post($this->hh('/recipes'), [
                 'name' => 'Veg lasagne',
                 'duration_label' => '45 min',
                 'difficulty' => 'Medium',
@@ -60,7 +60,7 @@ class RecipeTest extends TestCase
         $recipe = Recipe::factory()->create(['household_id' => $user->household_id, 'name' => 'BBQ burgers']);
 
         $this->actingAs($user)
-            ->patch("/recipes/{$recipe->id}", [
+            ->patch($this->hh("/recipes/{$recipe->id}"), [
                 'name' => 'BBQ beef burgers',
                 'is_favourite' => true,
             ])
@@ -79,7 +79,7 @@ class RecipeTest extends TestCase
         $recipe = Recipe::factory()->create(['household_id' => $stranger->household_id, 'name' => 'BBQ burgers']);
 
         $this->actingAs($user)
-            ->patch("/recipes/{$recipe->id}", ['name' => 'Hijacked'])
+            ->patch($this->hh("/recipes/{$recipe->id}"), ['name' => 'Hijacked'])
             ->assertNotFound();
 
         $this->assertSame('BBQ burgers', $recipe->refresh()->name);
@@ -93,7 +93,7 @@ class RecipeTest extends TestCase
         PlannedMeal::factory()->create(['household_id' => $user->household_id, 'recipe_id' => $recipe->id]);
 
         $this->actingAs($user)
-            ->delete("/recipes/{$recipe->id}")
+            ->delete($this->hh("/recipes/{$recipe->id}"))
             ->assertRedirect()
             ->assertSessionHas('toast', 'BBQ burgers deleted');
 
@@ -109,7 +109,7 @@ class RecipeTest extends TestCase
         $recipe = Recipe::factory()->create(['household_id' => $stranger->household_id]);
 
         $this->actingAs($user)
-            ->delete("/recipes/{$recipe->id}")
+            ->delete($this->hh("/recipes/{$recipe->id}"))
             ->assertNotFound();
 
         $this->assertDatabaseHas('recipes', ['id' => $recipe->id]);
@@ -129,7 +129,7 @@ class RecipeTest extends TestCase
         $list = ShoppingList::factory()->create(['household_id' => $user->household_id]);
 
         $this->actingAs($user)
-            ->post("/recipes/{$recipe->id}/add-to-shopping-list", ['shopping_list_id' => $list->id])
+            ->post($this->hh("/recipes/{$recipe->id}/add-to-shopping-list"), ['shopping_list_id' => $list->id])
             ->assertRedirect();
 
         $this->assertDatabaseHas('shopping_items', ['shopping_list_id' => $list->id, 'name' => 'Chicken breast', 'quantity' => '500g']);
@@ -151,7 +151,7 @@ class RecipeTest extends TestCase
         $list->items()->create(['name' => 'lemon', 'quantity' => '2', 'position' => 0]);
 
         $this->actingAs($user)
-            ->post("/recipes/{$recipe->id}/add-to-shopping-list", ['shopping_list_id' => $list->id])
+            ->post($this->hh("/recipes/{$recipe->id}/add-to-shopping-list"), ['shopping_list_id' => $list->id])
             ->assertRedirect();
 
         $this->assertSame(1, $list->items()->where('name', 'lemon')->count());
@@ -165,7 +165,7 @@ class RecipeTest extends TestCase
         $list = ShoppingList::factory()->create(['household_id' => $user->household_id]);
 
         $this->actingAs($user)
-            ->post('/recipes', [
+            ->post($this->hh('/recipes'), [
                 'name' => 'Veg curry',
                 'ingredients' => [['name' => 'Chickpeas', 'quantity' => '1 tin']],
                 'shopping_list_id' => $list->id,
@@ -183,7 +183,7 @@ class RecipeTest extends TestCase
         Recipe::factory()->create(['household_id' => $user->household_id, 'name' => 'BBQ burgers']);
 
         $this->actingAs($user)
-            ->post('/recipes', ['name' => 'BBQ burgers'])
+            ->post($this->hh('/recipes'), ['name' => 'BBQ burgers'])
             ->assertSessionHasErrors('name');
     }
 
@@ -195,7 +195,7 @@ class RecipeTest extends TestCase
         Recipe::factory()->create(['household_id' => $stranger->household_id, 'name' => 'BBQ burgers']);
 
         $this->actingAs($user)
-            ->post('/recipes', ['name' => 'BBQ burgers'])
+            ->post($this->hh('/recipes'), ['name' => 'BBQ burgers'])
             ->assertSessionDoesntHaveErrors('name');
     }
 }

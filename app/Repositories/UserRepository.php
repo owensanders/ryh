@@ -64,15 +64,15 @@ class UserRepository implements UserRepositoryInterface
         return $user->refresh();
     }
 
-    public function setCurrentHousehold(User $user, ?int $householdId): void
+    public function setLastHousehold(User $user, ?int $householdId): void
     {
-        $user->forceFill(['current_household_id' => $householdId])->save();
+        $user->forceFill(['last_household_id' => $householdId])->save();
     }
 
     public function moveIntoHousehold(User $user, Household $household, PaletteEnum $colour): void
     {
         $user->update([
-            'current_household_id' => $household->id,
+            'last_household_id' => $household->id,
             'initials' => User::initialsFrom($user->name),
             'colour' => $colour,
         ]);

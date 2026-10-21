@@ -71,7 +71,7 @@ class UserFactory extends Factory
                 'pending' => $membership->get('pending', false),
                 'pending_reason' => $membership->get('pending_reason'),
             ]);
-            $user->forceFill(['current_household_id' => $householdId])->save();
+            $user->forceFill(['last_household_id' => $householdId])->save();
         }
 
         return $user;

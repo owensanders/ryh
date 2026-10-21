@@ -17,10 +17,14 @@ export interface NavItem {
     isActive?: boolean;
 }
 
+/** Raw `HouseholdRoleEnum` value. */
+export type HouseholdRole = 'owner' | 'adult' | 'teen' | 'child';
+
 export interface SharedData {
     name: string;
     auth: Auth;
-    household: { id: number; name: string } | null;
+    /** The household in the URL; on pages outside one (settings), the one they were last in. */
+    household: { id: number; name: string; slug: string; role: HouseholdRole | null } | null;
     flash: { toast: string | null; toastError: string | null; aiMeals: AiMealSuggestion[] | null; libraryMeals: AiMealSuggestion[] | null };
     // Inertia's PageProps requires an index signature to be used with usePage<T>().
     [key: string]: unknown;
@@ -38,8 +42,6 @@ export interface User {
     name: string;
     email: string;
     avatar?: string;
-    /** Raw `HouseholdRoleEnum` value: 'owner' | 'adult' | 'teen' | 'child'. Null while onboarding hasn't settled a household yet. */
-    role: string | null;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;

@@ -71,7 +71,7 @@ class RegisteredUserController extends Controller
         );
 
         return match ($result->outcome) {
-            InviteJoinOutcomeEnum::Joined => to_route('dashboard'),
+            InviteJoinOutcomeEnum::Joined => to_route('app'),
             InviteJoinOutcomeEnum::NeedsGuardian => to_route('household.setup')->with('reinviteHousehold', $result->householdName),
             InviteJoinOutcomeEnum::HouseholdFull => to_route('household.setup')->with('fullHousehold', $result->householdName),
             InviteJoinOutcomeEnum::HouseholdGone => to_route('household.setup'),

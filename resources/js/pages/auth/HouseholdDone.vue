@@ -57,7 +57,7 @@ const nextSteps = [
             </div>
 
             <div class="mt-6 flex items-center gap-3">
-                <Link v-if="!pending" :href="route('dashboard')" class="ryh-btn bg-ryh-coral px-6 text-white">Open my dashboard</Link>
+                <Link v-if="!pending" :href="route('app')" class="ryh-btn bg-ryh-coral px-6 text-white">Open my dashboard</Link>
                 <button
                     v-else
                     type="button"

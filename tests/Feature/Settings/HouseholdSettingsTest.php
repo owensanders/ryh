@@ -31,7 +31,7 @@ class HouseholdSettingsTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('settings/Households')
-                ->where('currentHouseholdId', $user->current_household_id)
+                ->where('currentHouseholdId', $user->last_household_id)
                 ->has('households', 2)
                 ->where('households.1.name', 'The Cottage'));
     }
@@ -45,9 +45,9 @@ class HouseholdSettingsTest extends TestCase
 
         $this->actingAs($user)
             ->patch('/settings/households/current', ['household_id' => $second->id])
-            ->assertRedirect(route('dashboard', absolute: false));
+            ->assertRedirect(route('app', absolute: false));
 
-        $this->assertDatabaseHas('users', ['id' => $user->id, 'current_household_id' => $second->id]);
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'last_household_id' => $second->id]);
     }
 
     #[Test]
@@ -108,7 +108,7 @@ class HouseholdSettingsTest extends TestCase
             ->delete('/settings/households/current', ['household_id' => $user->household_id])
             ->assertRedirect(route('household.setup', absolute: false));
 
-        $this->assertDatabaseHas('users', ['id' => $user->id, 'current_household_id' => null]);
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'last_household_id' => null]);
     }
 
     #[Test]
@@ -117,13 +117,13 @@ class HouseholdSettingsTest extends TestCase
         $user = User::factory()->create();
         $second = Household::factory()->create();
         $user->households()->attach($second->id, ['role' => HouseholdRoleEnum::Adult, 'pending' => false]);
-        $firstHouseholdId = $user->current_household_id;
+        $firstHouseholdId = $user->last_household_id;
 
         $this->actingAs($user)
             ->delete('/settings/households/current', ['household_id' => $firstHouseholdId])
             ->assertRedirect();
 
-        $this->assertDatabaseHas('users', ['id' => $user->id, 'current_household_id' => $second->id]);
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'last_household_id' => $second->id]);
     }
 
     #[Test]
@@ -131,7 +131,7 @@ class HouseholdSettingsTest extends TestCase
     {
         $stripe = $this->fakeStripe()->respond('DELETE', '/v1/subscriptions/sub_live', $this->stripeSubscription('sub_live', 'cus_test123', 'price_monthly', 'canceled'));
         $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
-        $owner->household->update(['stripe_id' => 'cus_test123']);
+        $owner->lastHousehold->update(['stripe_id' => 'cus_test123']);
         Subscription::create([
             'household_id' => $owner->household_id,
             'type' => 'default',
@@ -151,7 +151,7 @@ class HouseholdSettingsTest extends TestCase
     {
         $this->fakeStripe()->respond('DELETE', '/v1/subscriptions/sub_live', ['error' => ['type' => 'api_error', 'message' => 'Down']], 500);
         $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
-        $owner->household->update(['stripe_id' => 'cus_test123']);
+        $owner->lastHousehold->update(['stripe_id' => 'cus_test123']);
         Subscription::create([
             'household_id' => $owner->household_id,
             'type' => 'default',

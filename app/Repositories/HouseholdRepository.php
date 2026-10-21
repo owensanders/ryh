@@ -54,6 +54,11 @@ class HouseholdRepository implements HouseholdRepositoryInterface
         return Household::find($id);
     }
 
+    public function findBySlug(string $slug): ?Household
+    {
+        return Household::query()->where('slug', $slug)->first();
+    }
+
     public function findByJoinCode(string $joinCode): ?Household
     {
         return Household::where('join_code', $joinCode)->first();

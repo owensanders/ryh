@@ -27,7 +27,7 @@ class ChoresReminderNotification extends HouseholdNotification
             'type' => $this->notificationType(),
             'user_id' => $notifiable->id,
             'body' => "You have {$this->outstandingCount} outstanding {$chore}",
-            'url' => route('chores.index'),
+            'url' => $this->householdUrl('chores.index'),
         ];
     }
 

@@ -75,7 +75,7 @@ class WebPushTest extends TestCase
         $partner = User::factory()->create(['household_id' => $owner->household_id]);
         $this->subscribe($partner);
 
-        $this->actingAs($owner)->post('/chores', ['name' => 'Clean the gutters', 'assigned_to' => $partner->id]);
+        $this->actingAs($owner)->post($this->hh('/chores'), ['name' => 'Clean the gutters', 'assigned_to' => $partner->id]);
 
         // The bell is still updated synchronously.
         $this->assertSame(1, $partner->notifications()->count());
@@ -85,9 +85,9 @@ class WebPushTest extends TestCase
 
             return $message !== null
                 && $job->notifiables->pluck('id')->all() === [$partner->id]
-                && $message->title === $owner->household->name
+                && $message->title === $owner->lastHousehold->name
                 && $message->body === "{$owner->name} assigned you \"Clean the gutters\""
-                && $message->url === route('chores.index');
+                && $message->url === route('chores.index', ['household' => $owner->lastHousehold->slug]);
         });
     }
 
@@ -123,11 +123,11 @@ class WebPushTest extends TestCase
 
         $payload = $push->toWebPush($partner, $push)->toArray();
 
-        $this->assertSame($owner->household->name, $payload['title']);
+        $this->assertSame($owner->lastHousehold->name, $payload['title']);
         $this->assertSame("{$owner->name} assigned you \"Bins\"", $payload['body']);
         $this->assertSame('/icons/icon-192.png', $payload['icon']);
         $this->assertSame("chore_assigned-{$partner->id}", $payload['tag']);
-        $this->assertSame(['url' => route('chores.index')], $payload['data']);
+        $this->assertSame(['url' => route('chores.index', ['household' => $owner->lastHousehold->slug])], $payload['data']);
     }
 
     /** @return array<string, array{class-string<HouseholdNotification>, NotificationCategoryEnum}> */

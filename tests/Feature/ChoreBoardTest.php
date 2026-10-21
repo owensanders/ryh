@@ -33,7 +33,7 @@ class ChoreBoardTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get('/chores')
+            ->get($this->hh('/chores'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Chores')
@@ -56,12 +56,12 @@ class ChoreBoardTest extends TestCase
         $pending = User::factory()->create(['household_id' => $user->household_id, 'name' => 'Margaret Parker', 'pending' => true]);
 
         $this->actingAs($user)
-            ->get('/chores')
+            ->get($this->hh('/chores'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page->count('scores', 1));
 
         $this->actingAs($user)
-            ->post('/chores', ['name' => 'Clean the gutters', 'assigned_to' => $pending->id])
+            ->post($this->hh('/chores'), ['name' => 'Clean the gutters', 'assigned_to' => $pending->id])
             ->assertSessionHasErrors('assigned_to');
     }
 
@@ -72,7 +72,7 @@ class ChoreBoardTest extends TestCase
         $stranger = User::factory()->create();
 
         $this->actingAs($user)
-            ->post('/chores', ['name' => 'Clean the gutters', 'assigned_to' => $stranger->id])
+            ->post($this->hh('/chores'), ['name' => 'Clean the gutters', 'assigned_to' => $stranger->id])
             ->assertSessionHasErrors('assigned_to');
     }
 
@@ -85,10 +85,10 @@ class ChoreBoardTest extends TestCase
             'status' => ChoreStatusEnum::Today,
         ]);
 
-        $this->actingAs($user)->patch("/chores/{$chore->id}/toggle")->assertRedirect();
+        $this->actingAs($user)->patch($this->hh("/chores/{$chore->id}/toggle"))->assertRedirect();
         $this->assertSame(ChoreStatusEnum::Done, $chore->refresh()->status);
 
-        $this->actingAs($user)->patch("/chores/{$chore->id}/toggle")->assertRedirect();
+        $this->actingAs($user)->patch($this->hh("/chores/{$chore->id}/toggle"))->assertRedirect();
         $this->assertSame(ChoreStatusEnum::Today, $chore->refresh()->status);
     }
 
@@ -99,7 +99,7 @@ class ChoreBoardTest extends TestCase
         $chore = Chore::factory()->create(['household_id' => $user->household_id]);
 
         $this->actingAs($user)
-            ->patch("/chores/{$chore->id}/move", ['status' => 'done'])
+            ->patch($this->hh("/chores/{$chore->id}/move"), ['status' => 'done'])
             ->assertRedirect()
             ->assertSessionHas('toast', 'Moved to Completed');
 
@@ -113,7 +113,7 @@ class ChoreBoardTest extends TestCase
         $chore = Chore::factory()->create(['household_id' => $user->household_id]);
 
         $this->actingAs($user)
-            ->patch("/chores/{$chore->id}/move", ['status' => 'someday'])
+            ->patch($this->hh("/chores/{$chore->id}/move"), ['status' => 'someday'])
             ->assertSessionHasErrors('status');
     }
 
@@ -124,8 +124,8 @@ class ChoreBoardTest extends TestCase
         $stranger = User::factory()->create();
         $chore = Chore::factory()->create(['household_id' => $stranger->household_id]);
 
-        $this->actingAs($user)->patch("/chores/{$chore->id}/toggle")->assertNotFound();
-        $this->actingAs($user)->patch("/chores/{$chore->id}/move", ['status' => 'done'])->assertNotFound();
+        $this->actingAs($user)->patch($this->hh("/chores/{$chore->id}/toggle"))->assertNotFound();
+        $this->actingAs($user)->patch($this->hh("/chores/{$chore->id}/move"), ['status' => 'done'])->assertNotFound();
 
         $this->assertSame(ChoreStatusEnum::Today, $chore->refresh()->status);
     }
@@ -136,7 +136,7 @@ class ChoreBoardTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->post('/chores', ['name' => 'Clean the gutters'])
+            ->post($this->hh('/chores'), ['name' => 'Clean the gutters'])
             ->assertRedirect()
             ->assertSessionHas('toast', 'Clean the gutters added');
 
@@ -154,7 +154,7 @@ class ChoreBoardTest extends TestCase
         $chore = Chore::factory()->create(['household_id' => $user->household_id, 'name' => 'Water the plants']);
 
         $this->actingAs($user)
-            ->patch("/chores/{$chore->id}", ['name' => 'Water the houseplants'])
+            ->patch($this->hh("/chores/{$chore->id}"), ['name' => 'Water the houseplants'])
             ->assertRedirect()
             ->assertSessionHas('toast', 'Water the houseplants updated');
 
@@ -167,7 +167,7 @@ class ChoreBoardTest extends TestCase
         $user = User::factory()->create();
         $chore = Chore::factory()->create(['household_id' => $user->household_id, 'status' => ChoreStatusEnum::Done]);
 
-        $this->actingAs($user)->patch("/chores/{$chore->id}", ['name' => $chore->name]);
+        $this->actingAs($user)->patch($this->hh("/chores/{$chore->id}"), ['name' => $chore->name]);
 
         $this->assertSame(ChoreStatusEnum::Done, $chore->refresh()->status);
     }
@@ -180,7 +180,7 @@ class ChoreBoardTest extends TestCase
         $chore = Chore::factory()->create(['household_id' => $stranger->household_id, 'name' => 'Water the plants']);
 
         $this->actingAs($user)
-            ->patch("/chores/{$chore->id}", ['name' => 'Hijacked'])
+            ->patch($this->hh("/chores/{$chore->id}"), ['name' => 'Hijacked'])
             ->assertNotFound();
 
         $this->assertSame('Water the plants', $chore->refresh()->name);
@@ -193,7 +193,7 @@ class ChoreBoardTest extends TestCase
         $chore = Chore::factory()->create(['household_id' => $user->household_id, 'name' => 'Take out the bins']);
 
         $this->actingAs($user)
-            ->delete("/chores/{$chore->id}")
+            ->delete($this->hh("/chores/{$chore->id}"))
             ->assertRedirect()
             ->assertSessionHas('toast', 'Take out the bins deleted');
 
@@ -208,7 +208,7 @@ class ChoreBoardTest extends TestCase
         $chore = Chore::factory()->create(['household_id' => $stranger->household_id]);
 
         $this->actingAs($user)
-            ->delete("/chores/{$chore->id}")
+            ->delete($this->hh("/chores/{$chore->id}"))
             ->assertNotFound();
 
         $this->assertDatabaseHas('chores', ['id' => $chore->id]);

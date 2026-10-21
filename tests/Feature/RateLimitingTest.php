@@ -47,14 +47,14 @@ class RateLimitingTest extends TestCase
         $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
 
         for ($i = 0; $i < 10; $i++) {
-            $this->actingAs($owner)->post('/house/invite')->assertStatus(302);
+            $this->actingAs($owner)->post($this->hh('/house/invite'))->assertStatus(302);
         }
 
-        $this->actingAs($owner)->post('/house/invite')->assertStatus(429);
+        $this->actingAs($owner)->post($this->hh('/house/invite'))->assertStatus(429);
 
         $this->travel(61)->minutes();
 
-        $this->actingAs($owner)->post('/house/invite')->assertStatus(302);
+        $this->actingAs($owner)->post($this->hh('/house/invite'))->assertStatus(302);
     }
 
     #[Test]

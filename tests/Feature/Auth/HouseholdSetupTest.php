@@ -39,9 +39,9 @@ class HouseholdSetupTest extends TestCase
 
         $user->refresh();
         $this->assertNotNull($user->household_id);
-        $this->assertSame(HouseholdRoleEnum::Owner, $user->currentRole());
+        $this->assertSame(HouseholdRoleEnum::Owner, $this->membership($user)->role);
 
-        $household = $user->household;
+        $household = $user->lastHousehold;
         $this->assertSame('The Parker household', $household->name);
         $this->assertNotNull($household->join_code);
         $this->assertTrue($household->isOnTrial());
@@ -70,7 +70,7 @@ class HouseholdSetupTest extends TestCase
 
         $user->refresh();
         $this->assertSame($households, Household::count());
-        $this->assertNull($user->current_household_id);
+        $this->assertNull($user->last_household_id);
         $this->assertNull($user->trial_claimed_at);
     }
 
@@ -96,9 +96,9 @@ class HouseholdSetupTest extends TestCase
 
         $user->refresh();
         $this->assertSame($household->id, $user->household_id);
-        $this->assertSame(HouseholdRoleEnum::Adult, $user->currentRole());
-        $this->assertTrue($user->currentMembership()->pending);
-        $this->assertSame(PendingReasonEnum::Requested, $user->currentMembership()->pending_reason);
+        $this->assertSame(HouseholdRoleEnum::Adult, $this->membership($user)->role);
+        $this->assertTrue($this->membership($user)->pending);
+        $this->assertSame(PendingReasonEnum::Requested, $this->membership($user)->pending_reason);
     }
 
     #[Test]
@@ -150,7 +150,7 @@ class HouseholdSetupTest extends TestCase
         $household = Household::factory()->create();
         $user = User::factory()->create(['household_id' => $household->id, 'pending' => true]);
 
-        $this->actingAs($user)->get('/dashboard')->assertRedirect(route('household.done', absolute: false));
+        $this->actingAs($user)->get($this->hh('/dashboard'))->assertRedirect(route('household.done', absolute: false));
     }
 
     #[Test]
@@ -199,7 +199,7 @@ class HouseholdSetupTest extends TestCase
 
         $this->actingAs($user)->post('/household/setup', ['name' => 'First house']);
         $user->refresh();
-        $this->assertTrue($user->household->isOnTrial());
+        $this->assertTrue($user->lastHousehold->isOnTrial());
         $this->assertNotNull($user->trial_claimed_at);
 
         $this->actingAs($user)
@@ -208,8 +208,8 @@ class HouseholdSetupTest extends TestCase
 
         $this->actingAs($user)->post('/household/setup', ['name' => 'Second house']);
         $user->refresh();
-        $this->assertSame('Second house', $user->household->name);
-        $this->assertFalse($user->household->isOnTrial());
-        $this->assertTrue($user->household->needsToSubscribe());
+        $this->assertSame('Second house', $user->lastHousehold->name);
+        $this->assertFalse($user->lastHousehold->isOnTrial());
+        $this->assertTrue($user->lastHousehold->needsToSubscribe());
     }
 }

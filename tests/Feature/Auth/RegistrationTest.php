@@ -120,10 +120,10 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('app', absolute: false));
 
         $user = User::where('email', 'margaret@parkerhouse.co.uk')->firstOrFail();
-        $this->assertSame($household->id, $user->current_household_id);
+        $this->assertSame($household->id, $user->last_household_id);
         $this->assertDatabaseHas('household_user', [
             'household_id' => $household->id,
             'user_id' => $user->id,

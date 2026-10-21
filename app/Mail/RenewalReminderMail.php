@@ -37,7 +37,7 @@ class RenewalReminderMail extends Mailable implements ShouldQueue
                 'householdName' => $this->household->name,
                 'amountLabel' => $this->amountLabel,
                 'renewsOnLabel' => $this->renewsOnLabel,
-                'billingUrl' => route('house.index'),
+                'billingUrl' => route('house.index', ['household' => $this->household->slug]),
                 'termsUrl' => route('terms'),
             ],
         );

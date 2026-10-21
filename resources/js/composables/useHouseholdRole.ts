@@ -5,7 +5,7 @@ import { computed } from 'vue';
 export function useHouseholdRole() {
     const page = usePage<SharedData>();
     const user = computed(() => page.props.auth?.user ?? null);
-    const role = computed(() => user.value?.role ?? null);
+    const role = computed(() => page.props.household?.role ?? null);
     const canManage = computed(() => role.value === 'owner' || role.value === 'adult');
     const isOwner = computed(() => role.value === 'owner');
     const isTeen = computed(() => role.value === 'teen');

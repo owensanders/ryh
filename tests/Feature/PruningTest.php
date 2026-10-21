@@ -25,10 +25,10 @@ class PruningTest extends TestCase
 
         $this->assertNull($chore->completed_at);
 
-        $this->actingAs($owner)->patch("/chores/{$chore->id}/toggle");
+        $this->actingAs($owner)->patch($this->hh("/chores/{$chore->id}/toggle"));
         $this->assertNotNull($chore->refresh()->completed_at);
 
-        $this->actingAs($owner)->patch("/chores/{$chore->id}/toggle");
+        $this->actingAs($owner)->patch($this->hh("/chores/{$chore->id}/toggle"));
         $this->assertNull($chore->refresh()->completed_at);
     }
 

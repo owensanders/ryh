@@ -8,6 +8,7 @@ use App\Data\Input\PlannedMealInputData;
 use App\Data\Input\RecipeDetailsInputData;
 use App\Enums\MealSlotEnum;
 use App\Enums\RecipeTagEnum;
+use App\Support\CurrentHouseholdHelper;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -23,14 +24,14 @@ class PlannedMealRequest extends FormRequest
                 'required_without:new_recipe_name',
                 'nullable',
                 'integer',
-                Rule::exists('recipes', 'id')->where('household_id', $this->user()?->household_id),
+                Rule::exists('recipes', 'id')->where('household_id', CurrentHouseholdHelper::id($this)),
             ],
             'new_recipe_name' => [
                 'required_without:recipe_id',
                 'nullable',
                 'string',
                 'max:120',
-                Rule::unique('recipes', 'name')->where('household_id', $this->user()?->household_id),
+                Rule::unique('recipes', 'name')->where('household_id', CurrentHouseholdHelper::id($this)),
             ],
             'new_recipe_description' => ['nullable', 'string', 'max:2000'],
             'new_recipe_duration_label' => ['nullable', 'string', 'max:40'],
@@ -45,14 +46,14 @@ class PlannedMealRequest extends FormRequest
             'new_recipe_shopping_list_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('shopping_lists', 'id')->where('household_id', $this->user()?->household_id),
+                Rule::exists('shopping_lists', 'id')->where('household_id', CurrentHouseholdHelper::id($this)),
             ],
             'planned_on' => ['required', 'date'],
             'slot' => ['required', Rule::enum(MealSlotEnum::class)],
             'cook_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('household_user', 'user_id')->where('household_id', $this->user()?->current_household_id)->where('pending', false),
+                Rule::exists('household_user', 'user_id')->where('household_id', CurrentHouseholdHelper::id($this))->where('pending', false),
             ],
         ];
     }

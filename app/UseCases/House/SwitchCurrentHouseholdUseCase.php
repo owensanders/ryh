@@ -24,6 +24,6 @@ class SwitchCurrentHouseholdUseCase
             throw (new ModelNotFoundException)->setModel(Household::class, [$householdId]);
         }
 
-        $this->users->setCurrentHousehold($user, $householdId);
+        $this->users->setLastHousehold($user, $householdId);
     }
 }

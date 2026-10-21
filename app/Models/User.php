@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\HouseholdRoleEnum;
 use App\Enums\NotificationCategoryEnum;
 use App\Enums\PaletteEnum;
 use App\Notifications\ResetPasswordNotification;
@@ -23,8 +22,8 @@ use NotificationChannels\WebPush\HasPushSubscriptions;
 
 /**
  * @property int $id
- * @property int|null $current_household_id
- * @property-read int|null $household_id Alias for `current_household_id` — see `householdId()` below.
+ * @property int|null $last_household_id
+ * @property-read int|null $household_id Alias for `last_household_id` — see `householdId()` below.
  * @property string $name
  * @property string|null $initials
  * @property PaletteEnum $colour
@@ -45,7 +44,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /** @var list<string> */
     protected $fillable = [
-        'current_household_id',
+        'last_household_id',
         'name',
         'initials',
         'colour',
@@ -76,20 +75,16 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
-    /** @return BelongsTo<Household, $this> */
-    public function currentHousehold(): BelongsTo
-    {
-        return $this->belongsTo(Household::class, 'current_household_id');
-    }
-
     /**
-     * Alias kept so "the acting user's own household" call sites read naturally.
+     * The household they were last in: where /app lands them, and what pages
+     * outside a household (settings) link back to. Never the household a
+     * request is for — that comes from the URL (CurrentHouseholdHelper).
      *
      * @return BelongsTo<Household, $this>
      */
-    public function household(): BelongsTo
+    public function lastHousehold(): BelongsTo
     {
-        return $this->currentHousehold();
+        return $this->belongsTo(Household::class, 'last_household_id');
     }
 
     /** @return BelongsToMany<Household, $this, HouseholdUser> */
@@ -99,44 +94,6 @@ class User extends Authenticatable implements MustVerifyEmail
             ->using(HouseholdUser::class)
             ->withPivot(['role', 'pending', 'pending_reason', 'guardian_confirmed_by', 'guardian_confirmed_at'])
             ->withTimestamps();
-    }
-
-    /**
-     * The middleware chain and the Inertia shared props each ask for the
-     * membership, so remember it for this instance — keyed by household, so a
-     * switch mid-request still gets a fresh lookup.
-     *
-     * @var array{0: int, 1: HouseholdUser|null}|null
-     */
-    private ?array $membershipMemo = null;
-
-    public function currentMembership(): ?HouseholdUser
-    {
-        if ($this->current_household_id === null) {
-            return null;
-        }
-
-        if ($this->membershipMemo !== null && $this->membershipMemo[0] === $this->current_household_id) {
-            return $this->membershipMemo[1];
-        }
-
-        /** @var HouseholdUser|null $membership */
-        $membership = HouseholdUser::query()
-            ->where('user_id', $this->id)
-            ->where('household_id', $this->current_household_id)
-            ->first();
-
-        $this->membershipMemo = [$this->current_household_id, $membership];
-
-        return $membership;
-    }
-
-    /** Reloading the user should reload its membership too. */
-    public function refresh(): static
-    {
-        $this->membershipMemo = null;
-
-        return parent::refresh();
     }
 
     /** The two letters shown on someone's avatar. */
@@ -167,22 +124,17 @@ class User extends Authenticatable implements MustVerifyEmail
         return ! in_array($category->value, $this->push_opt_outs ?? [], true);
     }
 
-    public function currentRole(): ?HouseholdRoleEnum
-    {
-        return $this->currentMembership()?->role;
-    }
-
     /**
-     * Read-only alias for `current_household_id` — kept because many existing
-     * call sites (feature-test fixtures, other tables' own `household_id`
-     * scoping) read "the acting user's household" this way. Never write
-     * through this; membership writes go through `households()`/`HouseholdUser`.
+     * Read-only alias for `last_household_id`, kept for the test suite's
+     * fixtures (`$owner->household_id` is "the household the factory put them
+     * in"). App code reads the request's household from
+     * CurrentHouseholdHelper, never this.
      *
      * @return Attribute<int|null, never>
      */
     protected function householdId(): Attribute
     {
-        return Attribute::make(get: fn () => $this->current_household_id);
+        return Attribute::make(get: fn () => $this->last_household_id);
     }
 
     /** @return HasMany<Chore, $this> */

@@ -67,7 +67,7 @@ class NotificationMessagesTest extends TestCase
     #[Test]
     public function theChoresReminderCountsWhatsOutstanding(): void
     {
-        $household = $this->actor->household;
+        $household = $this->actor->lastHousehold;
 
         $this->assertMessage(new ChoresReminderNotification($household, 1), 'chores_reminder', 'You have 1 outstanding chore', 'chores.index', NotificationCategoryEnum::Chores);
         $this->assertMessage(new ChoresReminderNotification($household, 3), 'chores_reminder', 'You have 3 outstanding chores', 'chores.index', NotificationCategoryEnum::Chores);
@@ -116,16 +116,16 @@ class NotificationMessagesTest extends TestCase
     private function assertMessage(HouseholdNotification $notification, string $type, string $body, string $route, NotificationCategoryEnum $category, array $ids = []): void
     {
         $this->assertSame(
-            ['type' => $type, ...$ids, 'user_id' => $this->recipient->id, 'body' => $body, 'url' => route($route)],
+            ['type' => $type, ...$ids, 'user_id' => $this->recipient->id, 'body' => $body, 'url' => route($route, ['household' => $this->actor->lastHousehold->slug])],
             $notification->toArray($this->recipient),
             "{$type} bell entry (and, with its id, the live payload)",
         );
         $this->assertSame($category, $notification->category(), "{$type} category");
 
         $push = $notification->toPushMessage($this->recipient);
-        $this->assertSame($this->actor->household->name, $push->title, "{$type} push title");
+        $this->assertSame($this->actor->lastHousehold->name, $push->title, "{$type} push title");
         $this->assertSame($body, $push->body, "{$type} push body");
-        $this->assertSame(route($route), $push->url, "{$type} push link");
+        $this->assertSame(route($route, ['household' => $this->actor->lastHousehold->slug]), $push->url, "{$type} push link");
         $this->assertSame("{$type}-{$this->recipient->id}", $push->tag, "{$type} push tag");
     }
 }

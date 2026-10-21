@@ -21,7 +21,7 @@ class CalendarTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->get('/calendar')
+            ->get($this->hh('/calendar'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Calendar')
@@ -39,7 +39,7 @@ class CalendarTest extends TestCase
         $pending = User::factory()->create(['household_id' => $user->household_id, 'name' => 'Margaret Parker', 'pending' => true]);
 
         $this->actingAs($user)
-            ->get('/calendar')
+            ->get($this->hh('/calendar'))
             ->assertOk()
             ->assertInertia(function ($page) {
                 /** @var list<array<string, mixed>> $members */
@@ -49,7 +49,7 @@ class CalendarTest extends TestCase
             });
 
         $this->actingAs($user)
-            ->post('/calendar/events', [
+            ->post($this->hh('/calendar/events'), [
                 'title' => 'Football practice',
                 'starts_at' => CarbonImmutable::tomorrow()->setTime(18, 0)->format('Y-m-d\TH:i'),
                 'attendees' => [$pending->id],
@@ -63,7 +63,7 @@ class CalendarTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->get('/calendar')
+            ->get($this->hh('/calendar'))
             ->assertInertia(function ($page) {
                 /** @var array<int, array<string, mixed>> $days */
                 $days = $page->toArray()['props']['calendar']['days'];
@@ -87,7 +87,7 @@ class CalendarTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->get('/calendar?month=2026-09')
+            ->get($this->hh('/calendar?month=2026-09'))
             ->assertInertia(fn ($page) => $page
                 ->where('calendar.month', '2026-09')
                 ->where('calendar.monthLabel', 'September 2026')
@@ -103,8 +103,8 @@ class CalendarTest extends TestCase
 
         foreach (['2026-13', '2026-00', 'not-a-month', '2026-08-01'] as $month) {
             $this->actingAs($user)
-                ->get("/calendar?month={$month}")
-                ->assertRedirect('/calendar')
+                ->get($this->hh("/calendar?month={$month}"))
+                ->assertRedirect($this->hh('/calendar'))
                 ->assertSessionHasErrors('month');
         }
     }
@@ -119,7 +119,7 @@ class CalendarTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->get('/calendar?month=2026-09')
+            ->get($this->hh('/calendar?month=2026-09'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->where('calendar.month', '2026-09')
@@ -135,7 +135,7 @@ class CalendarTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->get('/calendar?month=')
+            ->get($this->hh('/calendar?month='))
             ->assertOk()
             ->assertInertia(fn ($page) => $page->where('calendar.month', CarbonImmutable::now()->format('Y-m')));
     }
@@ -153,7 +153,7 @@ class CalendarTest extends TestCase
 
         // The hidden end time is still in the payload and is now before the start.
         $this->actingAs($user)
-            ->patch("/calendar/events/{$event->id}", [
+            ->patch($this->hh("/calendar/events/{$event->id}"), [
                 'title' => 'All-day now',
                 'starts_at' => CarbonImmutable::tomorrow()->setTime(20, 0)->format('Y-m-d\TH:i'),
                 'ends_at' => CarbonImmutable::tomorrow()->setTime(19, 30)->format('Y-m-d\TH:i'),
@@ -183,7 +183,7 @@ class CalendarTest extends TestCase
         $event->attendees()->sync([$partner->id]);
 
         $this->actingAs($user)
-            ->get('/calendar')
+            ->get($this->hh('/calendar'))
             ->assertInertia(function ($page) use ($partner) {
                 /** @var array<int, array<string, mixed>> $days */
                 $days = $page->toArray()['props']['calendar']['days'];
@@ -212,7 +212,7 @@ class CalendarTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get('/calendar')
+            ->get($this->hh('/calendar'))
             ->assertInertia(function ($page) use ($start, $end) {
                 /** @var array<int, array<string, mixed>> $days */
                 $days = $page->toArray()['props']['calendar']['days'];
@@ -242,7 +242,7 @@ class CalendarTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get('/calendar')
+            ->get($this->hh('/calendar'))
             ->assertInertia(function ($page) {
                 /** @var array<int, array<string, mixed>> $days */
                 $days = $page->toArray()['props']['calendar']['days'];
@@ -261,7 +261,7 @@ class CalendarTest extends TestCase
         $child = User::factory()->create(['household_id' => $user->household_id]);
 
         $this->actingAs($user)
-            ->post('/calendar/events', [
+            ->post($this->hh('/calendar/events'), [
                 'title' => '  Football practice  ',
                 'starts_at' => CarbonImmutable::tomorrow()->setTime(18, 0)->format('Y-m-d\TH:i'),
                 'ends_at' => CarbonImmutable::tomorrow()->setTime(19, 30)->format('Y-m-d\TH:i'),
@@ -286,7 +286,7 @@ class CalendarTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->post('/calendar/events', [
+            ->post($this->hh('/calendar/events'), [
                 'title' => "Grandma's birthday",
                 'starts_at' => CarbonImmutable::tomorrow()->setTime(0, 0)->format('Y-m-d\TH:i'),
                 'ends_at' => CarbonImmutable::tomorrow()->setTime(23, 0)->format('Y-m-d\TH:i'),
@@ -307,7 +307,7 @@ class CalendarTest extends TestCase
         $event->attendees()->sync([$user->id]);
 
         $this->actingAs($user)
-            ->patch("/calendar/events/{$event->id}", [
+            ->patch($this->hh("/calendar/events/{$event->id}"), [
                 'title' => 'Swim club',
                 'starts_at' => CarbonImmutable::tomorrow()->setTime(16, 0)->format('Y-m-d\TH:i'),
                 'attendees' => [$child->id],
@@ -331,7 +331,7 @@ class CalendarTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->delete("/calendar/events/{$event->id}")
+            ->delete($this->hh("/calendar/events/{$event->id}"))
             ->assertRedirect()
             ->assertSessionHas('toast', '“Client call” deleted');
 
@@ -344,7 +344,7 @@ class CalendarTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->post('/calendar/events', [
+            ->post($this->hh('/calendar/events'), [
                 'title' => 'Time travel',
                 'starts_at' => CarbonImmutable::yesterday()->setTime(18, 0)->format('Y-m-d\TH:i'),
             ])
@@ -363,7 +363,7 @@ class CalendarTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->patch("/calendar/events/{$event->id}", [
+            ->patch($this->hh("/calendar/events/{$event->id}"), [
                 'title' => $event->title,
                 'starts_at' => CarbonImmutable::yesterday()->setTime(10, 0)->format('Y-m-d\TH:i'),
             ])
@@ -381,7 +381,7 @@ class CalendarTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->patch("/calendar/events/{$event->id}", [
+            ->patch($this->hh("/calendar/events/{$event->id}"), [
                 'title' => 'Renamed',
                 'starts_at' => CarbonImmutable::yesterday()->setTime(10, 0)->format('Y-m-d\TH:i'),
             ])
@@ -396,7 +396,7 @@ class CalendarTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->post('/calendar/events', [
+            ->post($this->hh('/calendar/events'), [
                 'title' => 'Backwards',
                 'starts_at' => CarbonImmutable::tomorrow()->setTime(18, 0)->format('Y-m-d\TH:i'),
                 'ends_at' => CarbonImmutable::tomorrow()->setTime(17, 0)->format('Y-m-d\TH:i'),
@@ -413,7 +413,7 @@ class CalendarTest extends TestCase
         $stranger = User::factory()->create();
 
         $this->actingAs($user)
-            ->post('/calendar/events', [
+            ->post($this->hh('/calendar/events'), [
                 'title' => 'Not yours',
                 'starts_at' => CarbonImmutable::tomorrow()->setTime(18, 0)->format('Y-m-d\TH:i'),
                 'attendees' => [$stranger->id],
@@ -435,14 +435,14 @@ class CalendarTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->patch("/calendar/events/{$event->id}", [
+            ->patch($this->hh("/calendar/events/{$event->id}"), [
                 'title' => 'Mine now',
                 'starts_at' => CarbonImmutable::tomorrow()->setTime(18, 0)->format('Y-m-d\TH:i'),
             ])
             ->assertNotFound();
 
         $this->actingAs($user)
-            ->delete("/calendar/events/{$event->id}")
+            ->delete($this->hh("/calendar/events/{$event->id}"))
             ->assertNotFound();
 
         $this->assertSame('Theirs', $event->refresh()->title);
@@ -457,7 +457,7 @@ class CalendarTest extends TestCase
         CalendarEvent::factory()->create(['household_id' => $stranger->household_id, 'title' => 'Theirs']);
 
         $this->actingAs($user)
-            ->get('/calendar')
+            ->get($this->hh('/calendar'))
             ->assertInertia(function ($page) {
                 /** @var array<int, array<string, mixed>> $days */
                 $days = $page->toArray()['props']['calendar']['days'];

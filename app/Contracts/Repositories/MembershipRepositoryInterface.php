@@ -17,6 +17,9 @@ interface MembershipRepositoryInterface
 {
     public function find(User $user, Household $household): ?HouseholdUser;
 
+    /** Their membership of the household they were last in, if they still have one. */
+    public function lastFor(User $user): ?HouseholdUser;
+
     public function belongsTo(User $user, int $householdId): bool;
 
     public function hasAny(User $user): bool;

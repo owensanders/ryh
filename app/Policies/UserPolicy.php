@@ -7,6 +7,7 @@ namespace App\Policies;
 use App\Contracts\Repositories\MembershipRepositoryInterface;
 use App\Enums\HouseholdRoleEnum;
 use App\Models\User;
+use App\Support\CurrentHouseholdHelper;
 use App\Traits\AuthorizesHouseholdAccessTrait;
 use Illuminate\Auth\Access\Response;
 
@@ -21,7 +22,8 @@ class UserPolicy
     /** Changing a member's role, approving them, or removing them from the household. */
     public function manageMember(User $user, User $member): Response
     {
-        $isMember = $user->current_household_id !== null && $this->memberships->belongsTo($member, $user->current_household_id);
+        $householdId = CurrentHouseholdHelper::id();
+        $isMember = $householdId !== null && $this->memberships->belongsTo($member, $householdId);
 
         return $isMember
             ? $this->as($user, [HouseholdRoleEnum::Owner])

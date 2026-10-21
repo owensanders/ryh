@@ -28,7 +28,7 @@ class ChoreActionedNotification extends HouseholdNotification
             'chore_id' => $this->chore->id,
             'user_id' => $notifiable->id,
             'body' => "{$this->actor->name} {$verb} \"{$this->chore->name}\"",
-            'url' => route('chores.index'),
+            'url' => $this->householdUrl('chores.index'),
         ];
     }
 

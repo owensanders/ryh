@@ -6,6 +6,7 @@ namespace App\Http\Requests;
 
 use App\Data\Input\RecipeInputData;
 use App\Enums\RecipeTagEnum;
+use App\Support\CurrentHouseholdHelper;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -19,7 +20,7 @@ class RecipeRequest extends FormRequest
                 'required',
                 'string',
                 'max:120',
-                Rule::unique('recipes', 'name')->where('household_id', $this->user()?->household_id)->ignore($this->route('recipe')),
+                Rule::unique('recipes', 'name')->where('household_id', CurrentHouseholdHelper::id($this))->ignore($this->route('recipe')),
             ],
             'description' => ['nullable', 'string', 'max:2000'],
             'duration_label' => ['nullable', 'string', 'max:40'],
@@ -34,7 +35,7 @@ class RecipeRequest extends FormRequest
             'shopping_list_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('shopping_lists', 'id')->where('household_id', $this->user()?->household_id),
+                Rule::exists('shopping_lists', 'id')->where('household_id', CurrentHouseholdHelper::id($this)),
             ],
         ];
     }

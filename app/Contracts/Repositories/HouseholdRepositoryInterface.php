@@ -23,6 +23,8 @@ interface HouseholdRepositoryInterface
 
     public function find(int $id): ?Household;
 
+    public function findBySlug(string $slug): ?Household;
+
     public function findByJoinCode(string $joinCode): ?Household;
 
     /**

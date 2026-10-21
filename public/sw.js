@@ -98,7 +98,7 @@ async function showUnlessFocused(message) {
 
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
-    const url = event.notification.data?.url ?? '/dashboard';
+    const url = event.notification.data?.url ?? '/app';
     event.waitUntil(openOrFocus(url));
 });
 
