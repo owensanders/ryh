@@ -16,6 +16,8 @@ use App\Models\ShoppingList;
 use App\Models\User;
 use App\Notifications\AiCreditsExhaustedNotification;
 use Carbon\CarbonImmutable;
+use Exception;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
@@ -471,6 +473,22 @@ class MealPlannerTest extends TestCase
             ->assertRedirect()
             ->assertSessionHasErrors(['ai' => 'We couldn\'t generate a meal plan right now — please try again in a few minutes.']);
 
+        $this->assertNull($user->household->refresh()->ai_meal_plan_generated_at);
+    }
+
+    #[Test]
+    public function anUnexpectedFailureNeverShowsItsMessage(): void
+    {
+        config(['ai.providers.anthropic.key' => 'test-key']);
+        // A QueryException is a RuntimeException: it must not reach the page the
+        // way the meal-plan messages written for people do.
+        MealPlanAgent::fake(fn () => throw new QueryException('mysql', 'select secret_column from users', [], new Exception('SQLSTATE[42S22]')));
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post('/meals/ai-plan', $this->aiPlanPayload());
+
+        $response->assertServerError();
+        $this->assertFalse(session()->has('errors'));
         $this->assertNull($user->household->refresh()->ai_meal_plan_generated_at);
     }
 

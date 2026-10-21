@@ -55,6 +55,22 @@ class NotifyChoresTest extends TestCase
     }
 
     #[Test]
+    public function aSecondRequestFromTheAppStaysOnThePageWithAToast(): void
+    {
+        Notification::fake();
+
+        $owner = User::factory()->create();
+
+        $this->actingAs($owner)->post('/chores/notify')->assertRedirect();
+
+        $this->actingAs($owner)
+            ->from('/chores')
+            ->post('/chores/notify', [], ['X-Inertia' => 'true'])
+            ->assertRedirect('/chores')
+            ->assertSessionHas('toastError');
+    }
+
+    #[Test]
     public function teenAndChildCannotUseIt(): void
     {
         $owner = User::factory()->create();

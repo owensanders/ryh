@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\UseCases\House;
 
+use App\Exceptions\BillingUnavailableException;
 use App\Models\Household;
 use Illuminate\Support\Facades\Log;
-use RuntimeException;
 use Stripe\Exception\ApiErrorException;
 
 class SubscribeHouseholdUseCase
@@ -30,7 +30,7 @@ class SubscribeHouseholdUseCase
         if (blank($stripePrice)) {
             Log::error("No Stripe price configured for the Home plan's {$interval} interval.");
 
-            throw new RuntimeException('Billing is not set up yet.');
+            throw BillingUnavailableException::notConfigured();
         }
 
         try {
@@ -48,7 +48,7 @@ class SubscribeHouseholdUseCase
         } catch (ApiErrorException $e) {
             Log::error("Couldn't start Stripe checkout for household {$household->id}: {$e->getMessage()}");
 
-            throw new RuntimeException("We couldn't reach our payment provider. Please try again in a moment.", previous: $e);
+            throw BillingUnavailableException::providerUnreachable($e);
         }
     }
 }

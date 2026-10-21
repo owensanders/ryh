@@ -8,11 +8,11 @@ use App\Contracts\Repositories\MealPlanRepositoryInterface;
 use App\Data\MealSuggestionData;
 use App\Enums\MealDietEnum;
 use App\Enums\RecipeTagEnum;
+use App\Exceptions\MealPlanUnavailableException;
 use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\Recipe;
 use Carbon\CarbonImmutable;
-use RuntimeException;
 
 /**
  * Builds a week from the household's own recipe library - no AI call, so it
@@ -47,7 +47,7 @@ class SuggestLibraryMealPlanUseCase
             ->reject(fn (Recipe $recipe) => $avoidWords->contains(fn (string $word) => $this->mentions($recipe, $word)));
 
         if ($eligible->isEmpty()) {
-            throw new RuntimeException('None of your saved recipes match — try loosening the filters or add more recipes.');
+            throw MealPlanUnavailableException::noMatchingRecipes();
         }
 
         // Fresh recipes before recently planned ones, favourites first within

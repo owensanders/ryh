@@ -6,6 +6,8 @@ namespace App\UseCases\Notifications;
 
 use App\Contracts\Repositories\NotificationRepositoryInterface;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Notifications\DatabaseNotification;
 
 /** Opening a notification is reading it. */
 class OpenNotificationUseCase
@@ -17,7 +19,9 @@ class OpenNotificationUseCase
     {
         $notification = $this->notifications->findFor($user, $id);
 
-        abort_if($notification === null, 404);
+        if ($notification === null) {
+            throw (new ModelNotFoundException)->setModel(DatabaseNotification::class, [$id]);
+        }
 
         $this->notifications->markRead($notification);
 

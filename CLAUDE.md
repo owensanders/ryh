@@ -80,6 +80,20 @@ before it if a failure should stop the change, after it otherwise. Checks
 that two requests could race, like the member cap or budget carry-forward,
 lock the household row first with `HouseholdRepositoryInterface::lockForUpdate()`.
 
+## Errors
+
+A use case says what went wrong by throwing, never with `abort()`:
+
+- A message people should read: a `UserFacingException` subclass in
+  `app/Exceptions`, with named constructors holding the wording
+  (`MealPlanUnavailableException::weeklyLimitReached()`). It renders itself as
+  a form error under its `errorKey()`, so controllers don't catch it.
+- Not found, or not this household's: `ModelNotFoundException`, which is a 404.
+
+These are the only messages that reach the screen. Never catch
+`RuntimeException` to show its message: a database error is one too.
+Enforced by `UserFacingErrorsTest`.
+
 ## Notifications
 
 Extend `HouseholdNotification`. The bell entry is stored during the request.

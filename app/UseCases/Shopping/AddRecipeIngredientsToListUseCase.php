@@ -8,19 +8,25 @@ use App\Contracts\Repositories\ShoppingRepositoryInterface;
 use App\Data\ShoppingListData;
 use App\Models\Household;
 use App\Models\Recipe;
+use App\Models\ShoppingList;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 class AddRecipeIngredientsToListUseCase
 {
     public function __construct(private readonly ShoppingRepositoryInterface $shopping) {}
 
-    /** @return ShoppingListData|null The updated list, or null when it isn't one of the household's. */
-    public function execute(Household $household, Recipe $recipe, int $listId): ?ShoppingListData
+    /**
+     * @return ShoppingListData The updated list.
+     *
+     * @throws ModelNotFoundException When the list isn't one of the household's.
+     */
+    public function execute(Household $household, Recipe $recipe, int $listId): ShoppingListData
     {
         $list = $this->shopping->findList($household, $listId);
 
         if ($list === null) {
-            return null;
+            throw (new ModelNotFoundException)->setModel(ShoppingList::class, [$listId]);
         }
 
         $present = $list->items->reject->isDone()->map(fn ($item) => mb_strtolower(trim($item->name)))->all();
