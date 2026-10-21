@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Auth;
 
-use App\Data\LandingData;
+use App\Models\Household;
 use App\Models\User;
-use App\Repositories\HouseholdRepository;
-use App\Repositories\MembershipRepository;
 
 /**
  * For /app and links from before households were in the URL: back to the
@@ -16,17 +14,17 @@ use App\Repositories\MembershipRepository;
  */
 class ResolveLandingAction
 {
-    public function __construct(
-        private readonly MembershipRepository $memberships,
-        private readonly HouseholdRepository $households,
-    ) {}
-
-    public function handle(User $user): LandingData
+    /**
+     * @param  string  $path  The screen they were after within a household, e.g. "budget".
+     *
+     * @return string Where to send them.
+     */
+    public function handle(User $user, string $path = 'dashboard', ?string $query = null): string
     {
-        $householdIds = $this->memberships->householdIdsFor($user);
+        $householdIds = $user->householdIds();
 
         if ($householdIds->isEmpty()) {
-            return new LandingData(needsSetup: true, needsChoice: false, householdSlug: null);
+            return route('household.setup', absolute: false);
         }
 
         $householdId = match (true) {
@@ -35,10 +33,12 @@ class ResolveLandingAction
             default => null,
         };
 
-        return new LandingData(
-            needsSetup: false,
-            needsChoice: $householdId === null,
-            householdSlug: $householdId !== null ? $this->households->find($householdId)?->slug : null,
-        );
+        $slug = $householdId !== null ? Household::find($householdId)?->slug : null;
+
+        if ($slug === null) {
+            return route('household.select', absolute: false);
+        }
+
+        return "/h/{$slug}/".ltrim($path, '/').($query !== null ? "?{$query}" : '');
     }
 }

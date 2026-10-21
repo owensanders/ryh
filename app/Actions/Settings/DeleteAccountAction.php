@@ -8,9 +8,6 @@ use App\Actions\House\CancelHouseholdSubscriptionAction;
 use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
 use App\Models\User;
-use App\Repositories\HouseholdRepository;
-use App\Repositories\MembershipRepository;
-use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -18,10 +15,7 @@ use Illuminate\Validation\ValidationException;
 class DeleteAccountAction
 {
     public function __construct(
-        private readonly UserRepository $users,
-        private readonly HouseholdRepository $households,
         private readonly CancelHouseholdSubscriptionAction $cancelSubscription,
-        private readonly MembershipRepository $memberships,
     ) {}
 
     /** @throws ValidationException */
@@ -39,12 +33,12 @@ class DeleteAccountAction
 
         DB::transaction(function () use ($user, $goingWithThem): void {
             foreach ($goingWithThem as $household) {
-                $this->households->delete($household);
+                $household->delete();
             }
 
             // push_subscriptions is polymorphic, so nothing cascades from users.
-            $this->users->deleteAllPushSubscriptions($user);
-            $this->users->delete($user);
+            $user->pushSubscriptions()->delete();
+            $user->delete();
         });
 
         session()->invalidate();
@@ -64,7 +58,7 @@ class DeleteAccountAction
         $goingWithThem = [];
         $sharedWithOthers = [];
 
-        foreach ($this->memberships->householdsWithMembersFor($user) as $household) {
+        foreach ($user->households()->withCount('members')->with(['members', 'subscriptions'])->get() as $household) {
             $members = $household->members;
             $isOwner = $members->contains(fn (User $m) => $m->id === $user->id && $m->pivot?->role === HouseholdRoleEnum::Owner);
             $hasOtherOwners = $members->contains(fn (User $m) => $m->id !== $user->id && $m->pivot?->role === HouseholdRoleEnum::Owner);

@@ -28,7 +28,7 @@ class ProfileController extends Controller
 
     public function update(ProfileUpdateRequest $request, UpdateProfileAction $updateProfile): RedirectResponse
     {
-        $updateProfile->handle($this->user($request), $request->toData());
+        $updateProfile->handle($this->user($request), $request->validated());
 
         return to_route('profile.edit');
     }

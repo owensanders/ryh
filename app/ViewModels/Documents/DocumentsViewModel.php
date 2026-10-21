@@ -10,22 +10,19 @@ use App\Data\DocumentsScreenData;
 use App\Models\Document;
 use App\Models\DocumentFolder;
 use App\Models\Household;
-use App\Repositories\DocumentRepository;
 use Illuminate\Support\Collection;
 
 class DocumentsViewModel
 {
-    public function __construct(private readonly DocumentRepository $documents) {}
-
     public function toData(Household $household, ?DocumentFolder $active): DocumentsScreenData
     {
-        $folders = $this->documents->foldersFor($household);
+        $folders = $household->documentFolders()->withCount('documents')->get();
         $active ??= $folders->first();
 
         /** @var Collection<int, Document> $activeDocuments */
-        $activeDocuments = $active !== null ? $this->documents->documentsFor($active) : collect();
+        $activeDocuments = $active !== null ? $active->documents()->with('addedBy')->latest()->get() : collect();
 
-        $totalBytes = $this->documents->totalSizeFor($household);
+        $totalBytes = (int) $household->documents()->sum('size');
         $quotaBytes = (int) config('documents.quota_bytes');
 
         return new DocumentsScreenData(

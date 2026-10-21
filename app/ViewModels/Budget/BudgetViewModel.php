@@ -10,7 +10,6 @@ use App\Data\BudgetScreenData;
 use App\Data\IncomeSourceData;
 use App\Models\BudgetCategory;
 use App\Models\Household;
-use App\Repositories\BudgetRepository;
 use App\Support\MoneyHelper;
 use Carbon\CarbonImmutable;
 
@@ -18,15 +17,13 @@ class BudgetViewModel
 {
     private const int HISTORY_MONTHS = 3;
 
-    public function __construct(private readonly BudgetRepository $budget) {}
-
     public function toData(Household $household, CarbonImmutable $month): BudgetScreenData
     {
         $today = CarbonImmutable::today();
         $first = $month->startOfMonth();
 
-        $categories = $this->budget->categoriesFor($household, $first);
-        $income = $this->budget->incomeSourcesFor($household, $first);
+        $categories = $household->budgetCategories()->forMonth($first)->get();
+        $income = $household->incomeSources()->forMonth($first)->get();
 
         $budgeted = (int) $categories->sum('budgeted_pence');
         $incomeTotal = (int) $income->sum('amount_pence');
@@ -61,7 +58,7 @@ class BudgetViewModel
 
         for ($i = self::HISTORY_MONTHS - 1; $i >= 0; $i--) {
             $cursor = $first->subMonths($i);
-            $total = (int) $this->budget->categoriesFor($household, $cursor)->sum('budgeted_pence');
+            $total = (int) $household->budgetCategories()->forMonth($cursor)->sum('budgeted_pence');
 
             $months[] = new BudgetMonthSummaryData(
                 month: $cursor->format('Y-m'),

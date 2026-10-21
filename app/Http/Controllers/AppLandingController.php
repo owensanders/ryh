@@ -20,18 +20,6 @@ class AppLandingController extends Controller
 
     public function __invoke(Request $request, ResolveLandingAction $resolveLanding, string $path = 'dashboard'): RedirectResponse
     {
-        $landing = $resolveLanding->handle($this->user($request));
-
-        if ($landing->needsSetup) {
-            return to_route('household.setup');
-        }
-
-        if ($landing->needsChoice || $landing->householdSlug === null) {
-            return to_route('household.select');
-        }
-
-        $query = $request->getQueryString();
-
-        return redirect("/h/{$landing->householdSlug}/".ltrim($path, '/').($query !== null ? "?{$query}" : ''));
+        return redirect($resolveLanding->handle($this->user($request), $path, $request->getQueryString()));
     }
 }

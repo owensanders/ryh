@@ -4,18 +4,26 @@ declare(strict_types=1);
 
 namespace App\Actions\Budget;
 
-use App\Data\IncomeSourceData;
-use App\Data\Input\IncomeSourceInputData;
 use App\Models\Household;
-use App\Repositories\BudgetRepository;
+use App\Models\IncomeSource;
+use App\Support\MoneyHelper;
 use Carbon\CarbonImmutable;
 
 class CreateIncomeSourceAction
 {
-    public function __construct(private readonly BudgetRepository $budget) {}
-
-    public function handle(Household $household, CarbonImmutable $month, IncomeSourceInputData $input): IncomeSourceData
+    /** @param  array<string, mixed>  $data  IncomeSourceRequest's validated input: label, meta, amount (pounds), is_recurring. */
+    public function handle(Household $household, CarbonImmutable $month, array $data): IncomeSource
     {
-        return IncomeSourceData::fromModel($this->budget->createIncomeSource($household, $month, $input));
+        $income = $household->incomeSources()->create([
+            'label' => $data['label'],
+            'meta' => $data['meta'] ?? null,
+            'amount_pence' => MoneyHelper::toPence($data['amount']),
+            'is_recurring' => (bool) ($data['is_recurring'] ?? false),
+            'month' => $month->startOfMonth(),
+            'position' => (int) $household->incomeSources()->forMonth($month)->max('position') + 1,
+        ]);
+
+        // create() doesn't put database defaults (the colour) onto the instance.
+        return $income->refresh();
     }
 }

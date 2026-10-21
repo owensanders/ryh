@@ -21,9 +21,6 @@ use App\Models\CalendarEvent;
 use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\ShoppingList;
-use App\Repositories\BudgetRepository;
-use App\Repositories\CalendarEventRepository;
-use App\Repositories\MembershipRepository;
 use App\Support\MoneyHelper;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -33,12 +30,6 @@ class DashboardViewModel
 {
     /** How many days of the calendar the "Coming up" card shows. */
     private const int AGENDA_DAYS = 3;
-
-    public function __construct(
-        private readonly MembershipRepository $memberships,
-        private readonly CalendarEventRepository $events,
-        private readonly BudgetRepository $budget,
-    ) {}
 
     public function toData(Household $household, string $viewerName, CarbonImmutable $today): DashboardData
     {
@@ -57,11 +48,10 @@ class DashboardViewModel
         $remaining = $todays->count() - $done;
 
         // One read of the calendar covers both the summary line and the agenda card.
-        $events = $this->events->between(
-            $household,
+        $events = $household->calendarEvents()->with('attendees')->overlapping(
             $today->startOfDay(),
             $today->addDays(self::AGENDA_DAYS - 1)->endOfDay(),
-        );
+        )->get();
 
         return new DashboardData(
             greeting: $this->greeting($today).', '.$viewerName,
@@ -72,7 +62,7 @@ class DashboardViewModel
                 $remaining,
             ),
             streakDays: $household->streak_days,
-            family: $this->memberships->activeMembers($household)->map(MemberData::fromModel(...))->values()->all(),
+            family: $household->activeMembers()->get()->map(MemberData::fromModel(...))->values()->all(),
             tonight: $tonight !== null ? PlannedMealData::fromModel($tonight) : null,
             shoppingList: $list !== null ? ShoppingListData::fromModel($list) : null,
             chores: $todays->map(ChoreData::fromModel(...))->values()->all(),
@@ -143,7 +133,7 @@ class DashboardViewModel
 
     private function budget(Household $household, CarbonImmutable $today): BudgetSummaryData
     {
-        $categories = $this->budget->categoriesFor($household, $today);
+        $categories = $household->budgetCategories()->forMonth($today)->get();
         $budgeted = (int) $categories->sum('budgeted_pence');
 
         return new BudgetSummaryData(

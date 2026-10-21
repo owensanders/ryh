@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Actions\Documents;
 
 use App\Models\Document;
-use App\Repositories\DocumentRepository;
+use Illuminate\Support\Facades\Storage;
 
 class DeleteDocumentAction
 {
-    public function __construct(private readonly DocumentRepository $documents) {}
-
     public function handle(Document $document): void
     {
-        $this->documents->deleteDocument($document);
+        Storage::disk(config('documents.disk'))->delete($document->path);
+
+        $document->delete();
     }
 }

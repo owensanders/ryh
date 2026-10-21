@@ -4,39 +4,38 @@ declare(strict_types=1);
 
 namespace App\Actions\Budget;
 
-use App\Data\Input\BudgetCategoryInputData;
+use App\Models\BudgetCategory;
 use App\Models\Household;
-use App\Repositories\BudgetRepository;
-use App\Repositories\HouseholdRepository;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
+/** Opening a month with no categories yet copies in the nearest earlier month's recurring ones. */
 class CarryForwardRecurringCategoriesAction
 {
-    public function __construct(
-        private readonly BudgetRepository $budget,
-        private readonly HouseholdRepository $households,
-    ) {}
-
     public function handle(Household $household, CarbonImmutable $month): void
     {
         // Two tabs opening an empty month at once would otherwise both copy the
         // recurring categories across; under the household's lock the second finds them there.
         DB::transaction(function () use ($household, $month): void {
-            $this->households->lockForUpdate($household);
+            $household->lockRow();
 
-            if ($this->budget->categoriesFor($household, $month)->isNotEmpty()) {
+            if ($household->budgetCategories()->forMonth($month)->exists()) {
                 return;
             }
 
-            foreach ($this->budget->recurringCategoriesBefore($household, $month) as $category) {
-                $this->budget->createCategory(
-                    $household,
-                    $month,
-                    new BudgetCategoryInputData($category->label, $category->icon, $category->budgeted_pence, isRecurring: true),
-                    $category->colour,
-                );
+            $latestMonth = $household->budgetCategories()
+                ->where('is_recurring', true)
+                ->whereDate('month', '<', $month->startOfMonth()->toDateString())
+                ->max('month');
+
+            if ($latestMonth === null) {
+                return;
             }
+
+            $household->budgetCategories()->where('is_recurring', true)->whereDate('month', $latestMonth)->get()
+                ->each(fn (BudgetCategory $category, int $index) => $category->replicate()
+                    ->fill(['month' => $month->startOfMonth(), 'position' => $index + 1])
+                    ->save());
         });
     }
 }

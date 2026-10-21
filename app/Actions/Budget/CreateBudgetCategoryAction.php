@@ -4,20 +4,46 @@ declare(strict_types=1);
 
 namespace App\Actions\Budget;
 
-use App\Data\BudgetCategoryData;
-use App\Data\Input\BudgetCategoryInputData;
+use App\Enums\PaletteEnum;
+use App\Models\BudgetCategory;
 use App\Models\Household;
-use App\Repositories\BudgetRepository;
+use App\Support\MoneyHelper;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
 
 class CreateBudgetCategoryAction
 {
-    public function __construct(private readonly BudgetRepository $budget) {}
-
-    public function handle(Household $household, CarbonImmutable $month, BudgetCategoryInputData $input): BudgetCategoryData
+    /** @param  array<string, mixed>  $data  BudgetCategoryRequest's validated input: label, icon, budgeted (pounds), is_recurring. */
+    public function handle(Household $household, CarbonImmutable $month, array $data): BudgetCategory
     {
-        $category = $this->budget->createCategory($household, $month, $input);
+        $existing = $household->budgetCategories()->forMonth($month)->get();
 
-        return BudgetCategoryData::fromModel($category, $category->budgeted_pence);
+        $category = $household->budgetCategories()->create([
+            'label' => $data['label'],
+            'icon' => $data['icon'] ?? null,
+            'budgeted_pence' => MoneyHelper::toPence($data['budgeted']),
+            'is_recurring' => (bool) ($data['is_recurring'] ?? false),
+            'colour' => $this->leastUsedColour($existing),
+            'month' => $month->startOfMonth(),
+            'position' => (int) $existing->max('position') + 1,
+        ]);
+
+        // create() doesn't put database defaults onto the instance.
+        return $category->refresh();
+    }
+
+    /**
+     * The palette colour fewest of the month's categories use (palette order
+     * breaks ties), so each new category stands apart from the others.
+     *
+     * @param  Collection<int, BudgetCategory>  $categories
+     */
+    private function leastUsedColour(Collection $categories): PaletteEnum
+    {
+        $counts = $categories->countBy(fn (BudgetCategory $category) => $category->colour->value);
+
+        return collect(PaletteEnum::cases())
+            ->sortBy(fn (PaletteEnum $colour, int $index) => [$counts->get($colour->value, 0), $index])
+            ->firstOrFail();
     }
 }

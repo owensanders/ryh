@@ -42,7 +42,6 @@ class NamingConventionsTest extends TestCase
         'Notifications' => 'Notification',
         'Policies' => 'Policy',
         'Providers' => 'ServiceProvider',
-        'Repositories' => 'Repository',
         'Status' => 'Service',
         'Support' => 'Helper',
         'Traits' => 'Trait',

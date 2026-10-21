@@ -11,19 +11,12 @@ use App\Data\MemberData;
 use App\Models\CalendarEvent;
 use App\Models\Household;
 use App\Models\User;
-use App\Repositories\CalendarEventRepository;
-use App\Repositories\MembershipRepository;
 use Carbon\CarbonImmutable;
 
 class CalendarViewModel
 {
     /** Six rows of seven, so the grid never changes height as you page through months. */
     private const int CELLS = 42;
-
-    public function __construct(
-        private readonly CalendarEventRepository $events,
-        private readonly MembershipRepository $memberships,
-    ) {}
 
     public function toData(Household $household, CarbonImmutable $month): CalendarMonthData
     {
@@ -34,7 +27,7 @@ class CalendarViewModel
 
         $eventsByDate = [];
 
-        foreach ($this->events->between($household, $start, $end) as $event) {
+        foreach ($household->calendarEvents()->with('attendees')->overlapping($start, $end)->get() as $event) {
             $spanStart = $event->starts_at->toImmutable()->max($start)->startOfDay();
             $spanEnd = ($event->ends_at ?? $event->starts_at)->toImmutable()->min($end)->startOfDay();
 
@@ -75,7 +68,7 @@ class CalendarViewModel
             today: $today->format('Y-m'),
             weekdayLabels: $weekdayLabels,
             days: $days,
-            members: $this->memberships->activeMembers($household)
+            members: $household->activeMembers()->get()
                 ->map(fn (User $member) => MemberData::fromModel($member))
                 ->values()
                 ->all(),

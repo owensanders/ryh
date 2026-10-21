@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Auth;
 
-use App\Data\Input\HouseholdSetupInputData;
-use App\Data\Input\InviteInputData;
 use App\Enums\HouseholdRoleEnum;
+use App\Traits\NormalisesInputTrait;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class HouseholdSetupRequest extends FormRequest
 {
+    use NormalisesInputTrait;
+
     /** @return array<string, mixed> */
     public function rules(): array
     {
@@ -56,14 +57,8 @@ class HouseholdSetupRequest extends FormRequest
         ];
     }
 
-    public function toData(): HouseholdSetupInputData
+    protected function prepareForValidation(): void
     {
-        /** @var list<array{email: string, role: string}> $invites */
-        $invites = array_values($this->validated('invites', []));
-
-        return new HouseholdSetupInputData(
-            name: (string) $this->validated('name'),
-            invites: array_map(fn (array $invite) => new InviteInputData($invite['email'], HouseholdRoleEnum::from($invite['role'])), $invites),
-        );
+        $this->merge(['name' => $this->trimmed('name')]);
     }
 }

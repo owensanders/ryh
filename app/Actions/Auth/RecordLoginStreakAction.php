@@ -5,15 +5,10 @@ declare(strict_types=1);
 namespace App\Actions\Auth;
 
 use App\Models\User;
-use App\Repositories\HouseholdRepository;
 use Carbon\CarbonImmutable;
 
 class RecordLoginStreakAction
 {
-    public function __construct(
-        private readonly HouseholdRepository $households,
-    ) {}
-
     public function handle(User $user): void
     {
         $household = $user->lastHousehold;
@@ -31,6 +26,6 @@ class RecordLoginStreakAction
 
         $continuesStreak = $lastActive !== null && $today->subDay()->isSameDay($lastActive);
 
-        $this->households->recordStreak($household, $continuesStreak ? $household->streak_days + 1 : 1, $today);
+        $household->update(['streak_days' => $continuesStreak ? $household->streak_days + 1 : 1, 'streak_last_active_date' => $today]);
     }
 }

@@ -10,21 +10,12 @@ use App\Enums\InviteJoinOutcomeEnum;
 use App\Enums\PaletteEnum;
 use App\Models\Household;
 use App\Models\User;
-use App\Repositories\HouseholdRepository;
-use App\Repositories\MembershipRepository;
-use App\Repositories\UserRepository;
 use DateTimeInterface;
 use Illuminate\Support\Facades\DB;
 
 /** Someone who registered from an invite link joins the household it was for. */
 class JoinHouseholdFromInviteAction
 {
-    public function __construct(
-        private readonly HouseholdRepository $households,
-        private readonly UserRepository $users,
-        private readonly MembershipRepository $memberships,
-    ) {}
-
     public function handle(
         User $user,
         int $householdId,
@@ -32,7 +23,7 @@ class JoinHouseholdFromInviteAction
         ?int $guardianId = null,
         ?DateTimeInterface $guardianConfirmedAt = null,
     ): InviteJoinResultData {
-        $household = $this->households->find($householdId);
+        $household = Household::find($householdId);
 
         if ($household === null) {
             return new InviteJoinResultData(InviteJoinOutcomeEnum::HouseholdGone, null);
@@ -45,14 +36,14 @@ class JoinHouseholdFromInviteAction
 
         // Under the household's lock, so two people can't both take its last place.
         $joined = DB::transaction(function () use ($user, $household, $role, $guardianId, $guardianConfirmedAt): bool {
-            $household = $this->households->lockForUpdate($household);
+            $household = $household->lockRow();
 
-            if ($this->memberships->isFull($household)) {
+            if ($household->isFull()) {
                 return false;
             }
 
-            $this->users->moveIntoHousehold($user, $household, $this->nextColour($household));
-            $this->memberships->add($user, $household, $role, guardianId: $guardianId, guardianConfirmedAt: $guardianConfirmedAt);
+            $user->moveInto($household, $this->nextColour($household));
+            $household->addMember($user, $role, guardianId: $guardianId, guardianConfirmedAt: $guardianConfirmedAt);
 
             return true;
         });
@@ -67,6 +58,6 @@ class JoinHouseholdFromInviteAction
     {
         $colours = PaletteEnum::cases();
 
-        return $colours[$this->memberships->count($household) % count($colours)];
+        return $colours[$household->members()->count() % count($colours)];
     }
 }

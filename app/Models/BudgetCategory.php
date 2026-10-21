@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\PaletteEnum;
+use Carbon\CarbonImmutable;
 use Database\Factories\BudgetCategoryFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -38,6 +41,17 @@ class BudgetCategory extends Model
             'is_recurring' => 'boolean',
             'month' => 'date',
         ];
+    }
+
+    /**
+     * This month's, whichever day of it is given.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forMonth(Builder $query, CarbonImmutable $month): void
+    {
+        $query->whereDate('month', $month->startOfMonth()->toDateString());
     }
 
     /** @return BelongsTo<Household, $this> */

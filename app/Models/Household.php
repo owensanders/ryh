@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\HouseholdRoleEnum;
+use App\Enums\PendingReasonEnum;
 use Database\Factories\HouseholdFactory;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -101,6 +104,64 @@ class Household extends Model
             ->orderBy('users.id');
     }
 
+    /**
+     * Members who have joined: no one still waiting on an invite or approval.
+     *
+     * @return BelongsToMany<User, $this, HouseholdUser>
+     */
+    public function activeMembers(): BelongsToMany
+    {
+        return $this->members()->wherePivot('pending', false);
+    }
+
+    /**
+     * Owners who have joined: who billing emails go to.
+     *
+     * @return BelongsToMany<User, $this, HouseholdUser>
+     */
+    public function activeOwners(): BelongsToMany
+    {
+        return $this->activeMembers()->wherePivot('role', HouseholdRoleEnum::Owner->value);
+    }
+
+    /** Their membership here, or null if they aren't a member (pending ones included). */
+    public function membershipOf(User $user): ?HouseholdUser
+    {
+        return HouseholdUser::query()->where('user_id', $user->id)->where('household_id', $this->id)->first();
+    }
+
+    /** True if no one but `$member` is an Owner here. */
+    public function isSoleOwner(User $member): bool
+    {
+        return ! $this->members()
+            ->wherePivot('role', HouseholdRoleEnum::Owner->value)
+            ->where('users.id', '!=', $member->id)
+            ->exists();
+    }
+
+    /** True once there's no room left: pending invites and join requests hold a place too. */
+    public function isFull(): bool
+    {
+        return $this->members()->count() >= config('plans.max_members');
+    }
+
+    /** A Teen or Child needs a guardian's confirmation; see HouseholdUser::guardianAttributes(). */
+    public function addMember(
+        User $user,
+        HouseholdRoleEnum $role,
+        bool $pending = false,
+        ?PendingReasonEnum $pendingReason = null,
+        ?int $guardianId = null,
+        ?DateTimeInterface $guardianConfirmedAt = null,
+    ): void {
+        $this->members()->attach($user->id, [
+            'role' => $role,
+            'pending' => $pending,
+            'pending_reason' => $pendingReason,
+            ...HouseholdUser::guardianAttributes($role, $guardianId, $guardianConfirmedAt),
+        ]);
+    }
+
     /** @return HasMany<ShoppingList, $this> */
     public function shoppingLists(): HasMany
     {
@@ -153,6 +214,20 @@ class Household extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(Document::class);
+    }
+
+    /**
+     * Takes a row lock on the household until the transaction ends, so checks
+     * two requests could race (the member cap, the budget carry-forward) run
+     * one at a time, and re-reads it under that lock. Call inside
+     * DB::transaction().
+     */
+    public function lockRow(): static
+    {
+        $locked = static::query()->whereKey($this->getKey())->lockForUpdate()->firstOrFail();
+        $this->setRawAttributes($locked->getAttributes(), sync: true);
+
+        return $this;
     }
 
     /** True while the household's free trial hasn't ended and it isn't subscribed yet. */

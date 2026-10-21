@@ -7,13 +7,10 @@ namespace App\Actions\Chores;
 use App\Exceptions\ChoreReminderCooldownException;
 use App\Models\Household;
 use App\Notifications\ChoresReminderNotification;
-use App\Repositories\HouseholdRepository;
 
 /** Reminds every member with at least one outstanding chore, then starts the household's cooldown. */
 class NotifyChoresAction
 {
-    public function __construct(private readonly HouseholdRepository $households) {}
-
     public function handle(Household $household): void
     {
         $availableAt = $household->choreRemindersAvailableAt();
@@ -26,6 +23,6 @@ class NotifyChoresAction
             $chores->first()?->assignee?->notify(new ChoresReminderNotification($household, $chores->count()));
         }
 
-        $this->households->markChoreRemindersSent($household);
+        $household->update(['last_chore_notification_sent_at' => now()]);
     }
 }

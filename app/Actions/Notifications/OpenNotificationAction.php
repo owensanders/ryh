@@ -5,25 +5,16 @@ declare(strict_types=1);
 namespace App\Actions\Notifications;
 
 use App\Models\User;
-use App\Repositories\NotificationRepository;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Notifications\DatabaseNotification;
 
 /** Opening a notification is reading it. */
 class OpenNotificationAction
 {
-    public function __construct(private readonly NotificationRepository $notifications) {}
-
     /** @return string|null Where it points, if anywhere. */
     public function handle(User $user, string $id): ?string
     {
-        $notification = $this->notifications->findFor($user, $id);
-
-        if ($notification === null) {
-            throw (new ModelNotFoundException())->setModel(DatabaseNotification::class, [$id]);
-        }
-
-        $this->notifications->markRead($notification);
+        // Only their own: anyone else's is a 404.
+        $notification = $user->notifications()->findOrFail($id);
+        $notification->markAsRead();
 
         $url = $notification->data['url'] ?? null;
 

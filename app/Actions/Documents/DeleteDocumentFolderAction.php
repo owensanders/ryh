@@ -5,14 +5,18 @@ declare(strict_types=1);
 namespace App\Actions\Documents;
 
 use App\Models\DocumentFolder;
-use App\Repositories\DocumentRepository;
+use Illuminate\Support\Facades\Storage;
 
 class DeleteDocumentFolderAction
 {
-    public function __construct(private readonly DocumentRepository $documents) {}
-
     public function handle(DocumentFolder $folder): void
     {
-        $this->documents->deleteFolder($folder);
+        $paths = $folder->documents()->pluck('path')->all();
+
+        if ($paths !== []) {
+            Storage::disk(config('documents.disk'))->delete($paths);
+        }
+
+        $folder->delete();
     }
 }

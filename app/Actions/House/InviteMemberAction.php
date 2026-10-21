@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\House;
 
-use App\Data\Input\InviteInputData;
+use App\Enums\HouseholdRoleEnum;
 use App\Enums\PendingReasonEnum;
 use App\Mail\HouseholdInviteMail;
 use App\Models\Household;
 use App\Models\User;
-use App\Repositories\HouseholdRepository;
-use App\Repositories\MembershipRepository;
-use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
@@ -19,42 +16,37 @@ use Illuminate\Validation\ValidationException;
 
 class InviteMemberAction
 {
-    public function __construct(
-        private readonly UserRepository $users,
-        private readonly HouseholdRepository $households,
-        private readonly MembershipRepository $memberships,
-    ) {}
-
     /**
      * Inviting someone as a Teen or Child is the inviter confirming they're the
      * child's parent or guardian (or have their permission) — the caller must
      * have had them tick that box first. It's recorded on the membership.
      */
-    public function handle(Household $household, InviteInputData $invite, User $invitedBy): void
+    /** @param  array<string, mixed>  $data  An invite: email, role (InviteRequest's validated input, or one of the setup wizard's). */
+    public function handle(Household $household, array $data, User $invitedBy): void
     {
-        $email = $invite->email;
-        $role = $invite->role;
+        $email = (string) $data['email'];
+        $role = HouseholdRoleEnum::from($data['role']);
 
-        $existing = $this->users->findByEmail($email);
+        $existing = User::query()->where('email', $email)->first();
 
         // An invite to someone with an account takes a place in the household
         // straight away, so the cap check and the new membership are made under
         // the household's lock: two invites at once can't both take the last place.
         DB::transaction(function () use ($household, $email, $role, $existing, $invitedBy): void {
-            $household = $this->households->lockForUpdate($household);
+            $household = $household->lockRow();
 
-            if ($this->memberships->hasMemberWithEmail($household, $email)) {
+            if ($household->members()->where('email', $email)->exists()) {
                 throw ValidationException::withMessages(['email' => 'This person is already part of the household.']);
             }
 
-            if ($this->memberships->isFull($household)) {
+            if ($household->isFull()) {
                 throw ValidationException::withMessages([
                     'email' => 'Your household is full — it can have up to '.config('plans.max_members').' members, including pending invites.',
                 ]);
             }
 
             if ($existing !== null) {
-                $this->memberships->add($existing, $household, $role, pending: true, pendingReason: PendingReasonEnum::Invited, guardianId: $invitedBy->id);
+                $household->addMember($existing, $role, pending: true, pendingReason: PendingReasonEnum::Invited, guardianId: $invitedBy->id);
             }
         });
 

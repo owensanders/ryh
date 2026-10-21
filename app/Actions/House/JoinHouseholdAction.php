@@ -9,24 +9,15 @@ use App\Enums\PaletteEnum;
 use App\Enums\PendingReasonEnum;
 use App\Models\Household;
 use App\Models\User;
-use App\Repositories\HouseholdRepository;
-use App\Repositories\MembershipRepository;
-use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class JoinHouseholdAction
 {
-    public function __construct(
-        private readonly HouseholdRepository $households,
-        private readonly UserRepository $users,
-        private readonly MembershipRepository $memberships,
-    ) {}
-
     /** @throws ValidationException */
     public function handle(User $user, string $joinCode): Household
     {
-        $household = $this->households->findByJoinCode(mb_strtoupper(trim($joinCode)));
+        $household = Household::query()->where('join_code', mb_strtoupper(trim($joinCode)))->first();
 
         if ($household === null) {
             throw ValidationException::withMessages(['code' => 'That code doesn\'t match a household.']);
@@ -38,16 +29,16 @@ class JoinHouseholdAction
 
         // Under the household's lock, so two people can't both take its last place.
         return DB::transaction(function () use ($user, $household): Household {
-            $household = $this->households->lockForUpdate($household);
+            $household = $household->lockRow();
 
-            if ($this->memberships->isFull($household)) {
+            if ($household->isFull()) {
                 throw ValidationException::withMessages(['code' => 'That household is full, so it can\'t take any more members.']);
             }
 
             $colours = PaletteEnum::cases();
-            $this->users->moveIntoHousehold($user, $household, $colours[$this->memberships->count($household) % count($colours)]);
+            $user->moveInto($household, $colours[$household->members()->count() % count($colours)]);
 
-            $this->memberships->add($user, $household, HouseholdRoleEnum::Adult, pending: true, pendingReason: PendingReasonEnum::Requested);
+            $household->addMember($user, HouseholdRoleEnum::Adult, pending: true, pendingReason: PendingReasonEnum::Requested);
 
             return $household;
         });

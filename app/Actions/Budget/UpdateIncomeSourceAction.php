@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace App\Actions\Budget;
 
-use App\Data\IncomeSourceData;
-use App\Data\Input\IncomeSourceInputData;
 use App\Models\IncomeSource;
-use App\Repositories\BudgetRepository;
+use App\Support\MoneyHelper;
 
 class UpdateIncomeSourceAction
 {
-    public function __construct(private readonly BudgetRepository $budget) {}
-
-    public function handle(IncomeSource $income, IncomeSourceInputData $changes): IncomeSourceData
+    /** @param  array<string, mixed>  $data  IncomeSourceRequest's validated input; see CreateIncomeSourceAction. */
+    public function handle(IncomeSource $income, array $data): IncomeSource
     {
-        return IncomeSourceData::fromModel($this->budget->updateIncomeSource($income, $changes));
+        $income->update([
+            'label' => $data['label'],
+            'meta' => $data['meta'] ?? null,
+            'amount_pence' => MoneyHelper::toPence($data['amount']),
+            'is_recurring' => (bool) ($data['is_recurring'] ?? false),
+        ]);
+
+        return $income->refresh();
     }
 }

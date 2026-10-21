@@ -6,15 +6,14 @@ namespace App\Actions\Settings;
 
 use App\Enums\NotificationCategoryEnum;
 use App\Models\User;
-use App\Repositories\UserRepository;
 
 class UpdatePushOptOutsAction
 {
-    public function __construct(private readonly UserRepository $users) {}
-
     /** @param list<NotificationCategoryEnum> $optOuts */
     public function handle(User $user, array $optOuts): User
     {
-        return $this->users->setPushOptOuts($user, $optOuts);
+        $user->update(['push_opt_outs' => array_map(fn (NotificationCategoryEnum $category) => $category->value, $optOuts)]);
+
+        return $user->refresh();
     }
 }

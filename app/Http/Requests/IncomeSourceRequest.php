@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Data\Input\IncomeSourceInputData;
+use App\Traits\NormalisesInputTrait;
 use Illuminate\Foundation\Http\FormRequest;
 
 class IncomeSourceRequest extends FormRequest
 {
+    use NormalisesInputTrait;
+
     /** @return array<string, mixed> */
     public function rules(): array
     {
@@ -28,13 +30,8 @@ class IncomeSourceRequest extends FormRequest
         ];
     }
 
-    public function toData(): IncomeSourceInputData
+    protected function prepareForValidation(): void
     {
-        return new IncomeSourceInputData(
-            label: trim((string) $this->validated('label')),
-            meta: $this->validated('meta'),
-            amountPence: (int) round(((float) $this->validated('amount')) * 100),
-            isRecurring: $this->boolean('is_recurring'),
-        );
+        $this->merge(['label' => $this->trimmed('label')]);
     }
 }
