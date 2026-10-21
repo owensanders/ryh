@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace App\Actions\Documents;
 
-use App\Data\DocumentFolderData;
+use App\Enums\PaletteEnum;
+use App\Models\DocumentFolder;
 use App\Models\Household;
-use App\Repositories\DocumentRepository;
 
 class CreateDocumentFolderAction
 {
-    public function __construct(private readonly DocumentRepository $documents) {}
-
-    public function handle(Household $household, string $name): DocumentFolderData
+    public function handle(Household $household, string $name): DocumentFolder
     {
-        return DocumentFolderData::fromModel($this->documents->createFolder($household, $name), 0);
+        return $household->documentFolders()->create([
+            'name' => $name,
+            'icon' => '📁',
+            'colour' => PaletteEnum::Mint,
+            'position' => (int) $household->documentFolders()->max('position') + 1,
+        ]);
     }
 }
