@@ -40,12 +40,16 @@ Each layer only talks to the one below it.
 - **Controllers** (`app/Http/Controllers`): call actions and view models,
   render Inertia pages, redirect with toasts. Nothing else: no repositories,
   no queries, no business rules.
-- **Form requests** (`app/Http/Requests`): validate, then `toData()` into a
-  typed `*InputData`. Never pass `array $attributes` along.
+- **Form requests** (`app/Http/Requests`): validate, and normalise first in
+  `prepareForValidation()` (trim text, `''` → null, cast ids to int,
+  defaults), so `$request->validated()` is already what gets stored. The
+  controller passes `$request->validated()` to the action.
 - **Actions** (`app/Actions/<Area>`): all business rules, one class per
   operation (`CreateChoreAction`), run by a public `handle()` method, the way
   Laravel's own Fortify and Jetstream actions work. They take models, enums,
-  scalars or `*InputData`, and return the model they worked on (or nothing),
+  scalars, or a form request's validated array (`@param array<string, mixed>
+  $data` naming its keys, as Fortify does), and return the model they worked
+  on (or nothing),
   never a shaped array. `*Data` is for what the browser receives, so view
   models build it, not actions. The one exception is data flashed straight to
   the page (`MealSuggestionData` from the meal plan actions). Transactions and
@@ -56,23 +60,22 @@ Each layer only talks to the one below it.
   is made for Blade. They only read: a write a page needs first (the budget's
   carry-forward) is an action the controller calls before rendering.
   `LayerShapeTest` checks actions have `handle()` and view models `toData()`.
-- **Models and builders** (`app/Models`, `app/Models/Builders`): Eloquent,
-  used directly by actions and view models; see "Where queries live" below.
-  Map input objects to columns where you write (`'assigned_to' =>
-  $input->assignedTo`), never pass an attribute array through from a request.
-  (The remaining `app/Repositories` are being retired.)
-- **Models** (`app/Models`): relations, casts, and small helpers that don't
-  query (`Household::canGenerateAiMealPlan()`). A helper that would query
-  belongs in a repository.
+- **Models** (`app/Models`): relations, casts, query scopes, and small
+  helpers (`Household::canGenerateAiMealPlan()`). Used directly by actions
+  and view models; see "Where queries live" below. Name each column where you
+  write (`'assigned_to' => $data['assigned_to']`) rather than passing the
+  validated array straight to `create()`, so a new form field never writes a
+  column by accident. (The remaining `app/Repositories` are being retired.)
 
 ### Where queries live
 
 Actions and view models use Eloquent directly, the conventional Laravel way:
 `$household->chores()->create([...])`, `$chore->update([...])`. A query
-that more than one place needs goes on the model's custom builder in
-`app/Models/Builders` (`ChoreBuilder::forBoard()`), attached with
-`#[UseEloquentBuilder]`, and is reached through the household so it's already
-scoped: `$household->chores()->forBoard()->get()`.
+that more than one place needs becomes a local query scope on the model,
+written Laravel 12's way as a protected `#[Scope]` method (`Chore::forBoard()`),
+and is reached through the household so it's already scoped:
+`$household->chores()->forBoard()->get()`. Anything else stays inline where
+it's used.
 
 Controllers, middleware, form requests, policies and listeners never query:
 no `Model::where(...)`, no `$model->update(...)`, no relation methods like
@@ -93,10 +96,10 @@ middleware still *read* through `MembershipRepository` until its turn.
 
 ## Data
 
-- **Input**: `app/Data/Input/*InputData.php`, plain `final readonly`
-  classes built by a form request's `toData()`. Use Spatie's `Optional` for a
-  field where "not sent" must differ from "cleared" (see
-  `RecipeDetailsInputData`).
+- **Input**: no DTOs: actions take `$request->validated()` (see Form
+  requests). Where "not sent" must differ from "cleared", check
+  `array_key_exists()`. The `app/Data/Input/*InputData` classes that are left
+  go as each area moves to Eloquent.
 - **Output**: `app/Data/*Data.php`, `spatie/laravel-data` classes. Anything a
   page receives is mirrored in `resources/js/types/ryh.ts` (or `index.ts`).
   Change both together.
@@ -140,8 +143,8 @@ everyone involved, once each, never the actor.
 ## Naming
 
 A class name ends with what it is: `ChoreStatusEnum`, `CreateChoreAction`,
-`ChoreBuilder`, `ChorePolicy`, `ChoreData`,
-`ChoreInputData`, `ChoreRequest`, `ChoreController`,
+`ChorePolicy`, `ChoreData`,
+`ChoreRequest`, `ChoreController`,
 `ChoreAssignedNotification`, `QueueHeartbeatJob`, `RecordLoginStreakListener`,
 `UserNotificationBroadcastEvent`, `ResolveHouseholdMiddleware`,
 `MoneyHelper`, `PlatformProbesService`, `AuthorizesHouseholdAccessTrait`.

@@ -39,7 +39,7 @@ class AddRecipeIngredientsToListAction
                 $list->items()->create([
                     'name' => $ingredient['name'],
                     'quantity' => $ingredient['quantity'] ?? null,
-                    'position' => $list->items()->nextPosition(),
+                    'position' => (int) $list->items()->max('position') + 1,
                 ]);
                 $present[] = $name;
             }

@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Actions\Shopping;
 
-use App\Data\Input\ShoppingListInputData;
+use App\Enums\PaletteEnum;
 use App\Models\ShoppingList;
 
 class RenameShoppingListAction
 {
-    public function handle(ShoppingList $list, ShoppingListInputData $changes): ShoppingList
+    /** @param  array<string, mixed>  $data  ShoppingListRequest's validated input: name, colour. */
+    public function handle(ShoppingList $list, array $data): ShoppingList
     {
-        $list->update(['name' => $changes->name, 'colour' => $changes->colour]);
+        $list->update(['name' => $data['name'], 'colour' => PaletteEnum::from($data['colour'])]);
 
         return $list->refresh();
     }

@@ -22,7 +22,7 @@ class AddShoppingItemAction
         $list->items()->create([
             'name' => trim($name),
             'quantity' => $quantity ?? 'x1',
-            'position' => $list->items()->nextPosition(),
+            'position' => (int) $list->items()->max('position') + 1,
         ]);
 
         return $list;

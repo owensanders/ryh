@@ -36,14 +36,14 @@ class ChoreController extends Controller
 
     public function store(ChoreRequest $request, CreateChoreAction $create): RedirectResponse
     {
-        $chore = $create->handle($this->household($request), $request->toData(), $this->user($request));
+        $chore = $create->handle($this->household($request), $request->validated(), $this->user($request));
 
         return back()->with('toast', "{$chore->name} added");
     }
 
     public function update(ChoreRequest $request, Chore $chore, UpdateChoreAction $update): RedirectResponse
     {
-        $updated = $update->handle($chore, $request->toData(), $this->user($request));
+        $updated = $update->handle($chore, $request->validated(), $this->user($request));
 
         return back()->with('toast', "{$updated->name} updated");
     }

@@ -48,14 +48,14 @@ class ShoppingListController extends Controller
 
     public function storeList(ShoppingListRequest $request, CreateShoppingListAction $create): RedirectResponse
     {
-        $list = $create->handle($this->household($request), $request->toData());
+        $list = $create->handle($this->household($request), $request->validated());
 
         return back()->with('toast', "“{$list->name}” added");
     }
 
     public function updateList(ShoppingListRequest $request, ShoppingList $list, RenameShoppingListAction $rename): RedirectResponse
     {
-        $updated = $rename->handle($list, $request->toData());
+        $updated = $rename->handle($list, $request->validated());
 
         return back()->with('toast', "“{$updated->name}” updated");
     }

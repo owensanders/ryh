@@ -86,6 +86,31 @@ class ChoreNotificationTest extends TestCase
     }
 
     #[Test]
+    public function anIdSentAsTextStillCountsAsYourself(): void
+    {
+        Notification::fake();
+        $owner = User::factory()->create();
+
+        // A plain HTML form sends every value as a string.
+        $this->actingAs($owner)->post($this->hh('/chores'), ['name' => '  Clean the gutters  ', 'assigned_to' => (string) $owner->id])->assertRedirect();
+
+        Notification::assertNothingSent();
+        $chore = Chore::query()->sole();
+        $this->assertSame('Clean the gutters', $chore->name);
+        $this->assertSame($owner->id, $chore->assigned_to);
+    }
+
+    #[Test]
+    public function anEmptyAssigneeMeansNobody(): void
+    {
+        $owner = User::factory()->create();
+
+        $this->actingAs($owner)->post($this->hh('/chores'), ['name' => 'Bins', 'assigned_to' => ''])->assertSessionHasNoErrors();
+
+        $this->assertNull(Chore::query()->sole()->assigned_to);
+    }
+
+    #[Test]
     public function togglingYourOwnChoreDoesNotNotifyYou(): void
     {
         Notification::fake();
