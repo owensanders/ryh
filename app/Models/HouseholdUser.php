@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\HouseholdRoleEnum;
 use App\Enums\PendingReasonEnum;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
 use LogicException;
@@ -27,9 +28,9 @@ class HouseholdUser extends Pivot
      * The guardian columns for a membership with this role: who confirmed it and
      * when for a Teen or Child, cleared for an Owner or Adult.
      *
-     * @return array{guardian_confirmed_by: int|null, guardian_confirmed_at: \DateTimeInterface|null}
+     * @return array{guardian_confirmed_by: int|null, guardian_confirmed_at: DateTimeInterface|null}
      */
-    public static function guardianAttributes(HouseholdRoleEnum $role, ?int $guardianId, ?\DateTimeInterface $confirmedAt = null): array
+    public static function guardianAttributes(HouseholdRoleEnum $role, ?int $guardianId, ?DateTimeInterface $confirmedAt = null): array
     {
         if (! $role->isForMinors()) {
             return ['guardian_confirmed_by' => null, 'guardian_confirmed_at' => null];

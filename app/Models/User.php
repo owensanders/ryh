@@ -19,6 +19,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use NotificationChannels\WebPush\HasPushSubscriptions;
+use SensitiveParameter;
 
 /**
  * @property int $id
@@ -40,7 +41,9 @@ use NotificationChannels\WebPush\HasPushSubscriptions;
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasPushSubscriptions, Notifiable;
+    use HasFactory;
+    use HasPushSubscriptions;
+    use Notifiable;
 
     /** @var list<string> */
     protected $fillable = [
@@ -105,7 +108,7 @@ class User extends Authenticatable implements MustVerifyEmail
     /** Queued, unlike Laravel's default (VerifyEmailNotification). */
     public function sendEmailVerificationNotification(): void
     {
-        $this->notify(new VerifyEmailNotification);
+        $this->notify(new VerifyEmailNotification());
     }
 
     /**
@@ -113,7 +116,7 @@ class User extends Authenticatable implements MustVerifyEmail
      *
      * @param  string  $token
      */
-    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    public function sendPasswordResetNotification(#[SensitiveParameter] $token): void
     {
         $this->notify(new ResetPasswordNotification($token));
     }

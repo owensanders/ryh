@@ -32,6 +32,7 @@ class SuggestLibraryMealPlanUseCase
 
     /**
      * @param  array<int, string>  $diets
+     *
      * @return array<int, MealSuggestionData>
      */
     public function execute(Household $household, array $diets, string $avoid): array

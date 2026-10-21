@@ -73,8 +73,7 @@ class StatusTest extends TestCase
     #[Test]
     public function resultsAreCachedSoVisitorsCantHammerTheChecks(): void
     {
-        $probes = new class extends PlatformProbesService
-        {
+        $probes = new class extends PlatformProbesService {
             public int $databaseChecks = 0;
 
             public function database(): ServiceStateEnum
@@ -169,7 +168,7 @@ class StatusTest extends TestCase
     {
         $this->freezeTime();
 
-        (new QueueHeartbeatJob)->handle();
+        (new QueueHeartbeatJob())->handle();
 
         $this->assertSame(now()->getTimestamp(), Cache::get(QueueHeartbeatJob::CACHE_KEY));
     }

@@ -30,13 +30,13 @@ class LeaveHouseholdUseCase
         $household = $this->households->find($householdId);
 
         if ($household === null) {
-            throw (new ModelNotFoundException)->setModel(Household::class, [$householdId]);
+            throw (new ModelNotFoundException())->setModel(Household::class, [$householdId]);
         }
 
         $membership = $this->memberships->find($user, $household);
 
         if ($membership === null) {
-            throw (new ModelNotFoundException)->setModel(Household::class, [$householdId]);
+            throw (new ModelNotFoundException())->setModel(Household::class, [$householdId]);
         }
 
         if ($membership->role === HouseholdRoleEnum::Owner && $this->memberships->isSoleOwner($household, $user)) {

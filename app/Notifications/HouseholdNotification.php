@@ -20,6 +20,7 @@ abstract class HouseholdNotification extends Notification
      * hasn't opted out of this category.
      *
      * @param  User  $notifiable
+     *
      * @return list<string>
      */
     public function via(object $notifiable): array

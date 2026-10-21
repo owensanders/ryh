@@ -30,7 +30,7 @@ class PushNotification extends Notification implements ShouldQueue
 
     public function toWebPush(object $notifiable, Notification $notification): WebPushMessage
     {
-        return (new WebPushMessage)
+        return (new WebPushMessage())
             ->title($this->message->title)
             ->body($this->message->body)
             ->icon('/icons/icon-192.png')

@@ -81,17 +81,18 @@ class DashboardTest extends TestCase
         $this->actingAs($user)
             ->get($this->hh('/dashboard'))
             ->assertOk()
-            ->assertInertia(fn ($page) => $page
-                ->component('Dashboard')
-                ->where('dashboard.greeting', fn (string $greeting) => str_contains($greeting, 'Sarah'))
-                ->where('dashboard.streakDays', 12)
-                ->where('dashboard.tonight.name', 'Lemon chicken traybake')
-                ->where('dashboard.tonight.tags', ['Healthy'])
-                ->where('dashboard.shoppingList.name', 'Tesco')
-                ->where('dashboard.shoppingList.remaining', 3)
-                ->where('dashboard.choreProgress.total', 3)
-                ->where('dashboard.choreProgress.done', 1)
-                ->where('dashboard.choreProgress.percentage', 33)
+            ->assertInertia(
+                fn ($page) => $page
+                    ->component('Dashboard')
+                    ->where('dashboard.greeting', fn (string $greeting) => str_contains($greeting, 'Sarah'))
+                    ->where('dashboard.streakDays', 12)
+                    ->where('dashboard.tonight.name', 'Lemon chicken traybake')
+                    ->where('dashboard.tonight.tags', ['Healthy'])
+                    ->where('dashboard.shoppingList.name', 'Tesco')
+                    ->where('dashboard.shoppingList.remaining', 3)
+                    ->where('dashboard.choreProgress.total', 3)
+                    ->where('dashboard.choreProgress.done', 1)
+                    ->where('dashboard.choreProgress.percentage', 33),
             );
     }
 

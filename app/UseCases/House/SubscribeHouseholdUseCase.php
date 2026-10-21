@@ -17,6 +17,7 @@ class SubscribeHouseholdUseCase
      * left to do here.
      *
      * @param  'monthly'|'annual'  $interval
+     *
      * @return string|null A Stripe Checkout URL to redirect to (or the billing portal, when an existing subscription just needs a new card), or null when the household was already subscribed.
      */
     public function execute(Household $household, string $interval, string $successUrl, string $cancelUrl): ?string

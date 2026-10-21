@@ -35,7 +35,7 @@ class IndexMealPlannerRequest extends FormRequest
     protected function failedValidation(Validator $validator): void
     {
         throw new HttpResponseException(
-            redirect()->route('meals.index')->withErrors($validator)->withInput()
+            redirect()->route('meals.index')->withErrors($validator)->withInput(),
         );
     }
 }

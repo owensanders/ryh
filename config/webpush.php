@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 use NotificationChannels\WebPush\PushSubscription;
 
 return [
-
     /**
      * These are the keys for authentication (VAPID).
      * These keys must be safely stored and should not change.
@@ -42,5 +43,4 @@ return [
      * Set to false to support Firefox Android with v1 endpoint.
      */
     'automatic_padding' => env('WEBPUSH_AUTOMATIC_PADDING', true),
-
 ];

@@ -6,7 +6,6 @@ declare(strict_types=1);
 $maxMembers = 8;
 
 return [
-
     'name' => 'Home',
     'intervals' => [
         'monthly' => ['price' => 3.99, 'stripe_price' => env('STRIPE_PRICE_HOME_MONTHLY')],
@@ -35,5 +34,4 @@ return [
         'Invite by email or join code',
         'Everyone in the house on one subscription',
     ],
-
 ];

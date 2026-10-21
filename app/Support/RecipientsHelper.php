@@ -11,6 +11,7 @@ final class RecipientsHelper
 {
     /**
      * @param  iterable<User|null>  $involved  e.g. a chore's assignee and creator; nulls are skipped.
+     *
      * @return list<User>
      */
     public static function except(User $actor, iterable $involved): array

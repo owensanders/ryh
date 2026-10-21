@@ -39,6 +39,7 @@ class GenerateAiMealPlanUseCase
      * @param  array<int, string>  $diets
      * @param  array<int, string>  $goals
      * @param  array<int, string>  $equipment
+     *
      * @return array<int, MealSuggestionData>
      */
     public function execute(

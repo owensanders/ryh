@@ -13,7 +13,8 @@ use Illuminate\Notifications\Notification;
 /** Sent on-demand to the admin alert address when the AI provider runs out of credit. */
 class AiCreditsExhaustedNotification extends Notification implements ShouldQueue
 {
-    use Queueable, RetriesEmailTrait;
+    use Queueable;
+    use RetriesEmailTrait;
 
     public function __construct(private readonly string $provider) {}
 
@@ -27,7 +28,7 @@ class AiCreditsExhaustedNotification extends Notification implements ShouldQueue
     {
         $hours = (int) config('meal_planner.pause_hours');
 
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject('RYH: AI meal planning paused — out of credit')
             ->line("The {$this->provider} API reported the account is out of credit, so AI meal planning has been paused for everyone.")
             ->line("Households see a friendly message and their weekly plan isn't used up. It retries automatically after {$hours} hours.")

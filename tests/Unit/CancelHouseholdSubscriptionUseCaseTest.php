@@ -22,6 +22,7 @@ class CancelHouseholdSubscriptionUseCaseTest extends TestCase
     public function subscriptionsThatWontChargeAgainAreLeftAlone(): void
     {
         $household = Household::factory()->create();
+
         foreach ([
             ['sub_grace', 'active', now()->addMonth()],
             ['sub_ended', 'canceled', now()->subMonth()],

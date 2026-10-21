@@ -32,6 +32,7 @@ class FakeStripeClient implements ClientInterface
     /**
      * @param  list<string>  $headers
      * @param  array<string, mixed>  $params
+     *
      * @return array{0: string, 1: int, 2: array<string, string>}
      */
     public function request($method, $absUrl, $headers, $params, $hasFile, $apiMode = 'v1', $maxNetworkRetries = null): array
@@ -48,6 +49,7 @@ class FakeStripeClient implements ClientInterface
 
     /**
      * @param  (callable(array<string, mixed>): bool)|null  $matching
+     *
      * @return array<string, mixed> The params of the matching request.
      */
     public function assertRequested(string $method, string $path, ?callable $matching = null): array

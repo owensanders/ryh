@@ -23,7 +23,8 @@ use Illuminate\Support\Carbon;
 class ShoppingItem extends Model
 {
     /** @use HasFactory<ShoppingItemFactory> */
-    use HasFactory, MassPrunable;
+    use HasFactory;
+    use MassPrunable;
 
     /** How long a ticked-off item stays on its list before the nightly prune clears it. */
     public const int KEEP_COMPLETED_DAYS = 7;

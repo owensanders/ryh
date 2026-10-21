@@ -22,7 +22,7 @@ trait ResolvesUserTrait
         $user = $request->user();
 
         if (! $user instanceof User) {
-            throw new AuthenticationException;
+            throw new AuthenticationException();
         }
 
         return $user;

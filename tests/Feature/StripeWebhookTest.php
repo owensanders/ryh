@@ -151,6 +151,7 @@ class StripeWebhookTest extends TestCase
 
     /**
      * @param  array<string, mixed>  $object
+     *
      * @return TestResponse<Response>
      */
     private function postSigned(string $type, array $object): TestResponse

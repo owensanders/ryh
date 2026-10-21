@@ -187,10 +187,11 @@ class HouseholdMemberCapTest extends TestCase
         $this->actingAs($user)
             ->withSession(['fullHousehold' => 'The Parkers'])
             ->get('/household/setup')
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->component('auth/HouseholdSetup')
-                ->where('fullHousehold', 'The Parkers')
-                ->where('maxMembers', 8)
+            ->assertInertia(
+                fn (AssertableInertia $page) => $page
+                    ->component('auth/HouseholdSetup')
+                    ->where('fullHousehold', 'The Parkers')
+                    ->where('maxMembers', 8),
             );
     }
 
@@ -258,9 +259,10 @@ class HouseholdMemberCapTest extends TestCase
 
         $this->actingAs($owner)
             ->get($this->hh('/house'))
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('house.memberCount', 6)
-                ->where('house.maxMembers', 8)
+            ->assertInertia(
+                fn (AssertableInertia $page) => $page
+                    ->where('house.memberCount', 6)
+                    ->where('house.maxMembers', 8),
             );
     }
 
@@ -268,10 +270,11 @@ class HouseholdMemberCapTest extends TestCase
     public function theLandingPageAdvertisesTheCap(): void
     {
         $this->get('/')
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('plan.maxMembers', 8)
-                ->where('plan.features', fn (Collection $features) => $features->contains('Up to 8 household members')
-                    && ! $features->contains('Unlimited household members'))
+            ->assertInertia(
+                fn (AssertableInertia $page) => $page
+                    ->where('plan.maxMembers', 8)
+                    ->where('plan.features', fn (Collection $features) => $features->contains('Up to 8 household members')
+                        && ! $features->contains('Unlimited household members')),
             );
     }
 
@@ -297,6 +300,7 @@ class HouseholdMemberCapTest extends TestCase
     {
         $household = Household::factory()->create($householdAttributes);
         $owner = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);
+
         // Not `count()` — the factory only turns `household_id` into a membership on single creates.
         for ($i = 0; $i < $others; $i++) {
             User::factory()->create(['household_id' => $household->id]);

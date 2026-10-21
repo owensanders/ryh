@@ -35,7 +35,7 @@ class IndexBudgetRequest extends FormRequest
     protected function failedValidation(Validator $validator): void
     {
         throw new HttpResponseException(
-            redirect()->route('budget.index')->withErrors($validator)->withInput()
+            redirect()->route('budget.index')->withErrors($validator)->withInput(),
         );
     }
 }

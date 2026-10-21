@@ -20,7 +20,7 @@ class AddShoppingItemUseCase
         $list = $this->shopping->findListBySlug($household, $listSlug);
 
         if ($list === null) {
-            throw (new ModelNotFoundException)->setModel(ShoppingList::class);
+            throw (new ModelNotFoundException())->setModel(ShoppingList::class);
         }
 
         $this->shopping->addItem($list, trim($name), $quantity ?? 'x1');

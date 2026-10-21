@@ -36,6 +36,7 @@ class GetPlatformStatusUseCase
         ]);
 
         $services = [];
+
         foreach (self::descriptions() as $key => [$name, $description]) {
             $services[] = ServiceStatusData::of($name, $description, ServiceStateEnum::from($result['states'][$key]));
         }

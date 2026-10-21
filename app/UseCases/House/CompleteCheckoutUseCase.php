@@ -30,8 +30,7 @@ class CompleteCheckoutUseCase
             return;
         }
 
-        $sync = new class extends WebhookController
-        {
+        $sync = new class extends WebhookController {
             /** @param  array<string, mixed>  $subscription */
             public function created(array $subscription): void
             {

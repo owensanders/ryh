@@ -23,7 +23,7 @@ class RecipientsHelperTest extends TestCase
 
     private function user(int $id): User
     {
-        $user = new User;
+        $user = new User();
         $user->id = $id;
 
         return $user;

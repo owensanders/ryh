@@ -8,6 +8,7 @@ use App\Enums\HouseholdRoleEnum;
 use App\Models\Document;
 use App\Models\DocumentFolder;
 use App\Models\User;
+use DateTimeInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -117,7 +118,7 @@ class DocumentTest extends TestCase
         config(['documents.disk' => 's3']);
         Storage::fake('s3');
         Storage::disk('s3')->buildTemporaryUrlsUsing(
-            fn (string $path, \DateTimeInterface $expiration, array $options) => 'https://bucket.example/'.$path.'?disposition='.rawurlencode($options['ResponseContentDisposition']),
+            fn (string $path, DateTimeInterface $expiration, array $options) => 'https://bucket.example/'.$path.'?disposition='.rawurlencode($options['ResponseContentDisposition']),
         );
 
         $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
@@ -233,8 +234,9 @@ class DocumentTest extends TestCase
 
         $this->actingAs($user)
             ->get($this->hh('/documents'))
-            ->assertInertia(fn ($page) => $page
-                ->where('storageLabel', '1.0 GB of 20.0 GB')
+            ->assertInertia(
+                fn ($page) => $page
+                    ->where('storageLabel', '1.0 GB of 20.0 GB'),
             );
     }
 
@@ -250,8 +252,9 @@ class DocumentTest extends TestCase
 
         $this->actingAs($user)
             ->get($this->hh('/documents'))
-            ->assertInertia(fn ($page) => $page
-                ->where('storageLabel', '900.0 KB of 20.0 GB')
+            ->assertInertia(
+                fn ($page) => $page
+                    ->where('storageLabel', '900.0 KB of 20.0 GB'),
             );
     }
 

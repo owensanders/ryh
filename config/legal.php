@@ -8,7 +8,6 @@ declare(strict_types=1);
 // than silently blank.
 
 return [
-
     // The trading name customers see.
     'trading_name' => env('LEGAL_TRADING_NAME', 'RYH'),
 
@@ -50,5 +49,4 @@ return [
     'terms_version' => '2026-10-07',
     'privacy_version' => '2026-10-11',
     'cookies_version' => '2026-10-11',
-
 ];

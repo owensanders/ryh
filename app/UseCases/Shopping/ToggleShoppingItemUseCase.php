@@ -15,7 +15,7 @@ class ToggleShoppingItemUseCase
     public function execute(ShoppingItem $item): ShoppingItemData
     {
         return ShoppingItemData::fromModel(
-            $this->shopping->setItemCompletion($item, ! $item->isDone())
+            $this->shopping->setItemCompletion($item, ! $item->isDone()),
         );
     }
 }

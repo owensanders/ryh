@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Middleware\EnsureTrialActiveMiddleware;
 use App\Http\Middleware\HandleInertiaRequestsMiddleware;
 use App\Http\Middleware\ResolveHouseholdMiddleware;
@@ -38,7 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // message, rather than opening the raw 429 page in a modal.
         $exceptions->render(function (ThrottleRequestsException $e, Request $request) {
             if (! $request->hasHeader('X-Inertia')) {
-                return null;
+                return;
             }
 
             $seconds = max(1, (int) ($e->getHeaders()['Retry-After'] ?? 60));

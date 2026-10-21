@@ -108,6 +108,7 @@ class GetDashboardUseCase
      * Groups the next few days of events under Today / Tomorrow / weekday headings.
      *
      * @param  Collection<int, CalendarEvent>  $events
+     *
      * @return array<int, AgendaGroupData>
      */
     private function agenda(Collection $events, CarbonImmutable $today): array

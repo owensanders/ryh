@@ -7,8 +7,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use NotificationChannels\WebPush\PushSubscription;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         // One row per browser/device that has turned on push notifications

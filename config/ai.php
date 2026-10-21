@@ -1,7 +1,8 @@
 <?php
 
-return [
+declare(strict_types=1);
 
+return [
     /*
     |--------------------------------------------------------------------------
     | Default AI Provider Names
@@ -158,5 +159,4 @@ return [
             'key' => env('XAI_API_KEY'),
         ],
     ],
-
 ];

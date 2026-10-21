@@ -249,6 +249,7 @@ class StripeBillingTest extends TestCase
 
     /**
      * @param  array<string, mixed>|null  $subscription
+     *
      * @return array<string, mixed>
      */
     private function checkoutSession(string $customer = 'cus_existing', string $status = 'complete', ?array $subscription = null): array

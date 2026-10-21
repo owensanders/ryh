@@ -35,7 +35,7 @@ class IndexCalendarRequest extends FormRequest
     protected function failedValidation(Validator $validator): void
     {
         throw new HttpResponseException(
-            redirect()->route('calendar.index')->withErrors($validator)->withInput()
+            redirect()->route('calendar.index')->withErrors($validator)->withInput(),
         );
     }
 }

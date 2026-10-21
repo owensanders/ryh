@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Settings\HouseholdController;
 use App\Http\Controllers\Settings\NotificationController;
 use App\Http\Controllers\Settings\PasswordController;

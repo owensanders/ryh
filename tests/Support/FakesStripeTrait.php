@@ -14,7 +14,7 @@ trait FakesStripeTrait
     {
         config(['cashier.secret' => 'sk_test_fake']);
 
-        $fake = new FakeStripeClient;
+        $fake = new FakeStripeClient();
         ApiRequestor::setHttpClient($fake);
 
         return $fake;

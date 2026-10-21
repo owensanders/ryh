@@ -20,7 +20,7 @@ class OpenNotificationUseCase
         $notification = $this->notifications->findFor($user, $id);
 
         if ($notification === null) {
-            throw (new ModelNotFoundException)->setModel(DatabaseNotification::class, [$id]);
+            throw (new ModelNotFoundException())->setModel(DatabaseNotification::class, [$id]);
         }
 
         $this->notifications->markRead($notification);
