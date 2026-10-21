@@ -24,6 +24,7 @@ class ShoppingItem extends Model
 {
     /** @use HasFactory<ShoppingItemFactory> */
     use HasFactory;
+
     use MassPrunable;
 
     /** How long a ticked-off item stays on its list before the nightly prune clears it. */

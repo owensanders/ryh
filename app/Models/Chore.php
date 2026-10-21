@@ -29,6 +29,7 @@ class Chore extends Model
 {
     /** @use HasFactory<ChoreFactory> */
     use HasFactory;
+
     use MassPrunable;
 
     /** How long a completed chore stays on the board before the nightly prune clears it. */
