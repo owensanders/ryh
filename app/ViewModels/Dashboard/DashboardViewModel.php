@@ -21,7 +21,6 @@ use App\Models\CalendarEvent;
 use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\ShoppingList;
-use App\Repositories\BudgetRepository;
 use App\Repositories\MembershipRepository;
 use App\Support\MoneyHelper;
 use Carbon\CarbonImmutable;
@@ -35,7 +34,6 @@ class DashboardViewModel
 
     public function __construct(
         private readonly MembershipRepository $memberships,
-        private readonly BudgetRepository $budget,
     ) {}
 
     public function toData(Household $household, string $viewerName, CarbonImmutable $today): DashboardData
@@ -140,7 +138,7 @@ class DashboardViewModel
 
     private function budget(Household $household, CarbonImmutable $today): BudgetSummaryData
     {
-        $categories = $this->budget->categoriesFor($household, $today);
+        $categories = $household->budgetCategories()->forMonth($today)->get();
         $budgeted = (int) $categories->sum('budgeted_pence');
 
         return new BudgetSummaryData(

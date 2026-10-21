@@ -20,7 +20,6 @@ use App\Models\BudgetCategory;
 use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\ShoppingList;
-use App\Repositories\BudgetRepository;
 use App\Repositories\MembershipRepository;
 use Carbon\CarbonImmutable;
 
@@ -32,7 +31,6 @@ class MealPlannerViewModel
 
     public function __construct(
         private readonly MembershipRepository $memberships,
-        private readonly BudgetRepository $budget,
     ) {}
 
     public function toData(Household $household, CarbonImmutable $anyDayInWeek): MealPlannerScreenData
@@ -107,7 +105,10 @@ class MealPlannerViewModel
      */
     private function suggestedWeeklyFoodBudget(Household $household, CarbonImmutable $today): ?int
     {
-        $food = $this->budget->categoriesUpTo($household, $today)
+        $food = $household->budgetCategories()
+            ->whereDate('month', '<=', $today->startOfMonth()->toDateString())
+            ->orderByDesc('month')
+            ->get()
             ->first(fn (BudgetCategory $category) => preg_match(self::FOOD_BUDGET_LABEL, $category->label) === 1);
 
         if ($food === null || $food->budgeted_pence <= 0) {

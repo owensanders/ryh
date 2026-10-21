@@ -155,6 +155,16 @@ class Household extends Model
         return $this->hasMany(Document::class);
     }
 
+    /**
+     * Takes a row lock on the household until the transaction ends, so checks
+     * two requests could race (the member cap, the budget carry-forward) run
+     * one at a time. Call inside DB::transaction().
+     */
+    public function lockRow(): void
+    {
+        static::query()->whereKey($this->getKey())->lockForUpdate()->first();
+    }
+
     /** True while the household's free trial hasn't ended and it isn't subscribed yet. */
     public function isOnTrial(): bool
     {
