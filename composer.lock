@@ -1439,16 +1439,16 @@
         },
         {
             "name": "inertiajs/inertia-laravel",
-            "version": "v2.0.25",
+            "version": "v2.0.28",
             "source": {
                 "type": "git",
                 "url": "https://github.com/inertiajs/inertia-laravel.git",
-                "reference": "d730017fb11670c46eafaa0e49e1ed387f3729f1"
+                "reference": "ca0d670779dc61437026e9ec7fd3b50c99625ac2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/inertiajs/inertia-laravel/zipball/d730017fb11670c46eafaa0e49e1ed387f3729f1",
-                "reference": "d730017fb11670c46eafaa0e49e1ed387f3729f1",
+                "url": "https://api.github.com/repos/inertiajs/inertia-laravel/zipball/ca0d670779dc61437026e9ec7fd3b50c99625ac2",
+                "reference": "ca0d670779dc61437026e9ec7fd3b50c99625ac2",
                 "shasum": ""
             },
             "require": {
@@ -1505,9 +1505,9 @@
             ],
             "support": {
                 "issues": "https://github.com/inertiajs/inertia-laravel/issues",
-                "source": "https://github.com/inertiajs/inertia-laravel/tree/v2.0.25"
+                "source": "https://github.com/inertiajs/inertia-laravel/tree/v2.0.28"
             },
-            "time": "2026-08-04T21:57:45+00:00"
+            "time": "2026-09-25T09:18:50+00:00"
         },
         {
             "name": "laravel-notification-channels/webpush",
