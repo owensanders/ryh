@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useSubscribe } from '@/composables/useSubscribe';
 import { formatPlanPrice } from '@/lib/ryh';
 import type { HouseData } from '@/types/generated';
 import { router, usePage } from '@inertiajs/vue3';
@@ -10,9 +11,7 @@ defineProps<{ house: HouseData }>();
 const page = usePage();
 const interval = ref<'monthly' | 'annual'>('monthly');
 
-function subscribe(): void {
-    router.post(route('billing.subscribe'), { interval: interval.value, from: 'house' }, { preserveScroll: true });
-}
+const { subscribing, subscribe } = useSubscribe();
 
 function manageBilling(): void {
     router.post(route('billing.portal'), {}, { preserveScroll: true });
@@ -78,10 +77,12 @@ function manageBilling(): void {
 
                 <button
                     type="button"
-                    class="mt-2.5 flex h-[38px] w-full items-center justify-center rounded-[11px] bg-ryh-coral px-4 text-[13px] font-bold text-white transition hover:-translate-y-0.5"
-                    @click="subscribe"
+                    class="mt-2.5 flex h-[38px] w-full items-center justify-center rounded-[11px] bg-ryh-coral px-4 text-[13px] font-bold text-white transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-60 disabled:hover:translate-y-0"
+                    :disabled="subscribing"
+                    @click="subscribe({ interval, from: 'house' })"
                 >
-                    <template v-if="house.planStatus.paymentIssue">Update your card</template>
+                    <template v-if="subscribing">Opening Stripe…</template>
+                    <template v-else-if="house.planStatus.paymentIssue">Update your card</template>
                     <template v-else>{{ house.planStatus.onTrial ? 'Start subscription now' : 'Subscribe now' }}</template>
                 </button>
             </template>

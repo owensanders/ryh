@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import RyhLogo from '@/components/ryh/RyhLogo.vue';
+import { useSubscribe } from '@/composables/useSubscribe';
 import { logout } from '@/lib/logout';
 import { formatPlanPrice } from '@/lib/ryh';
 import type { PlanData } from '@/types/generated';
-import { Head, router, usePage } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 const props = defineProps<{
@@ -16,9 +17,7 @@ const props = defineProps<{
 const page = usePage();
 const interval = ref<'monthly' | 'annual'>('monthly');
 
-function subscribe(): void {
-    router.post(route('billing.subscribe'), { interval: interval.value });
-}
+const { subscribing, subscribe } = useSubscribe();
 </script>
 
 <template>
@@ -44,10 +43,11 @@ function subscribe(): void {
 
                 <button
                     type="button"
-                    class="mt-4 flex h-[50px] w-full items-center justify-center rounded-[14px] bg-ryh-coral text-[15px] font-bold text-white transition hover:-translate-y-0.5"
-                    @click="subscribe"
+                    class="mt-4 flex h-[50px] w-full items-center justify-center rounded-[14px] bg-ryh-coral text-[15px] font-bold text-white transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-60 disabled:hover:translate-y-0"
+                    :disabled="subscribing"
+                    @click="subscribe({ interval })"
                 >
-                    Update your card
+                    {{ subscribing ? 'Opening Stripe…' : 'Update your card' }}
                 </button>
                 <p v-if="page.props.errors.plan" class="mt-2 text-[12.5px] text-ryh-coral">{{ page.props.errors.plan }}</p>
             </template>
@@ -75,10 +75,11 @@ function subscribe(): void {
 
                 <button
                     type="button"
-                    class="mt-4 flex h-[50px] w-full items-center justify-center rounded-[14px] bg-ryh-coral text-[15px] font-bold text-white transition hover:-translate-y-0.5"
-                    @click="subscribe"
+                    class="mt-4 flex h-[50px] w-full items-center justify-center rounded-[14px] bg-ryh-coral text-[15px] font-bold text-white transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-60 disabled:hover:translate-y-0"
+                    :disabled="subscribing"
+                    @click="subscribe({ interval })"
                 >
-                    Subscribe now
+                    {{ subscribing ? 'Opening Stripe…' : 'Subscribe now' }}
                 </button>
                 <p v-if="page.props.errors.plan" class="mt-2 text-[12.5px] text-ryh-coral">{{ page.props.errors.plan }}</p>
             </template>

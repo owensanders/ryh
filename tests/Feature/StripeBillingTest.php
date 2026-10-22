@@ -33,6 +33,8 @@ class StripeBillingTest extends TestCase
     {
         $stripe = $this->fakeStripe()
             ->respond('POST', '/v1/customers', ['id' => 'cus_new', 'object' => 'customer'])
+            // Cashier fetches the customer again on its way into Checkout.
+            ->respond('GET', '/v1/customers/cus_new', ['id' => 'cus_new', 'object' => 'customer'])
             ->respond('POST', '/v1/checkout/sessions', $this->checkoutSession());
         $owner = $this->owner(['trial_ends_at' => now()->subDay()]);
 
@@ -46,6 +48,43 @@ class StripeBillingTest extends TestCase
         $this->assertSame('price_monthly', $params['line_items'][0]['price']);
         $this->assertSame(route('billing.checkout.complete').'?session_id={CHECKOUT_SESSION_ID}', $params['success_url']);
         $this->assertSame(route('billing.required').'?plan_checkout=cancelled', $params['cancel_url']);
+    }
+
+    #[Test]
+    public function creatingTheStripeCustomerCarriesAnIdempotencyKey(): void
+    {
+        $stripe = $this->fakeStripe()
+            ->respond('POST', '/v1/customers', ['id' => 'cus_new', 'object' => 'customer'])
+            ->respond('GET', '/v1/customers/cus_new', ['id' => 'cus_new', 'object' => 'customer'])
+            ->respond('POST', '/v1/checkout/sessions', $this->checkoutSession());
+        $owner = $this->owner(['trial_ends_at' => now()->subDay()]);
+
+        $this->actingAs($owner)->post($this->hh('/billing/subscribe'), ['interval' => 'monthly']);
+
+        $key = $stripe->headerOf('POST', '/v1/customers', 'Idempotency-Key');
+        $this->assertNotNull($key);
+        $this->assertStringStartsWith("household-{$owner->household_id}-customer-", $key);
+    }
+
+    #[Test]
+    public function aSecondSubscribeReusesTheFirstsCheckoutSessionButADifferentPlanGetsItsOwn(): void
+    {
+        $stripe = $this->fakeStripe()
+            ->respond('GET', '/v1/customers/cus_existing', ['id' => 'cus_existing', 'object' => 'customer'])
+            ->respond('POST', '/v1/checkout/sessions', $this->checkoutSession());
+        $owner = $this->owner(['stripe_id' => 'cus_existing', 'trial_ends_at' => now()->subDay()]);
+
+        // A double-click, or Back from Checkout and Subscribe again.
+        foreach ([1, 2] as $click) {
+            $this->actingAs($owner)->post($this->hh('/billing/subscribe'), ['interval' => 'monthly'])
+                ->assertRedirect('https://checkout.stripe.com/c/pay/cs_test');
+        }
+
+        $sessions = fn (): int => collect($stripe->requests)->where('method', 'POST')->where('path', '/v1/checkout/sessions')->count();
+        $this->assertSame(1, $sessions());
+
+        $this->actingAs($owner)->post($this->hh('/billing/subscribe'), ['interval' => 'annual']);
+        $this->assertSame(2, $sessions());
     }
 
     #[Test]
@@ -70,6 +109,8 @@ class StripeBillingTest extends TestCase
     {
         $this->fakeStripe()
             ->respond('POST', '/v1/customers', ['id' => 'cus_new', 'object' => 'customer'])
+            // Cashier fetches the customer again on its way into Checkout.
+            ->respond('GET', '/v1/customers/cus_new', ['id' => 'cus_new', 'object' => 'customer'])
             ->respond('POST', '/v1/checkout/sessions', $this->checkoutSession());
         $owner = $this->owner(['trial_ends_at' => now()->subDay()]);
 
@@ -114,6 +155,8 @@ class StripeBillingTest extends TestCase
     {
         $this->fakeStripe()
             ->respond('POST', '/v1/customers', ['id' => 'cus_new', 'object' => 'customer'])
+            // Cashier fetches the customer again on its way into Checkout.
+            ->respond('GET', '/v1/customers/cus_new', ['id' => 'cus_new', 'object' => 'customer'])
             ->respond('POST', '/v1/checkout/sessions', ['error' => ['type' => 'invalid_request_error', 'message' => 'No such price']], 400);
         $owner = $this->owner(['trial_ends_at' => now()->subDay()]);
 

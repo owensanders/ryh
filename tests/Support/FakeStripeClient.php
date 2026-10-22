@@ -18,7 +18,7 @@ class FakeStripeClient implements ClientInterface
     /** @var array<string, array{body: array<string, mixed>, status: int}> */
     private array $responses = [];
 
-    /** @var list<array{method: string, path: string, params: array<string, mixed>}> */
+    /** @var list<array{method: string, path: string, params: array<string, mixed>, headers: list<string>}> */
     public array $requests = [];
 
     /** @param  array<string, mixed>  $body */
@@ -39,7 +39,7 @@ class FakeStripeClient implements ClientInterface
     {
         $method = strtoupper($method);
         $path = (string) parse_url($absUrl, PHP_URL_PATH);
-        $this->requests[] = ['method' => $method, 'path' => $path, 'params' => $params];
+        $this->requests[] = ['method' => $method, 'path' => $path, 'params' => $params, 'headers' => $headers];
 
         $response = $this->responses[$method.' '.$path]
             ?? throw new RuntimeException("Unexpected Stripe request: {$method} {$path}");
@@ -61,6 +61,22 @@ class FakeStripeClient implements ClientInterface
         Assert::assertNotNull($match, "Expected a Stripe request to {$method} {$path}.");
 
         return $match['params'];
+    }
+
+    /** The value of a header sent with the first matching request, if it was sent. */
+    public function headerOf(string $method, string $path, string $header): ?string
+    {
+        $match = collect($this->requests)->first(fn (array $request): bool => $request['method'] === strtoupper($method) && $request['path'] === $path);
+
+        foreach ($match['headers'] ?? [] as $line) {
+            [$name, $value] = array_map('trim', explode(':', $line, 2)) + [1 => ''];
+
+            if (strcasecmp($name, $header) === 0) {
+                return $value;
+            }
+        }
+
+        return null;
     }
 
     public function assertNotRequested(string $method, string $path): void
