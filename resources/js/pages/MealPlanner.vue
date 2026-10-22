@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
-import AiMealPlanDialog from '@/components/ryh/AiMealPlanDialog.vue';
+import AiMealPlanDialog from '@/components/ryh/ai-meal-plan/AiMealPlanDialog.vue';
 import RecipeDetailFields from '@/components/ryh/RecipeDetailFields.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
