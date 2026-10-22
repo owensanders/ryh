@@ -14,6 +14,13 @@ export type AgendaGroupData = {
     label: string;
     items: AgendaEntryData[];
 };
+export type AiMealPlanData = {
+    id: number;
+    status: AiMealPlanStatusEnum;
+    meals: MealSuggestionData[];
+    error: string | null;
+};
+export type AiMealPlanStatusEnum = 'pending' | 'ready' | 'failed';
 export type AuthUserData = {
     id: number;
     name: string;
@@ -327,6 +334,7 @@ export type MealPlannerScreenData = {
     aiPaused: boolean;
     aiAvailableFrom: string | null;
     aiSuggestedBudget: number | null;
+    aiPlan: AiMealPlanData | null;
     shoppingLists: ShoppingListData[];
     tagOptions: {
         value: string;

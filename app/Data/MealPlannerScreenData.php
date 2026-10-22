@@ -29,6 +29,8 @@ class MealPlannerScreenData extends Data
         public bool $aiPaused,
         public ?string $aiAvailableFrom,
         public ?int $aiSuggestedBudget,
+        /** The latest from the last day, if any: pending while its job runs. */
+        public ?AiMealPlanData $aiPlan,
         public array $shoppingLists,
         public array $tagOptions,
         public array $aiOptions,

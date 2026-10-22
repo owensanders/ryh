@@ -60,8 +60,9 @@ Each layer only talks to the one below it.
   $data` naming its keys, as Fortify does), and return the model they worked
   on (or nothing),
   never a shaped array. `*Data` is for what the browser receives, so view
-  models build it, not actions. The one exception is data flashed straight to
-  the page (`MealSuggestionData` from the meal plan actions). Transactions and
+  models build it, not actions. The exceptions are suggestions an action
+  produces rather than reads: `MealSuggestionData`, flashed by the library plan
+  and stored on an `AiMealPlan` by its job. Transactions and
   notifications start here.
 - **View models** (`app/ViewModels/<Area>`): everything one page needs, built
   by a public `toData()` that returns its `*ScreenData` (`ChoreBoardViewModel`).

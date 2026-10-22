@@ -8,13 +8,14 @@ import AiPlanResult from '@/components/ryh/ai-meal-plan/AiPlanResult.vue';
 import AiPlanStepIndicator from '@/components/ryh/ai-meal-plan/AiPlanStepIndicator.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { provideAiMealPlanForm, type AiMealPlanSettings } from '@/composables/useAiMealPlanForm';
+import { hasSeenPlan, markPlanSeen, useAiPlanUpdates } from '@/composables/useAiPlanUpdates';
 import { provideMealPlanSuggestions } from '@/composables/useMealPlanSuggestions';
 import type { SharedData } from '@/types';
-import type { MealSuggestionData } from '@/types/generated';
+import type { AiMealPlanData, MealSuggestionData } from '@/types/generated';
 import { usePage } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
-const props = defineProps<AiMealPlanSettings & { open: boolean }>();
+const props = defineProps<AiMealPlanSettings & { open: boolean; aiPlan: AiMealPlanData | null }>();
 
 const emit = defineEmits<{ 'update:open': [value: boolean] }>();
 
@@ -27,15 +28,56 @@ const suggestions = provideMealPlanSuggestions(plannedDays, budgetAmount, () => 
 
 const stage = ref<'form' | 'loading' | 'result'>('form');
 
+// The AI plan is written by a queued job. While waiting, any plan newer than this one is the answer.
+const waitingAfterId = ref<number | null>(null);
+const waiting = computed(() => stage.value === 'loading' && waitingAfterId.value !== null);
+const planError = ref<string | null>(null);
+
+useAiPlanUpdates(waiting);
+
+watch(
+    () => props.aiPlan,
+    (plan) => {
+        if (!waiting.value || plan === null || plan.id <= (waitingAfterId.value ?? 0) || plan.status === 'pending') {
+            return;
+        }
+
+        waitingAfterId.value = null;
+
+        if (plan.status === 'ready') {
+            markPlanSeen(plan.id);
+            showSuggestions('ai', plan.meals);
+        } else {
+            planError.value = plan.error;
+            stage.value = 'form';
+        }
+    },
+);
+
 const STEP_COMPONENTS = { days: AiPlanDaysStep, food: AiPlanFoodStep, kitchen: AiPlanKitchenStep, extras: AiPlanExtrasStep };
 
 watch(
     () => props.open,
     (isOpen) => {
-        if (isOpen) {
-            stage.value = 'form';
-            reset();
-            suggestions.reset();
+        if (!isOpen) {
+            return;
+        }
+
+        stage.value = 'form';
+        planError.value = null;
+        waitingAfterId.value = null;
+        reset();
+        suggestions.reset();
+
+        // Pick up where they left off: a plan still being written, or one that finished while they were away.
+        const plan = props.aiPlan;
+
+        if (plan?.status === 'pending') {
+            waitingAfterId.value = plan.id - 1;
+            stage.value = 'loading';
+        } else if (plan?.status === 'ready' && !hasSeenPlan(plan.id)) {
+            markPlanSeen(plan.id);
+            showSuggestions('ai', plan.meals);
         }
     },
 );
@@ -50,14 +92,17 @@ function showSuggestions(from: 'ai' | 'library', meals: MealSuggestionData[]): v
 
 function generate(): void {
     stage.value = 'loading';
+    planError.value = null;
+    waitingAfterId.value = props.aiPlan?.id ?? 0;
 
     form.transform((data) => ({
         ...data,
         budget: data.budget === '' ? null : data.budget,
     })).post(route('meals.aiPlan'), {
         preserveScroll: true,
-        onSuccess: () => showSuggestions('ai', page.props.flash?.aiMeals ?? []),
+        // Nothing to do on success: the plan arrives as the aiPlan prop, now (a sync queue) or later.
         onError: (errors) => {
+            waitingAfterId.value = null;
             stage.value = 'form';
             goToFirstError(errors);
         },
@@ -109,7 +154,9 @@ function submit(): void {
                     </div>
                 </Transition>
 
-                <p v-if="isLastStep && page.props.errors.ai" class="text-[12.5px] text-ryh-coral">{{ page.props.errors.ai }}</p>
+                <p v-if="isLastStep && (page.props.errors.ai || planError)" class="text-[12.5px] text-ryh-coral">
+                    {{ page.props.errors.ai ?? planError }}
+                </p>
 
                 <div class="flex flex-wrap items-center gap-2">
                     <button v-if="step > 0" type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" :disabled="form.processing" @click="back">

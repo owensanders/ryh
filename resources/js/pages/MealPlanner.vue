@@ -7,7 +7,7 @@ import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import { provideMealEditor } from '@/composables/useMealEditor';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
-import type { MemberData, PlannerDayData, RecipeData, ShoppingListData } from '@/types/generated';
+import type { AiMealPlanData, MemberData, PlannerDayData, RecipeData, ShoppingListData } from '@/types/generated';
 import type { AiPlannerOptions, TagOption } from '@/types/ryh';
 import { Sparkles } from 'lucide-vue-next';
 import { ref } from 'vue';
@@ -27,6 +27,7 @@ const props = defineProps<{
     aiPaused: boolean;
     aiAvailableFrom: string | null;
     aiSuggestedBudget: number | null;
+    aiPlan: AiMealPlanData | null;
     aiOptions: AiPlannerOptions;
 }>();
 
@@ -66,6 +67,7 @@ const aiOpen = ref(false);
             :ai-paused="aiPaused"
             :ai-available-from="aiAvailableFrom"
             :ai-suggested-budget="aiSuggestedBudget"
+            :ai-plan="aiPlan"
             :ai-options="aiOptions"
             :days="days"
             :shopping-lists="shoppingLists"

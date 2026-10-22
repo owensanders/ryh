@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Actions\Meals\GenerateAiMealPlanAction;
 use App\Ai\Agents\MealPlanAgent;
 use App\Ai\AiConfigService;
+use App\Enums\AiMealPlanStatusEnum;
 use App\Enums\HouseholdRoleEnum;
 use App\Enums\KitchenEquipmentEnum;
+use App\Events\AiMealPlanFinishedEvent;
+use App\Jobs\GenerateAiMealPlanJob;
+use App\Models\AiMealPlan;
 use App\Models\BudgetCategory;
 use App\Models\Household;
 use App\Models\PlannedMeal;
@@ -21,9 +26,11 @@ use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Ai\Exceptions\InsufficientCreditsException;
 use Laravel\Ai\Exceptions\RateLimitedException;
+use LogicException;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -410,9 +417,10 @@ class MealPlannerTest extends TestCase
     }
 
     #[Test]
-    public function itGeneratesAnAiMealPlanWhenConfigured(): void
+    public function itGeneratesAnAiMealPlanInTheBackgroundAndTellsWhoAsked(): void
     {
         config(['ai.providers.anthropic.key' => 'test-key']);
+        Event::fake([AiMealPlanFinishedEvent::class]);
         MealPlanAgent::fake([
             [
                 'meals' => [[
@@ -429,11 +437,23 @@ class MealPlannerTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->post($this->hh('/meals/ai-plan'), ['people' => 4, 'budget' => 85, 'diets' => [], 'avoid' => '', 'goals' => [], 'confidence' => 'comfortable'])
+            ->post($this->hh('/meals/ai-plan'), [...$this->aiPlanPayload(), 'budget' => 85])
             ->assertRedirect()
-            ->assertSessionHas('aiMeals', fn ($meals) => $meals[0]['name'] === 'Lemon chicken traybake' && $meals[0]['estimated_cost'] === 7.5);
+            ->assertSessionHasNoErrors();
 
+        // The queue runs jobs straight away in tests, so it's already written.
+        $plan = AiMealPlan::query()->sole();
+        $this->assertSame(AiMealPlanStatusEnum::Ready, $plan->status);
+        $this->assertSame($user->id, $plan->requested_by);
+        $this->assertSame(85, $plan->answers['budget']);
         $this->assertNotNull($user->lastHousehold->refresh()->ai_meal_plan_generated_at);
+        Event::assertDispatched(AiMealPlanFinishedEvent::class, fn (AiMealPlanFinishedEvent $event) => $event->userId === $user->id && $event->status === 'ready');
+
+        $this->actingAs($user)->get($this->hh('/meals'))
+            ->assertInertia(fn ($page) => $page
+                ->where('aiPlan.status', 'ready')
+                ->where('aiPlan.meals.0.name', 'Lemon chicken traybake')
+                ->where('aiPlan.meals.0.estimated_cost', 7.5));
     }
 
     #[Test]
@@ -443,10 +463,11 @@ class MealPlannerTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->post($this->hh('/meals/ai-plan'), ['people' => 4, 'budget' => null, 'diets' => [], 'avoid' => '', 'goals' => [], 'confidence' => 'comfortable'])
+            ->post($this->hh('/meals/ai-plan'), $this->aiPlanPayload())
             ->assertSessionHasErrors('ai');
 
         $this->assertNull($user->lastHousehold->refresh()->ai_meal_plan_generated_at);
+        $this->assertSame(0, AiMealPlan::query()->count());
     }
 
     #[Test]
@@ -458,22 +479,79 @@ class MealPlannerTest extends TestCase
         Household::where('id', $user->household_id)->update(['ai_meal_plan_generated_at' => now()->subDays(2)]);
 
         $this->actingAs($user)
-            ->post($this->hh('/meals/ai-plan'), ['people' => 4, 'budget' => null, 'diets' => [], 'avoid' => '', 'goals' => [], 'confidence' => 'comfortable'])
+            ->post($this->hh('/meals/ai-plan'), $this->aiPlanPayload())
             ->assertSessionHasErrors('ai');
+
+        $this->assertSame(0, AiMealPlan::query()->count());
     }
 
     #[Test]
-    public function aProviderFailureShowsAnErrorWithoutUsingUpTheWeeklyPlan(): void
+    public function itRefusesAnotherWhileOneIsBeingWritten(): void
+    {
+        config(['ai.providers.anthropic.key' => 'test-key']);
+        $user = User::factory()->create();
+        $this->planFor($user, AiMealPlanStatusEnum::Pending);
+
+        $this->actingAs($user)
+            ->post($this->hh('/meals/ai-plan'), $this->aiPlanPayload())
+            ->assertSessionHasErrors(['ai' => 'A meal plan is already being generated for your household.']);
+
+        $this->assertSame(1, AiMealPlan::query()->count());
+    }
+
+    #[Test]
+    public function aPlanWhoseWorkerDiedShowsAsFailedAndDoesntBlockTheNext(): void
+    {
+        config(['ai.providers.anthropic.key' => 'test-key']);
+        MealPlanAgent::fake([['meals' => []]]);
+        $user = User::factory()->create();
+        $stuck = $this->planFor($user, AiMealPlanStatusEnum::Pending);
+        $stuck->forceFill(['created_at' => now()->subMinutes(10)])->save();
+
+        $this->actingAs($user)->get($this->hh('/meals'))
+            ->assertInertia(fn ($page) => $page
+                ->where('aiPlan.status', 'failed')
+                ->where('aiPlan.error', 'We couldn\'t generate a meal plan right now — please try again in a few minutes.'));
+
+        $this->actingAs($user)
+            ->post($this->hh('/meals/ai-plan'), $this->aiPlanPayload())
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame(2, AiMealPlan::query()->count());
+    }
+
+    #[Test]
+    public function theJobChecksTheWeeklyAllowanceAgainBeforeAskingTheProvider(): void
+    {
+        config(['ai.providers.anthropic.key' => 'test-key']);
+        MealPlanAgent::fake(fn () => throw new LogicException('The provider must not be asked.'));
+        $user = User::factory()->create();
+        $plan = $this->planFor($user, AiMealPlanStatusEnum::Pending);
+        // Used up after the request was accepted, before its job ran.
+        Household::where('id', $user->household_id)->update(['ai_meal_plan_generated_at' => now()]);
+
+        (new GenerateAiMealPlanJob($plan->id))->handle(app(GenerateAiMealPlanAction::class));
+
+        $plan->refresh();
+        $this->assertSame(AiMealPlanStatusEnum::Failed, $plan->status);
+        $this->assertSame('Your household can generate one AI meal plan per week — check back soon.', $plan->error);
+    }
+
+    #[Test]
+    public function aProviderFailureFailsThePlanWithoutUsingUpTheWeeklyAllowance(): void
     {
         config(['ai.providers.anthropic.key' => 'test-key']);
         MealPlanAgent::fake(fn () => throw RateLimitedException::forProvider('anthropic'));
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->post($this->hh('/meals/ai-plan'), ['people' => 4, 'budget' => null, 'diets' => [], 'avoid' => '', 'goals' => [], 'confidence' => 'comfortable'])
+            ->post($this->hh('/meals/ai-plan'), $this->aiPlanPayload())
             ->assertRedirect()
-            ->assertSessionHasErrors(['ai' => 'We couldn\'t generate a meal plan right now — please try again in a few minutes.']);
+            ->assertSessionHasNoErrors();
 
+        $plan = AiMealPlan::query()->sole();
+        $this->assertSame(AiMealPlanStatusEnum::Failed, $plan->status);
+        $this->assertSame('We couldn\'t generate a meal plan right now — please try again in a few minutes.', $plan->error);
         $this->assertNull($user->lastHousehold->refresh()->ai_meal_plan_generated_at);
     }
 
@@ -486,25 +564,24 @@ class MealPlannerTest extends TestCase
         MealPlanAgent::fake(fn () => throw new QueryException('mysql', 'select secret_column from users', [], new Exception('SQLSTATE[42S22]')));
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->post($this->hh('/meals/ai-plan'), $this->aiPlanPayload());
+        $this->actingAs($user)->post($this->hh('/meals/ai-plan'), $this->aiPlanPayload());
 
-        $response->assertServerError();
-        $this->assertFalse(session()->has('errors'));
+        $plan = AiMealPlan::query()->sole();
+        $this->assertSame(AiMealPlanStatusEnum::Failed, $plan->status);
+        $this->assertSame('We couldn\'t generate a meal plan right now — please try again in a few minutes.', $plan->error);
         $this->assertNull($user->lastHousehold->refresh()->ai_meal_plan_generated_at);
     }
 
     #[Test]
-    public function aTimedOutCallShowsAnErrorWithoutUsingUpTheWeeklyPlan(): void
+    public function aTimedOutCallFailsThePlanWithoutUsingUpTheWeeklyAllowance(): void
     {
         config(['ai.providers.anthropic.key' => 'test-key']);
         MealPlanAgent::fake(fn () => throw new ConnectionException('cURL error 28: Operation timed out after 45000 milliseconds'));
         $user = User::factory()->create();
 
-        $this->actingAs($user)
-            ->post($this->hh('/meals/ai-plan'), $this->aiPlanPayload())
-            ->assertRedirect()
-            ->assertSessionHasErrors(['ai' => 'We couldn\'t generate a meal plan right now — please try again in a few minutes.']);
+        $this->actingAs($user)->post($this->hh('/meals/ai-plan'), $this->aiPlanPayload())->assertSessionHasNoErrors();
 
+        $this->assertSame('We couldn\'t generate a meal plan right now — please try again in a few minutes.', AiMealPlan::query()->sole()->error);
         $this->assertNull($user->lastHousehold->refresh()->ai_meal_plan_generated_at);
     }
 
@@ -575,7 +652,7 @@ class MealPlannerTest extends TestCase
     }
 
     #[Test]
-    public function itRefusesWhileAnotherGenerationIsInFlightForTheHousehold(): void
+    public function aJobThatFindsAnotherForTheHouseholdRunningStepsAside(): void
     {
         config(['ai.providers.anthropic.key' => 'test-key']);
         MealPlanAgent::fake()->preventStrayPrompts();
@@ -583,9 +660,11 @@ class MealPlannerTest extends TestCase
         $lock = Cache::lock("ai-meal-plan:{$user->household_id}", 120);
         $lock->get();
 
-        $this->actingAs($user)
-            ->post($this->hh('/meals/ai-plan'), $this->aiPlanPayload())
-            ->assertSessionHasErrors(['ai' => 'A meal plan is already being generated for your household.']);
+        $this->actingAs($user)->post($this->hh('/meals/ai-plan'), $this->aiPlanPayload());
+
+        $plan = AiMealPlan::query()->sole();
+        $this->assertSame(AiMealPlanStatusEnum::Failed, $plan->status);
+        $this->assertSame('A meal plan is already being generated for your household.', $plan->error);
 
         $lock->release();
     }
@@ -598,10 +677,12 @@ class MealPlannerTest extends TestCase
         MealPlanAgent::fake(fn () => throw InsufficientCreditsException::forProvider('anthropic'));
         $user = User::factory()->create();
 
-        $this->actingAs($user)
-            ->post($this->hh('/meals/ai-plan'), $this->aiPlanPayload())
-            ->assertSessionHasErrors('ai');
+        $this->actingAs($user)->post($this->hh('/meals/ai-plan'), $this->aiPlanPayload());
 
+        $this->assertSame(
+            'AI meal planning is taking a break — you can still plan meals by hand. Your weekly plan hasn\'t been used.',
+            AiMealPlan::query()->sole()->error,
+        );
         $this->assertTrue(AiConfigService::isPaused());
         $this->assertNull($user->lastHousehold->refresh()->ai_meal_plan_generated_at);
         Notification::assertSentOnDemand(
@@ -801,6 +882,16 @@ class MealPlannerTest extends TestCase
         $this->actingAs($user)
             ->post($this->hh('/meals/ai-plan'), [...$this->aiPlanPayload(), 'equipment' => ['Teleporter']])
             ->assertSessionHasErrors('equipment.0');
+    }
+
+    private function planFor(User $user, AiMealPlanStatusEnum $status): AiMealPlan
+    {
+        return AiMealPlan::create([
+            'household_id' => $user->household_id,
+            'requested_by' => $user->id,
+            'status' => $status,
+            'answers' => $this->aiPlanPayload(),
+        ]);
     }
 
     /** @return array<string, mixed> */

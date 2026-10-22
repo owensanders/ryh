@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\ViewModels\Meals;
 
 use App\Ai\AiConfigService;
+use App\Data\AiMealPlanData;
 use App\Data\MealPlannerScreenData;
 use App\Data\MemberData;
 use App\Data\PlannedMealData;
@@ -79,6 +80,7 @@ class MealPlannerViewModel
                 ? null
                 : $household->ai_meal_plan_generated_at?->addWeek()->toDateString(),
             aiSuggestedBudget: $this->suggestedWeeklyFoodBudget($household, $today),
+            aiPlan: $this->latestAiPlan($household),
             shoppingLists: $household->shoppingLists()->with('items')->get()
                 ->map(fn (ShoppingList $list) => ShoppingListData::fromModel($list, withItems: false))
                 ->values()
@@ -111,5 +113,12 @@ class MealPlannerViewModel
         }
 
         return (int) round($food->budgeted_pence / 100 * 12 / 52);
+    }
+
+    private function latestAiPlan(Household $household): ?AiMealPlanData
+    {
+        $plan = $household->aiMealPlans()->where('created_at', '>=', now()->subDay())->latest('id')->first();
+
+        return $plan !== null ? AiMealPlanData::fromModel($plan) : null;
     }
 }

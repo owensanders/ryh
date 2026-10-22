@@ -210,6 +210,12 @@ class Household extends Model
         return $this->hasMany(DocumentFolder::class)->orderBy('position');
     }
 
+    /** @return HasMany<AiMealPlan, $this> */
+    public function aiMealPlans(): HasMany
+    {
+        return $this->hasMany(AiMealPlan::class);
+    }
+
     /** @return HasMany<Document, $this> */
     public function documents(): HasMany
     {
