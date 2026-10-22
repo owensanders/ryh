@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Actions\Chores\NotifyChoresAction;
 use App\Enums\ChoreStatusEnum;
 use App\Enums\HouseholdRoleEnum;
+use App\Exceptions\ChoreReminderCooldownException;
 use App\Models\Chore;
+use App\Models\Household;
 use App\Models\User;
 use App\Notifications\ChoresReminderNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -68,6 +71,38 @@ class NotifyChoresTest extends TestCase
             ->post($this->hh('/chores/notify'), [], ['X-Inertia' => 'true'])
             ->assertRedirect($this->hh('/chores'))
             ->assertSessionHas('toastError');
+    }
+
+    #[Test]
+    public function itChecksTheCooldownAgainstTheHouseholdAsItIsNotAsItWasLoaded(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
+        Chore::factory()->create(['household_id' => $user->household_id, 'assigned_to' => $user->id]);
+        $household = $user->lastHousehold()->firstOrFail();
+
+        // Another request sent reminders after this one loaded the household.
+        Household::where('id', $household->id)->update(['last_chore_notification_sent_at' => now()]);
+
+        try {
+            app(NotifyChoresAction::class)->handle($household);
+            $this->fail('The second press should have hit the cooldown.');
+        } catch (ChoreReminderCooldownException) {
+        }
+
+        Notification::assertNothingSent();
+    }
+
+    #[Test]
+    public function listsThatShareAPositionKeepTheOrderTheyWereAddedIn(): void
+    {
+        $user = User::factory()->create();
+
+        foreach (['shoppingLists', 'budgetCategories', 'incomeSources', 'documentFolders'] as $relation) {
+            $orders = $user->lastHousehold()->firstOrFail()->{$relation}()->getQuery()->getQuery()->orders;
+
+            $this->assertSame(['position', 'id'], array_column($orders ?? [], 'column'), $relation);
+        }
     }
 
     #[Test]

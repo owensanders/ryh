@@ -167,7 +167,7 @@ class Household extends Model
     /** @return HasMany<ShoppingList, $this> */
     public function shoppingLists(): HasMany
     {
-        return $this->hasMany(ShoppingList::class)->orderBy('position');
+        return $this->hasMany(ShoppingList::class)->orderBy('position')->orderBy('id');
     }
 
     /** @return HasMany<Chore, $this> */
@@ -197,19 +197,19 @@ class Household extends Model
     /** @return HasMany<BudgetCategory, $this> */
     public function budgetCategories(): HasMany
     {
-        return $this->hasMany(BudgetCategory::class)->orderBy('position');
+        return $this->hasMany(BudgetCategory::class)->orderBy('position')->orderBy('id');
     }
 
     /** @return HasMany<IncomeSource, $this> */
     public function incomeSources(): HasMany
     {
-        return $this->hasMany(IncomeSource::class)->orderBy('position');
+        return $this->hasMany(IncomeSource::class)->orderBy('position')->orderBy('id');
     }
 
     /** @return HasMany<DocumentFolder, $this> */
     public function documentFolders(): HasMany
     {
-        return $this->hasMany(DocumentFolder::class)->orderBy('position');
+        return $this->hasMany(DocumentFolder::class)->orderBy('position')->orderBy('id');
     }
 
     /** @return HasMany<AiMealPlan, $this> */
