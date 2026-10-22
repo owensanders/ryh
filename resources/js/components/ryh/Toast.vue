@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { latestToast } from '@/composables/useNotifications';
+import { clientToast } from '@/composables/useToast';
 import type { SharedData } from '@/types';
 import { usePage } from '@inertiajs/vue3';
 import { onUnmounted, ref, watch } from 'vue';
@@ -32,7 +32,7 @@ watch(
     { immediate: true },
 );
 
-watch(latestToast, (toast) => toast && show(toast));
+watch(clientToast, (toast) => toast && show(toast.message, toast.error));
 </script>
 
 <template>
