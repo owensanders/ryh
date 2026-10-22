@@ -1,0 +1,132 @@
+<script setup lang="ts">
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useCalendarEditor } from '@/composables/useCalendarEditor';
+import { EVENT_COLOURS, todayIso } from '@/lib/calendar';
+import type { MemberData } from '@/types/generated';
+
+/** Adding or editing one event. */
+defineProps<{ members: MemberData[] }>();
+
+const { open, editing, form, toggleAttendee, submit, destroy } = useCalendarEditor();
+</script>
+
+<template>
+    <Dialog :open="open" @update:open="open = $event">
+        <DialogContent class="rounded-[22px] border-ryh-line bg-ryh-card text-ryh-ink sm:rounded-[22px]">
+            <DialogHeader>
+                <DialogTitle class="text-[16px] font-extrabold tracking-tight">{{ editing ? 'Edit event' : 'New event' }}</DialogTitle>
+            </DialogHeader>
+
+            <form class="flex flex-col gap-4" @submit.prevent="submit">
+                <div class="flex flex-col gap-1.5">
+                    <label for="title" class="ryh-label">Title</label>
+                    <input id="title" v-model="form.title" type="text" class="ryh-input" required placeholder="What's happening?" />
+                    <p v-if="form.errors.title" class="text-[12.5px] text-ryh-coral">{{ form.errors.title }}</p>
+                </div>
+
+                <label for="is_all_day" class="flex items-center gap-2.5 text-[13px] text-ryh-ink2">
+                    <input id="is_all_day" v-model="form.is_all_day" type="checkbox" class="h-4 w-4 accent-ryh-coral" />
+                    All day
+                </label>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-1.5">
+                        <label for="starts_at" class="ryh-label">Starts</label>
+                        <input
+                            id="starts_at"
+                            v-model="form.starts_at"
+                            type="datetime-local"
+                            class="ryh-input"
+                            :min="`${todayIso()}T00:00`"
+                            required
+                        />
+                        <p v-if="form.errors.starts_at" class="text-[12.5px] text-ryh-coral">{{ form.errors.starts_at }}</p>
+                    </div>
+
+                    <div v-if="!form.is_all_day" class="flex flex-col gap-1.5">
+                        <label for="ends_at" class="ryh-label">Ends</label>
+                        <input id="ends_at" v-model="form.ends_at" type="datetime-local" class="ryh-input" />
+                        <p v-if="form.errors.ends_at" class="text-[12.5px] text-ryh-coral">{{ form.errors.ends_at }}</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label for="location" class="ryh-label">Location</label>
+                    <input id="location" v-model="form.location" type="text" class="ryh-input" maxlength="120" placeholder="Optional" />
+                    <p v-if="form.errors.location" class="text-[12.5px] text-ryh-coral">{{ form.errors.location }}</p>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <span class="ryh-label">Who's it for?</span>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button
+                            v-for="member in members"
+                            :key="member.id"
+                            type="button"
+                            class="flex h-[34px] items-center gap-2 rounded-[11px] py-1 pl-1 pr-3 text-[12.5px] transition-colors"
+                            :class="
+                                form.attendees.includes(member.id)
+                                    ? 'bg-ryh-sunk font-bold ring-2 ring-ryh-coral'
+                                    : 'bg-ryh-soft font-medium text-ryh-ink2 hover:bg-ryh-line'
+                            "
+                            :aria-pressed="form.attendees.includes(member.id)"
+                            @click="toggleAttendee(member.id)"
+                        >
+                            <span
+                                class="grid h-[26px] w-[26px] place-items-center rounded-lg text-[9.5px] font-extrabold text-[#0E1A2B]"
+                                :style="{ background: member.colour }"
+                            >
+                                {{ member.initials }}
+                            </span>
+                            {{ member.name.split(' ')[0] }}
+                        </button>
+                    </div>
+                    <p class="text-[12px] text-ryh-ink3">
+                        {{ form.attendees.length === 0 ? 'Nobody picked — this one is for the whole house.' : 'Only the people picked above.' }}
+                    </p>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <span class="ryh-label">Colour</span>
+                    <div class="flex gap-2">
+                        <button
+                            v-for="colour in EVENT_COLOURS"
+                            :key="colour"
+                            type="button"
+                            :title="colour"
+                            :aria-label="colour"
+                            :aria-pressed="form.colour === colour"
+                            class="h-7 w-7 rounded-[9px] transition"
+                            :class="form.colour === colour ? 'ring-2 ring-ryh-ink ring-offset-2 ring-offset-ryh-card' : ''"
+                            :style="{ background: `var(--ryh-${colour})` }"
+                            @click="form.colour = colour"
+                        ></button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label for="notes" class="ryh-label">Notes</label>
+                    <textarea
+                        id="notes"
+                        v-model="form.notes"
+                        rows="2"
+                        maxlength="2000"
+                        class="ryh-input h-auto py-2.5"
+                        placeholder="Optional"
+                    ></textarea>
+                    <p v-if="form.errors.notes" class="text-[12.5px] text-ryh-coral">{{ form.errors.notes }}</p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button type="submit" class="ryh-btn w-auto bg-ryh-coral text-white" :disabled="form.processing">
+                        {{ editing ? 'Save changes' : 'Add event' }}
+                    </button>
+                    <button type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="open = false">Cancel</button>
+                    <button v-if="editing?.can.delete" type="button" class="ryh-btn ml-auto w-auto bg-ryh-soft text-ryh-coral" @click="destroy">
+                        Delete
+                    </button>
+                </div>
+            </form>
+        </DialogContent>
+    </Dialog>
+</template>

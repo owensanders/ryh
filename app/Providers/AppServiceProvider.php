@@ -88,7 +88,8 @@ class AppServiceProvider extends ServiceProvider
      */
     private function configureRateLimiting(): void
     {
-        RateLimiter::for('app', fn (Request $request) => Limit::perMinute(self::APP_PER_MINUTE)
+        // e2e isn't testing limits: one owner account drives most of the suite within a minute.
+        RateLimiter::for('app', fn (Request $request) => $this->app->environment('e2e') ? Limit::none() : Limit::perMinute(self::APP_PER_MINUTE)
             ->by($request->user()?->id ?: $request->ip()));
 
         // Playwright signs up dozens of people from one IP; e2e isn't testing limits.
