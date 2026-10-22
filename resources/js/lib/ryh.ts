@@ -25,3 +25,6 @@ export function tickStyle(done: boolean): { borderColor: string; background: str
 export function formatPlanPrice(amount: number): string {
     return amount === 0 ? 'Free' : `£${amount.toFixed(2).replace(/\.00$/, '')}`;
 }
+
+/** The Meal Planner props a planned meal can change: planning one can add or edit its recipe too. */
+export const PLANNED_MEAL_PROPS = ['days', 'library', 'recipes', 'recipeCount'];

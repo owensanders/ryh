@@ -9,6 +9,7 @@ use App\Data\HouseholdAbilitiesData;
 use App\Models\User;
 use App\Support\CurrentHouseholdHelper;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Middleware;
 
 class HandleInertiaRequestsMiddleware extends Middleware
@@ -41,12 +42,13 @@ class HandleInertiaRequestsMiddleware extends Middleware
             ],
             // Lazy: this runs before the route's middleware has resolved the household.
             'household' => fn () => $this->household($request),
-            'flash' => [
-                'toast' => fn () => $request->session()->get('toast'),
-                'toastError' => fn () => $request->session()->get('toastError'),
-                'aiMeals' => fn () => $request->session()->get('aiMeals'),
-                'libraryMeals' => fn () => $request->session()->get('libraryMeals'),
-            ],
+            // Always: a write that reloads only some props (`only: [...]`) still gets its toast.
+            'flash' => Inertia::always(fn () => [
+                'toast' => $request->session()->get('toast'),
+                'toastError' => $request->session()->get('toastError'),
+                'aiMeals' => $request->session()->get('aiMeals'),
+                'libraryMeals' => $request->session()->get('libraryMeals'),
+            ]),
         ];
     }
 

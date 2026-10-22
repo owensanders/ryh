@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
+import { useOptimistic } from '@/composables/useOptimistic';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import { dial, tickStyle } from '@/lib/ryh';
@@ -11,6 +12,9 @@ defineOptions({ layout: RyhShell });
 const props = defineProps<{ dashboard: DashboardData }>();
 
 const can = useHouseholdAbilities();
+
+// Ticks show at once; the server's dashboard replaces this when it answers.
+const { state: view, apply: updateView } = useOptimistic(() => props.dashboard);
 
 const draft = useForm({ name: '' });
 
@@ -32,7 +36,17 @@ function toggleItem(item: ShoppingItemData): void {
         return;
     }
 
-    router.patch(route('shopping.items.toggle', { item: item.id }), {}, { preserveScroll: true });
+    updateView(
+        (dashboard) => {
+            const shown = dashboard.shoppingList?.items.find((candidate) => candidate.id === item.id);
+
+            if (shown && dashboard.shoppingList) {
+                shown.done = !shown.done;
+                dashboard.shoppingList.remaining += shown.done ? -1 : 1;
+            }
+        },
+        (callbacks) => router.patch(route('shopping.items.toggle', { item: item.id }), {}, { preserveScroll: true, ...callbacks }),
+    );
 }
 
 function toggleChore(chore: ChoreData): void {
@@ -40,12 +54,24 @@ function toggleChore(chore: ChoreData): void {
         return;
     }
 
-    router.patch(route('chores.toggle', { chore: chore.id }), {}, { preserveScroll: true });
+    updateView(
+        (dashboard) => {
+            const shown = dashboard.chores.find((candidate) => candidate.id === chore.id);
+
+            if (shown) {
+                shown.done = !shown.done;
+                const progress = dashboard.choreProgress;
+                progress.done += shown.done ? 1 : -1;
+                progress.percentage = progress.total === 0 ? 0 : Math.round((progress.done / progress.total) * 100);
+            }
+        },
+        (callbacks) => router.patch(route('chores.toggle', { chore: chore.id }), {}, { preserveScroll: true, ...callbacks }),
+    );
 }
 </script>
 
 <template>
-    <RyhLayout title="Dashboard" :subtitle="dashboard.dateLine">
+    <RyhLayout title="Dashboard" :subtitle="view.dateLine">
         <div class="flex animate-ryh-rise flex-col gap-4">
             <!-- Hero -->
             <section
@@ -58,14 +84,14 @@ function toggleChore(chore: ChoreData): void {
                     <div
                         class="inline-flex h-[26px] items-center gap-2 rounded-lg border border-ryh-heroline bg-ryh-herofilm px-[11px] text-[11.5px] font-bold uppercase tracking-[0.06em]"
                     >
-                        🔥 {{ dashboard.streakDays }} day streak
+                        🔥 {{ view.streakDays }} day streak
                     </div>
-                    <div class="mt-3 text-4xl font-extrabold leading-[1.05] tracking-[-0.03em]">{{ dashboard.greeting }}</div>
-                    <div class="mt-2 text-sm text-ryh-onhero2">{{ dashboard.dateLine }} · {{ dashboard.summaryLine }}</div>
+                    <div class="mt-3 text-4xl font-extrabold leading-[1.05] tracking-[-0.03em]">{{ view.greeting }}</div>
+                    <div class="mt-2 text-sm text-ryh-onhero2">{{ view.dateLine }} · {{ view.summaryLine }}</div>
 
                     <div class="mt-5 flex flex-wrap gap-2.5">
                         <div
-                            v-for="person in dashboard.family"
+                            v-for="person in view.family"
                             :key="person.id"
                             class="flex h-[42px] items-center gap-2.5 rounded-[13px] border border-ryh-heroline bg-ryh-herofilm py-0 pl-1 pr-3.5"
                         >
@@ -101,38 +127,36 @@ function toggleChore(chore: ChoreData): void {
                         </Link>
                     </div>
 
-                    <div v-if="dashboard.tonight" class="flex flex-col gap-4 sm:flex-row">
+                    <div v-if="view.tonight" class="flex flex-col gap-4 sm:flex-row">
                         <div class="flex h-[132px] w-full flex-none flex-col justify-end rounded-[18px] bg-ryh-coral p-4 sm:h-[172px] sm:w-[172px]">
                             <div
                                 class="line-clamp-4 hyphens-auto break-words font-extrabold leading-[1.1] tracking-[-0.025em] text-white"
-                                :class="dashboard.tonight.name.length > 24 ? 'text-[20px]' : 'text-[22px] sm:text-[26px]'"
-                                :title="dashboard.tonight.name"
+                                :class="view.tonight.name.length > 24 ? 'text-[20px]' : 'text-[22px] sm:text-[26px]'"
+                                :title="view.tonight.name"
                             >
-                                {{ dashboard.tonight.name }}
+                                {{ view.tonight.name }}
                             </div>
                         </div>
                         <div class="flex min-w-0 flex-1 flex-col">
                             <div class="flex flex-wrap gap-[7px]">
                                 <span
-                                    v-for="chip in [...dashboard.tonight.tags, dashboard.tonight.duration, dashboard.tonight.difficulty].filter(
-                                        Boolean,
-                                    )"
+                                    v-for="chip in [...view.tonight.tags, view.tonight.duration, view.tonight.difficulty].filter(Boolean)"
                                     :key="chip as string"
                                     class="rounded-[9px] bg-ryh-soft px-2.5 py-[5px] text-xs font-semibold text-ryh-ink2"
                                 >
                                     {{ chip }}
                                 </span>
                             </div>
-                            <p class="mt-3 text-sm leading-[1.55] text-ryh-ink2">{{ dashboard.tonight.description }}</p>
+                            <p class="mt-3 text-sm leading-[1.55] text-ryh-ink2">{{ view.tonight.description }}</p>
                             <div class="mt-auto flex items-center gap-3 pt-3.5">
-                                <div v-if="dashboard.tonight.cook" class="flex items-center gap-2">
+                                <div v-if="view.tonight.cook" class="flex items-center gap-2">
                                     <div
                                         class="grid h-7 w-7 place-items-center rounded-[9px] text-[11px] font-extrabold text-[#0E1A2B]"
-                                        :style="{ background: dashboard.tonight.cook.colour }"
+                                        :style="{ background: view.tonight.cook.colour }"
                                     >
-                                        {{ dashboard.tonight.cook.initials }}
+                                        {{ view.tonight.cook.initials }}
                                     </div>
-                                    <span class="text-[13px] text-ryh-ink2"> {{ dashboard.tonight.cook.name.split(' ')[0] }} is cooking </span>
+                                    <span class="text-[13px] text-ryh-ink2"> {{ view.tonight.cook.name.split(' ')[0] }} is cooking </span>
                                 </div>
                                 <Link
                                     :href="route('meals.index')"
@@ -151,10 +175,10 @@ function toggleChore(chore: ChoreData): void {
                     aria-label="Shopping"
                     class="flex flex-col rounded-[22px] border border-ryh-line bg-ryh-card p-4 transition hover:-translate-y-0.5 hover:shadow-ryh sm:p-[22px]"
                 >
-                    <template v-if="dashboard.shoppingList">
+                    <template v-if="view.shoppingList">
                         <div class="mb-2.5 flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-                            <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">{{ dashboard.shoppingList.name }} list</h3>
-                            <span class="text-xs text-ryh-ink3">{{ dashboard.shoppingList.remaining }} left</span>
+                            <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">{{ view.shoppingList.name }} list</h3>
+                            <span class="text-xs text-ryh-ink3">{{ view.shoppingList.remaining }} left</span>
                             <Link
                                 :href="route('shopping.index')"
                                 class="ml-auto whitespace-nowrap text-[13px] font-semibold text-ryh-coral hover:opacity-75"
@@ -165,7 +189,7 @@ function toggleChore(chore: ChoreData): void {
 
                         <div class="flex flex-col gap-px">
                             <button
-                                v-for="item in dashboard.shoppingList.items.slice(0, 5)"
+                                v-for="item in view.shoppingList.items.slice(0, 5)"
                                 :key="item.id"
                                 type="button"
                                 :disabled="!item.can.toggle"
@@ -232,21 +256,21 @@ function toggleChore(chore: ChoreData): void {
                     <div class="mb-3.5 flex items-center gap-4">
                         <div
                             class="grid h-[74px] w-[74px] flex-none place-items-center rounded-full transition-[background] duration-500"
-                            :style="{ background: dial(dashboard.choreProgress.percentage) }"
+                            :style="{ background: dial(view.choreProgress.percentage) }"
                         >
                             <div class="flex h-[57px] w-[57px] items-center justify-center rounded-full bg-ryh-card text-[16.5px] font-extrabold">
-                                {{ dashboard.choreProgress.percentage }}%
+                                {{ view.choreProgress.percentage }}%
                             </div>
                         </div>
                         <div class="text-[13px] leading-[1.55] text-ryh-ink2">
-                            {{ dashboard.choreProgress.done }} of {{ dashboard.choreProgress.total }} done today.<br />
+                            {{ view.choreProgress.done }} of {{ view.choreProgress.total }} done today.<br />
                             Tap a chore to tick it off.
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-1.5">
                         <button
-                            v-for="chore in dashboard.chores.slice(0, 4)"
+                            v-for="chore in view.chores.slice(0, 4)"
                             :key="chore.id"
                             type="button"
                             :disabled="!chore.can.toggle"
@@ -282,7 +306,7 @@ function toggleChore(chore: ChoreData): void {
                     </div>
 
                     <div class="flex flex-col gap-3">
-                        <div v-for="group in dashboard.agenda" :key="group.label">
+                        <div v-for="group in view.agenda" :key="group.label">
                             <div class="mb-1.5 text-[11px] font-bold uppercase tracking-[0.09em] text-ryh-ink3">{{ group.label }}</div>
                             <div class="flex flex-col gap-[5px]">
                                 <div
@@ -297,32 +321,32 @@ function toggleChore(chore: ChoreData): void {
                                 </div>
                             </div>
                         </div>
-                        <p v-if="dashboard.agenda.length === 0" class="text-sm text-ryh-ink3">Nothing in the diary.</p>
+                        <p v-if="view.agenda.length === 0" class="text-sm text-ryh-ink3">Nothing in the diary.</p>
                     </div>
                 </section>
 
                 <!-- Budget -->
                 <section aria-label="Budget" class="flex flex-col rounded-[22px] border border-ryh-line bg-ryh-card p-4 sm:p-[22px]">
                     <div class="mb-1 flex items-center gap-3">
-                        <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">{{ dashboard.budget.monthLabel }} budget</h3>
-                        <span class="ml-auto text-xs text-ryh-ink3">{{ dashboard.budget.daysLeft }} days left</span>
+                        <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">{{ view.budget.monthLabel }} budget</h3>
+                        <span class="ml-auto text-xs text-ryh-ink3">{{ view.budget.daysLeft }} days left</span>
                     </div>
 
                     <div class="flex items-baseline gap-2.5">
-                        <span class="font-mono text-[40px] leading-[1.15]">{{ dashboard.budget.budgeted }}</span>
+                        <span class="font-mono text-[40px] leading-[1.15]">{{ view.budget.budgeted }}</span>
                         <span class="text-[13px] text-ryh-ink3">assigned</span>
                     </div>
 
                     <div class="my-3 flex h-2.5 overflow-hidden rounded-md bg-ryh-sunk">
                         <span
-                            v-for="category in dashboard.budget.categories"
+                            v-for="category in view.budget.categories"
                             :key="category.id"
                             :style="{ width: `${category.shareOfTotal}%`, background: category.colour }"
                         ></span>
                     </div>
 
                     <div class="flex flex-col gap-3">
-                        <div v-for="category in dashboard.budget.categories" :key="category.id" class="flex items-center gap-3">
+                        <div v-for="category in view.budget.categories" :key="category.id" class="flex items-center gap-3">
                             <span class="h-2 w-2 flex-none rounded-[3px]" :style="{ background: category.colour }"></span>
                             <span class="w-24 flex-none text-[13px] font-medium">{{ category.label }}</span>
                             <span class="ml-auto font-mono text-[12.5px]">{{ category.budgeted }}</span>

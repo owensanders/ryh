@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { PLANNED_MEAL_PROPS } from '@/lib/ryh';
 import type { SharedData } from '@/types';
 import type { MealSuggestionData, PlannerDayData, ShoppingListData } from '@/types/generated';
 import type { AiPlannerOptions } from '@/types/ryh';
@@ -402,6 +403,7 @@ function acceptNext(entries: { day: PlannerDayData; suggestion: MealSuggestionDa
     router.post(route('meals.store'), mealPayload(entry, acceptIndex.value), {
         preserveScroll: true,
         preserveState: true,
+        only: PLANNED_MEAL_PROPS,
         onError: (errors) => {
             acceptFailures.value.push(`${entry.day.dayLabel} (${entry.suggestion.name})`);
             acceptError.value ??= Object.values(errors)[0] ?? null;

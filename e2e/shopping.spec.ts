@@ -14,8 +14,11 @@ test('the owner adds an item, ticks it off, then starts a new list', async ({ pa
 
     const row = page.getByRole('checkbox', { name: new RegExp(item) });
     await expect(row).toHaveAttribute('aria-checked', 'false');
+    // The tick shows before the server answers, so wait for it to save before reloading.
+    const saved = page.waitForResponse((response) => response.url().includes('/toggle') && response.request().method() === 'PATCH');
     await row.click();
     await expect(row).toHaveAttribute('aria-checked', 'true');
+    await saved;
 
     await page.reload();
     await expect(row).toHaveAttribute('aria-checked', 'true');

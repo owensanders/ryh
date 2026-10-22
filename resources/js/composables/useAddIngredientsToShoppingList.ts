@@ -9,7 +9,11 @@ export function useAddIngredientsToShoppingList() {
             return;
         }
 
-        router.post(route('recipes.addToShoppingList', { recipe: recipeId }), { shopping_list_id: selectedListId.value }, { preserveScroll: true });
+        router.post(
+            route('recipes.addToShoppingList', { recipe: recipeId }),
+            { shopping_list_id: selectedListId.value },
+            { preserveScroll: true, only: ['shoppingLists'] },
+        );
     }
 
     return { selectedListId, addIngredientsToList };
