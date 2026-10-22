@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Actions\Billing\HandleStripeEventOnceAction;
 use App\Models\Household;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Laravel\Cashier\Subscription;
 use PHPUnit\Framework\Attributes\Test;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\FakesStripeTrait;
 use Tests\TestCase;
@@ -127,6 +129,31 @@ class StripeWebhookTest extends TestCase
         $this->assertFalse($household->subscribed('default'));
         $this->assertTrue($household->needsToSubscribe());
         $this->assertFalse($household->hasPaymentIssue());
+    }
+
+    #[Test]
+    public function anEventWhoseHandlingFailsIsLeftForStripesRetry(): void
+    {
+        $handleOnce = app(HandleStripeEventOnceAction::class);
+
+        try {
+            $handleOnce->handle('evt_flaky', 'invoice.paid', fn () => throw new RuntimeException('Database blip.'));
+            $this->fail('The failure should have reached Stripe as an error.');
+        } catch (RuntimeException) {
+        }
+
+        $this->assertDatabaseMissing('stripe_webhook_events', ['id' => 'evt_flaky']);
+
+        $handled = 0;
+        $this->assertTrue($handleOnce->handle('evt_flaky', 'invoice.paid', function () use (&$handled): void {
+            $handled++;
+        }));
+        $this->assertFalse($handleOnce->handle('evt_flaky', 'invoice.paid', function () use (&$handled): void {
+            $handled++;
+        }));
+
+        $this->assertSame(1, $handled);
+        $this->assertDatabaseHas('stripe_webhook_events', ['id' => 'evt_flaky', 'type' => 'invoice.paid']);
     }
 
     private function subscribedHousehold(): Household

@@ -56,7 +56,7 @@ class StripeBillingTest extends TestCase
             ->respond('POST', '/v1/checkout/sessions', $this->checkoutSession());
         $owner = $this->owner(['stripe_id' => 'cus_existing']);
 
-        $this->actingAs($owner)->post($this->hh('/house/subscribe'), ['interval' => 'annual'])
+        $this->actingAs($owner)->post($this->hh('/billing/subscribe'), ['interval' => 'annual', 'from' => 'house'])
             ->assertRedirect('https://checkout.stripe.com/c/pay/cs_test');
 
         $stripe->assertNotRequested('POST', '/v1/customers');
@@ -86,7 +86,7 @@ class StripeBillingTest extends TestCase
         $owner = $this->owner(['stripe_id' => 'cus_existing']);
         $this->subscribe($owner->lastHousehold);
 
-        $this->actingAs($owner)->post($this->hh('/house/subscribe'), ['interval' => 'monthly'])
+        $this->actingAs($owner)->post($this->hh('/billing/subscribe'), ['interval' => 'monthly', 'from' => 'house'])
             ->assertSessionHas('toast', 'You are already subscribed');
 
         $stripe->assertNothingRequested();
@@ -143,7 +143,7 @@ class StripeBillingTest extends TestCase
 
         $this->actingAs($owner)->get($this->hh('/billing/checkout/complete?session_id=cs_test'))
             ->assertRedirect($this->hh('/dashboard'))
-            ->assertSessionHas('toast');
+            ->assertSessionHas('toast', "You're subscribed. Thanks!");
 
         $household = $owner->lastHousehold->fresh();
         $this->assertTrue($household->subscribed('default'));
@@ -179,7 +179,8 @@ class StripeBillingTest extends TestCase
             ->respond('GET', '/v1/checkout/sessions/cs_test', $this->checkoutSession(status: 'open'));
         $owner = $this->owner(['stripe_id' => 'cus_existing', 'trial_ends_at' => now()->subDay()]);
 
-        $this->actingAs($owner)->get($this->hh('/billing/checkout/complete?session_id=cs_test'));
+        $this->actingAs($owner)->get($this->hh('/billing/checkout/complete?session_id=cs_test'))
+            ->assertSessionHas('toast', "Thanks! We're confirming your payment with Stripe; your plan will update in a moment.");
 
         $this->assertFalse($owner->lastHousehold->fresh()->subscribed('default'));
     }

@@ -44,8 +44,9 @@ Artisan::command('budget:carry-forward', function (CarryForwardBudgetsAction $ca
     $this->info("Set up this month's budget for {$households} households.");
 })->purpose("Bring recurring budget categories and income into each household's current month");
 
-// Completed chores (Chore::KEEP_COMPLETED_DAYS) and ticked-off shopping items
-// (ShoppingItem::KEEP_COMPLETED_DAYS), then old notifications, then document
+// Completed chores (Chore::KEEP_COMPLETED_DAYS), ticked-off shopping items
+// (ShoppingItem::KEEP_COMPLETED_DAYS) and handled Stripe events
+// (StripeWebhookEvent::KEEP_DAYS), then old notifications, then document
 // files nothing points to any more.
 Schedule::command('model:prune')->dailyAt('03:00')->onOneServer()->withoutOverlapping();
 Schedule::command('notifications:prune')->dailyAt('03:15')->onOneServer()->withoutOverlapping();

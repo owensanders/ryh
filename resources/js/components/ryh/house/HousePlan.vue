@@ -11,7 +11,7 @@ const page = usePage();
 const interval = ref<'monthly' | 'annual'>('monthly');
 
 function subscribe(): void {
-    router.post(route('house.subscribe'), { interval: interval.value }, { preserveScroll: true });
+    router.post(route('billing.subscribe'), { interval: interval.value, from: 'house' }, { preserveScroll: true });
 }
 
 function manageBilling(): void {
