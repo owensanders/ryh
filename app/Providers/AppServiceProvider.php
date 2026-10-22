@@ -61,8 +61,8 @@ class AppServiceProvider extends ServiceProvider
         // 404; one they aren't a member of is ResolveHouseholdMiddleware's to refuse.
         Route::bind('household', fn (string $slug): Household => Household::query()->where('slug', $slug)->firstOrFail());
 
-        // Repositories eager-load what their callers use (CLAUDE.md,
-        // "Repositories own every query"). A lazy load throws everywhere but
+        // Queries eager-load what their callers use (CLAUDE.md, "Where
+        // queries live"). A lazy load throws everywhere but
         // production, where it's logged instead so a miss never breaks a page.
         Model::preventLazyLoading();
 

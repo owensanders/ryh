@@ -31,7 +31,7 @@ class ChoreController extends Controller
     {
         $household = $this->household($request);
 
-        return Inertia::render('Chores', $getChoreBoard->toData($household));
+        return Inertia::render('Chores', $getChoreBoard->toData($household, $this->user($request)));
     }
 
     public function store(ChoreRequest $request, CreateChoreAction $create): RedirectResponse

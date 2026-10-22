@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Enums\HouseholdRoleEnum;
+use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\User;
 use App\Traits\AuthorizesHouseholdAccessTrait;
@@ -14,15 +15,15 @@ class PlannedMealPolicy
 {
     use AuthorizesHouseholdAccessTrait;
 
-    public function viewAny(User $user): Response
+    public function viewAny(User $user, Household $household): Response
     {
-        return $this->as($user, HouseholdRoleEnum::cases());
+        return $this->inHouseholdAs($user, $household->id, HouseholdRoleEnum::cases());
     }
 
     /** Planning a meal, or asking the AI or the recipe library for a week of them. */
-    public function create(User $user): Response
+    public function create(User $user, Household $household): Response
     {
-        return $this->as($user, HouseholdRoleEnum::managers());
+        return $this->inHouseholdAs($user, $household->id, HouseholdRoleEnum::managers());
     }
 
     /** Editing or rescheduling. */

@@ -18,7 +18,7 @@ class CalendarViewModel
     /** Six rows of seven, so the grid never changes height as you page through months. */
     private const int CELLS = 42;
 
-    public function toData(Household $household, CarbonImmutable $month): CalendarMonthData
+    public function toData(Household $household, User $viewer, CarbonImmutable $month): CalendarMonthData
     {
         $now = $household->now();
         $today = $now->startOfDay();
@@ -55,7 +55,7 @@ class CalendarViewModel
                 isToday: $day->isSameDay($today),
                 isCurrentMonth: $day->month === $first->month,
                 events: collect($eventsByDate[$key] ?? [])
-                    ->map(fn (CalendarEvent $event) => CalendarEventData::fromModel($event, $key, $now))
+                    ->map(fn (CalendarEvent $event) => CalendarEventData::fromModel($event, $viewer, $key, $now))
                     ->values()
                     ->all(),
             );

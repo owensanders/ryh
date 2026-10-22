@@ -18,11 +18,9 @@ use Illuminate\Support\Facades\Gate;
 use Spatie\LaravelData\Data;
 
 /**
- * What the signed-in person may do in a household as a whole, shared with
- * every page: the nav links and the "add" controls. The screens are asked
- * about the household given, so the settings pages' nav works for the one
- * they were last in. Creating is only ever asked about the household in the
- * URL, so it's false outside one.
+ * What a person may do in a household as a whole, shared with every page:
+ * the nav links and the "add" controls. Asked about the household given: the
+ * one in the URL, or on the settings pages the one they were last in.
  */
 class HouseholdAbilitiesData extends Data
 {
@@ -47,13 +45,13 @@ class HouseholdAbilitiesData extends Data
             manageHousehold: $gate->allows('manage', $household),
             viewBudget: $gate->allows('viewAny', [BudgetCategory::class, $household]),
             viewDocuments: $gate->allows('viewAny', [DocumentFolder::class, $household]),
-            createChores: $gate->allows('create', Chore::class),
-            notifyChores: $gate->allows('notify', Chore::class),
-            createShoppingLists: $gate->allows('create', ShoppingList::class),
-            createShoppingItems: $gate->allows('create', ShoppingItem::class),
-            createCalendarEvents: $gate->allows('create', CalendarEvent::class),
-            createPlannedMeals: $gate->allows('create', PlannedMeal::class),
-            createRecipes: $gate->allows('create', Recipe::class),
+            createChores: $gate->allows('create', [Chore::class, $household]),
+            notifyChores: $gate->allows('notify', [Chore::class, $household]),
+            createShoppingLists: $gate->allows('create', [ShoppingList::class, $household]),
+            createShoppingItems: $gate->allows('create', [ShoppingItem::class, $household]),
+            createCalendarEvents: $gate->allows('create', [CalendarEvent::class, $household]),
+            createPlannedMeals: $gate->allows('create', [PlannedMeal::class, $household]),
+            createRecipes: $gate->allows('create', [Recipe::class, $household]),
         );
     }
 }

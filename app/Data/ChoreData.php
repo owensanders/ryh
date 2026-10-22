@@ -6,6 +6,7 @@ namespace App\Data;
 
 use App\Enums\ChoreStatusEnum;
 use App\Models\Chore;
+use App\Models\User;
 use Spatie\LaravelData\Data;
 
 class ChoreData extends Data
@@ -19,7 +20,7 @@ class ChoreData extends Data
         public AbilitiesData $can,
     ) {}
 
-    public static function fromModel(Chore $chore): self
+    public static function fromModel(Chore $chore, User $viewer): self
     {
         return new self(
             id: $chore->id,
@@ -27,7 +28,7 @@ class ChoreData extends Data
             status: $chore->status,
             done: $chore->status === ChoreStatusEnum::Done,
             assignee: $chore->assignee !== null ? MemberData::fromModel($chore->assignee) : null,
-            can: AbilitiesData::for($chore, 'update', 'delete', 'toggle'),
+            can: AbilitiesData::for($viewer, $chore, 'update', 'delete', 'toggle'),
         );
     }
 }

@@ -20,7 +20,9 @@ use App\Enums\RecipeTagEnum;
 use App\Models\BudgetCategory;
 use App\Models\Household;
 use App\Models\PlannedMeal;
+use App\Models\Recipe;
 use App\Models\ShoppingList;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 
 class MealPlannerViewModel
@@ -29,7 +31,7 @@ class MealPlannerViewModel
 
     private const string FOOD_BUDGET_LABEL = '/food|grocer|shopping/i';
 
-    public function toData(Household $household, CarbonImmutable $anyDayInWeek): MealPlannerScreenData
+    public function toData(Household $household, User $viewer, CarbonImmutable $anyDayInWeek): MealPlannerScreenData
     {
         $start = $anyDayInWeek->startOfWeek();
         $end = $start->addDays(6);
@@ -54,7 +56,7 @@ class MealPlannerViewModel
                 dayLabel: $day->format('D'),
                 dateLabel: $day->format('d/m'),
                 isToday: $day->isSameDay($today),
-                meals: $planned->get($key, collect())->map(PlannedMealData::fromModel(...))->values()->all(),
+                meals: $planned->get($key, collect())->map(fn (PlannedMeal $meal) => PlannedMealData::fromModel($meal, $viewer))->values()->all(),
             );
         }
 
@@ -62,12 +64,12 @@ class MealPlannerViewModel
             weekOf: $start->format('j F'),
             days: $days,
             library: $household->recipes()->where('is_favourite', true)->orderBy('name')->limit(self::LIBRARY_SIZE)->get()
-                ->map(RecipeData::fromModel(...))
+                ->map(fn (Recipe $recipe) => RecipeData::fromModel($recipe, $viewer))
                 ->values()
                 ->all(),
             recipeCount: $household->recipes()->count(),
             recipes: $household->recipes()->inLibraryOrder()->get()
-                ->map(RecipeData::fromModel(...))
+                ->map(fn (Recipe $recipe) => RecipeData::fromModel($recipe, $viewer))
                 ->values()
                 ->all(),
             members: $household->activeMembers()->get()
@@ -82,7 +84,7 @@ class MealPlannerViewModel
             aiSuggestedBudget: $this->suggestedWeeklyFoodBudget($household, $today),
             aiPlan: $this->latestAiPlan($household),
             shoppingLists: $household->shoppingLists()->with('items')->get()
-                ->map(fn (ShoppingList $list) => ShoppingListData::fromModel($list, withItems: false))
+                ->map(fn (ShoppingList $list) => ShoppingListData::fromModel($list, $viewer, withItems: false))
                 ->values()
                 ->all(),
             tagOptions: RecipeTagEnum::options(),

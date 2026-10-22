@@ -6,6 +6,7 @@ namespace App\Policies;
 
 use App\Enums\HouseholdRoleEnum;
 use App\Models\CalendarEvent;
+use App\Models\Household;
 use App\Models\User;
 use App\Traits\AuthorizesHouseholdAccessTrait;
 use Illuminate\Auth\Access\Response;
@@ -15,14 +16,14 @@ class CalendarEventPolicy
 {
     use AuthorizesHouseholdAccessTrait;
 
-    public function viewAny(User $user): Response
+    public function viewAny(User $user, Household $household): Response
     {
-        return $this->as($user, HouseholdRoleEnum::cases());
+        return $this->inHouseholdAs($user, $household->id, HouseholdRoleEnum::cases());
     }
 
-    public function create(User $user): Response
+    public function create(User $user, Household $household): Response
     {
-        return $this->as($user, HouseholdRoleEnum::managersAndTeens());
+        return $this->inHouseholdAs($user, $household->id, HouseholdRoleEnum::managersAndTeens());
     }
 
     public function update(User $user, CalendarEvent $event): Response

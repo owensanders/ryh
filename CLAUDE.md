@@ -8,11 +8,16 @@ Where a test enforces a rule, it's named; a change that breaks the rule fails CI
 
 **The household comes from the URL.** Every household screen is under
 `/h/{household}` (its slug). `ResolveHouseholdMiddleware` checks the person
-belongs to it (else 404), puts it in `CurrentHouseholdHelper`, and sets the
-URL default so `route('chores.index')` stays in that household. Read the
-household from there (controllers: `ResolvesHouseholdTrait`), never from the
-user: `users.last_household_id` only says where `/app` lands. Two tabs on two
-households must never cross over (`HouseholdUrlTest`). On the frontend,
+belongs to it (else 404), puts it on the request for
+`CurrentHouseholdHelper::household($request)`, and sets the URL default so
+`route('chores.index')` stays in that household. Controllers read it with
+`ResolvesHouseholdTrait`, form requests with `CurrentHouseholdHelper::id($this)`;
+never from the user: `users.last_household_id` only says where `/app` lands.
+The group's bindings are scoped (`->scopeBindings()`, with the short
+parameter names mapped in `Household::childRouteBindingRelationshipName()`),
+so `{chore}` is only found among that household's chores: two tabs on two
+households never cross over, even for someone in both (`HouseholdUrlTest`,
+`CrossHouseholdAccessTest`). On the frontend,
 `route()` (`resources/js/lib/householdRoute.ts`) fills `{household}` from the
 page being shown. Anything built outside a request for that household (a
 notification's link, a queued email) names the household outright.
@@ -23,8 +28,10 @@ Each layer only talks to the one below it.
 
 - **Routes** (`routes/web.php`): middleware, plus the policy ability for every
   household route: `->can('update', 'chore')`, or
-  `->can('create', Chore::class)` when there's no record yet. Household routes
-  go in the `h/{household}` group.
+  `->can('create', [Chore::class, 'household'])` when there's no record yet.
+  Household routes go in the `h/{household}` group. `{household}` stays a
+  route parameter until `->can()` has used it, then
+  `ForgetHouseholdParameterMiddleware` drops it so controllers aren't passed it.
   Enforced by `RouteAuthorizationTest`.
   Every write route is also rate limited: signed-in groups carry
   `throttle:app`, and routes that send email, upload files, call the AI or
@@ -32,20 +39,24 @@ Each layer only talks to the one below it.
   `AppServiceProvider::configureRateLimiting()`. Enforced by
   `RouteThrottleTest`.
 - **Policies** (`app/Policies`): all authorization. One per model, using
-  `AuthorizesHouseholdAccessTrait`: another household's record is a **404**
-  (never confirm it exists), and a role that can't act is a **403**. Role sets
-  come from `HouseholdRoleEnum::managers()` / `managersAndTeens()`. No role or
+  `AuthorizesHouseholdAccessTrait::inHouseholdAs()`: the person's role in the
+  record's own household (`$chore->household_id`), or in the household passed
+  in for abilities with no record (`create(User $user, Household $household)`).
+  They never read the request, so a check gives the same answer in a job as on
+  a page. Not a member there is a **404** (never confirm a record exists), and
+  a role that can't act is a **403**. Membership comes from
+  `$user->membershipIn($id)`, looked up once per household per request.
+  Role sets come from `HouseholdRoleEnum::managers()` / `managersAndTeens()`. No role or
   ownership checks anywhere else, the frontend included. Pages show or hide
   controls from what the policies send: a record's `can`
-  (`AbilitiesData::for($chore, 'update', 'delete', 'toggle')` in its
-  `fromModel()`), and the shared `household.can` (`HouseholdAbilitiesData`)
-  for the nav and the "add" controls, read with `useHouseholdAbilities()`.
+  (`AbilitiesData::for($viewer, $chore, 'update', 'delete', 'toggle')` in its
+  `fromModel($chore, $viewer)`; view models are given the viewer), and the
+  shared `household.can` (`HouseholdAbilitiesData`) for the nav and the "add"
+  controls, read with `useHouseholdAbilities()`.
   The role itself isn't sent. A new control asks for a new ability, never
-  for the role. Abilities about the household as a whole
-  (`HouseholdPolicy`, `viewAny` on the budget and documents) take an optional
-  `Household`, so the settings pages' nav can ask about the one they were
-  last in. When a model only arrives in the request body, the action checks
-  it belongs to the same household.
+  for the role. The settings pages' nav asks the same abilities about the
+  household they were last in. When a model only arrives in the request body,
+  the action checks it belongs to the same household.
 - **Controllers** (`app/Http/Controllers`): call actions and view models,
   render Inertia pages, redirect with toasts. Nothing else: no queries, no
   business rules.
@@ -105,9 +116,10 @@ instead, so a miss never breaks a page. A single model loading its own
 relation isn't flagged.
 
 Policies and middleware that need to know about membership ask the model
-(`$household->membershipOf($user)`, `$member->belongsToHousehold($id)`)
-rather than writing a query. `/h/{household}` is resolved by a route binding
-in `AppServiceProvider`.
+(`$user->membershipIn($id)`, memoised for authorization) rather than writing
+a query. An action that must see the row as it is now, under a lock, asks
+`$household->membershipOf($user)`. `/h/{household}` is resolved by a route
+binding in `AppServiceProvider`.
 
 ## Data
 

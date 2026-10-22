@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data;
 
 use App\Models\Recipe;
+use App\Models\User;
 use Spatie\LaravelData\Data;
 
 class RecipeData extends Data
@@ -27,7 +28,7 @@ class RecipeData extends Data
         public AbilitiesData $can,
     ) {}
 
-    public static function fromModel(Recipe $recipe): self
+    public static function fromModel(Recipe $recipe, User $viewer): self
     {
         return new self(
             id: $recipe->id,
@@ -40,7 +41,7 @@ class RecipeData extends Data
             tags: $recipe->tags ?? [],
             ingredients: $recipe->ingredients ?? [],
             isFavourite: $recipe->is_favourite,
-            can: AbilitiesData::for($recipe, 'update', 'delete'),
+            can: AbilitiesData::for($viewer, $recipe, 'update', 'delete'),
         );
     }
 }

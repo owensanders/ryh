@@ -29,7 +29,10 @@ class ResolveHouseholdMiddleware
 
         // Bound from the slug in AppServiceProvider. Someone else's household
         // doesn't exist, as far as they can tell.
-        $membership = $household instanceof Household ? $household->membershipOf($user) : null;
+        // Read fresh (a test's next request reuses the same user), and kept for
+        // this request's policy checks.
+        $user->forgetMemberships();
+        $membership = $household instanceof Household ? $user->membershipIn($household->id) : null;
 
         if (! $household instanceof Household || $membership === null) {
             throw (new ModelNotFoundException())->setModel(Household::class);
@@ -40,13 +43,12 @@ class ResolveHouseholdMiddleware
             return redirect()->route('household.done');
         }
 
-        CurrentHouseholdHelper::set($request, $household, $membership);
+        CurrentHouseholdHelper::set($request, $household);
 
-        // route('chores.index') here fills in this household; and controllers
-        // don't receive it as an argument, or it would take the place of their
-        // own optional parameters (ShoppingListController::index's $slug).
+        // route('chores.index') here fills in this household. The route
+        // parameter itself stays until the policy check has used it
+        // (ForgetHouseholdParameterMiddleware).
         URL::defaults(['household' => $household->slug]);
-        $request->route()?->forgetParameter('household');
 
         if ($user->last_household_id !== $household->id) {
             $user->rememberHousehold($household->id);

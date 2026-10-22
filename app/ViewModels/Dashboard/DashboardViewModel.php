@@ -18,6 +18,7 @@ use App\Enums\ChoreStatusEnum;
 use App\Enums\MealSlotEnum;
 use App\Models\BudgetCategory;
 use App\Models\CalendarEvent;
+use App\Models\Chore;
 use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\ShoppingList;
@@ -63,9 +64,9 @@ class DashboardViewModel
             ),
             streakDays: $viewer->currentStreak($today),
             family: $household->activeMembers()->get()->map(MemberData::fromModel(...))->values()->all(),
-            tonight: $tonight !== null ? PlannedMealData::fromModel($tonight) : null,
-            shoppingList: $list !== null ? ShoppingListData::fromModel($list) : null,
-            chores: $todays->map(ChoreData::fromModel(...))->values()->all(),
+            tonight: $tonight !== null ? PlannedMealData::fromModel($tonight, $viewer) : null,
+            shoppingList: $list !== null ? ShoppingListData::fromModel($list, $viewer) : null,
+            chores: $todays->map(fn (Chore $chore) => ChoreData::fromModel($chore, $viewer))->values()->all(),
             choreProgress: ChoreProgressData::make($done, $todays->count()),
             agenda: $this->agenda($events, $today),
             budget: $this->budget($household, $today),

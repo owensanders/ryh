@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Laravel\Cashier\Billable;
@@ -218,6 +219,34 @@ class Household extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(Document::class);
+    }
+
+    /** @return HasManyThrough<ShoppingItem, ShoppingList, $this> */
+    public function shoppingItems(): HasManyThrough
+    {
+        return $this->hasManyThrough(ShoppingItem::class, ShoppingList::class);
+    }
+
+    /**
+     * The relation a scoped route binding looks in: /h/{household}/chores/{chore}
+     * only finds this household's chores, so another's is a 404 before any
+     * policy runs. Route parameters are short ({event}, {item}), so they're
+     * mapped to their relations here.
+     *
+     * @param  string  $childType
+     */
+    protected function childRouteBindingRelationshipName($childType): string
+    {
+        return match ($childType) {
+            'category' => 'budgetCategories',
+            'event' => 'calendarEvents',
+            'folder' => 'documentFolders',
+            'income' => 'incomeSources',
+            'item' => 'shoppingItems',
+            'list' => 'shoppingLists',
+            'meal' => 'plannedMeals',
+            default => parent::childRouteBindingRelationshipName($childType),
+        };
     }
 
     /** Bytes its documents take up, counted against `documents.quota_bytes`. */
