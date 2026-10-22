@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
-import { tint } from '@/lib/ryh';
+import { PLANNED_MEAL_PROPS, tint } from '@/lib/ryh';
 import type { MemberData, PlannedMealData, PlannerDayData, RecipeData, ShoppingListData } from '@/types/generated';
 import type { AiPlannerOptions, TagOption } from '@/types/ryh';
 import { Link, router, useForm } from '@inertiajs/vue3';
@@ -34,6 +34,9 @@ const props = defineProps<{
 const aiOpen = ref(false);
 
 const SLOTS = ['breakfast', 'lunch', 'dinner'];
+
+// Writes reload only what they change; moving or removing a meal leaves the recipes alone.
+const PLANNED = ['days'];
 
 const can = useHouseholdAbilities();
 
@@ -162,6 +165,7 @@ function openEdit(meal: PlannedMealData, date: string): void {
 function submit(): void {
     const options = {
         preserveScroll: true,
+        only: PLANNED_MEAL_PROPS,
         onSuccess: () => {
             open.value = false;
         },
@@ -198,6 +202,7 @@ function confirmDestroy(): void {
 
     router.delete(route('meals.destroy', { meal: editing.value.id }), {
         preserveScroll: true,
+        only: PLANNED,
         onSuccess: () => {
             open.value = false;
         },
@@ -225,7 +230,7 @@ function drop(date: string): void {
         return;
     }
 
-    router.patch(route('meals.reschedule', { meal }), { planned_on: date }, { preserveScroll: true });
+    router.patch(route('meals.reschedule', { meal }), { planned_on: date }, { preserveScroll: true, only: PLANNED });
 }
 </script>
 

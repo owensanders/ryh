@@ -1,3 +1,4 @@
+import { showToast } from '@/composables/useToast';
 import type { SharedData } from '@/types';
 import { router, usePage } from '@inertiajs/vue3';
 import { useEchoNotification } from '@laravel/echo-vue';
@@ -23,7 +24,6 @@ interface LiveNotificationPayload {
 }
 
 export const notifications = ref<AppNotification[]>([]);
-export const latestToast = ref<string | null>(null);
 
 /** Loads existing notifications and starts listening for live ones. Call once, from the app layout. */
 export function subscribeToNotifications(): void {
@@ -34,24 +34,30 @@ export function subscribeToNotifications(): void {
         return;
     }
 
+    // The bell is a nicety: if this fails it stays empty, and live ones still arrive.
     fetch(route('notifications.index'), { headers: { Accept: 'application/json' } })
-        .then((response) => response.json())
-        .then((rows: NotificationRow[]) => {
+        .then((response) => (response.ok ? (response.json() as Promise<NotificationRow[]>) : Promise.reject(new Error(`HTTP ${response.status}`))))
+        .then((rows) => {
             notifications.value = rows.map((row) => ({ id: row.id, body: row.data.body, url: row.data.url, read_at: row.read_at }));
-        });
+        })
+        .catch(() => (notifications.value = []));
 
     // The server only sends someone their own notifications, on their own channel.
     useEchoNotification<LiveNotificationPayload>(`App.Models.User.${userId}`, (notification) => {
         notifications.value.unshift({ id: notification.id, body: notification.body, url: notification.url, read_at: null });
-        latestToast.value = notification.body;
+        showToast(notification.body);
     });
 }
 
-/** Marks the notification read and lands on its page — the server redirects there in the same request. */
+/** Marks the notification read, then goes to its page, even if marking it failed. */
 export function openNotification(notification: AppNotification): void {
     notification.read_at = new Date().toISOString();
 
-    router.patch(route('notifications.read', { id: notification.id }));
+    router.patch(
+        route('notifications.read', { id: notification.id }),
+        {},
+        { preserveScroll: true, preserveState: true, only: [], onFinish: () => router.visit(notification.url) },
+    );
 }
 
 export function markAllAsRead(): void {

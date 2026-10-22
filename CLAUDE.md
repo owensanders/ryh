@@ -125,6 +125,17 @@ in `AppServiceProvider`.
 - Collections leave a view model as `->values()->all()`, typed
   `array<int, X>`.
 
+## Frontend writes
+
+- Where a page has props a write leaves alone, the write names the ones it
+  changes with `only: [...]`: the chore board skips `members`, and a meal
+  write skips the AI options. `flash` is `Inertia::always()`, so a partial
+  reload still gets its toast (`PartialReloadTest`).
+- Ticks and drags that should feel instant use `useOptimistic()`: change
+  the local copy, then send the request with the callbacks it hands you.
+  The server's next props replace the copy, and a failed request puts it
+  back with a toast.
+
 ## Transactions
 
 An action that writes more than once wraps the writes in `DB::transaction`.

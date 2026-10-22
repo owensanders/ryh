@@ -2,6 +2,7 @@
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
+import { useOptimistic } from '@/composables/useOptimistic';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import { dial, tickStyle } from '@/lib/ryh';
@@ -20,6 +21,31 @@ const props = defineProps<{
 }>();
 
 const can = useHouseholdAbilities();
+
+// Writes reload only what they change: the members list stays as it is.
+const BOARD = ['columns', 'scores'];
+
+// Ticking and dragging show at once; the server's columns replace these when it answers.
+const { state: board, apply: updateBoard } = useOptimistic(() => props.columns);
+
+function moveOnBoard(columns: ChoreColumnData[], id: number, status: ChoreStatusEnum): void {
+    const from = columns.find((column) => column.items.some((item) => item.id === id));
+    const to = columns.find((column) => column.status === status);
+
+    if (!from || !to || from === to) {
+        return;
+    }
+
+    const [chore] = from.items.splice(
+        from.items.findIndex((item) => item.id === id),
+        1,
+    );
+    from.count--;
+    chore.status = status;
+    chore.done = status === 'done';
+    to.items.push(chore);
+    to.count++;
+}
 
 // Notify chores
 const now = ref(new Date());
@@ -43,7 +69,7 @@ function notifyChores(): void {
         return;
     }
 
-    router.post(route('chores.notify'), {}, { preserveScroll: true });
+    router.post(route('chores.notify'), {}, { preserveScroll: true, only: ['notifyChoresAvailableAt'] });
 }
 
 // Add chore
@@ -63,6 +89,7 @@ function addChore(): void {
         },
         {
             preserveScroll: true,
+            only: BOARD,
             onSuccess: () => {
                 draft.value = '';
             },
@@ -89,7 +116,10 @@ function drop(status: ChoreStatusEnum): void {
         return;
     }
 
-    router.patch(route('chores.move', { chore }), { status }, { preserveScroll: true });
+    updateBoard(
+        (columns) => moveOnBoard(columns, chore, status),
+        (callbacks) => router.patch(route('chores.move', { chore }), { status }, { preserveScroll: true, only: BOARD, ...callbacks }),
+    );
 }
 
 function toggle(chore: ChoreData): void {
@@ -97,7 +127,10 @@ function toggle(chore: ChoreData): void {
         return;
     }
 
-    router.patch(route('chores.toggle', { chore: chore.id }), {}, { preserveScroll: true });
+    updateBoard(
+        (columns) => moveOnBoard(columns, chore.id, chore.done ? 'today' : 'done'),
+        (callbacks) => router.patch(route('chores.toggle', { chore: chore.id }), {}, { preserveScroll: true, only: BOARD, ...callbacks }),
+    );
 }
 
 // Edit
@@ -132,6 +165,7 @@ function submit(): void {
 
     form.patch(route('chores.update', { chore: editing.value.id }), {
         preserveScroll: true,
+        only: BOARD,
         onSuccess: () => {
             open.value = false;
         },
@@ -156,6 +190,7 @@ function confirmDestroy(): void {
 
     router.delete(route('chores.destroy', { chore: deleting.value.id }), {
         preserveScroll: true,
+        only: BOARD,
         onSuccess: () => {
             open.value = false;
         },
@@ -221,7 +256,7 @@ function confirmDestroy(): void {
 
             <div class="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                 <div
-                    v-for="column in columns"
+                    v-for="column in board"
                     :key="column.status"
                     class="flex min-h-[420px] flex-col gap-2.5 rounded-[20px] border border-dashed p-3.5 transition"
                     :style="{

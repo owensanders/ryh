@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Notifications\ClearNotificationsAction;
 use App\Actions\Notifications\MarkAllNotificationsReadAction;
-use App\Actions\Notifications\OpenNotificationAction;
+use App\Actions\Notifications\MarkNotificationReadAction;
 use App\Traits\ResolvesUserTrait;
 use App\ViewModels\Notifications\NotificationsViewModel;
 use Illuminate\Http\JsonResponse;
@@ -22,15 +22,11 @@ class NotificationController extends Controller
         return response()->json($getNotifications->toData($this->user($request)));
     }
 
-    /**
-     * Opening a notification is reading it — mark it and go straight to what
-     * it's about in one request, so the bell never has to race a navigation.
-     */
-    public function markAsRead(Request $request, string $id, OpenNotificationAction $open): RedirectResponse
+    public function markAsRead(Request $request, string $id, MarkNotificationReadAction $markRead): RedirectResponse
     {
-        $url = $open->handle($this->user($request), $id);
+        $markRead->handle($this->user($request), $id);
 
-        return $url !== null ? redirect($url) : back();
+        return back();
     }
 
     public function markAllAsRead(Request $request, MarkAllNotificationsReadAction $markAllRead): RedirectResponse

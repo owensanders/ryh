@@ -2,6 +2,7 @@
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
+import { useOptimistic } from '@/composables/useOptimistic';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import { tickStyle } from '@/lib/ryh';
@@ -21,6 +22,9 @@ const COLOURS = ['mint', 'lilac', 'sun', 'sky', 'coral'];
 
 const can = useHouseholdAbilities();
 
+// Ticks show at once; the server's list replaces this when it answers.
+const { state: activeList, apply: updateActiveList } = useOptimistic(() => props.active);
+
 const draft = useForm({ name: '', quantity: '' });
 
 function addItem(): void {
@@ -39,7 +43,17 @@ function toggleItem(item: ShoppingItemData): void {
         return;
     }
 
-    router.patch(route('shopping.items.toggle', { item: item.id }), {}, { preserveScroll: true });
+    updateActiveList(
+        (list) => {
+            const shown = list?.items.find((candidate) => candidate.id === item.id);
+
+            if (shown && list) {
+                shown.done = !shown.done;
+                list.remaining += shown.done ? -1 : 1;
+            }
+        },
+        (callbacks) => router.patch(route('shopping.items.toggle', { item: item.id }), {}, { preserveScroll: true, ...callbacks }),
+    );
 }
 
 // List create / rename / delete
@@ -170,25 +184,25 @@ function confirmDestroy(): void {
                 </Link>
             </div>
 
-            <div v-if="active" class="w-full min-w-0 flex-1 rounded-[22px] border border-ryh-line bg-ryh-card p-4 sm:p-[22px]">
+            <div v-if="activeList" class="w-full min-w-0 flex-1 rounded-[22px] border border-ryh-line bg-ryh-card p-4 sm:p-[22px]">
                 <div class="flex items-center gap-3 border-b border-ryh-line pb-4">
                     <div class="flex-1">
                         <div class="flex items-center gap-1.5">
-                            <h3 class="text-lg font-extrabold tracking-[-0.02em]">{{ active.name }}</h3>
+                            <h3 class="text-lg font-extrabold tracking-[-0.02em]">{{ activeList.name }}</h3>
                             <button
-                                v-if="active.can.update"
+                                v-if="activeList.can.update"
                                 type="button"
                                 aria-label="Rename list"
                                 class="rounded-lg p-1 transition hover:bg-ryh-soft"
-                                @click="openEditList(active)"
+                                @click="openEditList(activeList)"
                             >
                                 <Pencil class="h-3.5 w-3.5 text-ryh-ink3" />
                             </button>
                         </div>
-                        <div class="mt-1 text-[13px] text-ryh-ink3">{{ active.remaining }} items left</div>
+                        <div class="mt-1 text-[13px] text-ryh-ink3">{{ activeList.remaining }} items left</div>
                     </div>
                     <button
-                        v-if="active.can.delete"
+                        v-if="activeList.can.delete"
                         type="button"
                         aria-label="Delete list"
                         class="rounded-lg p-1.5 transition hover:bg-ryh-soft"
@@ -222,7 +236,7 @@ function confirmDestroy(): void {
                 <p v-if="draft.errors.name" class="-mt-2 mb-3 text-[13px] text-ryh-coral">{{ draft.errors.name }}</p>
 
                 <div class="flex flex-col gap-0.5">
-                    <div v-for="item in active.items" :key="item.id" class="group relative">
+                    <div v-for="item in activeList.items" :key="item.id" class="group relative">
                         <button
                             type="button"
                             :disabled="!item.can.toggle"
@@ -255,7 +269,7 @@ function confirmDestroy(): void {
                     </div>
                 </div>
 
-                <p v-if="active.items.length === 0" class="py-10 text-center text-sm text-ryh-ink3">This list is empty.</p>
+                <p v-if="activeList.items.length === 0" class="py-10 text-center text-sm text-ryh-ink3">This list is empty.</p>
             </div>
         </div>
 
