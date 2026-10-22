@@ -88,6 +88,18 @@ class CalendarEvent extends Model
         return $this->belongsToMany(User::class)->orderBy('id');
     }
 
+    /**
+     * Over once its end has passed: its end time, or for an all-day event or
+     * one with no end, the end of the day it starts. `$now` is the household's
+     * clock (Household::now()), since event times are stored as it reads them.
+     */
+    public function hasEndedBy(CarbonImmutable $now): bool
+    {
+        $end = $this->ends_at ?? $this->starts_at->copy()->endOfDay();
+
+        return $end->lt($now);
+    }
+
     /** 'All day', '18:00', or '18:00–19:30'. */
     public function timeLabel(): string
     {

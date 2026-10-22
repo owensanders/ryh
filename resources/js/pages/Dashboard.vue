@@ -7,6 +7,7 @@ import DashboardShopping from '@/components/ryh/dashboard/DashboardShopping.vue'
 import DashboardTonight from '@/components/ryh/dashboard/DashboardTonight.vue';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
+import { dateLine } from '@/lib/clock';
 import type { DashboardData } from '@/types/generated';
 
 defineOptions({ layout: RyhShell });
@@ -15,7 +16,7 @@ defineProps<{ dashboard: DashboardData }>();
 </script>
 
 <template>
-    <RyhLayout title="Dashboard" :subtitle="dashboard.dateLine">
+    <RyhLayout title="Dashboard" :subtitle="dateLine()">
         <div class="flex animate-ryh-rise flex-col gap-4">
             <DashboardHero :dashboard="dashboard" />
 

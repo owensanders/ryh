@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { dateLine, greeting } from '@/lib/clock';
 import type { DashboardData } from '@/types/generated';
 
 /** The greeting, streak and who's in the household. */
@@ -18,8 +19,8 @@ defineProps<{ dashboard: DashboardData }>();
             >
                 🔥 {{ dashboard.streakDays }} day streak
             </div>
-            <div class="mt-3 text-4xl font-extrabold leading-[1.05] tracking-[-0.03em]">{{ dashboard.greeting }}</div>
-            <div class="mt-2 text-sm text-ryh-onhero2">{{ dashboard.dateLine }} · {{ dashboard.summaryLine }}</div>
+            <div class="mt-3 text-4xl font-extrabold leading-[1.05] tracking-[-0.03em]">{{ greeting() }}, {{ dashboard.firstName }}</div>
+            <div class="mt-2 text-sm text-ryh-onhero2">{{ dateLine() }} · {{ dashboard.summaryLine }}</div>
 
             <div class="mt-5 flex flex-wrap gap-2.5">
                 <div

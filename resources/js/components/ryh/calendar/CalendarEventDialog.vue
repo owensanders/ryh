@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useCalendarEditor } from '@/composables/useCalendarEditor';
-import { todayIso } from '@/lib/calendar';
 import { PALETTE } from '@/lib/ryh';
 import type { MemberData } from '@/types/generated';
 
 /** Adding or editing one event. */
-defineProps<{ members: MemberData[] }>();
+defineProps<{ members: MemberData[]; todayDate: string }>();
 
 const { open, editing, form, toggleAttendee, submit, destroy } = useCalendarEditor();
 </script>
@@ -33,14 +32,7 @@ const { open, editing, form, toggleAttendee, submit, destroy } = useCalendarEdit
                 <div class="grid grid-cols-2 gap-3">
                     <div class="flex flex-col gap-1.5">
                         <label for="starts_at" class="ryh-label">Starts</label>
-                        <input
-                            id="starts_at"
-                            v-model="form.starts_at"
-                            type="datetime-local"
-                            class="ryh-input"
-                            :min="`${todayIso()}T00:00`"
-                            required
-                        />
+                        <input id="starts_at" v-model="form.starts_at" type="datetime-local" class="ryh-input" :min="`${todayDate}T00:00`" required />
                         <p v-if="form.errors.starts_at" class="text-[12.5px] text-ryh-coral">{{ form.errors.starts_at }}</p>
                     </div>
 

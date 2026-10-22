@@ -3,6 +3,7 @@ import HouseHero from '@/components/ryh/house/HouseHero.vue';
 import HouseMembers from '@/components/ryh/house/HouseMembers.vue';
 import HousePlan from '@/components/ryh/house/HousePlan.vue';
 import HouseRoles from '@/components/ryh/house/HouseRoles.vue';
+import HouseTimezone from '@/components/ryh/house/HouseTimezone.vue';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import type { HouseData } from '@/types/generated';
@@ -22,6 +23,7 @@ defineProps<{ house: HouseData }>();
 
                 <div class="flex flex-col gap-4">
                     <HousePlan :house="house" />
+                    <HouseTimezone :house="house" />
                     <HouseRoles :house="house" />
                 </div>
             </div>

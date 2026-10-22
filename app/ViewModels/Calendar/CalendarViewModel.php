@@ -20,7 +20,8 @@ class CalendarViewModel
 
     public function toData(Household $household, CarbonImmutable $month): CalendarMonthData
     {
-        $today = CarbonImmutable::today();
+        $now = $household->now();
+        $today = $now->startOfDay();
         $first = $month->startOfMonth();
         $start = $first->startOfWeek();
         $end = $start->addDays(self::CELLS - 1)->endOfDay();
@@ -54,7 +55,7 @@ class CalendarViewModel
                 isToday: $day->isSameDay($today),
                 isCurrentMonth: $day->month === $first->month,
                 events: collect($eventsByDate[$key] ?? [])
-                    ->map(fn (CalendarEvent $event) => CalendarEventData::fromModel($event, $key))
+                    ->map(fn (CalendarEvent $event) => CalendarEventData::fromModel($event, $key, $now))
                     ->values()
                     ->all(),
             );
@@ -66,6 +67,7 @@ class CalendarViewModel
             previousMonth: $first->subMonth()->format('Y-m'),
             nextMonth: $first->addMonth()->format('Y-m'),
             today: $today->format('Y-m'),
+            todayDate: $today->toDateString(),
             weekdayLabels: $weekdayLabels,
             days: $days,
             members: $household->activeMembers()->get()

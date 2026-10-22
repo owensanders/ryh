@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useCalendarEditor } from '@/composables/useCalendarEditor';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
-import { eventsFor, isEditable, todayIso, VISIBLE_PER_CELL } from '@/lib/calendar';
+import { eventsFor, isEditable, VISIBLE_PER_CELL } from '@/lib/calendar';
 import type { CalendarMonthData } from '@/types/generated';
 import { Plus } from 'lucide-vue-next';
 
@@ -32,7 +32,7 @@ const { openNew, openEdit, expandedDay } = useCalendarEditor();
                         {{ day.dateLabel }}
                     </span>
                     <button
-                        v-if="can?.createCalendarEvents && day.date >= todayIso()"
+                        v-if="can?.createCalendarEvents && day.date >= calendar.todayDate"
                         type="button"
                         class="ml-auto grid h-7 w-7 place-items-center rounded-md text-ryh-ink3 transition hover:bg-ryh-soft hover:text-ryh-ink [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:focus-visible:opacity-100 [@media(hover:hover)]:group-hover:opacity-100"
                         :aria-label="`Add an event on ${day.dateLabel}`"

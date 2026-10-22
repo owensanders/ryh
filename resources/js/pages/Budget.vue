@@ -11,6 +11,7 @@ defineOptions({ layout: RyhShell });
 
 defineProps<{
     month: string;
+    isCurrentMonth: boolean;
     monthLabel: string;
     previousMonth: string;
     nextMonth: string;
@@ -32,6 +33,7 @@ defineProps<{
         <div class="flex animate-ryh-rise flex-col gap-4">
             <BudgetHero
                 :month="month"
+                :is-current-month="isCurrentMonth"
                 :month-label="monthLabel"
                 :previous-month="previousMonth"
                 :next-month="nextMonth"

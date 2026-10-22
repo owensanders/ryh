@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\HouseholdRoleEnum;
 use App\Enums\PendingReasonEnum;
+use Carbon\CarbonImmutable;
 use Database\Factories\HouseholdFactory;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -28,6 +29,7 @@ use Laravel\Cashier\Subscription;
  * @property int $streak_days
  * @property Carbon|null $streak_last_active_date
  * @property Carbon|null $trial_ends_at
+ * @property string $timezone An IANA name, e.g. Europe/London.
  * @property Carbon|null $ai_meal_plan_generated_at
  * @property Carbon|null $last_chore_notification_sent_at
  * @property-read HouseholdUser|null $pivot Present when loaded through a `User::households()` query.
@@ -41,7 +43,7 @@ class Household extends Model
     use HasFactory;
 
     /** @var list<string> */
-    protected $fillable = ['name', 'slug', 'join_code', 'join_code_enabled', 'location', 'streak_days', 'streak_last_active_date', 'trial_ends_at', 'ai_meal_plan_generated_at', 'last_chore_notification_sent_at'];
+    protected $fillable = ['name', 'slug', 'join_code', 'join_code_enabled', 'location', 'timezone', 'streak_days', 'streak_last_active_date', 'trial_ends_at', 'ai_meal_plan_generated_at', 'last_chore_notification_sent_at'];
 
     protected function casts(): array
     {
@@ -240,6 +242,23 @@ class Household extends Model
         $this->setRawAttributes($locked->getAttributes(), sync: true);
 
         return $this;
+    }
+
+    /**
+     * The household's wall-clock time right now, in the app's time zone.
+     *
+     * Times the household enters (calendar events) are stored as the clock
+     * showed them, not converted to UTC, so this is what they compare with.
+     */
+    public function now(): CarbonImmutable
+    {
+        return CarbonImmutable::parse(CarbonImmutable::now($this->timezone)->toDateTimeString());
+    }
+
+    /** The household's date today: it turns over at their midnight, not UTC's. */
+    public function today(): CarbonImmutable
+    {
+        return $this->now()->startOfDay();
     }
 
     /** True while the household's free trial hasn't ended and it isn't subscribed yet. */

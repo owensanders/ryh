@@ -25,6 +25,8 @@ class HouseholdSetupRequest extends FormRequest
             'invites.*.email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
             'invites.*.role' => ['required', Rule::enum(HouseholdRoleEnum::class)],
             'guardian_confirmed' => ['boolean'],
+            // From the browser; one PHP doesn't know falls back to the UK rather than failing setup.
+            'timezone' => ['nullable', 'string', 'max:64'],
         ];
     }
 

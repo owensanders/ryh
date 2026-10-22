@@ -23,7 +23,7 @@ class IncomeSourceController extends Controller
 
         $income = $create->handle(
             $this->household($request),
-            $month !== null ? CarbonImmutable::createFromFormat('!Y-m', (string) $month) ?? CarbonImmutable::now() : CarbonImmutable::now(),
+            $month !== null ? CarbonImmutable::createFromFormat('!Y-m', (string) $month) ?? $this->household($request)->now() : $this->household($request)->now(),
             $request->validated(),
         );
 

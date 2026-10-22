@@ -58,3 +58,23 @@ test('someone joins with the invite code, the owner approves them and gives them
     await owner.close();
     await joiner.close();
 });
+
+test("the owner changes the household's time zone", async ({ browser }) => {
+    const page = await browser.newPage({ storageState: storageState('owner') });
+    await page.goto('/house');
+    const timezone = page.getByLabel('Time zone');
+    const before = await timezone.inputValue();
+    const after = before === 'Asia/Tokyo' ? 'Europe/London' : 'Asia/Tokyo';
+
+    await timezone.selectOption(after);
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(page.getByRole('status').filter({ hasText: 'Time zone updated' })).toBeVisible();
+    await page.reload();
+    await expect(timezone).toHaveValue(after);
+
+    // Put it back for the other tests.
+    await timezone.selectOption(before);
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(page.getByRole('status').filter({ hasText: 'Time zone updated' })).toBeVisible();
+    await page.close();
+});

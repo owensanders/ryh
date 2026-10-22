@@ -8,15 +8,18 @@ use App\Enums\HouseholdRoleEnum;
 use App\Enums\PaletteEnum;
 use App\Models\Household;
 use App\Models\User;
+use DateTimeZone;
 use Illuminate\Support\Facades\DB;
 
 class CreateHouseholdAction
 {
+    private const string DEFAULT_TIMEZONE = 'Europe/London';
+
     public function __construct(
         private readonly InviteMemberAction $inviteMember,
     ) {}
 
-    /** @param  array<string, mixed>  $data  HouseholdSetupRequest's validated input: name, invites (each email and role). */
+    /** @param  array<string, mixed>  $data  HouseholdSetupRequest's validated input: name, invites (each email and role), timezone (the browser's). */
     public function handle(User $owner, array $data): Household
     {
         // The household, its owner's membership and their claimed trial stand
@@ -27,6 +30,7 @@ class CreateHouseholdAction
             // start a new household to reset the clock.
             $household = Household::create([
                 'name' => $data['name'],
+                'timezone' => self::knownTimezone($data['timezone'] ?? null),
                 'trial_ends_at' => $owner->trial_claimed_at === null ? now()->addDays(config('plans.trial_days')) : null,
             ]);
 
@@ -43,5 +47,13 @@ class CreateHouseholdAction
         }
 
         return $household;
+    }
+
+    /** A browser's time zone, if PHP knows it; otherwise the UK, where most households are. */
+    private static function knownTimezone(mixed $timezone): string
+    {
+        return is_string($timezone) && in_array($timezone, timezone_identifiers_list(DateTimeZone::ALL_WITH_BC), true)
+            ? $timezone
+            : self::DEFAULT_TIMEZONE;
     }
 }

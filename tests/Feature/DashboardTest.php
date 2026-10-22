@@ -84,7 +84,7 @@ class DashboardTest extends TestCase
             ->assertInertia(
                 fn ($page) => $page
                     ->component('Dashboard')
-                    ->where('dashboard.greeting', fn (string $greeting) => str_contains($greeting, 'Sarah'))
+                    ->where('dashboard.firstName', 'Sarah')
                     ->where('dashboard.streakDays', 12)
                     ->where('dashboard.tonight.name', 'Lemon chicken traybake')
                     ->where('dashboard.tonight.tags', ['Healthy'])

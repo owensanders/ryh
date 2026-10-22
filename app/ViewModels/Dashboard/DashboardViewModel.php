@@ -54,8 +54,7 @@ class DashboardViewModel
         )->get();
 
         return new DashboardData(
-            greeting: $this->greeting($today).', '.$viewerName,
-            dateLine: $today->format('l j F'),
+            firstName: $viewerName,
             summaryLine: $this->summaryLine(
                 $tonight,
                 $events->filter(fn (CalendarEvent $event) => $event->starts_at->isSameDay($today))->count(),
@@ -70,15 +69,6 @@ class DashboardViewModel
             agenda: $this->agenda($events, $today),
             budget: $this->budget($household, $today),
         );
-    }
-
-    private function greeting(CarbonImmutable $today): string
-    {
-        return match (true) {
-            $today->hour < 12 => 'Good morning',
-            $today->hour < 18 => 'Good afternoon',
-            default => 'Good evening',
-        };
     }
 
     private function summaryLine(?PlannedMeal $tonight, int $events, int $choresLeft): string

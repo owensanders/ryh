@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useCalendarEditor } from '@/composables/useCalendarEditor';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
-import { defaultDay, eventsFor, isEditable, todayIso } from '@/lib/calendar';
+import { defaultDay, eventsFor, isEditable } from '@/lib/calendar';
 import type { CalendarMonthData } from '@/types/generated';
 import { Plus } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -55,7 +55,7 @@ const selectedDay = computed(() => props.calendar.days.find((day) => day.date ==
             <div class="mb-2 flex items-center gap-2 px-1">
                 <span class="text-[15px] font-extrabold tracking-tight">{{ selectedDay.dayLabel }} {{ selectedDay.dateLabel }}</span>
                 <button
-                    v-if="can?.createCalendarEvents && selectedDay.date >= todayIso()"
+                    v-if="can?.createCalendarEvents && selectedDay.date >= calendar.todayDate"
                     type="button"
                     class="ml-auto flex h-9 items-center gap-1.5 rounded-xl bg-ryh-soft px-3 text-[13px] font-semibold"
                     @click="openNew(selectedDay)"

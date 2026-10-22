@@ -7,7 +7,6 @@ namespace App\Http\Controllers;
 use App\Traits\ResolvesHouseholdTrait;
 use App\Traits\ResolvesUserTrait;
 use App\ViewModels\Dashboard\DashboardViewModel;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -23,7 +22,7 @@ class DashboardController extends Controller
             'dashboard' => $getDashboard->toData(
                 $this->household($request),
                 str($this->user($request)->name)->before(' ')->toString(),
-                CarbonImmutable::now(),
+                $this->household($request)->now(),
             ),
         ]);
     }

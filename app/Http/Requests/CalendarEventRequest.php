@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Enums\PaletteEnum;
+use App\Models\CalendarEvent;
 use App\Support\CurrentHouseholdHelper;
 use App\Traits\NormalisesInputTrait;
+use Carbon\CarbonImmutable;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class CalendarEventRequest extends FormRequest
 {
@@ -19,7 +23,7 @@ class CalendarEventRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:120'],
-            'starts_at' => ['required', 'date', 'after_or_equal:today'],
+            'starts_at' => ['required', 'date', $this->notInThePast(...)],
             // An all-day event has no end time, so a stale one must not block the save.
             'ends_at' => ['exclude_if:is_all_day,true', 'nullable', 'date', 'after:starts_at'],
             'is_all_day' => ['boolean'],
@@ -40,9 +44,49 @@ class CalendarEventRequest extends FormRequest
     {
         return [
             'title.required' => 'Give the event a title.',
-            'starts_at.after_or_equal' => 'The event can\'t be scheduled in the past.',
             'ends_at.after' => 'The end time must be after the start time.',
         ];
+    }
+
+    /**
+     * An event that's over can't be changed; one still running can (CalendarEvent::hasEndedBy()).
+     *
+     * @return list<Closure(Validator): void>
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                $event = $this->route('event');
+
+                if ($event instanceof CalendarEvent && $event->hasEndedBy(CurrentHouseholdHelper::household($this)->now())) {
+                    $validator->errors()->add('starts_at', 'This event has already happened, so it can\'t be changed.');
+                }
+            },
+        ];
+    }
+
+    /**
+     * Before the household's today is refused, so nothing new lands in the
+     * past. Keeping an event's start as it was is always fine: an event
+     * already under way can still have its details changed.
+     */
+    private function notInThePast(string $attribute, mixed $value, Closure $fail): void
+    {
+        if (! is_string($value) || strtotime($value) === false) {
+            return;
+        }
+
+        $startsAt = CarbonImmutable::parse($value);
+        $event = $this->route('event');
+
+        if ($event instanceof CalendarEvent && $startsAt->equalTo($event->starts_at)) {
+            return;
+        }
+
+        if ($startsAt->lt(CurrentHouseholdHelper::household($this)->today())) {
+            $fail('The event can\'t be scheduled in the past.');
+        }
     }
 
     /** A trimmed title, mint when no colour is picked, and attendee ids as ints. */

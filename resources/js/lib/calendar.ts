@@ -3,11 +3,6 @@ import type { CalendarDayData, CalendarEventData, CalendarMonthData } from '@/ty
 /** How many event pills fit in a month cell before it collapses to "+N more". */
 export const VISIBLE_PER_CELL = 3;
 
-/** Today as `YYYY-MM-DD`. Past days can't take new events or edits. */
-export function todayIso(): string {
-    return new Date().toISOString().slice(0, 10);
-}
-
 /**
  * The day's events for the member filtered on, or all of them with no filter.
  * Filtering is client-side: the whole month is already in props. An event
@@ -26,7 +21,7 @@ export function defaultDay(calendar: CalendarMonthData): CalendarDayData {
     return calendar.days.find((day) => day.isToday) ?? calendar.days.find((day) => day.isCurrentMonth)!;
 }
 
-/** Whether this person may open the event to change it: their policy says so, and it hasn't happened yet. */
+/** Whether this person may open the event to change it: their policy says so, and it isn't over (one still running is fine). */
 export function isEditable(event: CalendarEventData): boolean {
-    return event.can.update === true && event.date >= todayIso();
+    return event.can.update === true && !event.hasEnded;
 }

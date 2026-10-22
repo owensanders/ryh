@@ -28,11 +28,14 @@ const createForm = useForm<{
     size: string;
     invites: { email: string; role: InviteRole }[];
     guardian_confirmed: boolean;
+    timezone: string;
 }>({
     name: '',
     size: sizes[3],
     invites: [],
     guardian_confirmed: false,
+    // The household's days turn over at its midnight; the owner can change this on the House page.
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 });
 
 const invitesMinors = computed(() => createForm.invites.some((invite) => invite.role !== 'adult'));
