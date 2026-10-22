@@ -2,7 +2,7 @@
 
 Family home organiser — dashboard, meal planner, shopping lists, chores,
 shared calendar, budget and a document vault, with live in-app notifications.
-Built from the RYH design (`RYH.dc.html`) as a Laravel 12 + Inertia 2
+Built from the RYH design (`RYH.dc.html`) as a Laravel 12 + Inertia 3
 + Vue 3 (TypeScript) + Tailwind app, running under Laravel Sail.
 
 ## Features
