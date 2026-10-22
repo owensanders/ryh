@@ -81,7 +81,9 @@ Each layer only talks to the one below it.
   is made for Blade. They only read, and so does every GET: anything that
   must happen before a page makes sense runs on a schedule or a POST (the
   budget's recurring items come in from `budget:carry-forward`, or from
-  "Bring them in now").
+  "Bring them in now"). The one write a GET makes is recording where the
+  visitor is: `ResolveHouseholdMiddleware` sets their own
+  `last_household_id`, so `/app` lands them back there.
   `LayerShapeTest` checks actions have `handle()` and view models `toData()`.
 - **Models** (`app/Models`): relations (including constrained ones like
   `Household::activeMembers()`), casts, query scopes, and methods that
@@ -102,11 +104,16 @@ and is reached through the household so it's already scoped:
 `$household->chores()->forBoard()->get()`. Anything else stays inline where
 it's used.
 
-Controllers, middleware, form requests, policies, listeners and mail never
-query: no `Model::where(...)`, no `$model->update(...)`, no relation methods like
-`$household->members()`. Enforced by `QueryBoundaryTest`. One exception:
-**route model binding**. Those models arrive ready, and reading their
-attributes is fine.
+Controllers, middleware, form requests, policies, listeners, mail and
+notifications never start a query, run one, or write a model: no
+`Model::where(...)` or `DB::table(...)`, no relation methods like
+`$household->members()`, no `$model->update(...)`, `->refresh()` or
+`->load(...)`. What they may do: ask a model a question through a method on it
+(`$user->membershipIn($id)`, `$user->hasPushDevices()`), read a model they
+were handed (route-bound, or returned by an action), its relations included,
+and declare validation lookups (`Rule::exists(...)`, which the validator runs).
+Enforced by PHPStan's `QueryBoundaryRule` (`tests/PHPStan`), which judges by
+type, so a query split over lines or held in a variable is caught too.
 
 **Relations are eager-loaded where the models are fetched**, for example
 `->with('assignee')`. `Model::preventLazyLoading()` is on
@@ -196,7 +203,7 @@ An action says what went wrong by throwing, never with `abort()`:
 
 These are the only messages that reach the screen. Never catch
 `RuntimeException` to show its message: a database error is one too.
-Enforced by `UserFacingErrorsTest`.
+Enforced by PHPStan's `UserFacingErrorsRule`.
 
 ## Notifications
 
@@ -236,8 +243,8 @@ and `DB_DATABASE=schema_dump artisan schema:dump --prune`, keep
 ## Checks
 
 ```bash
-./vendor/bin/sail artisan test           # includes the architecture tests above
-./vendor/bin/sail bin phpstan analyse    # level 8, clean
+./vendor/bin/sail artisan test           # includes the route and naming tests above
+./vendor/bin/sail bin phpstan analyse    # level 8, clean, plus the layer rules in tests/PHPStan
 ./vendor/bin/sail bin pint
 ./vendor/bin/sail npm run lint
 ./vendor/bin/sail npx vue-tsc --noEmit

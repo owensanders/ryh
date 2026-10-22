@@ -6,6 +6,7 @@ namespace App\Actions\Meals;
 
 use App\Actions\Shopping\AddRecipeIngredientsToListAction;
 use App\Enums\MealSlotEnum;
+use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\User;
 use App\Notifications\MealAssignedNotification;
@@ -22,7 +23,7 @@ class UpdatePlannedMealAction
     ) {}
 
     /** @param  array<string, mixed>  $data  PlannedMealRequest's validated input; see AddPlannedMealAction. */
-    public function handle(PlannedMeal $meal, array $data, User $actor): PlannedMeal
+    public function handle(Household $household, PlannedMeal $meal, array $data, User $actor): PlannedMeal
     {
         $previousCookId = $meal->cook_id;
         $household = $meal->household ?? throw new LogicException('A planned meal always belongs to a household.');
@@ -42,8 +43,8 @@ class UpdatePlannedMealAction
 
         if ($meal->cook_id !== null && $meal->cook_id !== $actor->id) {
             $notification = $meal->cook_id !== $previousCookId
-                ? new MealAssignedNotification($meal, $actor)
-                : new MealEditedNotification($meal, $actor);
+                ? new MealAssignedNotification($household, $meal, $actor)
+                : new MealEditedNotification($household, $meal, $actor);
 
             $meal->cook?->notify($notification);
         }

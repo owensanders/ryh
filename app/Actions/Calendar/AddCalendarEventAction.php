@@ -41,7 +41,7 @@ class AddCalendarEventAction
 
         foreach ($event->attendees as $attendee) {
             if ($attendee->id !== $actor->id) {
-                $attendee->notify(new CalendarEventAssignedNotification($event, $actor));
+                $attendee->notify(new CalendarEventAssignedNotification($household, $event, $actor));
             }
         }
 

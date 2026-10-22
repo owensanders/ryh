@@ -42,7 +42,7 @@ class AddPlannedMealAction
         }
 
         if ($meal->cook_id !== null && $meal->cook_id !== $actor->id) {
-            $meal->cook?->notify(new MealAssignedNotification($meal, $actor));
+            $meal->cook?->notify(new MealAssignedNotification($household, $meal, $actor));
         }
 
         return $meal;

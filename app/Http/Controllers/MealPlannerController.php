@@ -51,7 +51,7 @@ class MealPlannerController extends Controller
 
     public function update(PlannedMealRequest $request, PlannedMeal $meal, UpdatePlannedMealAction $update): RedirectResponse
     {
-        $updated = $update->handle($meal, $request->validated(), $this->user($request));
+        $updated = $update->handle($this->household($request), $meal, $request->validated(), $this->user($request));
 
         return back()->with('toast', "{$updated->recipe->name} updated");
     }
@@ -59,7 +59,7 @@ class MealPlannerController extends Controller
     public function destroy(Request $request, PlannedMeal $meal, DeletePlannedMealAction $delete): RedirectResponse
     {
         $name = $meal->recipe->name;
-        $delete->handle($meal, $this->user($request));
+        $delete->handle($this->household($request), $meal, $this->user($request));
 
         return back()->with('toast', "{$name} removed");
     }

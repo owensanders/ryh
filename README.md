@@ -118,8 +118,8 @@ Things to check on the phone:
 CI runs all of these on every pull request:
 
 ```bash
-./vendor/bin/sail artisan test                       # includes the architecture tests
-./vendor/bin/sail bin phpstan analyse                # level 8, clean
+./vendor/bin/sail artisan test                       # includes the route and naming tests
+./vendor/bin/sail bin phpstan analyse                # level 8, plus the layer rules in tests/PHPStan
 ./vendor/bin/sail bin pint --test
 ./vendor/bin/sail npm run lint
 ./vendor/bin/sail npm run format:check
@@ -194,8 +194,9 @@ The ideas that shape it:
 - **Types come from the server.** `app/Data` classes are what a page may see,
   and their TypeScript types are generated into `resources/js/types/generated.ts`.
   CI fails if the committed file is out of date.
-- **A GET never writes.** Anything a page needs first runs on a schedule or a
-  POST (a budget month's recurring items, for example).
+- **A GET doesn't change household data.** Anything a page needs first runs on
+  a schedule or a POST (a budget month's recurring items, for example). The
+  only thing a GET records is which household the visitor was last in.
 - **Races are closed with the household's row lock.** Member caps, the
   document quota, reminders and AI plans check and write under
   `$household->lockRow()`. Calls to Stripe, mail or the AI happen outside

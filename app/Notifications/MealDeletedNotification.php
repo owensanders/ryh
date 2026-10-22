@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Enums\NotificationCategoryEnum;
+use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\User;
 
 class MealDeletedNotification extends HouseholdNotification
 {
     public function __construct(
+        Household $household,
         private readonly PlannedMeal $meal,
         private readonly User $actor,
-    ) {}
+    ) {
+        parent::__construct($household);
+    }
 
     /**
      * @param  User  $notifiable
@@ -33,11 +37,6 @@ class MealDeletedNotification extends HouseholdNotification
     public function category(): NotificationCategoryEnum
     {
         return NotificationCategoryEnum::Meals;
-    }
-
-    protected function householdId(): int
-    {
-        return $this->meal->household_id;
     }
 
     protected function notificationType(): string

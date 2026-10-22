@@ -6,6 +6,7 @@ namespace App\Actions\Calendar;
 
 use App\Enums\PaletteEnum;
 use App\Models\CalendarEvent;
+use App\Models\Household;
 use App\Models\User;
 use App\Notifications\CalendarEventAssignedNotification;
 use App\Notifications\CalendarEventUpdatedNotification;
@@ -16,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 class UpdateCalendarEventAction
 {
     /** @param  array<string, mixed>  $data  CalendarEventRequest's validated input; see AddCalendarEventAction. */
-    public function handle(CalendarEvent $event, array $data, User $actor): CalendarEvent
+    public function handle(Household $household, CalendarEvent $event, array $data, User $actor): CalendarEvent
     {
         $previousAttendeeIds = $event->attendees()->pluck('users.id')->map(fn (mixed $id): int => (int) $id)->all();
         $isAllDay = (bool) ($data['is_all_day'] ?? false);
@@ -36,7 +37,7 @@ class UpdateCalendarEventAction
 
         $event->refresh()->load('attendees');
 
-        $this->notifyInterestedParties($event, $previousAttendeeIds, $actor);
+        $this->notifyInterestedParties($household, $event, $previousAttendeeIds, $actor);
 
         return $event;
     }
@@ -47,15 +48,15 @@ class UpdateCalendarEventAction
      *
      * @param  array<int, int>  $previousAttendeeIds
      */
-    private function notifyInterestedParties(CalendarEvent $event, array $previousAttendeeIds, User $actor): void
+    private function notifyInterestedParties(Household $household, CalendarEvent $event, array $previousAttendeeIds, User $actor): void
     {
         // Someone newly added hears they've been assigned; everyone else that it changed.
         foreach (RecipientsHelper::except($actor, [...$event->attendees, $event->creator]) as $recipient) {
             $isNewAttendee = $event->attendees->contains('id', $recipient->id) && ! in_array($recipient->id, $previousAttendeeIds, true);
 
             $recipient->notify($isNewAttendee
-                ? new CalendarEventAssignedNotification($event, $actor)
-                : new CalendarEventUpdatedNotification($event, $actor));
+                ? new CalendarEventAssignedNotification($household, $event, $actor)
+                : new CalendarEventUpdatedNotification($household, $event, $actor));
         }
     }
 }

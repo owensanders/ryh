@@ -11,9 +11,11 @@ use App\Models\User;
 class ChoresReminderNotification extends HouseholdNotification
 {
     public function __construct(
-        private readonly Household $household,
+        Household $household,
         private readonly int $outstandingCount,
-    ) {}
+    ) {
+        parent::__construct($household);
+    }
 
     /**
      * @param  User  $notifiable
@@ -35,11 +37,6 @@ class ChoresReminderNotification extends HouseholdNotification
     public function category(): NotificationCategoryEnum
     {
         return NotificationCategoryEnum::Chores;
-    }
-
-    protected function householdId(): int
-    {
-        return $this->household->id;
     }
 
     protected function notificationType(): string

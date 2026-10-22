@@ -25,7 +25,7 @@ class CreateChoreAction
         ]);
 
         if ($chore->assigned_to !== null && $chore->assigned_to !== $actor->id) {
-            $chore->assignee?->notify(new ChoreAssignedNotification($chore, $actor));
+            $chore->assignee?->notify(new ChoreAssignedNotification($household, $chore, $actor));
         }
 
         return $chore;

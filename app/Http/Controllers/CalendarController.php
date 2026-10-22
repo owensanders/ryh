@@ -52,7 +52,7 @@ class CalendarController extends Controller
 
     public function update(CalendarEventRequest $request, CalendarEvent $event, UpdateCalendarEventAction $update): RedirectResponse
     {
-        $updated = $update->handle($event, $request->validated(), $this->user($request));
+        $updated = $update->handle($this->household($request), $event, $request->validated(), $this->user($request));
 
         return back()->with('toast', "“{$updated->title}” updated");
     }
@@ -60,7 +60,7 @@ class CalendarController extends Controller
     public function destroy(Request $request, CalendarEvent $event, DeleteCalendarEventAction $delete): RedirectResponse
     {
         $title = $event->title;
-        $delete->handle($event, $this->user($request));
+        $delete->handle($this->household($request), $event, $this->user($request));
 
         return back()->with('toast', "“{$title}” deleted");
     }

@@ -206,6 +206,12 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->notify(new ResetPasswordNotification($token));
     }
 
+    /** Whether push is turned on for any of their devices. */
+    public function hasPushDevices(): bool
+    {
+        return $this->pushSubscriptions()->exists();
+    }
+
     /** Every category pushes unless this person has turned it off. */
     public function wantsPushFor(NotificationCategoryEnum $category): bool
     {

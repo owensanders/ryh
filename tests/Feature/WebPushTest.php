@@ -44,7 +44,7 @@ class WebPushTest extends TestCase
     {
         $owner = User::factory()->create();
         $chore = Chore::factory()->create(['household_id' => $owner->household_id]);
-        $notification = new ChoreAssignedNotification($chore, $owner);
+        $notification = new ChoreAssignedNotification($chore->household, $chore, $owner);
 
         $partner = User::factory()->create(['household_id' => $owner->household_id]);
         $this->assertNotContains(QueuedWebPushChannel::class, $notification->via($partner));
@@ -63,7 +63,7 @@ class WebPushTest extends TestCase
         $this->subscribe($partner);
         $chore = Chore::factory()->create(['household_id' => $owner->household_id]);
 
-        $this->assertSame(['database', QueuedBroadcastChannel::class], (new ChoreAssignedNotification($chore, $owner))->via($partner));
+        $this->assertSame(['database', QueuedBroadcastChannel::class], (new ChoreAssignedNotification($chore->household, $chore, $owner))->via($partner));
     }
 
     #[Test]
@@ -102,7 +102,7 @@ class WebPushTest extends TestCase
         $chore = Chore::factory()->create(['household_id' => $owner->household_id, 'assigned_to' => $partner->id]);
         $chore->delete();
 
-        $partner->notify(new ChoreDeletedNotification($chore, $owner));
+        $partner->notify(new ChoreDeletedNotification($chore->household, $chore, $owner));
 
         // Plain values only, so the job can't fail reloading the deleted chore.
         Queue::assertPushed(SendQueuedNotifications::class, function (SendQueuedNotifications $job) {
@@ -117,6 +117,7 @@ class WebPushTest extends TestCase
         $owner = User::factory()->create();
         $partner = User::factory()->create(['household_id' => $owner->household_id]);
         $push = new PushNotification((new ChoreAssignedNotification(
+            $owner->lastHousehold,
             Chore::factory()->create(['household_id' => $owner->household_id, 'name' => 'Bins']),
             $owner,
         ))->toPushMessage($partner));
