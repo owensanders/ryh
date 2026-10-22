@@ -3,11 +3,11 @@ import InstallGuide from '@/components/landing/InstallGuide.vue';
 import PhoneMockup from '@/components/landing/PhoneMockup.vue';
 import PublicLayout from '@/layouts/PublicLayout.vue';
 import { formatPlanPrice, tint } from '@/lib/ryh';
-import type { Plan } from '@/types/ryh';
+import type { PlanData } from '@/types/generated';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
 
-const props = defineProps<{ plan: Plan }>();
+const props = defineProps<{ plan: PlanData }>();
 
 const email = ref('');
 

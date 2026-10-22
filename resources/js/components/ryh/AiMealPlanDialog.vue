@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { SharedData } from '@/types';
-import type { AiMealSuggestion, AiPlannerOptions, PlannerDay, ShoppingList } from '@/types/ryh';
+import type { MealSuggestionData, PlannerDayData, ShoppingListData } from '@/types/generated';
+import type { AiPlannerOptions } from '@/types/ryh';
 import type { RequestPayload } from '@inertiajs/core';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { ArrowLeftRight, Check, Sparkles } from 'lucide-vue-next';
@@ -14,8 +15,8 @@ const props = defineProps<{
     aiAvailableFrom: string | null;
     aiSuggestedBudget: number | null;
     aiOptions: AiPlannerOptions;
-    days: PlannerDay[];
-    shoppingLists: ShoppingList[];
+    days: PlannerDayData[];
+    shoppingLists: ShoppingListData[];
 }>();
 
 const emit = defineEmits<{ 'update:open': [value: boolean] }>();
@@ -25,7 +26,7 @@ const page = usePage<SharedData>();
 const stage = ref<'form' | 'loading' | 'result'>('form');
 // Which question step of the form is showing.
 const step = ref(0);
-const pool = ref<AiMealSuggestion[]>([]);
+const pool = ref<MealSuggestionData[]>([]);
 // Pool index shown for each selected day, in day order.
 const choices = ref<number[]>([]);
 const regenerated = ref(false);
@@ -223,7 +224,7 @@ function pounds(amount: number): string {
     return `£${amount.toFixed(2)}`;
 }
 
-function showPool(from: 'ai' | 'library', meals: AiMealSuggestion[]): void {
+function showPool(from: 'ai' | 'library', meals: MealSuggestionData[]): void {
     source.value = from;
     pool.value = meals;
     choices.value = plannedDays.value.map((_, position) => position).filter((index) => index < meals.length);
@@ -362,7 +363,7 @@ const acceptFailureMessage = computed(() => {
     return `Added ${added} of ${assignment.value.length}. Couldn't add ${acceptFailures.value.join(', ')}${reason}. The rest are on your planner.`;
 });
 
-function mealPayload(entry: { day: PlannerDay; suggestion: AiMealSuggestion }, index: number): RequestPayload {
+function mealPayload(entry: { day: PlannerDayData; suggestion: MealSuggestionData }, index: number): RequestPayload {
     const common = { new_recipe_shopping_list_id: targetListId.value, planned_on: entry.day.date, slot: 'dinner', cook_id: null };
 
     // A library recipe is planned by id alone, which leaves its saved details untouched.
@@ -384,7 +385,7 @@ function mealPayload(entry: { day: PlannerDay; suggestion: AiMealSuggestion }, i
     };
 }
 
-function acceptNext(entries: { day: PlannerDay; suggestion: AiMealSuggestion }[]): void {
+function acceptNext(entries: { day: PlannerDayData; suggestion: MealSuggestionData }[]): void {
     if (acceptIndex.value >= entries.length) {
         accepting.value = false;
 

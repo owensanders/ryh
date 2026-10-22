@@ -2,12 +2,12 @@
 import RyhLogo from '@/components/ryh/RyhLogo.vue';
 import { logout } from '@/lib/logout';
 import { formatPlanPrice } from '@/lib/ryh';
-import type { Plan } from '@/types/ryh';
+import type { PlanData } from '@/types/generated';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 const props = defineProps<{
-    plan: Plan;
+    plan: PlanData;
     isOwner: boolean;
     paymentIssue: boolean;
     billingConfigured: boolean;

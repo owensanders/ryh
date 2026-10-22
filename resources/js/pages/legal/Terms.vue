@@ -2,11 +2,11 @@
 import LegalDocument from '@/components/legal/LegalDocument.vue';
 import Tbc from '@/components/legal/Tbc.vue';
 import { formatPlanPrice } from '@/lib/ryh';
-import type { Legal, Plan } from '@/types/ryh';
+import type { LegalData, PlanData } from '@/types/generated';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
-const props = defineProps<{ legal: Legal; plan: Plan }>();
+const props = defineProps<{ legal: LegalData; plan: PlanData }>();
 
 const entityKind = computed(() =>
     props.legal.entityType === 'limited_company'

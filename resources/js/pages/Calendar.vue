@@ -3,14 +3,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useHouseholdRole } from '@/composables/useHouseholdRole';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
-import type { CalendarDay, CalendarEvent, CalendarMonth } from '@/types/ryh';
+import type { CalendarDayData, CalendarEventData, CalendarMonthData } from '@/types/generated';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
 import { computed, nextTick, ref } from 'vue';
 
 defineOptions({ layout: RyhShell });
 
-const props = defineProps<{ calendar: CalendarMonth }>();
+const props = defineProps<{ calendar: CalendarMonthData }>();
 
 /** How many event pills fit in a cell before it collapses to "+N more". */
 const VISIBLE_PER_CELL = 3;
@@ -23,8 +23,8 @@ const canEditCalendar = computed(() => canManage.value || isTeen.value);
 
 const filter = ref<number | null>(null);
 const open = ref(false);
-const editing = ref<CalendarEvent | null>(null);
-const expandedDay = ref<CalendarDay | null>(null);
+const editing = ref<CalendarEventData | null>(null);
+const expandedDay = ref<CalendarDayData | null>(null);
 
 const form = useForm({
     title: '',
@@ -41,7 +41,7 @@ const form = useForm({
  * Filtering is client-side — the whole month is already in props. An event with
  * no attendees is for the whole house, so it applies to whoever is filtered on.
  */
-function visibleEvents(day: CalendarDay): CalendarEvent[] {
+function visibleEvents(day: CalendarDayData): CalendarEventData[] {
     if (filter.value === null) {
         return day.events;
     }
@@ -60,7 +60,7 @@ const defaultDay = computed(() => props.calendar.days.find((day) => day.isToday)
 const selectedDate = ref(defaultDay.value.date);
 const selectedDay = computed(() => props.calendar.days.find((day) => day.date === selectedDate.value) ?? defaultDay.value);
 
-function openNew(day: CalendarDay): void {
+function openNew(day: CalendarDayData): void {
     editing.value = null;
     expandedDay.value = null;
     form.clearErrors();
@@ -78,7 +78,7 @@ function openNew(day: CalendarDay): void {
     open.value = true;
 }
 
-async function openEdit(event: CalendarEvent): Promise<void> {
+async function openEdit(event: CalendarEventData): Promise<void> {
     if (!canEditCalendar.value || event.date < todayIso.value) {
         return;
     }

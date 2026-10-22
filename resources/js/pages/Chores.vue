@@ -5,7 +5,7 @@ import { useHouseholdRole } from '@/composables/useHouseholdRole';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import { dial, tickStyle } from '@/lib/ryh';
-import type { Chore, ChoreColumn, ChoreStatus, Member, MemberScore } from '@/types/ryh';
+import type { ChoreColumnData, ChoreData, ChoreStatusEnum, MemberData, MemberScoreData } from '@/types/generated';
 import { router, useForm } from '@inertiajs/vue3';
 import { Bell, Plus, X } from 'lucide-vue-next';
 import { computed, onUnmounted, ref } from 'vue';
@@ -13,9 +13,9 @@ import { computed, onUnmounted, ref } from 'vue';
 defineOptions({ layout: RyhShell });
 
 const props = defineProps<{
-    columns: ChoreColumn[];
-    scores: MemberScore[];
-    members: Member[];
+    columns: ChoreColumnData[];
+    scores: MemberScoreData[];
+    members: MemberData[];
     notifyChoresAvailableAt: string | null;
 }>();
 
@@ -81,7 +81,7 @@ function startDrag(event: DragEvent, id: number): void {
     }
 }
 
-function drop(status: ChoreStatus): void {
+function drop(status: ChoreStatusEnum): void {
     const chore = draggingId.value;
     draggingId.value = null;
 
@@ -92,7 +92,7 @@ function drop(status: ChoreStatus): void {
     router.patch(route('chores.move', { chore }), { status }, { preserveScroll: true });
 }
 
-function toggle(chore: Chore): void {
+function toggle(chore: ChoreData): void {
     if (!canToggleChore(chore)) {
         return;
     }
@@ -102,14 +102,14 @@ function toggle(chore: Chore): void {
 
 // Edit
 const open = ref(false);
-const editing = ref<Chore | null>(null);
+const editing = ref<ChoreData | null>(null);
 
 const form = useForm({
     name: '',
     assigned_to: '',
 });
 
-function openEdit(chore: Chore): void {
+function openEdit(chore: ChoreData): void {
     editing.value = chore;
     form.clearErrors();
     form.defaults({
@@ -140,9 +140,9 @@ function submit(): void {
 
 // Delete
 const confirmOpen = ref(false);
-const deleting = ref<Chore | null>(null);
+const deleting = ref<ChoreData | null>(null);
 
-function requestDelete(chore: Chore): void {
+function requestDelete(chore: ChoreData): void {
     deleting.value = chore;
     confirmOpen.value = true;
 }

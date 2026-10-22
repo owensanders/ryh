@@ -7,14 +7,15 @@ import { useHouseholdRole } from '@/composables/useHouseholdRole';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import { tint } from '@/lib/ryh';
-import type { Recipe, ShoppingList, TagOption } from '@/types/ryh';
+import type { RecipeData, ShoppingListData } from '@/types/generated';
+import type { TagOption } from '@/types/ryh';
 import { router, useForm } from '@inertiajs/vue3';
 import { Plus, Star } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 defineOptions({ layout: RyhShell });
 
-const props = defineProps<{ recipes: Recipe[]; tagOptions: TagOption[]; shoppingLists: ShoppingList[] }>();
+const props = defineProps<{ recipes: RecipeData[]; tagOptions: TagOption[]; shoppingLists: ShoppingListData[] }>();
 
 const { canManage } = useHouseholdRole();
 
@@ -29,7 +30,7 @@ const HANDLED_ERROR_KEYS = ['name', 'description'];
 const hasUnhandledErrors = computed(() => Object.keys(form.errors).some((key) => !HANDLED_ERROR_KEYS.includes(key)));
 
 const open = ref(false);
-const editing = ref<Recipe | null>(null);
+const editing = ref<RecipeData | null>(null);
 
 const form = useForm({
     name: '',
@@ -64,7 +65,7 @@ function openNew(): void {
     open.value = true;
 }
 
-function openEdit(recipe: Recipe): void {
+function openEdit(recipe: RecipeData): void {
     editing.value = recipe;
     selectedListId.value = null;
     form.clearErrors();

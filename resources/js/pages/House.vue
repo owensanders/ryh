@@ -5,13 +5,13 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import { formatPlanPrice } from '@/lib/ryh';
-import type { House } from '@/types/ryh';
+import type { HouseData } from '@/types/generated';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
 defineOptions({ layout: RyhShell });
 
-const props = defineProps<{ house: House }>();
+const props = defineProps<{ house: HouseData }>();
 
 const invite = useForm({ email: '', role: 'adult', guardian_confirmed: false });
 

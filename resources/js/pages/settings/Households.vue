@@ -3,14 +3,14 @@ import LeaveHousehold from '@/components/LeaveHousehold.vue';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
-import type { HouseholdOption } from '@/types/ryh';
+import type { HouseholdOptionData } from '@/types/generated';
 import { Link, router } from '@inertiajs/vue3';
 import { House } from 'lucide-vue-next';
 
 defineOptions({ layout: RyhShell });
 
 defineProps<{
-    households: HouseholdOption[];
+    households: HouseholdOptionData[];
     currentHouseholdId: number | null;
 }>();
 

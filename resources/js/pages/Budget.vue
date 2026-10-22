@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import { donut } from '@/lib/ryh';
-import type { BudgetCategory, BudgetMonthSummary, IncomeSource } from '@/types/ryh';
+import type { BudgetCategoryData, BudgetMonthSummaryData, IncomeSourceData } from '@/types/generated';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -23,10 +23,10 @@ const props = defineProps<{
     perDay: string;
     budgetedPence: number;
     incomeTotalPence: number;
-    income: IncomeSource[];
+    income: IncomeSourceData[];
     incomeTotal: string;
-    categories: BudgetCategory[];
-    history: BudgetMonthSummary[];
+    categories: BudgetCategoryData[];
+    history: BudgetMonthSummaryData[];
 }>();
 
 function pct(part: number, whole: number): number {
@@ -42,13 +42,13 @@ const incomeExpenseDonut = computed(() => donut(incomePct.value, 'var(--ryh-mint
 
 // Last 3 months bar chart
 const maxHistoryPence = computed(() => Math.max(1, ...props.history.map((entry) => entry.totalPence)));
-function historyBarHeight(entry: BudgetMonthSummary): number {
+function historyBarHeight(entry: BudgetMonthSummaryData): number {
     return Math.round((entry.totalPence / maxHistoryPence.value) * 100);
 }
 
 // Income sources — add / edit / delete
 const incomeOpen = ref(false);
-const editingIncome = ref<IncomeSource | null>(null);
+const editingIncome = ref<IncomeSourceData | null>(null);
 const incomeDialogTitle = computed(() => (editingIncome.value ? 'Edit income source' : 'New income source'));
 
 const incomeForm = useForm({ label: '', meta: '', amount: '', is_recurring: false as boolean });
@@ -61,7 +61,7 @@ function openNewIncome(): void {
     incomeOpen.value = true;
 }
 
-function openEditIncome(income: IncomeSource): void {
+function openEditIncome(income: IncomeSourceData): void {
     editingIncome.value = income;
     incomeForm.clearErrors();
     incomeForm.defaults({
@@ -102,7 +102,7 @@ function destroyIncome(): void {
 const editingCategoryId = ref<number | null>(null);
 const categoryForm = useForm({ label: '', budgeted: '', is_recurring: false as boolean });
 
-function openEditCategory(category: BudgetCategory): void {
+function openEditCategory(category: BudgetCategoryData): void {
     editingCategoryId.value = category.id;
     categoryForm.clearErrors();
     categoryForm.defaults({
@@ -113,14 +113,14 @@ function openEditCategory(category: BudgetCategory): void {
     categoryForm.reset();
 }
 
-function submitCategory(category: BudgetCategory): void {
+function submitCategory(category: BudgetCategoryData): void {
     categoryForm.patch(route('budget.categories.update', { category: category.id }), {
         preserveScroll: true,
         onSuccess: () => (editingCategoryId.value = null),
     });
 }
 
-function destroyCategory(category: BudgetCategory): void {
+function destroyCategory(category: BudgetCategoryData): void {
     requestConfirm(`Remove "${category.label}"? Its logged spending will be removed too.`, () => {
         router.delete(route('budget.categories.destroy', { category: category.id }), { preserveScroll: true });
     });
