@@ -143,3 +143,22 @@ test("a file that can't be uploaded says why", async ({ page }) => {
 
     await expect(page.getByRole('alert').filter({ hasText: /must be a file of type/ })).toBeVisible();
 });
+
+test("a recurring category comes into next month when it's brought in", async ({ page }) => {
+    const category = uniqueName('Gym');
+
+    await page.goto('/budget');
+    await page.getByLabel('New category', { exact: true }).fill(category);
+    await page.getByLabel('New category budget').fill('35');
+    await page.getByLabel('Repeat this every month').check();
+    await page.getByRole('button', { name: 'Add', exact: true }).click();
+    await expect(page.getByText(category, { exact: true })).toBeVisible();
+
+    // Looking at next month copies nothing by itself.
+    await page.getByRole('link', { name: '›' }).click();
+    await expect(page.getByText(category, { exact: true })).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Bring them in now' }).click();
+    await expect(page.getByText(category, { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Bring them in now' })).toHaveCount(0);
+});

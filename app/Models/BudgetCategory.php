@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\PaletteEnum;
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Database\Factories\BudgetCategoryFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -41,6 +42,17 @@ class BudgetCategory extends Model
             'is_recurring' => 'boolean',
             'month' => 'date',
         ];
+    }
+
+    /**
+     * Recurring ones from months before this one: what SetUpBudgetMonthAction would bring in.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function recurringBefore(Builder $query, CarbonInterface $month): void
+    {
+        $query->where('is_recurring', true)->whereDate('month', '<', $month->startOfMonth()->toDateString());
     }
 
     /**

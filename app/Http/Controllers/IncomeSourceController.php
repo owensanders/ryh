@@ -19,7 +19,7 @@ class IncomeSourceController extends Controller
 
     public function store(IncomeSourceRequest $request, CreateIncomeSourceAction $create): RedirectResponse
     {
-        $month = $request->query('month');
+        $month = $request->validated('month');
 
         $income = $create->handle(
             $this->household($request),

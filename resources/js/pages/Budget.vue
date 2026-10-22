@@ -6,12 +6,14 @@ import BudgetOverview from '@/components/ryh/budget/BudgetOverview.vue';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import type { BudgetCategoryData, BudgetMonthSummaryData, IncomeSourceData } from '@/types/generated';
+import { router } from '@inertiajs/vue3';
 
 defineOptions({ layout: RyhShell });
 
-defineProps<{
+const props = defineProps<{
     month: string;
     isCurrentMonth: boolean;
+    recurringToBringIn: boolean;
     monthLabel: string;
     previousMonth: string;
     nextMonth: string;
@@ -26,6 +28,11 @@ defineProps<{
     categories: BudgetCategoryData[];
     history: BudgetMonthSummaryData[];
 }>();
+
+// Recurring items arrive on the 1st; a month ahead can have them brought in early.
+function bringInRecurring(): void {
+    router.post(route('budget.setUp'), { month: props.month }, { preserveScroll: true });
+}
 </script>
 
 <template>
@@ -45,6 +52,14 @@ defineProps<{
                 :income-total-pence="incomeTotalPence"
                 :income-total="incomeTotal"
             />
+
+            <div
+                v-if="recurringToBringIn"
+                class="flex flex-wrap items-center gap-3 rounded-[18px] border border-ryh-line bg-ryh-panel px-4 py-3 text-[13.5px] text-ryh-ink2"
+            >
+                <span class="min-w-0 flex-1">Your recurring categories and income come into {{ monthLabel }} on the 1st.</span>
+                <button type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="bringInRecurring">Bring them in now</button>
+            </div>
 
             <BudgetOverview
                 :month="month"

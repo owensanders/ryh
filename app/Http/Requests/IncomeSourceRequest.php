@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Traits\NormalisesInputTrait;
+use App\Traits\ValidatesBudgetMonthTrait;
 use Illuminate\Foundation\Http\FormRequest;
 
 class IncomeSourceRequest extends FormRequest
 {
+    use ValidatesBudgetMonthTrait;
     use NormalisesInputTrait;
 
     /** @return array<string, mixed> */
     public function rules(): array
     {
         return [
+            // On a create, the month it's for (a query parameter); unused on an update.
+            'month' => $this->budgetMonthRules(),
             'label' => ['required', 'string', 'max:60'],
             'meta' => ['nullable', 'string', 'max:60'],
             'amount' => ['required', 'numeric', 'min:0'],

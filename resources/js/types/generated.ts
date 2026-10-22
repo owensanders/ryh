@@ -55,6 +55,7 @@ export type BudgetMonthSummaryData = {
 export type BudgetScreenData = {
     month: string;
     isCurrentMonth: boolean;
+    recurringToBringIn: boolean;
     monthLabel: string;
     previousMonth: string;
     nextMonth: string;

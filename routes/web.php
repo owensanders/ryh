@@ -118,6 +118,7 @@ Route::prefix('h/{household}')->middleware(['auth', 'verified', 'household', 'th
         Route::delete('chores/{chore}', [ChoreController::class, 'destroy'])->name('chores.destroy')->can('delete', 'chore');
 
         Route::get('budget', [BudgetController::class, 'index'])->name('budget.index')->can('viewAny', BudgetCategory::class);
+        Route::post('budget/set-up', [BudgetController::class, 'setUpMonth'])->name('budget.setUp')->can('create', BudgetCategory::class);
         Route::post('budget/categories', [BudgetController::class, 'storeCategory'])->name('budget.categories.store')->can('create', BudgetCategory::class);
         Route::patch('budget/categories/{category}', [BudgetController::class, 'updateCategory'])->name('budget.categories.update')->can('update', 'category');
         Route::delete('budget/categories/{category}', [BudgetController::class, 'destroyCategory'])->name('budget.categories.destroy')->can('delete', 'category');

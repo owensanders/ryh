@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Actions\Budget\CarryForwardRecurringCategoriesAction;
-use App\Actions\Budget\CarryForwardRecurringIncomeAction;
 use App\Actions\Budget\CreateBudgetCategoryAction;
 use App\Actions\Budget\DeleteBudgetCategoryAction;
+use App\Actions\Budget\SetUpBudgetMonthAction;
 use App\Actions\Budget\UpdateBudgetCategoryAction;
 use App\Http\Requests\BudgetCategoryRequest;
 use App\Http\Requests\IndexBudgetRequest;
+use App\Http\Requests\SetUpBudgetMonthRequest;
 use App\Models\BudgetCategory;
 use App\Traits\ResolvesHouseholdTrait;
 use App\ViewModels\Budget\BudgetViewModel;
@@ -23,30 +23,32 @@ class BudgetController extends Controller
 {
     use ResolvesHouseholdTrait;
 
-    public function index(
-        IndexBudgetRequest $request,
-        CarryForwardRecurringCategoriesAction $carryForwardCategories,
-        CarryForwardRecurringIncomeAction $carryForwardIncome,
-        BudgetViewModel $budget,
-    ): Response {
+    /** Only reads: a month is set up by the schedule, by setUpMonth() or by adding to it. */
+    public function index(IndexBudgetRequest $request, BudgetViewModel $budget): Response
+    {
         $month = $request->validated('month');
         $household = $this->household($request);
         // `!` resets the unspecified day/time — without it PHP fills the day from
         // today, so on the 31st "2026-09" would roll over into October.
         $first = ($month !== null ? CarbonImmutable::createFromFormat('!Y-m', $month) ?? $household->now() : $household->now())->startOfMonth();
 
-        // Opening a month that hasn't been set up copies the recurring
-        // categories and income forward into it. View models only read, so
-        // that happens here, first.
-        $carryForwardCategories->handle($household, $first);
-        $carryForwardIncome->handle($household, $first);
-
         return Inertia::render('Budget', $budget->toData($household, $first));
+    }
+
+    /** Bringing the recurring categories and income into a month before the schedule does. */
+    public function setUpMonth(SetUpBudgetMonthRequest $request, SetUpBudgetMonthAction $setUp): RedirectResponse
+    {
+        $setUp->handle(
+            $this->household($request),
+            CarbonImmutable::createFromFormat('!Y-m', (string) $request->validated('month')) ?? $this->household($request)->now(),
+        );
+
+        return back()->with('toast', 'Recurring items brought in');
     }
 
     public function storeCategory(BudgetCategoryRequest $request, CreateBudgetCategoryAction $create): RedirectResponse
     {
-        $month = $request->query('month');
+        $month = $request->validated('month');
 
         $category = $create->handle(
             $this->household($request),

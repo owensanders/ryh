@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Enums\PaletteEnum;
 use App\Models\BudgetCategory;
+use App\Models\Household;
 use App\Models\IncomeSource;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -250,6 +251,74 @@ class BudgetTest extends TestCase
     }
 
     #[Test]
+    public function viewingAMonthWritesNothingButOffersItsRecurringItems(): void
+    {
+        $user = User::factory()->create();
+        $thisMonth = CarbonImmutable::now()->startOfMonth();
+        IncomeSource::factory()->recurring()->create(['household_id' => $user->household_id, 'label' => 'Salary', 'month' => $thisMonth]);
+
+        $this->actingAs($user)->get($this->hh('/budget?month=').$thisMonth->addMonth()->format('Y-m'))
+            ->assertInertia(fn ($page) => $page->where('recurringToBringIn', true));
+
+        $this->assertDatabaseCount('income_sources', 1);
+
+        $this->actingAs($user)->get($this->hh('/budget'))
+            ->assertInertia(fn ($page) => $page->where('recurringToBringIn', false));
+    }
+
+    #[Test]
+    public function addingToAnEmptyMonthBringsItsRecurringItemsInFirst(): void
+    {
+        $user = User::factory()->create();
+        $thisMonth = CarbonImmutable::now()->startOfMonth();
+        $nextMonth = $thisMonth->addMonth();
+        IncomeSource::factory()->recurring()->create(['household_id' => $user->household_id, 'label' => 'Salary', 'month' => $thisMonth]);
+        BudgetCategory::factory()->create(['household_id' => $user->household_id, 'label' => 'Rent', 'is_recurring' => true, 'month' => $thisMonth]);
+
+        $this->actingAs($user)
+            ->post($this->hh('/budget/categories?month=').$nextMonth->format('Y-m'), ['label' => 'Holiday', 'budgeted' => '300'])
+            ->assertSessionHasNoErrors();
+
+        $labels = BudgetCategory::query()->whereDate('month', $nextMonth->toDateString())->orderBy('position')->pluck('label')->all();
+        $this->assertSame(['Rent', 'Holiday'], $labels);
+        $this->assertDatabaseHas('income_sources', ['label' => 'Salary', 'month' => $nextMonth->toDateString()]);
+    }
+
+    #[Test]
+    public function theScheduleSetsUpEachHouseholdsOwnCurrentMonth(): void
+    {
+        // 23:30 UTC on 31 October: already 1 November in Auckland, still October in London.
+        $this->travelTo(CarbonImmutable::parse('2026-10-31 23:30:00', 'UTC'));
+        $auckland = User::factory()->create();
+        $london = User::factory()->create();
+        Household::where('id', $auckland->household_id)->update(['timezone' => 'Pacific/Auckland']);
+
+        foreach ([$auckland, $london] as $user) {
+            IncomeSource::factory()->recurring()->create(['household_id' => $user->household_id, 'label' => 'Salary', 'month' => '2026-10-01']);
+        }
+
+        $this->artisan('budget:carry-forward')->assertSuccessful();
+        $this->artisan('budget:carry-forward')->assertSuccessful();
+
+        $this->assertSame(1, IncomeSource::query()->where('household_id', $auckland->household_id)->whereDate('month', '2026-11-01')->count());
+        $this->assertSame(0, IncomeSource::query()->where('household_id', $london->household_id)->whereDate('month', '2026-11-01')->count());
+    }
+
+    #[Test]
+    public function aMonthFarOutsideTheWindowIsRefused(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->get($this->hh('/budget?month=2099-01'))->assertSessionHasErrors('month');
+        $this->actingAs($user)->post($this->hh('/budget/set-up'), ['month' => '2099-01'])->assertSessionHasErrors('month');
+        $this->actingAs($user)
+            ->post($this->hh('/budget/categories?month=1999-01'), ['label' => 'Time machine', 'budgeted' => '1'])
+            ->assertSessionHasErrors('month');
+
+        $this->assertDatabaseCount('budget_categories', 0);
+    }
+
+    #[Test]
     public function itCarriesForwardRecurringIncomeIntoAnEmptyMonth(): void
     {
         $user = User::factory()->create();
@@ -268,7 +337,7 @@ class BudgetTest extends TestCase
             'month' => $thisMonth,
         ]);
 
-        $this->actingAs($user)->get($this->hh('/budget?month=').$nextMonth->format('Y-m'))->assertOk();
+        $this->actingAs($user)->post($this->hh('/budget/set-up'), ['month' => $nextMonth->format('Y-m')])->assertRedirect();
 
         $this->assertDatabaseHas('income_sources', [
             'household_id' => $user->household_id,
@@ -297,8 +366,8 @@ class BudgetTest extends TestCase
             'month' => $thisMonth,
         ]);
 
-        $this->actingAs($user)->get($this->hh('/budget?month=').$nextMonth->format('Y-m'))->assertOk();
-        $this->actingAs($user)->get($this->hh('/budget?month=').$nextMonth->format('Y-m'))->assertOk();
+        $this->actingAs($user)->post($this->hh('/budget/set-up'), ['month' => $nextMonth->format('Y-m')])->assertRedirect();
+        $this->actingAs($user)->post($this->hh('/budget/set-up'), ['month' => $nextMonth->format('Y-m')])->assertRedirect();
 
         $this->assertDatabaseCount('income_sources', 2);
     }
@@ -317,7 +386,7 @@ class BudgetTest extends TestCase
         ]);
 
         // The month in between is never visited, so it's genuinely empty.
-        $this->actingAs($user)->get($this->hh('/budget?month=').$twoMonthsAhead->format('Y-m'))->assertOk();
+        $this->actingAs($user)->post($this->hh('/budget/set-up'), ['month' => $twoMonthsAhead->format('Y-m')])->assertRedirect();
 
         $this->assertDatabaseHas('income_sources', [
             'household_id' => $user->household_id,
@@ -346,7 +415,7 @@ class BudgetTest extends TestCase
             'month' => $thisMonth,
         ]);
 
-        $this->actingAs($user)->get($this->hh('/budget?month=').$nextMonth->format('Y-m'))->assertOk();
+        $this->actingAs($user)->post($this->hh('/budget/set-up'), ['month' => $nextMonth->format('Y-m')])->assertRedirect();
 
         $this->assertDatabaseHas('budget_categories', [
             'household_id' => $user->household_id,
@@ -376,8 +445,8 @@ class BudgetTest extends TestCase
             'month' => $thisMonth,
         ]);
 
-        $this->actingAs($user)->get($this->hh('/budget?month=').$nextMonth->format('Y-m'))->assertOk();
-        $this->actingAs($user)->get($this->hh('/budget?month=').$nextMonth->format('Y-m'))->assertOk();
+        $this->actingAs($user)->post($this->hh('/budget/set-up'), ['month' => $nextMonth->format('Y-m')])->assertRedirect();
+        $this->actingAs($user)->post($this->hh('/budget/set-up'), ['month' => $nextMonth->format('Y-m')])->assertRedirect();
 
         $this->assertDatabaseCount('budget_categories', 2);
     }
@@ -397,7 +466,7 @@ class BudgetTest extends TestCase
         ]);
 
         // The month in between is never visited, so it's genuinely empty.
-        $this->actingAs($user)->get($this->hh('/budget?month=').$twoMonthsAhead->format('Y-m'))->assertOk();
+        $this->actingAs($user)->post($this->hh('/budget/set-up'), ['month' => $twoMonthsAhead->format('Y-m')])->assertRedirect();
 
         $this->assertDatabaseHas('budget_categories', [
             'household_id' => $user->household_id,
@@ -420,7 +489,7 @@ class BudgetTest extends TestCase
             'month' => $thisMonth,
         ]);
 
-        $this->actingAs($user)->get($this->hh('/budget?month=').$nextMonth->format('Y-m'))->assertOk();
+        $this->actingAs($user)->post($this->hh('/budget/set-up'), ['month' => $nextMonth->format('Y-m')])->assertRedirect();
 
         $carried = BudgetCategory::query()->whereDate('month', $nextMonth->toDateString())->firstOrFail();
 
