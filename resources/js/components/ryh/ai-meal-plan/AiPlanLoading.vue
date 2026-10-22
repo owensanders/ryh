@@ -59,7 +59,9 @@ const loadingProgress = computed(() => 95 * (1 - Math.exp(-elapsed.value / 20)))
             </span>
             <div class="min-w-0">
                 <p class="text-[14px] font-extrabold text-ryh-ink">Planning your week</p>
-                <p class="text-[12.5px] text-ryh-ink2">This usually takes 30–60 seconds. Keep this window open.</p>
+                <p class="text-[12.5px] text-ryh-ink2">
+                    This usually takes 30–60 seconds. You can close this and carry on: it'll be here when you come back.
+                </p>
             </div>
         </div>
 

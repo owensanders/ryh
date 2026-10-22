@@ -125,6 +125,7 @@ test.describe('a fresh household', () => {
 
         await expect(dialog.getByRole('heading', { name: 'Your week, ready to go' })).toBeVisible({ timeout: 15_000 });
         await expect(dialog.getByText('Lemon chicken traybake')).toBeVisible();
+
         await dialog.getByRole('button', { name: 'Accept this week' }).click();
         await expect(dialog).toBeHidden();
         await expect(page.getByTitle('Lemon chicken traybake').first()).toBeVisible();
@@ -155,5 +156,14 @@ test.describe('a fresh household', () => {
         await dialog.getByRole('button', { name: 'Use my recipes' }).click();
         await expect(dialog.getByRole('heading', { name: 'Your week, ready to go' })).toBeVisible();
         await expect(dialog.getByText(/From your saved recipes/)).toBeVisible();
+
+        // The AI plan is kept: a browser that hasn't shown it yet (here, this one with its memory cleared) opens on it.
+        await page.keyboard.press('Escape');
+        await expect(dialog).toBeHidden();
+        await page.evaluate(() => localStorage.removeItem('ryh:ai-plans-seen'));
+        await page.reload();
+        await page.getByRole('button', { name: 'Plan my week' }).click();
+        await expect(dialog.getByRole('heading', { name: 'Your week, ready to go' })).toBeVisible();
+        await expect(dialog.getByText('Lemon chicken traybake')).toBeVisible();
     });
 });

@@ -46,7 +46,6 @@ class HandleInertiaRequestsMiddleware extends Middleware
             'flash' => Inertia::always(fn () => [
                 'toast' => $request->session()->get('toast'),
                 'toastError' => $request->session()->get('toastError'),
-                'aiMeals' => $request->session()->get('aiMeals'),
                 'libraryMeals' => $request->session()->get('libraryMeals'),
             ]),
         ];

@@ -22,7 +22,7 @@ export interface SharedData {
     auth: Auth;
     /** The household in the URL; on pages outside one (settings), the one they were last in. */
     household: { id: number; name: string; slug: string; can: HouseholdAbilitiesData } | null;
-    flash: { toast: string | null; toastError: string | null; aiMeals: MealSuggestionData[] | null; libraryMeals: MealSuggestionData[] | null };
+    flash: { toast: string | null; toastError: string | null; libraryMeals: MealSuggestionData[] | null };
     // Inertia's PageProps requires an index signature to be used with usePage<T>().
     [key: string]: unknown;
     ziggy: {

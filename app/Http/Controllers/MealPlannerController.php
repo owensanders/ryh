@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Meals\AddPlannedMealAction;
 use App\Actions\Meals\DeletePlannedMealAction;
-use App\Actions\Meals\GenerateAiMealPlanAction;
+use App\Actions\Meals\RequestAiMealPlanAction;
 use App\Actions\Meals\RescheduleMealAction;
 use App\Actions\Meals\SuggestLibraryMealPlanAction;
 use App\Actions\Meals\UpdatePlannedMealAction;
@@ -73,11 +73,12 @@ class MealPlannerController extends Controller
         return back()->with('toast', "{$moved->recipe->name} moved");
     }
 
-    public function generateAiPlan(GenerateAiMealPlanRequest $request, GenerateAiMealPlanAction $generate): RedirectResponse
+    /** The plan itself is written by a queued job; the page picks it up as its aiPlan prop. */
+    public function generateAiPlan(GenerateAiMealPlanRequest $request, RequestAiMealPlanAction $requestPlan): RedirectResponse
     {
-        $meals = $generate->handle($this->household($request), $request->validated());
+        $requestPlan->handle($this->household($request), $request->validated(), $this->user($request));
 
-        return back()->with('aiMeals', array_map(fn (MealSuggestionData $meal) => $meal->toArray(), $meals));
+        return back();
     }
 
     public function suggestLibraryPlan(SuggestLibraryMealPlanRequest $request, SuggestLibraryMealPlanAction $suggest): RedirectResponse

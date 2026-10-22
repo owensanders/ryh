@@ -7,13 +7,17 @@ namespace App\Actions\Meals;
 use App\Ai\Agents\MealPlanAgent;
 use App\Ai\AiConfigService;
 use App\Data\MealSuggestionData;
+use App\Enums\AiMealPlanStatusEnum;
 use App\Enums\CookingConfidenceEnum;
+use App\Events\AiMealPlanFinishedEvent;
 use App\Exceptions\MealPlanUnavailableException;
+use App\Models\AiMealPlan;
 use App\Models\Household;
 use App\Notifications\AiCreditsExhaustedNotification;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Ai\Exceptions\AiException;
@@ -21,20 +25,24 @@ use Laravel\Ai\Exceptions\InsufficientCreditsException;
 use Laravel\Ai\Responses\StructuredAgentResponse;
 use LogicException;
 
+/**
+ * Writes an AI meal plan someone asked for (RequestAiMealPlanAction), in a
+ * queued job: the provider takes up to a minute, too long to hold a request.
+ */
 class GenerateAiMealPlanAction
 {
     private const int RECENT_RECIPES = 10;
 
-    private const int LOCK_SECONDS = 120;
+    private const int LOCK_SECONDS = 180;
 
     /**
-     * @param  array<string, mixed>  $data  GenerateAiMealPlanRequest's validated input: people,
-     *                                      budget, diets, avoid, goals, confidence, equipment,
-     *                                      use_up, notes.
+     * Whether the household may have a plan now. Asked when the request comes
+     * in, for a quick answer, and again by the job, under its lock, before any
+     * money is spent.
      *
-     * @return array<int, MealSuggestionData>
+     * @throws MealPlanUnavailableException
      */
-    public function handle(Household $household, array $data): array
+    public function ensureAvailable(Household $household): void
     {
         if (! AiConfigService::isConfigured()) {
             throw MealPlanUnavailableException::notConfigured();
@@ -51,58 +59,113 @@ class GenerateAiMealPlanAction
         if (Household::query()->where('ai_meal_plan_generated_at', '>=', today())->count() >= (int) config('meal_planner.daily_cap')) {
             throw MealPlanUnavailableException::dailyCapReached();
         }
+    }
 
-        // Two adults pressing Generate at once would otherwise both pass the
-        // weekly check above and each pay for a plan.
+    /**
+     * Fills in the plan's meals, or its error when the provider or the
+     * household's allowance says no, and tells whoever asked. Anything
+     * unexpected is left to GenerateAiMealPlanJob::failed().
+     */
+    public function handle(AiMealPlan $plan): void
+    {
+        $household = $plan->household()->firstOrFail();
+
+        // One plan at a time per household, whatever the queue does.
         $lock = Cache::lock("ai-meal-plan:{$household->id}", self::LOCK_SECONDS);
 
         if (! $lock->get()) {
-            throw MealPlanUnavailableException::alreadyGenerating();
+            $this->finish($plan, MealPlanUnavailableException::alreadyGenerating());
+
+            return;
         }
 
         try {
-            $agent = new MealPlanAgent(
-                (int) $data['people'],
-                isset($data['budget']) ? (float) $data['budget'] : null,
-                $data['diets'] ?? [],
-                $this->splitList((string) ($data['avoid'] ?? '')),
-                $data['goals'] ?? [],
-                $this->recentRecipeNames($household),
-                CookingConfidenceEnum::from($data['confidence']),
-                $data['equipment'] ?? [],
-                $this->splitList((string) ($data['use_up'] ?? '')),
-                trim((string) ($data['notes'] ?? '')),
-            );
-
             try {
-                $response = $agent->prompt('Suggest this week\'s dinners.');
-            } catch (InsufficientCreditsException $e) {
-                $this->pauseForMissingCredit($e);
+                $household->refresh();
+                $this->ensureAvailable($household);
+                $meals = $this->ask($household, $plan->answers);
+            } catch (MealPlanUnavailableException $e) {
+                $this->finish($plan, $e);
 
-                throw MealPlanUnavailableException::outOfCredit($e);
-            } catch (AiException|ConnectionException|RequestException $e) {
-                report($e);
-
-                throw MealPlanUnavailableException::providerFailed($e);
+                return;
             }
 
-            // MealPlanAgent declares a schema, so its answer is always structured.
-            if (! $response instanceof StructuredAgentResponse) {
-                throw new LogicException('MealPlanAgent answered without its structured schema.');
-            }
-
-            $household->update(['ai_meal_plan_generated_at' => now()]);
-
-            Log::info('AI meal plan generated', [
-                'household_id' => $household->id,
-                'input_tokens' => $response->usage->promptTokens,
-                'output_tokens' => $response->usage->completionTokens,
-            ]);
-
-            return array_map(MealSuggestionData::fromAi(...), $response['meals']);
+            // Saved before the lock goes, so the next plan sees this week's used.
+            DB::transaction(function () use ($household, $plan, $meals): void {
+                $household->update(['ai_meal_plan_generated_at' => now()]);
+                $plan->update([
+                    'status' => AiMealPlanStatusEnum::Ready,
+                    'meals' => array_map(fn (MealSuggestionData $meal) => $meal->toArray(), $meals),
+                    'finished_at' => now(),
+                ]);
+            });
         } finally {
             $lock->release();
         }
+
+        AiMealPlanFinishedEvent::dispatchFor($plan);
+    }
+
+    /** Marks the plan failed with a message for the person, and tells them. */
+    public function finish(AiMealPlan $plan, MealPlanUnavailableException $reason): void
+    {
+        $plan->update([
+            'status' => AiMealPlanStatusEnum::Failed,
+            'error' => $reason->getMessage(),
+            'finished_at' => now(),
+        ]);
+
+        AiMealPlanFinishedEvent::dispatchFor($plan);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data  GenerateAiMealPlanRequest's validated input: people,
+     *                                      budget, diets, avoid, goals, confidence, equipment,
+     *                                      use_up, notes.
+     *
+     * @return array<int, MealSuggestionData>
+     *
+     * @throws MealPlanUnavailableException
+     */
+    private function ask(Household $household, array $data): array
+    {
+        $agent = new MealPlanAgent(
+            (int) $data['people'],
+            isset($data['budget']) ? (float) $data['budget'] : null,
+            $data['diets'] ?? [],
+            $this->splitList((string) ($data['avoid'] ?? '')),
+            $data['goals'] ?? [],
+            $this->recentRecipeNames($household),
+            CookingConfidenceEnum::from($data['confidence']),
+            $data['equipment'] ?? [],
+            $this->splitList((string) ($data['use_up'] ?? '')),
+            trim((string) ($data['notes'] ?? '')),
+        );
+
+        try {
+            $response = $agent->prompt('Suggest this week\'s dinners.');
+        } catch (InsufficientCreditsException $e) {
+            $this->pauseForMissingCredit($e);
+
+            throw MealPlanUnavailableException::outOfCredit($e);
+        } catch (AiException|ConnectionException|RequestException $e) {
+            report($e);
+
+            throw MealPlanUnavailableException::providerFailed($e);
+        }
+
+        // MealPlanAgent declares a schema, so its answer is always structured.
+        if (! $response instanceof StructuredAgentResponse) {
+            throw new LogicException('MealPlanAgent answered without its structured schema.');
+        }
+
+        Log::info('AI meal plan generated', [
+            'household_id' => $household->id,
+            'input_tokens' => $response->usage->promptTokens,
+            'output_tokens' => $response->usage->completionTokens,
+        ]);
+
+        return array_map(MealSuggestionData::fromAi(...), $response['meals']);
     }
 
     /** @return array<int, string> */

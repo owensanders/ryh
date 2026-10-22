@@ -57,7 +57,7 @@ place.
 `php artisan reverb:start`) for live notifications — no separate step needed.
 
 Containers: `ryh-app` (PHP app + Vite), `ryh-websockets` (Reverb),
-`ryh-queue` (`queue:work`: every email, including verification and password resets, plus live notifications and pushes), `ryh-scheduler` (`schedule:work`: nightly prunes of old notifications, chores completed over 30 days ago and shopping items ticked off over 7 days ago), `ryh-mysql`,
+`ryh-queue` (`queue:work`: every email, including verification and password resets, plus live notifications, pushes and AI meal plans), `ryh-scheduler` (`schedule:work`: nightly prunes of old notifications, chores completed over 30 days ago, shopping items ticked off over 7 days ago and document files nothing points to), `ryh-mysql`,
 `ryh-redis` (cache, sessions and queue), `ryh-mailpit` (catches all
 outgoing mail — inbox at <http://localhost:8025>). The Compose service names
 (`laravel.test`, `reverb`, `queue`, `scheduler`, `mysql`, `redis`, `mailpit`) are unchanged — they're the in-network hostnames and
@@ -173,8 +173,10 @@ flowchart LR
     web -->|"uploads"| s3
     web -->|"checkout"| stripe
     stripe -->|"webhooks"| web
-    web -->|"AI meal plans"| anthropic
 ```
+
+AI meal plans are written by a queued job (below): the provider takes up to a
+minute, too long to hold a request.
 
 Everything else happens in the background, so a slow or unavailable Reverb,
 push service or mail provider delays a notification but never fails the
@@ -187,6 +189,7 @@ flowchart LR
     reverb["Reverb<br/>WebSockets"]
     push(["Web Push services"])
     mail(["Mail provider"])
+    anthropic(["Anthropic"])
     browser["Browser / installed PWA"]
     scheduler["Scheduler<br/>schedule:run"]
     mysql[("MySQL")]
@@ -195,9 +198,10 @@ flowchart LR
     worker -->|"live updates"| reverb
     worker -->|"pushes"| push
     worker -->|"every email"| mail
+    worker -->|"AI meal plans"| anthropic
     reverb -->|"bell"| browser
     push -->|"system notification"| browser
-    scheduler -->|"nightly: prune old notifications,<br/>completed chores, bought items"| mysql
+    scheduler -->|"nightly: prune old notifications,<br/>completed chores, bought items,<br/>orphaned document files"| mysql
 ```
 
 ### Where it runs
@@ -278,7 +282,7 @@ Each layer only talks to the one below it:
 | Actions | `app/Actions/<Area>` | Business rules, transactions, sending notifications; one class per operation with `handle()`. Use Eloquent directly. Return `*Data` objects | Pass request arrays straight to the database |
 | View models | `app/ViewModels/<Area>` | Build one page's props with `toData()`, returning its `*ScreenData`; Eloquent directly | Write anything |
 | Models | `app/Models` | Relations, casts, `#[Scope]` query scopes for queries more than one place needs, small helpers | Business rules |
-| Data | `app/Data` | What a page receives (built by view models); mirrored in `resources/js/types/ryh.ts` | Carry models to the page |
+| Data | `app/Data` | What a page receives (built by view models); its TypeScript types are generated into `resources/js/types/generated.ts` | Carry models to the page |
 
 ### How a notification reaches someone
 
