@@ -19,6 +19,8 @@ class HouseData extends Data
         public string $houseCreated,
         public string $joinCode,
         public bool $joinCodeEnabled,
+        /** An IANA name, e.g. Europe/London. */
+        public string $timezone,
         public array $houseStats,
         public int $memberCount,
         public int $maxMembers,

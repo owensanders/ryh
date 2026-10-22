@@ -5,6 +5,7 @@ import { computed } from 'vue';
 
 const props = defineProps<{
     month: string;
+    isCurrentMonth: boolean;
     monthLabel: string;
     previousMonth: string;
     nextMonth: string;
@@ -18,7 +19,6 @@ const props = defineProps<{
 }>();
 
 const assignedPct = computed(() => percentOf(props.budgetedPence, props.incomeTotalPence));
-const isCurrentMonth = computed(() => props.month === new Date().toISOString().slice(0, 7));
 </script>
 
 <template>

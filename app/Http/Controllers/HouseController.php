@@ -11,7 +11,9 @@ use App\Actions\House\RegenerateJoinCodeAction;
 use App\Actions\House\RemoveMemberAction;
 use App\Actions\House\SubscribeHouseholdAction;
 use App\Actions\House\ToggleJoinCodeAction;
+use App\Actions\House\UpdateHouseholdTimezoneAction;
 use App\Enums\HouseholdRoleEnum;
+use App\Http\Requests\HouseTimezoneRequest;
 use App\Http\Requests\InviteRequest;
 use App\Http\Requests\JoinCodeToggleRequest;
 use App\Http\Requests\RoleRequest;
@@ -73,6 +75,13 @@ class HouseController extends Controller
         $wasPending = $remove->handle($member, $household);
 
         return back()->with('toast', $wasPending ? "{$name} — invite cancelled" : "{$name} removed from the household");
+    }
+
+    public function updateTimezone(HouseTimezoneRequest $request, UpdateHouseholdTimezoneAction $update): RedirectResponse
+    {
+        $update->handle($this->household($request), $request->validated('timezone'));
+
+        return back()->with('toast', 'Time zone updated');
     }
 
     public function toggleJoinCode(JoinCodeToggleRequest $request, ToggleJoinCodeAction $toggle): RedirectResponse

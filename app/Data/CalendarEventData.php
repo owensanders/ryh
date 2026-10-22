@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data;
 
 use App\Models\CalendarEvent;
+use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Data;
 
 class CalendarEventData extends Data
@@ -28,9 +29,11 @@ class CalendarEventData extends Data
         public string $startsAt,
         public ?string $endsAt,
         public AbilitiesData $can,
+        /** Over already, so it can't be changed any more. One still running can. */
+        public bool $hasEnded,
     ) {}
 
-    public static function fromModel(CalendarEvent $event, string $forDate): self
+    public static function fromModel(CalendarEvent $event, string $forDate, CarbonImmutable $now): self
     {
         return new self(
             id: $event->id,
@@ -49,6 +52,7 @@ class CalendarEventData extends Data
             startsAt: $event->starts_at->format('Y-m-d\TH:i'),
             endsAt: $event->ends_at?->format('Y-m-d\TH:i'),
             can: AbilitiesData::for($event, 'update', 'delete'),
+            hasEnded: $event->hasEndedBy($now),
         );
     }
 }

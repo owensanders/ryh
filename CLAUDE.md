@@ -150,6 +150,18 @@ in `AppServiceProvider`.
   The server's next props replace the copy, and a failed request puts it
   back with a toast.
 
+## Dates and time zones
+
+Each household has a `timezone` (from the creator's browser; the owner can
+change it on the House page). Anything about a household's day uses
+`$household->today()` / `$household->now()`, never `today()` / `now()`,
+which are UTC. Times a household enters (calendar events) are stored as its
+clock reads them, not converted, so compare them with `$household->now()`.
+The browser gets dates it needs from the server (`todayDate`, `hasEnded`,
+`isCurrentMonth`) rather than working them out from `toISOString()`. A
+greeting or "today's date" for the reader comes from their own clock
+(`lib/clock.ts`).
+
 ## Transactions
 
 An action that writes more than once wraps the writes in `DB::transaction`.

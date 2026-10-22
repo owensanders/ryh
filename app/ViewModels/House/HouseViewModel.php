@@ -27,6 +27,7 @@ class HouseViewModel
             houseCreated: $household->created_at?->format('F Y') ?? '',
             joinCode: $household->join_code ?? '',
             joinCodeEnabled: $household->join_code_enabled,
+            timezone: $household->timezone,
             houseStats: [
                 new StatData('Members', (string) $activeCount),
                 new StatData('Invites out', (string) $pendingCount),

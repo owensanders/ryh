@@ -13,12 +13,12 @@ import { ref } from 'vue';
 
 defineOptions({ layout: RyhShell });
 
-defineProps<{ calendar: CalendarMonthData }>();
+const props = defineProps<{ calendar: CalendarMonthData }>();
 
 const can = useHouseholdAbilities();
 
 // What's being added or edited, shared with the grids and dialogs below.
-provideCalendarEditor();
+provideCalendarEditor(() => props.calendar.todayDate);
 
 /** The member the month is filtered on, or null for everyone. */
 const filter = ref<number | null>(null);
@@ -38,6 +38,6 @@ const filter = ref<number | null>(null);
         </div>
 
         <CalendarDayDialog :filter="filter" />
-        <CalendarEventDialog :members="calendar.members" />
+        <CalendarEventDialog :members="calendar.members" :today-date="calendar.todayDate" />
     </RyhLayout>
 </template>

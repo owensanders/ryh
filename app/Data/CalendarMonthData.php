@@ -19,6 +19,8 @@ class CalendarMonthData extends Data
         public string $previousMonth,
         public string $nextMonth,
         public string $today,
+        /** The household's date today, `YYYY-MM-DD`: nothing can be added before it. */
+        public string $todayDate,
         public array $weekdayLabels,
         public array $days,
         public array $members,

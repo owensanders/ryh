@@ -33,7 +33,7 @@ class MealPlannerViewModel
     {
         $start = $anyDayInWeek->startOfWeek();
         $end = $start->addDays(6);
-        $today = CarbonImmutable::today();
+        $today = $household->today();
 
         $planned = $household->plannedMeals()
             ->with(['recipe', 'cook'])

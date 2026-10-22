@@ -54,6 +54,7 @@ export type BudgetMonthSummaryData = {
 };
 export type BudgetScreenData = {
     month: string;
+    isCurrentMonth: boolean;
     monthLabel: string;
     previousMonth: string;
     nextMonth: string;
@@ -99,6 +100,7 @@ export type CalendarEventData = {
     startsAt: string;
     endsAt: string | null;
     can: AbilitiesData;
+    hasEnded: boolean;
 };
 export type CalendarMonthData = {
     month: string;
@@ -106,6 +108,7 @@ export type CalendarMonthData = {
     previousMonth: string;
     nextMonth: string;
     today: string;
+    todayDate: string;
     weekdayLabels: string[];
     days: CalendarDayData[];
     members: MemberData[];
@@ -162,8 +165,7 @@ export type CursorPaginator<TKey, TValue> = {
 };
 export type CursorPaginatorInterface<TKey, TValue> = CursorPaginator<TKey, TValue>;
 export type DashboardData = {
-    greeting: string;
-    dateLine: string;
+    firstName: string;
     summaryLine: string;
     streakDays: number;
     family: MemberData[];
@@ -204,6 +206,7 @@ export type HouseData = {
     houseCreated: string;
     joinCode: string;
     joinCodeEnabled: boolean;
+    timezone: string;
     houseStats: StatData[];
     memberCount: number;
     maxMembers: number;

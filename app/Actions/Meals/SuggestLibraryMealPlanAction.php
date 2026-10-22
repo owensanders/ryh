@@ -10,7 +10,6 @@ use App\Enums\RecipeTagEnum;
 use App\Exceptions\MealPlanUnavailableException;
 use App\Models\Household;
 use App\Models\Recipe;
-use Carbon\CarbonImmutable;
 
 /**
  * Builds a week from the household's own recipe library - no AI call, so it
@@ -32,7 +31,7 @@ class SuggestLibraryMealPlanAction
     public function handle(Household $household, array $diets, string $avoid): array
     {
         $avoidWords = collect(explode(',', $avoid))->map(fn (string $item) => mb_strtolower(trim($item)))->filter()->values();
-        $today = CarbonImmutable::today();
+        $today = $household->today();
         $recentRecipeIds = $household->plannedMeals()
             ->whereBetween('planned_on', [$today->subDays(self::RECENT_DAYS)->toDateString(), $today->addDays(self::RECENT_DAYS)->toDateString()])
             ->pluck('recipe_id')

@@ -33,7 +33,7 @@ class BudgetController extends Controller
         $household = $this->household($request);
         // `!` resets the unspecified day/time — without it PHP fills the day from
         // today, so on the 31st "2026-09" would roll over into October.
-        $first = ($month !== null ? CarbonImmutable::createFromFormat('!Y-m', $month) ?? CarbonImmutable::now() : CarbonImmutable::now())->startOfMonth();
+        $first = ($month !== null ? CarbonImmutable::createFromFormat('!Y-m', $month) ?? $household->now() : $household->now())->startOfMonth();
 
         // Opening a month that hasn't been set up copies the recurring
         // categories and income forward into it. View models only read, so
@@ -50,7 +50,7 @@ class BudgetController extends Controller
 
         $category = $create->handle(
             $this->household($request),
-            $month !== null ? CarbonImmutable::createFromFormat('!Y-m', (string) $month) ?? CarbonImmutable::now() : CarbonImmutable::now(),
+            $month !== null ? CarbonImmutable::createFromFormat('!Y-m', (string) $month) ?? $this->household($request)->now() : $this->household($request)->now(),
             $request->validated(),
         );
 

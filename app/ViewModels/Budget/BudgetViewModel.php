@@ -19,7 +19,7 @@ class BudgetViewModel
 
     public function toData(Household $household, CarbonImmutable $month): BudgetScreenData
     {
-        $today = CarbonImmutable::today();
+        $today = $household->today();
         $first = $month->startOfMonth();
 
         $categories = $household->budgetCategories()->forMonth($first)->get();
@@ -35,6 +35,7 @@ class BudgetViewModel
 
         return new BudgetScreenData(
             month: $first->format('Y-m'),
+            isCurrentMonth: $first->isSameMonth($today),
             monthLabel: $first->format('F Y'),
             previousMonth: $first->subMonth()->format('Y-m'),
             nextMonth: $first->addMonth()->format('Y-m'),

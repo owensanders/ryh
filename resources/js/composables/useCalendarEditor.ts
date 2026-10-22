@@ -1,10 +1,10 @@
-import { isEditable, todayIso } from '@/lib/calendar';
+import { isEditable } from '@/lib/calendar';
 import type { CalendarDayData, CalendarEventData } from '@/types/generated';
 import { router, useForm } from '@inertiajs/vue3';
 import { inject, nextTick, provide, ref, type InjectionKey } from 'vue';
 
-/** The calendar's add/edit dialog and its "+N more" day list: what's open, the form, and the writes. */
-function createCalendarEditor() {
+/** The calendar's add/edit dialog, given the household's date today (`YYYY-MM-DD`) and its "+N more" day list: what's open, the form, and the writes. */
+function createCalendarEditor(todayDate: () => string) {
     const open = ref(false);
     const editing = ref<CalendarEventData | null>(null);
     const expandedDay = ref<CalendarDayData | null>(null);
@@ -21,7 +21,7 @@ function createCalendarEditor() {
     });
 
     function openNew(day: CalendarDayData): void {
-        const today = todayIso();
+        const today = todayDate();
 
         editing.value = null;
         expandedDay.value = null;
@@ -112,8 +112,8 @@ export type CalendarEditor = ReturnType<typeof createCalendarEditor>;
 const key: InjectionKey<CalendarEditor> = Symbol('CalendarEditor');
 
 /** Called by the Calendar page; its grids and dialogs reach the same editor with useCalendarEditor(). */
-export function provideCalendarEditor(): CalendarEditor {
-    const editor = createCalendarEditor();
+export function provideCalendarEditor(todayDate: () => string): CalendarEditor {
+    const editor = createCalendarEditor(todayDate);
     provide(key, editor);
 
     return editor;

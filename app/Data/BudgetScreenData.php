@@ -16,6 +16,8 @@ class BudgetScreenData extends Data
      */
     public function __construct(
         public string $month,
+        /** Whether it's the household's month now, in its time zone. */
+        public bool $isCurrentMonth,
         public string $monthLabel,
         public string $previousMonth,
         public string $nextMonth,

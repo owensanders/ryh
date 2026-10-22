@@ -14,8 +14,8 @@ class DashboardData extends Data
      * @param  array<int, AgendaGroupData>  $agenda
      */
     public function __construct(
-        public string $greeting,
-        public string $dateLine,
+        /** The greeting and the date are worked out in the browser, from the reader's own clock. */
+        public string $firstName,
         public string $summaryLine,
         public int $streakDays,
         public array $family,
