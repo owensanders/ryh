@@ -7,16 +7,18 @@ Built from the RYH design (`RYH.dc.html`) as a Laravel 12 + Inertia 3
 
 ## Features
 
-- **Dashboard** — daily overview across the household.
+- **Dashboard** — daily overview across the household, with each person's
+  sign-in streak.
 - **Meal planner & recipes** — a weekly planner with an AI-generated plan
-  option (via `laravel/ai`), a recipe library, and one-tap "add ingredients to
-  a shopping list".
+  option (via `laravel/ai`, written in the background and kept until it's
+  seen), a recipe library, and one-tap "add ingredients to a shopping list".
 - **Shopping lists** — multiple named lists per household.
 - **Chores** — a Today/Completed board with assignment, and a "Notify
   Chores" reminder button (rate-limited per household).
 - **Calendar** — shared events with per-attendee assignment, or whole-house
   events with no attendee list.
-- **Budget** — income sources and spending categories.
+- **Budget** — income sources and spending categories; recurring ones carry
+  into each new month.
 - **Documents** — a folder-based vault for household files.
 - **Live notifications** — a bell in the header shows assignment, edit and
   delete activity on chores, calendar events and meals in real time via
@@ -32,7 +34,7 @@ Built from the RYH design (`RYH.dc.html`) as a Laravel 12 + Inertia 3
   `public/offline.html` when there's no connection. Icons are rendered from
   `public/icons/*.svg` by `node scripts/generate-pwa-icons.mjs`.
 - **Households** — multiple households per login, role-based access (Owner,
-  Adult, Teen, Child), invites and join codes.
+  Adult, Teen, Child), invites and join codes, and a time zone each.
 - **Billing** — Stripe-backed subscription (via `laravel/cashier`), billed per
   household: one flat price covers everyone in it, and each extra household a
   person runs has its own subscription. The 30-day free trial is once per
@@ -114,11 +116,16 @@ Things to check on the phone:
 
 ## Checks
 
+CI runs all of these on every pull request:
+
 ```bash
-./vendor/bin/sail artisan test
-./vendor/bin/sail bin phpstan analyse                # clean
+./vendor/bin/sail artisan test                       # includes the architecture tests
+./vendor/bin/sail bin phpstan analyse                # level 8, clean
+./vendor/bin/sail bin pint --test
 ./vendor/bin/sail npm run lint
-./vendor/bin/sail npx vue-tsc --noEmit               # clean; CI checks it too
+./vendor/bin/sail npm run format:check
+./vendor/bin/sail npx vue-tsc --noEmit
+./vendor/bin/sail artisan typescript:transform       # regenerate types after changing app/Data or app/Enums
 ```
 
 ### End-to-end tests
@@ -151,65 +158,96 @@ strips the container's native Rollup build, which breaks Vite.
 The rules behind this section are in [`CLAUDE.md`](CLAUDE.md). Tests enforce
 the ones that can drift, so a change that breaks them fails CI.
 
-### The moving parts
+### How a request flows
 
-During a request, the web app talks to storage and to the two third parties
-whose answer the user is waiting for:
+Every household screen lives under `/h/{household}`, so the household a
+request acts on is always the one in its URL. Writes go through an action;
+pages are built by a view model and only ever read.
 
 ```mermaid
-flowchart LR
-    browser["Browser / installed PWA<br/>Vue 3 + Inertia"]
-    web["Web app<br/>PHP-FPM"]
-    mysql[("MySQL<br/>all app data")]
-    redis[("Redis / Valkey<br/>sessions · cache")]
-    s3[("S3 / R2<br/>documents")]
-    stripe(["Stripe"])
-    anthropic(["Anthropic"])
+flowchart TD
+    page["Inertia page<br/>Vue 3 · resources/js/pages"]
+    route["/h/{household}<br/>a member? else 404"]
+    policy{"Policy<br/>allowed? else 403"}
+    action["Write: form request → action<br/>rules · transactions · locks"]
+    viewmodel["Read: view model<br/>builds *Data, each record with its can"]
+    db[("MySQL, via Eloquent")]
+    queue[["Queue"]]
+    types["resources/js/types/generated.ts"]
 
-    browser -->|"pages, forms"| web
-    browser -->|"downloads, by signed link"| s3
-    web --> mysql
-    web --> redis
-    web -->|"uploads"| s3
-    web -->|"checkout"| stripe
-    stripe -->|"webhooks"| web
+    page -->|"request"| route --> policy
+    policy -->|"POST · PATCH · DELETE"| action
+    policy -->|"GET"| viewmodel
+    action --> db
+    viewmodel --> db
+    action -->|"after commit:<br/>notifications · pushes · AI plans"| queue
+    action -->|"redirect back"| viewmodel
+    viewmodel -->|"props"| page
+    viewmodel -.->|"*Data types, by typescript:transform"| types
+    types -.-> page
 ```
 
-AI meal plans are written by a queued job (below): the provider takes up to a
-minute, too long to hold a request.
+The ideas that shape it:
 
-Everything else happens in the background, so a slow or unavailable Reverb,
-push service or mail provider delays a notification but never fails the
-user's action:
+- **The browser never decides who can do what.** Policies answer, and every
+  record arrives with its `can` (`chore.can.toggle`), plus `household.can` for
+  the nav and "add" controls. The page shows or hides; the server enforces.
+- **Types come from the server.** `app/Data` classes are what a page may see,
+  and their TypeScript types are generated into `resources/js/types/generated.ts`.
+  CI fails if the committed file is out of date.
+- **A GET never writes.** Anything a page needs first runs on a schedule or a
+  POST (a budget month's recurring items, for example).
+- **Races are closed with the household's row lock.** Member caps, the
+  document quota, reminders and AI plans check and write under
+  `$household->lockRow()`. Calls to Stripe, mail or the AI happen outside
+  the transaction, and notifications go to the queue only once it commits.
+  Stripe webhooks are handled once each, however often they're delivered.
+- **Each household has a time zone.** Its day turns over at its own midnight
+  (`$household->today()`), and event times are stored as its clock reads them.
+
+### In the browser
+
+Pages in `resources/js/pages` declare their props and lay out components from
+`components/ryh/<area>/`. Editors that several components share (a calendar's
+event dialog and grid, say) live in a composable reached through
+provide/inject. Ticks and drags update at once with `useOptimistic()` and
+reconcile with the server's answer; writes reload only the props they change
+(`only: [...]`). App screens share the persistent `layouts/RyhShell.vue`, and
+the design's `--ryh-*` tokens in `resources/css/app.css` cover light and dark.
+
+### In the background
+
+Anything slow or outside our control runs on the queue, so a slow Reverb,
+push service, mail provider or AI never fails the user's action:
 
 ```mermaid
 flowchart LR
-    redis[("Queue<br/>Redis locally · managed on Cloud")]
-    worker["Queue worker<br/>queue:work"]
-    reverb["Reverb<br/>WebSockets"]
-    push(["Web Push services"])
-    mail(["Mail provider"])
-    anthropic(["Anthropic"])
+    queue[("Queue<br/>Redis locally · managed on Cloud")]
+    worker["Queue worker"]
+    scheduler["Scheduler"]
+    reverb["Reverb"]
     browser["Browser / installed PWA"]
-    scheduler["Scheduler<br/>schedule:run"]
+    push(["Web Push"])
+    mail(["Mail"])
+    anthropic(["Anthropic"])
     mysql[("MySQL")]
 
-    redis -->|"jobs"| worker
-    worker -->|"live updates"| reverb
-    worker -->|"pushes"| push
+    queue --> worker
+    worker -->|"live updates"| reverb -->|"bell, AI plan ready"| browser
+    worker -->|"pushes"| push -->|"system notification"| browser
     worker -->|"every email"| mail
     worker -->|"AI meal plans"| anthropic
-    reverb -->|"bell"| browser
-    push -->|"system notification"| browser
-    scheduler -->|"nightly: prune old notifications,<br/>completed chores, bought items,<br/>orphaned document files"| mysql
+    scheduler -->|"hourly: each household's new budget month<br/>nightly: prune old notifications, finished chores,<br/>bought items, orphaned files, old Stripe events"| mysql
 ```
+
+Notifications go to the recipient's own private channel
+(`App.Models.User.{id}`), so nobody receives anyone else's.
 
 ### Where it runs
 
 Production is on [Laravel Cloud](https://laravel.com/cloud), in London.
-Each moving part above is a Cloud resource, so there's no server to
-maintain. Locally, Sail runs the same parts as containers. Setup and launch
-steps are in [`docs/go-live.md`](docs/go-live.md).
+Locally, Sail runs the same parts as containers. Setup and launch steps are in
+[`docs/go-live.md`](docs/go-live.md).
 
 ```mermaid
 flowchart LR
@@ -223,6 +261,7 @@ flowchart LR
         reverb["Reverb cluster"]
     end
     r2[("Object storage (R2)<br/>documents, private")]
+    stripe(["Stripe"])
 
     browser --> edge --> app
     browser -->|"wss"| reverb
@@ -233,6 +272,7 @@ flowchart LR
     queue --> mysql
     queue -->|"broadcast"| reverb
     app -->|"uploads"| r2
+    app <-->|"checkout · webhooks"| stripe
 ```
 
 | | Locally (Sail) | Production (Laravel Cloud) |
@@ -244,81 +284,5 @@ flowchart LR
 | Documents | local disk | Private R2 bucket (disk `documents`) |
 | Mail | Mailpit | Postmark or Resend |
 
-### A request, layer by layer
-
-```mermaid
-flowchart TD
-    route["Route — routes/web.php, under /h/{household}<br/>auth · verified · household · trial.active"]
-    policy{"Policy — app/Policies<br/>->can('update', 'chore')"}
-    controller["Controller — app/Http/Controllers<br/>thin: request in, response out"]
-    request["Form request — app/Http/Requests<br/>validates and normalises; validated()"]
-    usecase["Action — app/Actions<br/>all business rules; one per operation"]
-    viewmodel["View model — app/ViewModels<br/>one page's props, read-only"]
-    repo["Eloquent — app/Models<br/>reusable queries as #[Scope] methods"]
-    db[("MySQL")]
-    data["*Data — app/Data<br/>typed output, mirrored in resources/js/types"]
-    page["Inertia page — resources/js/pages"]
-    notification["Notification — app/Notifications"]
-
-    route --> policy
-    policy -- "other household: 404<br/>role not allowed: 403" --> stop(("✕"))
-    policy -- "allowed" --> controller
-    controller --> request --> usecase
-    usecase --> repo --> db
-    usecase --> notification
-    controller --> viewmodel --> repo
-    viewmodel --> data
-    controller --> page
-```
-
-Each layer only talks to the one below it:
-
-| Layer | Where | Does | Never |
-|---|---|---|---|
-| Routes | `routes/web.php` | Middleware, and the policy ability for every household route (`->can(...)`). Household screens live under `/h/{household}`; `ResolveHouseholdMiddleware` checks membership (else 404) | Business rules |
-| Policies | `app/Policies/*Policy.php` | Is this record in the URL's household (else 404)? Does the role allow it (else 403)? | Writes |
-| Controllers | `app/Http/Controllers` | Call actions and view models, render pages, redirect with toasts | Query the database |
-| Form requests | `app/Http/Requests` | Validate, and normalise in `prepareForValidation()`; the controller passes `validated()` to the action | Business rules |
-| Actions | `app/Actions/<Area>` | Business rules, transactions, sending notifications; one class per operation with `handle()`. Use Eloquent directly. Return `*Data` objects | Pass request arrays straight to the database |
-| View models | `app/ViewModels/<Area>` | Build one page's props with `toData()`, returning its `*ScreenData`; Eloquent directly | Write anything |
-| Models | `app/Models` | Relations, casts, `#[Scope]` query scopes for queries more than one place needs, small helpers | Business rules |
-| Data | `app/Data` | What a page receives (built by view models); its TypeScript types are generated into `resources/js/types/generated.ts` | Carry models to the page |
-
-### How a notification reaches someone
-
-```mermaid
-sequenceDiagram
-    participant UC as Action
-    participant DB as MySQL
-    participant Q as Queue (Redis)
-    participant W as Queue worker
-    participant R as Reverb
-    participant P as Push service
-    participant B as Recipient's browser
-
-    UC->>DB: notify() — store the bell entry
-    UC->>Q: live update (after the transaction commits)
-    UC->>Q: push, if they've turned it on for this category
-    Note over UC: the request returns here
-    W->>Q: take jobs
-    W->>R: broadcast on App.Models.User.{id}
-    R-->>B: bell updates live
-    W->>P: Web Push
-    P-->>B: system notification
-```
-
-Notifications go to the recipient's own private channel, so nobody receives
-anyone else's. `RecipientsHelper` decides who hears about a change: everyone
-involved, each once, never the person who made it.
-
-### Screens
-
-App screens use the persistent `layouts/RyhShell.vue`
-(`defineOptions({ layout: RyhShell })`), so the sidebar, header and tab bar
-stay mounted between screens. Each screen sets its header title with
-`<RyhLayout title subtitle>`.
-
-Design tokens live as `--ryh-*` custom properties in `resources/css/app.css`
-and are surfaced as Tailwind `ryh-*` colours. They key off the same `.dark`
-class the starter kit's appearance switcher already toggles, so the design's
-dark theme comes for free.
+The database starts from `database/schema/mysql-schema.sql` (the migrations up
+to October 2026, squashed), then runs anything newer in `database/migrations`.
