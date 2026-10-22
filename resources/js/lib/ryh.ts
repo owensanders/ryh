@@ -3,6 +3,9 @@ export function tint(index: number): string {
     return `var(--ryh-t${(index % 5) + 1})`;
 }
 
+/** The dark navy wash behind every hero panel. */
+export const HERO_GRADIENT = 'linear-gradient(118deg, var(--ryh-hero1) 0%, var(--ryh-hero2) 100%)';
+
 /** Conic-gradient sweep for the progress dials. */
 export function dial(percentage: number, colour = 'var(--ryh-mint)'): string {
     return `conic-gradient(${colour} ${percentage * 3.6}deg, var(--ryh-sunk) 0)`;
@@ -35,6 +38,12 @@ export function percentOf(part: number, whole: number): number {
 export function pounds(amount: number): string {
     return `£${amount.toFixed(2)}`;
 }
+
+/** The colours a list, event or folder can pick: PaletteEnum's values. */
+export const PALETTE = ['mint', 'lilac', 'sun', 'sky', 'coral'];
+
+/** The chore board props a chore write changes: the members list stays as it is. */
+export const CHORE_BOARD_PROPS = ['columns', 'scores'];
 
 /** The Meal Planner props a planned meal can change: planning one can add or edit its recipe too. */
 export const PLANNED_MEAL_PROPS = ['days', 'library', 'recipes', 'recipeCount'];

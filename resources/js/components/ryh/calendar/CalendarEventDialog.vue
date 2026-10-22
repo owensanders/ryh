@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useCalendarEditor } from '@/composables/useCalendarEditor';
-import { EVENT_COLOURS, todayIso } from '@/lib/calendar';
+import { todayIso } from '@/lib/calendar';
+import { PALETTE } from '@/lib/ryh';
 import type { MemberData } from '@/types/generated';
 
 /** Adding or editing one event. */
@@ -90,7 +91,7 @@ const { open, editing, form, toggleAttendee, submit, destroy } = useCalendarEdit
                     <span class="ryh-label">Colour</span>
                     <div class="flex gap-2">
                         <button
-                            v-for="colour in EVENT_COLOURS"
+                            v-for="colour in PALETTE"
                             :key="colour"
                             type="button"
                             :title="colour"
