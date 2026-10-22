@@ -42,6 +42,7 @@ class AppServiceProvider extends ServiceProvider
     {
         if ($this->app->isLocal()) {
             $this->app->register(TelescopeServiceProvider::class);
+            $this->app->register(TypeScriptTransformerServiceProvider::class);
         }
 
         // Registered in routes/stripe.php instead, behind RequireStripeWebhookSecretMiddleware.

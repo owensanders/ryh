@@ -12,7 +12,7 @@ use Spatie\LaravelData\Data;
 class PushCategoryData extends Data
 {
     public function __construct(
-        public string $value,
+        public NotificationCategoryEnum $value,
         public string $label,
         public string $description,
         public bool $enabled,
@@ -20,6 +20,6 @@ class PushCategoryData extends Data
 
     public static function fromCategory(NotificationCategoryEnum $category, User $user): self
     {
-        return new self($category->value, $category->label(), $category->description(), $user->wantsPushFor($category));
+        return new self($category, $category->label(), $category->description(), $user->wantsPushFor($category));
     }
 }

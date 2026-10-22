@@ -6,6 +6,7 @@ namespace App\Data;
 
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
 /** The business and contact details the Terms, Privacy and Support pages quote. */
 class LegalData extends Data
@@ -13,6 +14,7 @@ class LegalData extends Data
     public function __construct(
         public string $tradingName,
         public ?string $entityName,
+        #[LiteralTypeScriptType("'sole_trader' | 'limited_company' | null")]
         public ?string $entityType,
         public ?string $companyNumber,
         public ?string $address,

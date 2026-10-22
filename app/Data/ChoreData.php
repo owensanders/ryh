@@ -13,7 +13,7 @@ class ChoreData extends Data
     public function __construct(
         public int $id,
         public string $name,
-        public string $status,
+        public ChoreStatusEnum $status,
         public bool $done,
         public ?MemberData $assignee,
     ) {}
@@ -23,7 +23,7 @@ class ChoreData extends Data
         return new self(
             id: $chore->id,
             name: $chore->name,
-            status: $chore->status->value,
+            status: $chore->status,
             done: $chore->status === ChoreStatusEnum::Done,
             assignee: $chore->assignee !== null ? MemberData::fromModel($chore->assignee) : null,
         );

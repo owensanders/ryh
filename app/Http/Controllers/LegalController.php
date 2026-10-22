@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Data\CookieSettingsData;
 use App\Data\LegalData;
 use App\Data\PlanData;
 use Inertia\Inertia;
@@ -29,13 +30,7 @@ class LegalController extends Controller
     {
         return Inertia::render('legal/Cookies', [
             'legal' => LegalData::current(),
-            'cookies' => [
-                'sessionCookie' => config('session.cookie'),
-                'sessionLifetimeMinutes' => (int) config('session.lifetime'),
-                'expireOnClose' => (bool) config('session.expire_on_close'),
-                // Laravel's "Remember me" cookie lasts 400 days (SessionGuard::$rememberDuration).
-                'rememberDays' => 400,
-            ],
+            'cookies' => CookieSettingsData::current(),
         ]);
     }
 

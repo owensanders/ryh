@@ -21,7 +21,7 @@ class ChoreBoardViewModel
 
         $columns = array_map(
             fn (ChoreStatusEnum $status) => new ChoreColumnData(
-                status: $status->value,
+                status: $status,
                 title: $status->label(),
                 count: $chores->where('status', $status)->count(),
                 items: $chores->where('status', $status)->map(ChoreData::fromModel(...))->values()->all(),
