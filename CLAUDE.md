@@ -210,6 +210,17 @@ A class name ends with what it is: `ChoreStatusEnum`, `CreateChoreAction`,
 Every class constant declares its type (`private const int LIMIT = 20;`).
 Enforced by `TypedConstantsTest`.
 
+## Migrations
+
+`database/schema/mysql-schema.sql` is every migration up to 22 October 2026,
+squashed: a fresh database (tests, e2e, a new environment) loads it with the
+`mysql` client, then runs any newer migrations. New migrations go in
+`database/migrations` as usual. To squash again, dump a scratch database
+built only from migrations, never the dev one, which has data:
+`CREATE DATABASE schema_dump`, then `DB_DATABASE=schema_dump artisan migrate`
+and `DB_DATABASE=schema_dump artisan schema:dump --prune`, keep
+`database/migrations/.gitkeep`, and drop the scratch database.
+
 ## Checks
 
 ```bash
