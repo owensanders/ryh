@@ -26,5 +26,10 @@ export function formatPlanPrice(amount: number): string {
     return amount === 0 ? 'Free' : `£${amount.toFixed(2).replace(/\.00$/, '')}`;
 }
 
+/** An amount in pounds to the penny, e.g. 12.5 -> "£12.50". */
+export function pounds(amount: number): string {
+    return `£${amount.toFixed(2)}`;
+}
+
 /** The Meal Planner props a planned meal can change: planning one can add or edit its recipe too. */
 export const PLANNED_MEAL_PROPS = ['days', 'library', 'recipes', 'recipeCount'];

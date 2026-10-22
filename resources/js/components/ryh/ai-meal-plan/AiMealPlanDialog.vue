@@ -1,0 +1,156 @@
+<script setup lang="ts">
+import AiPlanDaysStep from '@/components/ryh/ai-meal-plan/AiPlanDaysStep.vue';
+import AiPlanExtrasStep from '@/components/ryh/ai-meal-plan/AiPlanExtrasStep.vue';
+import AiPlanFoodStep from '@/components/ryh/ai-meal-plan/AiPlanFoodStep.vue';
+import AiPlanKitchenStep from '@/components/ryh/ai-meal-plan/AiPlanKitchenStep.vue';
+import AiPlanLoading from '@/components/ryh/ai-meal-plan/AiPlanLoading.vue';
+import AiPlanResult from '@/components/ryh/ai-meal-plan/AiPlanResult.vue';
+import AiPlanStepIndicator from '@/components/ryh/ai-meal-plan/AiPlanStepIndicator.vue';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { provideAiMealPlanForm, type AiMealPlanSettings } from '@/composables/useAiMealPlanForm';
+import { provideMealPlanSuggestions } from '@/composables/useMealPlanSuggestions';
+import type { SharedData } from '@/types';
+import type { MealSuggestionData } from '@/types/generated';
+import { usePage } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
+
+const props = defineProps<AiMealPlanSettings & { open: boolean }>();
+
+const emit = defineEmits<{ 'update:open': [value: boolean] }>();
+
+const page = usePage<SharedData>();
+
+// The questions and the suggestions each live in a composable, shared with the step and result components.
+const { form, step, steps, isLastStep, canContinue, aiUnavailable, selectedDays, plannedDays, budgetAmount, reset, next, back, goToFirstError } =
+    provideAiMealPlanForm(props);
+const suggestions = provideMealPlanSuggestions(plannedDays, budgetAmount, () => props.shoppingLists);
+
+const stage = ref<'form' | 'loading' | 'result'>('form');
+
+const STEP_COMPONENTS = { days: AiPlanDaysStep, food: AiPlanFoodStep, kitchen: AiPlanKitchenStep, extras: AiPlanExtrasStep };
+
+watch(
+    () => props.open,
+    (isOpen) => {
+        if (isOpen) {
+            stage.value = 'form';
+            reset();
+            suggestions.reset();
+        }
+    },
+);
+
+function close(): void {
+    emit('update:open', false);
+}
+
+function showSuggestions(from: 'ai' | 'library', meals: MealSuggestionData[]): void {
+    stage.value = suggestions.show(from, meals) ? 'result' : 'form';
+}
+
+function generate(): void {
+    stage.value = 'loading';
+
+    form.transform((data) => ({
+        ...data,
+        budget: data.budget === '' ? null : data.budget,
+    })).post(route('meals.aiPlan'), {
+        preserveScroll: true,
+        onSuccess: () => showSuggestions('ai', page.props.flash?.aiMeals ?? []),
+        onError: (errors) => {
+            stage.value = 'form';
+            goToFirstError(errors);
+        },
+    });
+}
+
+/** A week from the household's saved recipes - no AI call, doesn't use the weekly plan. */
+function planFromLibrary(): void {
+    form.transform((data) => ({ diets: data.diets, avoid: data.avoid })).post(route('meals.libraryPlan'), {
+        preserveScroll: true,
+        onSuccess: () => showSuggestions('library', page.props.flash?.libraryMeals ?? []),
+    });
+}
+
+/** Enter in a text field moves on a step rather than generating early. */
+function submit(): void {
+    if (!isLastStep.value) {
+        next();
+    } else if (aiUnavailable.value) {
+        planFromLibrary();
+    } else {
+        generate();
+    }
+}
+</script>
+
+<template>
+    <Dialog :open="open" @update:open="emit('update:open', $event)">
+        <DialogContent class="max-w-lg rounded-[22px] border-ryh-line bg-ryh-card text-ryh-ink sm:rounded-[22px]">
+            <DialogHeader>
+                <DialogTitle class="text-[16px] font-extrabold tracking-tight">
+                    {{ stage === 'result' ? 'Your week, ready to go' : 'Plan my week' }}
+                </DialogTitle>
+            </DialogHeader>
+
+            <form v-if="stage === 'form'" class="flex flex-col gap-4" @submit.prevent="submit">
+                <AiPlanStepIndicator />
+
+                <Transition
+                    mode="out-in"
+                    enter-active-class="transition duration-150 ease-out"
+                    enter-from-class="translate-x-2 opacity-0"
+                    leave-active-class="transition duration-100 ease-in"
+                    leave-to-class="-translate-x-2 opacity-0"
+                >
+                    <div :key="step" class="flex min-h-[210px] flex-col gap-4">
+                        <p class="text-[13.5px] text-ryh-ink2">{{ steps[step].hint }}</p>
+                        <component :is="STEP_COMPONENTS[steps[step].key]" />
+                    </div>
+                </Transition>
+
+                <p v-if="isLastStep && page.props.errors.ai" class="text-[12.5px] text-ryh-coral">{{ page.props.errors.ai }}</p>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <button v-if="step > 0" type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" :disabled="form.processing" @click="back">
+                        Back
+                    </button>
+                    <button v-else type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="close">Cancel</button>
+
+                    <div class="ml-auto flex flex-wrap justify-end gap-2">
+                        <button v-if="!isLastStep" type="submit" class="ryh-btn w-auto bg-ryh-coral text-white" :disabled="!canContinue">Next</button>
+                        <button
+                            v-else-if="aiUnavailable"
+                            type="submit"
+                            class="ryh-btn w-auto bg-ryh-coral text-white"
+                            :disabled="selectedDays.length === 0 || form.processing"
+                        >
+                            Use my recipes
+                        </button>
+                        <template v-else>
+                            <button
+                                type="button"
+                                class="ryh-btn w-auto bg-ryh-soft text-ryh-ink"
+                                :disabled="selectedDays.length === 0 || form.processing"
+                                @click="planFromLibrary"
+                            >
+                                Use my recipes
+                            </button>
+                            <button
+                                type="submit"
+                                class="ryh-btn w-auto bg-ryh-coral text-white"
+                                :disabled="selectedDays.length === 0 || form.processing"
+                            >
+                                Generate my week
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </form>
+
+            <AiPlanLoading v-else-if="stage === 'loading'" />
+
+            <AiPlanResult v-else @close="close" />
+        </DialogContent>
+    </Dialog>
+</template>
