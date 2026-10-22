@@ -41,8 +41,6 @@ class RyhSeeder extends Seeder
         $household = Household::create([
             'name' => 'The Parkers',
             'location' => 'Bristol',
-            'streak_days' => 12,
-            'streak_last_active_date' => today(),
             'trial_ends_at' => now()->addDays(30),
         ]);
 
@@ -88,6 +86,9 @@ class RyhSeeder extends Seeder
                 'email' => "{$key}@ryh.test",
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
+                // A streak worth showing on the demo dashboard.
+                'streak_days' => 12,
+                'streak_last_active_date' => today(),
             ]);
             $members[$key]->households()->attach($household->id, ['role' => $role, 'pending' => false]);
         }

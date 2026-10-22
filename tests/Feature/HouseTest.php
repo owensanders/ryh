@@ -27,7 +27,7 @@ class HouseTest extends TestCase
     public function itRendersTheHouseholdAndItsMembers(): void
     {
         $household = Household::create([
-            'name' => 'The Parkers', 'location' => 'Bristol', 'streak_days' => 12,
+            'name' => 'The Parkers', 'location' => 'Bristol',
             'trial_ends_at' => now()->addDays(30),
         ]);
         $owner = User::factory()->create(['household_id' => $household->id, 'role' => HouseholdRoleEnum::Owner]);

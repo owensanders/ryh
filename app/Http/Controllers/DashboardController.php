@@ -21,7 +21,7 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard', [
             'dashboard' => $getDashboard->toData(
                 $this->household($request),
-                str($this->user($request)->name)->before(' ')->toString(),
+                $this->user($request),
                 $this->household($request)->now(),
             ),
         ]);

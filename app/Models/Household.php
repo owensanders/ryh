@@ -26,8 +26,6 @@ use Laravel\Cashier\Subscription;
  * @property string|null $join_code
  * @property bool $join_code_enabled
  * @property string|null $location
- * @property int $streak_days
- * @property Carbon|null $streak_last_active_date
  * @property Carbon|null $trial_ends_at
  * @property string $timezone An IANA name, e.g. Europe/London.
  * @property Carbon|null $ai_meal_plan_generated_at
@@ -43,13 +41,11 @@ class Household extends Model
     use HasFactory;
 
     /** @var list<string> */
-    protected $fillable = ['name', 'slug', 'join_code', 'join_code_enabled', 'location', 'timezone', 'streak_days', 'streak_last_active_date', 'trial_ends_at', 'ai_meal_plan_generated_at', 'last_chore_notification_sent_at'];
+    protected $fillable = ['name', 'slug', 'join_code', 'join_code_enabled', 'location', 'timezone', 'trial_ends_at', 'ai_meal_plan_generated_at', 'last_chore_notification_sent_at'];
 
     protected function casts(): array
     {
         return [
-            'streak_days' => 'integer',
-            'streak_last_active_date' => 'date',
             'join_code_enabled' => 'boolean',
             'trial_ends_at' => 'datetime',
             'ai_meal_plan_generated_at' => 'datetime',
