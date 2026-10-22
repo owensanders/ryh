@@ -21,17 +21,11 @@ export function initOfflineDetection(): void {
     });
 
     // `navigator.onLine` misses "connected to Wi-Fi but no internet", so a
-    // request that fails without any response counts as offline too.
-    router.on('exception', (event) => {
-        if (!navigator.onLine || isNetworkError(event.detail.exception)) {
-            offline.value = true;
-            event.preventDefault();
-        }
+    // request that gets no response at all counts as offline too.
+    router.on('networkError', (event) => {
+        offline.value = true;
+        event.preventDefault();
     });
 
     router.on('success', () => (offline.value = false));
-}
-
-function isNetworkError(error: unknown): boolean {
-    return typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'ERR_NETWORK';
 }

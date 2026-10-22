@@ -1,6 +1,6 @@
 # RYH: working conventions
 
-Laravel 12 + Inertia 2 + Vue 3 (TypeScript), run under Sail. The README
+Laravel 12 + Inertia 3 + Vue 3 (TypeScript), run under Sail. The README
 covers setup, features, and the architecture diagrams. This file is the rules.
 Where a test enforces a rule, it's named; a change that breaks the rule fails CI.
 

@@ -11,7 +11,7 @@
     "require": {
         "php": "^8.3",
         "aws/aws-sdk-php": "^3.400",
-        "inertiajs/inertia-laravel": "^2.0",
+        "inertiajs/inertia-laravel": "^3.0",
         "laravel-notification-channels/webpush": "^13.0",
         "laravel/ai": "^0.11.0",
         "laravel/cashier": "^16.7",
