@@ -236,4 +236,3 @@ npm run e2e                              # Playwright, with Sail up
 
 - The README's architecture diagrams are Mermaid. Update them when the shape
   of the system changes (a new service, queue or layer).
-- Launch and operations items go in `docs/go-live.md`.
