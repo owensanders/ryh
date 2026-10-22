@@ -6,6 +6,7 @@ namespace App\Policies;
 
 use App\Enums\HouseholdRoleEnum;
 use App\Models\Chore;
+use App\Models\Household;
 use App\Models\User;
 use App\Traits\AuthorizesHouseholdAccessTrait;
 use Illuminate\Auth\Access\Response;
@@ -14,14 +15,14 @@ class ChorePolicy
 {
     use AuthorizesHouseholdAccessTrait;
 
-    public function viewAny(User $user): Response
+    public function viewAny(User $user, Household $household): Response
     {
-        return $this->as($user, HouseholdRoleEnum::cases());
+        return $this->inHouseholdAs($user, $household->id, HouseholdRoleEnum::cases());
     }
 
-    public function create(User $user): Response
+    public function create(User $user, Household $household): Response
     {
-        return $this->as($user, HouseholdRoleEnum::managers());
+        return $this->inHouseholdAs($user, $household->id, HouseholdRoleEnum::managers());
     }
 
     public function update(User $user, Chore $chore): Response
@@ -45,8 +46,8 @@ class ChorePolicy
     }
 
     /** Sending everyone their outstanding-chores reminder. */
-    public function notify(User $user): Response
+    public function notify(User $user, Household $household): Response
     {
-        return $this->create($user);
+        return $this->create($user, $household);
     }
 }

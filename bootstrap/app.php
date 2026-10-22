@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\EnsureTrialActiveMiddleware;
+use App\Http\Middleware\ForgetHouseholdParameterMiddleware;
 use App\Http\Middleware\HandleInertiaRequestsMiddleware;
 use App\Http\Middleware\ResolveHouseholdMiddleware;
+use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -30,8 +32,13 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
+        // Policies take {household} as an argument, so it's only dropped
+        // from the route once `->can()` has run.
+        $middleware->appendToPriorityList(Authorize::class, ForgetHouseholdParameterMiddleware::class);
+
         $middleware->alias([
             'household' => ResolveHouseholdMiddleware::class,
+            'household.unbind' => ForgetHouseholdParameterMiddleware::class,
             'trial.active' => EnsureTrialActiveMiddleware::class,
         ]);
     })

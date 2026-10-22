@@ -31,6 +31,7 @@ class CalendarController extends Controller
         return Inertia::render('Calendar', [
             'calendar' => $getCalendarMonth->toData(
                 $this->household($request),
+                $this->user($request),
                 // `!` resets the unspecified day/time — without it PHP fills the day from
                 // today, so on the 31st "2026-09" would roll over into October.
                 $month !== null ? CarbonImmutable::createFromFormat('!Y-m', $month) ?? $this->household($request)->now() : $this->household($request)->now(),

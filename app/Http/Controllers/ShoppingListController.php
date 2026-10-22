@@ -16,6 +16,7 @@ use App\Http\Requests\ShoppingListRequest;
 use App\Models\ShoppingItem;
 use App\Models\ShoppingList;
 use App\Traits\ResolvesHouseholdTrait;
+use App\Traits\ResolvesUserTrait;
 use App\ViewModels\Shopping\ShoppingViewModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,10 +26,11 @@ use Inertia\Response;
 class ShoppingListController extends Controller
 {
     use ResolvesHouseholdTrait;
+    use ResolvesUserTrait;
 
     public function index(Request $request, ShoppingViewModel $getShoppingScreen, ?string $slug = null): Response
     {
-        return Inertia::render('ShoppingLists', $getShoppingScreen->toData($this->household($request), $slug));
+        return Inertia::render('ShoppingLists', $getShoppingScreen->toData($this->household($request), $this->user($request), $slug));
     }
 
     public function store(ShoppingItemRequest $request, string $slug, AddShoppingItemAction $addItem): RedirectResponse

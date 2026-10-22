@@ -73,6 +73,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
+    /** @var array<int, HouseholdUser|null> membershipIn()'s lookups, by household id. */
+    private array $memberships = [];
+
     protected function casts(): array
     {
         return [
@@ -90,7 +93,7 @@ class User extends Authenticatable implements MustVerifyEmail
     /**
      * The household they were last in: where /app lands them, and what pages
      * outside a household (settings) link back to. Never the household a
-     * request is for — that comes from the URL (CurrentHouseholdHelper).
+     * request is for: that comes from the URL (CurrentHouseholdHelper).
      *
      * @return BelongsTo<Household, $this>
      */
@@ -111,9 +114,31 @@ class User extends Authenticatable implements MustVerifyEmail
     /** Their membership of the household they were last in, if they still have one. */
     public function lastMembership(): ?HouseholdUser
     {
-        return $this->last_household_id === null
-            ? null
-            : HouseholdUser::query()->where('user_id', $this->id)->where('household_id', $this->last_household_id)->first();
+        return $this->last_household_id === null ? null : $this->membershipIn($this->last_household_id);
+    }
+
+    /**
+     * Their membership of a household (pending or not), looked up once per
+     * household for this instance: policies ask it for every ability on a
+     * page. For authorization only; an action that must see the row as it is
+     * now (under a lock) asks `$household->membershipOf()`.
+     */
+    public function membershipIn(int $householdId): ?HouseholdUser
+    {
+        if (! array_key_exists($householdId, $this->memberships)) {
+            $this->memberships[$householdId] = HouseholdUser::query()
+                ->where('user_id', $this->id)
+                ->where('household_id', $householdId)
+                ->first();
+        }
+
+        return $this->memberships[$householdId];
+    }
+
+    /** Drops what membershipIn() has looked up, so the next ask reads the database. */
+    public function forgetMemberships(): void
+    {
+        $this->memberships = [];
     }
 
     /** Their streak as of `$today`: kept going by signing in today or yesterday, otherwise over. */

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\HouseholdRoleEnum;
 use App\Models\BudgetCategory;
 use App\Models\CalendarEvent;
 use App\Models\Chore;
 use App\Models\DocumentFolder;
+use App\Models\Household;
 use App\Models\IncomeSource;
 use App\Models\PlannedMeal;
 use App\Models\Recipe;
@@ -51,5 +53,26 @@ class CrossHouseholdAccessTest extends TestCase
         $owner = User::factory()->create();
 
         $this->actingAs($owner)->{$method}($this->hh($url()))->assertNotFound();
+    }
+
+    /**
+     * Being an Owner of both households doesn't let one household's URL reach
+     * the other's records: the route only binds records of the household in
+     * its URL, so two tabs never cross over.
+     *
+     * @param  Closure(): string  $url
+     */
+    #[Test]
+    #[DataProvider('strangersRecords')]
+    public function aMemberOfBothHouseholdsGetsA404ForTheOthersRecordThroughThisOnesUrl(Closure $url, string $method): void
+    {
+        $owner = User::factory()->create();
+        $path = $url();
+
+        Household::query()->whereKeyNot($owner->last_household_id)->each(
+            fn (Household $other) => $other->members()->attach($owner->id, ['role' => HouseholdRoleEnum::Owner->value, 'pending' => false]),
+        );
+
+        $this->actingAs($owner)->{$method}($this->hh($path))->assertNotFound();
     }
 }

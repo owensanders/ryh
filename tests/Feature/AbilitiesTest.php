@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Data\AbilitiesData;
 use App\Enums\ChoreStatusEnum;
 use App\Enums\HouseholdRoleEnum;
 use App\Models\CalendarEvent;
@@ -13,6 +14,7 @@ use App\Models\ShoppingList;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -70,8 +72,7 @@ class AbilitiesTest extends TestCase
                 ->where('household.can.manageHousehold', true)
                 ->where('household.can.viewBudget', true)
                 ->where('household.can.viewDocuments', true)
-                // Creating is only for the household in the URL.
-                ->where('household.can.createChores', false));
+                ->where('household.can.createChores', true));
 
         $this->actingAs($child)->get('/settings/profile')
             ->assertInertia(fn ($page) => $page
@@ -80,7 +81,43 @@ class AbilitiesTest extends TestCase
     }
 
     #[Test]
-    public function aHouseholdOutsideTheUrlGrantsNothingToAPendingMemberOrAStranger(): void
+    public function theSettingsPagesLookUpTheirMembershipOnce(): void
+    {
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
+        $this->actingAs($owner);
+
+        DB::enableQueryLog();
+        $this->get('/settings/profile')->assertOk();
+        $lookups = array_filter(DB::getQueryLog(), fn (array $query): bool => str_contains($query['query'], 'from `household_user`'));
+
+        $this->assertCount(1, $lookups);
+    }
+
+    /**
+     * Policies answer from the record and the person alone, so a check made
+     * with no household request behind it (a queued job, a command) gives the
+     * same answer as one on a page.
+     */
+    #[Test]
+    public function policiesGiveTheSameAnswerOutsideAHouseholdRequest(): void
+    {
+        $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
+        $teen = User::factory()->create(['household_id' => $owner->household_id, 'role' => HouseholdRoleEnum::Teen]);
+        $household = $owner->lastHousehold;
+        $chore = Chore::factory()->create(['household_id' => $household->id, 'assigned_to' => $teen->id]);
+
+        $this->assertTrue(Gate::forUser($owner)->allows('update', $chore));
+        $this->assertTrue(Gate::forUser($owner)->allows('create', [Chore::class, $household]));
+        $this->assertFalse(Gate::forUser($teen)->allows('update', $chore));
+        $this->assertTrue(Gate::forUser($teen)->allows('toggle', $chore));
+        $this->assertEquals(
+            new AbilitiesData(update: false, delete: false, toggle: true),
+            AbilitiesData::for($teen, $chore, 'update', 'delete', 'toggle'),
+        );
+    }
+
+    #[Test]
+    public function aHouseholdGrantsNothingToAPendingMemberOrAStranger(): void
     {
         $owner = User::factory()->create(['role' => HouseholdRoleEnum::Owner]);
         $household = $owner->lastHousehold;

@@ -12,6 +12,7 @@ use App\Http\Requests\AddRecipeIngredientsRequest;
 use App\Http\Requests\RecipeRequest;
 use App\Models\Recipe;
 use App\Traits\ResolvesHouseholdTrait;
+use App\Traits\ResolvesUserTrait;
 use App\ViewModels\Meals\RecipeLibraryViewModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,10 +22,11 @@ use Inertia\Response;
 class RecipeController extends Controller
 {
     use ResolvesHouseholdTrait;
+    use ResolvesUserTrait;
 
     public function index(Request $request, RecipeLibraryViewModel $recipeLibrary): Response
     {
-        return Inertia::render('Recipes', $recipeLibrary->toData($this->household($request)));
+        return Inertia::render('Recipes', $recipeLibrary->toData($this->household($request), $this->user($request)));
     }
 
     public function store(RecipeRequest $request, AddRecipeAction $add): RedirectResponse

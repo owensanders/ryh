@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Enums\HouseholdRoleEnum;
+use App\Models\Household;
 use App\Models\ShoppingItem;
 use App\Models\User;
 use App\Traits\AuthorizesHouseholdAccessTrait;
@@ -14,9 +15,9 @@ class ShoppingItemPolicy
 {
     use AuthorizesHouseholdAccessTrait;
 
-    public function create(User $user): Response
+    public function create(User $user, Household $household): Response
     {
-        return $this->as($user, HouseholdRoleEnum::managers());
+        return $this->inHouseholdAs($user, $household->id, HouseholdRoleEnum::managers());
     }
 
     public function update(User $user, ShoppingItem $item): Response

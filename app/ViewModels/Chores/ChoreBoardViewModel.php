@@ -10,12 +10,13 @@ use App\Data\ChoreData;
 use App\Data\MemberData;
 use App\Data\MemberScoreData;
 use App\Enums\ChoreStatusEnum;
+use App\Models\Chore;
 use App\Models\Household;
 use App\Models\User;
 
 class ChoreBoardViewModel
 {
-    public function toData(Household $household): ChoreBoardScreenData
+    public function toData(Household $household, User $viewer): ChoreBoardScreenData
     {
         $chores = $household->chores()->forBoard()->get();
 
@@ -24,7 +25,7 @@ class ChoreBoardViewModel
                 status: $status,
                 title: $status->label(),
                 count: $chores->where('status', $status)->count(),
-                items: $chores->where('status', $status)->map(ChoreData::fromModel(...))->values()->all(),
+                items: $chores->where('status', $status)->map(fn (Chore $chore) => ChoreData::fromModel($chore, $viewer))->values()->all(),
             ),
             ChoreStatusEnum::cases(),
         );

@@ -37,6 +37,7 @@ class MealPlannerController extends Controller
 
         return Inertia::render('MealPlanner', $mealPlanner->toData(
             $this->household($request),
+            $this->user($request),
             $week !== null ? CarbonImmutable::createFromFormat('!Y-m-d', $week) ?? $this->household($request)->now() : $this->household($request)->now(),
         ));
     }

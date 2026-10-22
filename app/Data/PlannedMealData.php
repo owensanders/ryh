@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data;
 
 use App\Models\PlannedMeal;
+use App\Models\User;
 use Spatie\LaravelData\Data;
 
 class PlannedMealData extends Data
@@ -28,7 +29,7 @@ class PlannedMealData extends Data
         public AbilitiesData $can,
     ) {}
 
-    public static function fromModel(PlannedMeal $meal): self
+    public static function fromModel(PlannedMeal $meal, User $viewer): self
     {
         $missing = $meal->missing_ingredients;
 
@@ -47,7 +48,7 @@ class PlannedMealData extends Data
             missingIngredients: $missing,
             missingLabel: $missing === 0 ? 'All in' : "{$missing} missing",
             cook: $meal->cook !== null ? MemberData::fromModel($meal->cook) : null,
-            can: AbilitiesData::for($meal, 'update', 'delete'),
+            can: AbilitiesData::for($viewer, $meal, 'update', 'delete'),
         );
     }
 }

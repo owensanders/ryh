@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data;
 
 use App\Models\ShoppingItem;
+use App\Models\User;
 use Spatie\LaravelData\Data;
 
 class ShoppingItemData extends Data
@@ -17,14 +18,14 @@ class ShoppingItemData extends Data
         public AbilitiesData $can,
     ) {}
 
-    public static function fromModel(ShoppingItem $item): self
+    public static function fromModel(ShoppingItem $item, User $viewer): self
     {
         return new self(
             id: $item->id,
             name: $item->name,
             quantity: $item->quantity,
             done: $item->isDone(),
-            can: AbilitiesData::for($item, 'update', 'delete', 'toggle'),
+            can: AbilitiesData::for($viewer, $item, 'update', 'delete', 'toggle'),
         );
     }
 }
