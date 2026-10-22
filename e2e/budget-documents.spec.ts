@@ -90,3 +90,42 @@ test('the owner makes a folder, uploads a document into it and downloads it agai
     const [file] = await Promise.all([page.waitForEvent('download'), download.click()]);
     expect(file.suggestedFilename()).toContain(filename.replace('.pdf', ''));
 });
+
+test('the owner searches a folder, moves a document to another folder, then deletes it and the folder', async ({ page }) => {
+    const from = uniqueName('Car');
+    const to = uniqueName('House');
+
+    await page.goto('/documents');
+    for (const folder of [to, from]) {
+        await page.getByLabel('New folder').fill(folder);
+        await page.getByRole('button', { name: 'Add folder' }).click();
+        await expect(page.getByRole('link', { name: new RegExp(folder) })).toBeVisible();
+    }
+
+    await page.getByRole('link', { name: new RegExp(from) }).click();
+    await expect(page.getByRole('heading', { name: from })).toBeVisible();
+
+    const filename = uniqueName('mot').replace(/\s/g, '-');
+    await page.getByLabel('Upload files').setInputFiles({ name: `${filename}.pdf`, mimeType: 'application/pdf', buffer: readFileSync('e2e/fixtures/receipt.pdf') });
+    const card = page.getByText(new RegExp(`^${filename}`));
+    await expect(card).toBeVisible();
+
+    await page.getByLabel('Search filenames and tags').fill('nothing-matches-this');
+    await expect(page.getByText('Nothing in here yet')).toBeVisible();
+    await page.getByLabel('Search filenames and tags').fill(filename);
+    await expect(card).toBeVisible();
+
+    await card.dragTo(page.getByRole('link', { name: new RegExp(to) }));
+    await expect(card).toHaveCount(0);
+
+    await page.getByRole('link', { name: new RegExp(to) }).click();
+    await expect(page.getByRole('heading', { name: to })).toBeVisible();
+    await page.getByRole('button', { name: `Delete ${filename}` }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
+    await expect(page.getByText(new RegExp(`^${filename}`))).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Delete folder' }).click();
+    await expect(page.getByRole('dialog')).toContainText(`Delete “${to}”?`);
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
+    await expect(page.getByRole('link', { name: new RegExp(to) })).toHaveCount(0);
+});

@@ -3,8 +3,6 @@ import type { CalendarDayData, CalendarEventData, CalendarMonthData } from '@/ty
 /** How many event pills fit in a month cell before it collapses to "+N more". */
 export const VISIBLE_PER_CELL = 3;
 
-export const EVENT_COLOURS = ['mint', 'lilac', 'sun', 'sky', 'coral'];
-
 /** Today as `YYYY-MM-DD`. Past days can't take new events or edits. */
 export function todayIso(): string {
     return new Date().toISOString().slice(0, 10);
