@@ -125,6 +125,19 @@ in `AppServiceProvider`.
 - Collections leave a view model as `->values()->all()`, typed
   `array<int, X>`.
 
+## Frontend structure
+
+- A page in `resources/js/pages` declares its props and lays out components
+  from `components/ryh/<area>/` (`landing/` for the public site). Aim for no
+  file over about 250 lines; the legal pages are long prose and exempt.
+- State several components share (an editor's form and what's open) lives
+  in a composable they reach through provide/inject: the page calls
+  `provideCalendarEditor()`, children call `useCalendarEditor()`. Children
+  then bind the form directly instead of mutating props.
+- A dialog only one place opens exposes `openNew()`/`openEdit()` through
+  `defineExpose`, and the parent calls it through a template ref.
+- Confirm-then-delete uses `useConfirm()` with `ConfirmDialog`.
+
 ## Frontend writes
 
 - Where a page has props a write leaves alone, the write names the ones it
