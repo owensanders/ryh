@@ -68,7 +68,12 @@ test('the owner edits a planned meal, drags it to another day, then removes it',
     // Any other day in the week shown.
     const labels = await page.getByRole('button', { name: /^Add a meal on / }).evaluateAll((buttons) => buttons.map((b) => b.getAttribute('aria-label')!.replace('Add a meal on ', '')));
     const otherDay = labels.find((label) => label !== todayLabel)!;
-    await page.getByTitle(meal).dragTo(dayColumn(otherDay));
+    // Drop level with the card: the day columns are side by side and the same height, and
+    // dragging up or down the page would scroll mid-drag, which cancels it.
+    const card = page.getByTitle(meal);
+    const from = (await card.boundingBox())!;
+    const to = (await dayColumn(otherDay).boundingBox())!;
+    await card.dragTo(dayColumn(otherDay), { targetPosition: { x: to.width / 2, y: from.y + from.height / 2 - to.y } });
     await expect(dayColumn(otherDay).getByTitle(meal)).toBeVisible();
 
     await dayColumn(otherDay).getByTitle(meal).click();
