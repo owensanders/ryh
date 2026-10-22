@@ -129,3 +129,17 @@ test('the owner searches a folder, moves a document to another folder, then dele
     await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
     await expect(page.getByRole('link', { name: new RegExp(to) })).toHaveCount(0);
 });
+
+test("a file that can't be uploaded says why", async ({ page }) => {
+    const folder = uniqueName('Misc');
+
+    await page.goto('/documents');
+    await page.getByLabel('New folder').fill(folder);
+    await page.getByRole('button', { name: 'Add folder' }).click();
+    await page.getByRole('link', { name: new RegExp(folder) }).click();
+    await expect(page).toHaveURL(/\/documents\/\d+$/);
+
+    await page.getByLabel('Upload files').setInputFiles({ name: 'notes.exe', mimeType: 'application/octet-stream', buffer: Buffer.from('not a document') });
+
+    await expect(page.getByRole('alert').filter({ hasText: /must be a file of type/ })).toBeVisible();
+});

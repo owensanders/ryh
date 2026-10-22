@@ -88,6 +88,45 @@ class DocumentTest extends TestCase
     }
 
     #[Test]
+    public function anUploadThatWouldPassTheQuotaIsRefusedAndLeavesNothingBehind(): void
+    {
+        Storage::fake('local');
+        config(['documents.quota_bytes' => 1000 * 1024]);
+        $user = User::factory()->create(['role' => HouseholdRoleEnum::Adult]);
+        $folder = DocumentFolder::create(['household_id' => $user->household_id, 'name' => 'Property']);
+        $this->documentIn($folder, 'existing.pdf')->update(['size' => 600 * 1024]);
+
+        $this->actingAs($user)
+            ->from($this->hh("/documents/{$folder->id}"))
+            ->post($this->hh("/document-folders/{$folder->id}/documents"), [
+                'file' => UploadedFile::fake()->create('deed.pdf', 500, 'application/pdf'),
+            ])
+            ->assertRedirect($this->hh("/documents/{$folder->id}"))
+            ->assertSessionHasErrors(['file' => "There isn't room for “deed.pdf”. Your household's document storage is full; delete something to make space."]);
+
+        $this->assertDatabaseMissing('documents', ['name' => 'deed.pdf']);
+        $this->assertSame([], Storage::disk('local')->allFiles("documents/{$user->household_id}"));
+    }
+
+    #[Test]
+    public function anUploadThatExactlyFillsTheQuotaIsAllowed(): void
+    {
+        Storage::fake('local');
+        config(['documents.quota_bytes' => 1000 * 1024]);
+        $user = User::factory()->create(['role' => HouseholdRoleEnum::Adult]);
+        $folder = DocumentFolder::create(['household_id' => $user->household_id, 'name' => 'Property']);
+        $this->documentIn($folder, 'existing.pdf')->update(['size' => 500 * 1024]);
+
+        $this->actingAs($user)
+            ->post($this->hh("/document-folders/{$folder->id}/documents"), [
+                'file' => UploadedFile::fake()->create('deed.pdf', 500, 'application/pdf'),
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('documents', ['name' => 'deed.pdf']);
+    }
+
+    #[Test]
     public function itDownloadsADocumentButNotAnotherHouseholdsDocument(): void
     {
         Storage::fake('local');

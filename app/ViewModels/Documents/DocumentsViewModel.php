@@ -22,7 +22,7 @@ class DocumentsViewModel
         /** @var Collection<int, Document> $activeDocuments */
         $activeDocuments = $active !== null ? $active->documents()->with('addedBy')->latest()->get() : collect();
 
-        $totalBytes = (int) $household->documents()->sum('size');
+        $totalBytes = $household->documentBytes();
         $quotaBytes = (int) config('documents.quota_bytes');
 
         return new DocumentsScreenData(
