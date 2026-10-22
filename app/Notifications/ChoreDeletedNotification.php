@@ -6,14 +6,18 @@ namespace App\Notifications;
 
 use App\Enums\NotificationCategoryEnum;
 use App\Models\Chore;
+use App\Models\Household;
 use App\Models\User;
 
 class ChoreDeletedNotification extends HouseholdNotification
 {
     public function __construct(
+        Household $household,
         private readonly Chore $chore,
         private readonly User $actor,
-    ) {}
+    ) {
+        parent::__construct($household);
+    }
 
     /**
      * @param  User  $notifiable
@@ -33,11 +37,6 @@ class ChoreDeletedNotification extends HouseholdNotification
     public function category(): NotificationCategoryEnum
     {
         return NotificationCategoryEnum::Chores;
-    }
-
-    protected function householdId(): int
-    {
-        return $this->chore->household_id;
     }
 
     protected function notificationType(): string

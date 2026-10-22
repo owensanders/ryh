@@ -6,14 +6,18 @@ namespace App\Notifications;
 
 use App\Enums\NotificationCategoryEnum;
 use App\Models\CalendarEvent;
+use App\Models\Household;
 use App\Models\User;
 
 class CalendarEventAssignedNotification extends HouseholdNotification
 {
     public function __construct(
+        Household $household,
         private readonly CalendarEvent $event,
         private readonly User $actor,
-    ) {}
+    ) {
+        parent::__construct($household);
+    }
 
     /**
      * @param  User  $notifiable
@@ -34,11 +38,6 @@ class CalendarEventAssignedNotification extends HouseholdNotification
     public function category(): NotificationCategoryEnum
     {
         return NotificationCategoryEnum::Calendar;
-    }
-
-    protected function householdId(): int
-    {
-        return $this->event->household_id;
     }
 
     protected function notificationType(): string

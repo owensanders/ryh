@@ -14,6 +14,9 @@ use Illuminate\Notifications\Notification;
 
 abstract class HouseholdNotification extends Notification
 {
+    /** The household it's about, passed in: the bell entry may be built outside any request for it. */
+    public function __construct(protected readonly Household $household) {}
+
     /**
      * The bell (database, then a queued live update to the recipient alone)
      * always; a push too when the person has turned it on for a device and
@@ -27,7 +30,7 @@ abstract class HouseholdNotification extends Notification
     {
         $channels = ['database', QueuedBroadcastChannel::class];
 
-        if ($notifiable->wantsPushFor($this->category()) && $notifiable->pushSubscriptions()->exists()) {
+        if ($notifiable->wantsPushFor($this->category()) && $notifiable->hasPushDevices()) {
             $channels[] = QueuedWebPushChannel::class;
         }
 
@@ -40,35 +43,23 @@ abstract class HouseholdNotification extends Notification
         $data = $this->toArray($notifiable);
 
         return new PushMessage(
-            title: $this->household()->name ?? config('app.name'),
+            title: $this->household->name,
             body: $data['body'],
             url: $data['url'],
             tag: "{$this->notificationType()}-{$notifiable->id}",
         );
     }
 
-    /**
-     * A screen in the household this is about, named outright: the bell entry
-     * may be built outside any request for that household.
-     */
+    /** A screen in the household this is about, named outright rather than from a request. */
     protected function householdUrl(string $route): string
     {
-        return route($route, ['household' => $this->household()?->slug]);
-    }
-
-    private ?Household $household = null;
-
-    private function household(): ?Household
-    {
-        return $this->household ??= Household::find($this->householdId());
+        return route($route, ['household' => $this->household->slug]);
     }
 
     /** @return array<string, mixed> */
     abstract public function toArray(object $notifiable): array;
 
     abstract public function category(): NotificationCategoryEnum;
-
-    abstract protected function householdId(): int;
 
     abstract protected function notificationType(): string;
 }

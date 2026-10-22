@@ -54,14 +54,14 @@ class NotificationMessagesTest extends TestCase
     {
         $chore = Chore::factory()->create(['household_id' => $this->actor->household_id, 'name' => 'Take the bins out']);
 
-        $this->assertMessage(new ChoreAssignedNotification($chore, $this->actor), 'chore_assigned', 'Sarah Parker assigned you "Take the bins out"', 'chores.index', NotificationCategoryEnum::Chores, ['chore_id' => $chore->id]);
-        $this->assertMessage(new ChoreEditedNotification($chore, $this->actor), 'chore_edited', 'Sarah Parker updated "Take the bins out"', 'chores.index', NotificationCategoryEnum::Chores, ['chore_id' => $chore->id]);
-        $this->assertMessage(new ChoreDeletedNotification($chore, $this->actor), 'chore_deleted', 'Sarah Parker deleted "Take the bins out"', 'chores.index', NotificationCategoryEnum::Chores);
+        $this->assertMessage(new ChoreAssignedNotification($chore->household, $chore, $this->actor), 'chore_assigned', 'Sarah Parker assigned you "Take the bins out"', 'chores.index', NotificationCategoryEnum::Chores, ['chore_id' => $chore->id]);
+        $this->assertMessage(new ChoreEditedNotification($chore->household, $chore, $this->actor), 'chore_edited', 'Sarah Parker updated "Take the bins out"', 'chores.index', NotificationCategoryEnum::Chores, ['chore_id' => $chore->id]);
+        $this->assertMessage(new ChoreDeletedNotification($chore->household, $chore, $this->actor), 'chore_deleted', 'Sarah Parker deleted "Take the bins out"', 'chores.index', NotificationCategoryEnum::Chores);
 
         $chore->status = ChoreStatusEnum::Done;
-        $this->assertMessage(new ChoreActionedNotification($chore, $this->actor), 'chore_actioned', 'Sarah Parker completed "Take the bins out"', 'chores.index', NotificationCategoryEnum::Chores, ['chore_id' => $chore->id]);
+        $this->assertMessage(new ChoreActionedNotification($chore->household, $chore, $this->actor), 'chore_actioned', 'Sarah Parker completed "Take the bins out"', 'chores.index', NotificationCategoryEnum::Chores, ['chore_id' => $chore->id]);
         $chore->status = ChoreStatusEnum::Today;
-        $this->assertMessage(new ChoreActionedNotification($chore, $this->actor), 'chore_actioned', 'Sarah Parker reopened "Take the bins out"', 'chores.index', NotificationCategoryEnum::Chores, ['chore_id' => $chore->id]);
+        $this->assertMessage(new ChoreActionedNotification($chore->household, $chore, $this->actor), 'chore_actioned', 'Sarah Parker reopened "Take the bins out"', 'chores.index', NotificationCategoryEnum::Chores, ['chore_id' => $chore->id]);
     }
 
     #[Test]
@@ -78,9 +78,9 @@ class NotificationMessagesTest extends TestCase
     {
         $event = CalendarEvent::factory()->create(['household_id' => $this->actor->household_id, 'title' => 'Dentist']);
 
-        $this->assertMessage(new CalendarEventAssignedNotification($event, $this->actor), 'calendar_event_assigned', 'Sarah Parker added you to "Dentist"', 'calendar.index', NotificationCategoryEnum::Calendar, ['event_id' => $event->id]);
-        $this->assertMessage(new CalendarEventUpdatedNotification($event, $this->actor), 'calendar_event_updated', 'Sarah Parker updated "Dentist"', 'calendar.index', NotificationCategoryEnum::Calendar, ['event_id' => $event->id]);
-        $this->assertMessage(new CalendarEventDeletedNotification($event, $this->actor), 'calendar_event_deleted', 'Sarah Parker deleted "Dentist"', 'calendar.index', NotificationCategoryEnum::Calendar);
+        $this->assertMessage(new CalendarEventAssignedNotification($event->household, $event, $this->actor), 'calendar_event_assigned', 'Sarah Parker added you to "Dentist"', 'calendar.index', NotificationCategoryEnum::Calendar, ['event_id' => $event->id]);
+        $this->assertMessage(new CalendarEventUpdatedNotification($event->household, $event, $this->actor), 'calendar_event_updated', 'Sarah Parker updated "Dentist"', 'calendar.index', NotificationCategoryEnum::Calendar, ['event_id' => $event->id]);
+        $this->assertMessage(new CalendarEventDeletedNotification($event->household, $event, $this->actor), 'calendar_event_deleted', 'Sarah Parker deleted "Dentist"', 'calendar.index', NotificationCategoryEnum::Calendar);
     }
 
     #[Test]
@@ -92,9 +92,9 @@ class NotificationMessagesTest extends TestCase
             'cook_id' => $this->recipient->id,
         ]);
 
-        $this->assertMessage(new MealAssignedNotification($meal, $this->actor), 'meal_assigned', 'Sarah Parker assigned you to cook "Lemon chicken traybake"', 'meals.index', NotificationCategoryEnum::Meals, ['meal_id' => $meal->id]);
-        $this->assertMessage(new MealEditedNotification($meal, $this->actor), 'meal_edited', 'Sarah Parker updated "Lemon chicken traybake"', 'meals.index', NotificationCategoryEnum::Meals, ['meal_id' => $meal->id]);
-        $this->assertMessage(new MealDeletedNotification($meal, $this->actor), 'meal_deleted', 'Sarah Parker removed "Lemon chicken traybake" from the meal plan', 'meals.index', NotificationCategoryEnum::Meals);
+        $this->assertMessage(new MealAssignedNotification($meal->household, $meal, $this->actor), 'meal_assigned', 'Sarah Parker assigned you to cook "Lemon chicken traybake"', 'meals.index', NotificationCategoryEnum::Meals, ['meal_id' => $meal->id]);
+        $this->assertMessage(new MealEditedNotification($meal->household, $meal, $this->actor), 'meal_edited', 'Sarah Parker updated "Lemon chicken traybake"', 'meals.index', NotificationCategoryEnum::Meals, ['meal_id' => $meal->id]);
+        $this->assertMessage(new MealDeletedNotification($meal->household, $meal, $this->actor), 'meal_deleted', 'Sarah Parker removed "Lemon chicken traybake" from the meal plan', 'meals.index', NotificationCategoryEnum::Meals);
     }
 
     #[Test]

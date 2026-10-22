@@ -43,7 +43,7 @@ class ChoreController extends Controller
 
     public function update(ChoreRequest $request, Chore $chore, UpdateChoreAction $update): RedirectResponse
     {
-        $updated = $update->handle($chore, $request->validated(), $this->user($request));
+        $updated = $update->handle($this->household($request), $chore, $request->validated(), $this->user($request));
 
         return back()->with('toast', "{$updated->name} updated");
     }
@@ -51,14 +51,14 @@ class ChoreController extends Controller
     public function destroy(Request $request, Chore $chore, DeleteChoreAction $delete): RedirectResponse
     {
         $name = $chore->name;
-        $delete->handle($chore, $this->user($request));
+        $delete->handle($this->household($request), $chore, $this->user($request));
 
         return back()->with('toast', "{$name} deleted");
     }
 
     public function toggle(Request $request, Chore $chore, ToggleChoreAction $toggle): RedirectResponse
     {
-        $updated = $toggle->handle($chore, $this->user($request));
+        $updated = $toggle->handle($this->household($request), $chore, $this->user($request));
 
         return back()->with('toast', $updated->status === ChoreStatusEnum::Done ? "{$updated->name} — nice one" : null);
     }

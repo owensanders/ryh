@@ -1,6 +1,12 @@
 includes:
     - vendor/larastan/larastan/extension.neon
 
+# The layer rules (CLAUDE.md), judged by type; their own tests are in
+# tests/Unit/PHPStan, with fixtures that break them on purpose.
+rules:
+    - Tests\PHPStan\QueryBoundaryRule
+    - Tests\PHPStan\UserFacingErrorsRule
+
 parameters:
     level: 8
     paths:
@@ -8,6 +14,8 @@ parameters:
         - database
         - routes
         - tests
+    excludePaths:
+        - tests/PHPStan/Fixtures
 
     # Lets Larastan type model attributes from the schema instead of falling
     # back to `string`, so enum and date casts resolve correctly.
