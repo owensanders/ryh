@@ -8,6 +8,7 @@ use App\Enums\NotificationCategoryEnum;
 use App\Enums\PaletteEnum;
 use App\Notifications\ResetPasswordNotification;
 use App\Notifications\VerifyEmailNotification;
+use Carbon\CarbonInterface;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -27,6 +28,8 @@ use SensitiveParameter;
  * @property int|null $last_household_id
  * @property-read int|null $household_id Alias for `last_household_id` — see `householdId()` below.
  * @property string $name
+ * @property int $streak_days Days in a row they've signed in, up to streak_last_active_date.
+ * @property Carbon|null $streak_last_active_date
  * @property string|null $initials
  * @property PaletteEnum $colour
  * @property string|null $status_line
@@ -50,6 +53,8 @@ class User extends Authenticatable implements MustVerifyEmail
     /** @var list<string> */
     protected $fillable = [
         'last_household_id',
+        'streak_days',
+        'streak_last_active_date',
         'name',
         'initials',
         'colour',
@@ -77,6 +82,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'terms_accepted_at' => 'datetime',
             'colour' => PaletteEnum::class,
             'push_opt_outs' => 'array',
+            'streak_days' => 'integer',
+            'streak_last_active_date' => 'date',
         ];
     }
 
@@ -107,6 +114,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->last_household_id === null
             ? null
             : HouseholdUser::query()->where('user_id', $this->id)->where('household_id', $this->last_household_id)->first();
+    }
+
+    /** Their streak as of `$today`: kept going by signing in today or yesterday, otherwise over. */
+    public function currentStreak(CarbonInterface $today): int
+    {
+        $last = $this->streak_last_active_date;
+
+        return $last !== null && $last->gte($today->copy()->subDay()->startOfDay()) ? $this->streak_days : 0;
     }
 
     public function belongsToHousehold(int $householdId): bool

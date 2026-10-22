@@ -9,16 +9,14 @@ use Carbon\CarbonImmutable;
 
 class RecordLoginStreakAction
 {
+    /**
+     * Each day they sign in keeps their own streak going; a day missed starts
+     * it again. Days turn over at midnight in their household's time zone.
+     */
     public function handle(User $user): void
     {
-        $household = $user->lastHousehold;
-
-        if ($household === null) {
-            return;
-        }
-
-        $today = CarbonImmutable::today('UTC');
-        $lastActive = $household->streak_last_active_date;
+        $today = $user->lastHousehold?->today() ?? CarbonImmutable::today();
+        $lastActive = $user->streak_last_active_date;
 
         if ($lastActive !== null && $today->isSameDay($lastActive)) {
             return;
@@ -26,6 +24,6 @@ class RecordLoginStreakAction
 
         $continuesStreak = $lastActive !== null && $today->subDay()->isSameDay($lastActive);
 
-        $household->update(['streak_days' => $continuesStreak ? $household->streak_days + 1 : 1, 'streak_last_active_date' => $today]);
+        $user->update(['streak_days' => $continuesStreak ? $user->streak_days + 1 : 1, 'streak_last_active_date' => $today]);
     }
 }

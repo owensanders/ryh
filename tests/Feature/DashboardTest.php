@@ -56,8 +56,8 @@ class DashboardTest extends TestCase
     #[Test]
     public function itShowsTonightsDinnerTodaysChoresAndTheDefaultShoppingList(): void
     {
-        $household = Household::create(['name' => 'The Parkers', 'location' => 'Bristol', 'streak_days' => 12, 'trial_ends_at' => now()->addDays(30)]);
-        $user = User::factory()->create(['household_id' => $household->id, 'name' => 'Sarah Parker']);
+        $household = Household::create(['name' => 'The Parkers', 'location' => 'Bristol', 'trial_ends_at' => now()->addDays(30)]);
+        $user = User::factory()->create(['household_id' => $household->id, 'name' => 'Sarah Parker', 'streak_days' => 12, 'streak_last_active_date' => today()]);
 
         $recipe = Recipe::factory()->create([
             'household_id' => $household->id,

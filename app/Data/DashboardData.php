@@ -17,6 +17,7 @@ class DashboardData extends Data
         /** The greeting and the date are worked out in the browser, from the reader's own clock. */
         public string $firstName,
         public string $summaryLine,
+        /** The viewer's own login streak; 0 once they've missed a day. */
         public int $streakDays,
         public array $family,
         public ?PlannedMealData $tonight,

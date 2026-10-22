@@ -21,6 +21,7 @@ use App\Models\CalendarEvent;
 use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\ShoppingList;
+use App\Models\User;
 use App\Support\MoneyHelper;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -31,7 +32,7 @@ class DashboardViewModel
     /** How many days of the calendar the "Coming up" card shows. */
     private const int AGENDA_DAYS = 3;
 
-    public function toData(Household $household, string $viewerName, CarbonImmutable $today): DashboardData
+    public function toData(Household $household, User $viewer, CarbonImmutable $today): DashboardData
     {
         $chores = $household->chores()->forBoard()->get();
         $todays = $chores->whereIn('status', [ChoreStatusEnum::Today, ChoreStatusEnum::Done]);
@@ -54,13 +55,13 @@ class DashboardViewModel
         )->get();
 
         return new DashboardData(
-            firstName: $viewerName,
+            firstName: str($viewer->name)->before(' ')->toString(),
             summaryLine: $this->summaryLine(
                 $tonight,
                 $events->filter(fn (CalendarEvent $event) => $event->starts_at->isSameDay($today))->count(),
                 $remaining,
             ),
-            streakDays: $household->streak_days,
+            streakDays: $viewer->currentStreak($today),
             family: $household->activeMembers()->get()->map(MemberData::fromModel(...))->values()->all(),
             tonight: $tonight !== null ? PlannedMealData::fromModel($tonight) : null,
             shoppingList: $list !== null ? ShoppingListData::fromModel($list) : null,
