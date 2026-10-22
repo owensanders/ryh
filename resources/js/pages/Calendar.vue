@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useHouseholdRole } from '@/composables/useHouseholdRole';
+import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import type { CalendarDayData, CalendarEventData, CalendarMonthData } from '@/types/generated';
@@ -17,9 +17,8 @@ const VISIBLE_PER_CELL = 3;
 
 const COLOURS = ['mint', 'lilac', 'sun', 'sky', 'coral'];
 
-const { canManage, isTeen } = useHouseholdRole();
+const can = useHouseholdAbilities();
 // Calendar events are shared and handy for a Teen to manage themselves (e.g. school schedules).
-const canEditCalendar = computed(() => canManage.value || isTeen.value);
 
 const filter = ref<number | null>(null);
 const open = ref(false);
@@ -79,7 +78,7 @@ function openNew(day: CalendarDayData): void {
 }
 
 async function openEdit(event: CalendarEventData): Promise<void> {
-    if (!canEditCalendar.value || event.date < todayIso.value) {
+    if (!event.can.update || event.date < todayIso.value) {
         return;
     }
 
@@ -171,7 +170,12 @@ function destroy(): void {
 
                 <span class="ml-1 text-[15px] font-extrabold tracking-tight">{{ props.calendar.monthLabel }}</span>
 
-                <button v-if="canEditCalendar" type="button" class="ryh-btn ml-2 w-auto bg-ryh-coral text-white" @click="openNew(defaultDay)">
+                <button
+                    v-if="can?.createCalendarEvents"
+                    type="button"
+                    class="ryh-btn ml-2 w-auto bg-ryh-coral text-white"
+                    @click="openNew(defaultDay)"
+                >
                     <Plus class="h-4 w-4" :stroke-width="2.5" />
                     New event
                 </button>
@@ -207,7 +211,7 @@ function destroy(): void {
                 </div>
             </div>
 
-            <div v-if="canEditCalendar" class="hidden text-[13px] text-ryh-ink3 md:block">
+            <div v-if="can?.createCalendarEvents" class="hidden text-[13px] text-ryh-ink3 md:block">
                 Click any day to add an event there, or an event to edit it.
             </div>
 
@@ -250,7 +254,7 @@ function destroy(): void {
                     <div class="mb-2 flex items-center gap-2 px-1">
                         <span class="text-[15px] font-extrabold tracking-tight">{{ selectedDay.dayLabel }} {{ selectedDay.dateLabel }}</span>
                         <button
-                            v-if="canEditCalendar && selectedDay.date >= todayIso"
+                            v-if="can?.createCalendarEvents && selectedDay.date >= todayIso"
                             type="button"
                             class="ml-auto flex h-9 items-center gap-1.5 rounded-xl bg-ryh-soft px-3 text-[13px] font-semibold"
                             @click="openNew(selectedDay)"
@@ -264,7 +268,7 @@ function destroy(): void {
                             v-for="event in visibleEvents(selectedDay)"
                             :key="event.id"
                             type="button"
-                            :disabled="!canEditCalendar || event.date < todayIso"
+                            :disabled="!event.can.update || event.date < todayIso"
                             class="flex items-center gap-3 rounded-[13px] bg-ryh-sunk px-3 py-2.5 text-left disabled:opacity-60"
                             @click="openEdit(event)"
                         >
@@ -306,7 +310,7 @@ function destroy(): void {
                                     {{ day.dateLabel }}
                                 </span>
                                 <button
-                                    v-if="canEditCalendar && day.date >= todayIso"
+                                    v-if="can?.createCalendarEvents && day.date >= todayIso"
                                     type="button"
                                     class="ml-auto grid h-7 w-7 place-items-center rounded-md text-ryh-ink3 transition hover:bg-ryh-soft hover:text-ryh-ink [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:focus-visible:opacity-100 [@media(hover:hover)]:group-hover:opacity-100"
                                     :aria-label="`Add an event on ${day.dateLabel}`"
@@ -320,7 +324,7 @@ function destroy(): void {
                                 v-for="event in visibleEvents(day).slice(0, VISIBLE_PER_CELL)"
                                 :key="event.id"
                                 type="button"
-                                :disabled="!canEditCalendar || event.date < todayIso"
+                                :disabled="!event.can.update || event.date < todayIso"
                                 class="flex items-center gap-1.5 bg-ryh-soft px-1.5 py-1 text-left transition hover:translate-x-[2px] disabled:opacity-50 disabled:hover:translate-x-0"
                                 :class="[event.isSpanStart ? 'rounded-l-[9px]' : '', event.isSpanEnd ? 'rounded-r-[9px]' : '']"
                                 @click="openEdit(event)"
@@ -368,7 +372,7 @@ function destroy(): void {
                         v-for="event in expandedDay ? visibleEvents(expandedDay) : []"
                         :key="event.id"
                         type="button"
-                        :disabled="!canEditCalendar || event.date < todayIso"
+                        :disabled="!event.can.update || event.date < todayIso"
                         class="flex items-center gap-3 rounded-[13px] bg-ryh-sunk px-3 py-2.5 text-left transition hover:translate-x-[3px] disabled:opacity-50 disabled:hover:translate-x-0"
                         @click="openEdit(event)"
                     >
@@ -493,7 +497,7 @@ function destroy(): void {
                             {{ editing ? 'Save changes' : 'Add event' }}
                         </button>
                         <button type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="open = false">Cancel</button>
-                        <button v-if="editing" type="button" class="ryh-btn ml-auto w-auto bg-ryh-soft text-ryh-coral" @click="destroy">
+                        <button v-if="editing?.can.delete" type="button" class="ryh-btn ml-auto w-auto bg-ryh-soft text-ryh-coral" @click="destroy">
                             Delete
                         </button>
                     </div>

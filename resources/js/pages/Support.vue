@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import Tbc from '@/components/legal/Tbc.vue';
-import { useHouseholdRole } from '@/composables/useHouseholdRole';
+import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import PublicLayout from '@/layouts/PublicLayout.vue';
 import { formatPlanPrice } from '@/lib/ryh';
+import type { SharedData } from '@/types';
 import type { LegalData, PlanData } from '@/types/generated';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const props = defineProps<{ legal: LegalData; plan: PlanData }>();
 
-const { user, isOwner } = useHouseholdRole();
+const page = usePage<SharedData>();
+const can = useHouseholdAbilities();
 
 const mailto = computed(() =>
     props.legal.supportEmail ? `mailto:${props.legal.supportEmail}?subject=${encodeURIComponent(`${props.legal.tradingName} support`)}` : null,
@@ -27,13 +29,13 @@ const shortcuts = computed(() => [
         icon: '💳',
         title: 'Billing and cancelling',
         body: "Your household's Owner can change plan, update the card or cancel from Manage billing on the House page.",
-        href: isOwner.value ? route('house.index') : route(user.value ? 'dashboard' : 'login'),
+        href: can.value?.manageHousehold ? route('house.index') : route(page.props.auth.user ? 'dashboard' : 'login'),
     },
     {
         icon: '🗑',
         title: 'Delete your account',
         body: 'Settings → Profile. If you are the only Owner, the household is deleted too.',
-        href: route(user.value ? 'profile.edit' : 'login'),
+        href: route(page.props.auth.user ? 'profile.edit' : 'login'),
     },
     { icon: '🟢', title: 'Is something down?', body: 'Check the live status of RYH before getting in touch.', href: route('status') },
 ]);

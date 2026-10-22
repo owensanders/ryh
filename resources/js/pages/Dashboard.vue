@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { useHouseholdRole } from '@/composables/useHouseholdRole';
+import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import { dial, tickStyle } from '@/lib/ryh';
-import type { ChoreData, DashboardData } from '@/types/generated';
+import type { ChoreData, DashboardData, ShoppingItemData } from '@/types/generated';
 import { Link, router, useForm } from '@inertiajs/vue3';
 
 defineOptions({ layout: RyhShell });
 
 const props = defineProps<{ dashboard: DashboardData }>();
 
-const { canManage, isTeen, canToggleChore } = useHouseholdRole();
-const canToggleShoppingItems = isTeen.value || canManage.value;
+const can = useHouseholdAbilities();
 
 const draft = useForm({ name: '' });
 
@@ -28,16 +27,16 @@ function addItem(): void {
     });
 }
 
-function toggleItem(id: number): void {
-    if (!canToggleShoppingItems) {
+function toggleItem(item: ShoppingItemData): void {
+    if (!item.can.toggle) {
         return;
     }
 
-    router.patch(route('shopping.items.toggle', { item: id }), {}, { preserveScroll: true });
+    router.patch(route('shopping.items.toggle', { item: item.id }), {}, { preserveScroll: true });
 }
 
 function toggleChore(chore: ChoreData): void {
-    if (!canToggleChore(chore)) {
+    if (!chore.can.toggle) {
         return;
     }
 
@@ -169,9 +168,9 @@ function toggleChore(chore: ChoreData): void {
                                 v-for="item in dashboard.shoppingList.items.slice(0, 5)"
                                 :key="item.id"
                                 type="button"
-                                :disabled="!canToggleShoppingItems"
+                                :disabled="!item.can.toggle"
                                 class="flex min-h-[44px] w-full items-center gap-3 rounded-[11px] px-2 text-left transition-colors hover:bg-ryh-soft disabled:cursor-not-allowed"
-                                @click="toggleItem(item.id)"
+                                @click="toggleItem(item)"
                             >
                                 <span
                                     class="grid h-[21px] w-[21px] flex-none place-items-center rounded-[7px] border-[1.5px] text-[11px] text-[#0E1A2B] transition"
@@ -186,7 +185,7 @@ function toggleChore(chore: ChoreData): void {
                             </button>
                         </div>
 
-                        <form v-if="canManage" class="mt-auto flex gap-2 pt-3" @submit.prevent="addItem">
+                        <form v-if="can?.createShoppingItems" class="mt-auto flex gap-2 pt-3" @submit.prevent="addItem">
                             <input
                                 v-model="draft.name"
                                 placeholder="Add an item…"
@@ -250,7 +249,7 @@ function toggleChore(chore: ChoreData): void {
                             v-for="chore in dashboard.chores.slice(0, 4)"
                             :key="chore.id"
                             type="button"
-                            :disabled="!canToggleChore(chore)"
+                            :disabled="!chore.can.toggle"
                             class="flex min-h-[48px] w-full items-center gap-3 rounded-[14px] border border-ryh-line px-3 text-left transition hover:translate-x-0.5 disabled:cursor-not-allowed"
                             :class="chore.done ? 'bg-ryh-sunk' : 'bg-ryh-card'"
                             @click="toggleChore(chore)"
