@@ -7,7 +7,8 @@ import InputError from '@/components/InputError.vue';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
-import { type SharedData, type User } from '@/types';
+import { type SharedData } from '@/types';
+import type { AuthUserData } from '@/types/generated';
 
 defineOptions({ layout: RyhShell });
 
@@ -18,7 +19,7 @@ interface Props {
 defineProps<Props>();
 
 const page = usePage<SharedData>();
-const user = page.props.auth.user as User;
+const user = page.props.auth.user as AuthUserData;
 
 const form = useForm({
     name: user.name,

@@ -102,9 +102,14 @@ in `AppServiceProvider`.
 - **Input**: no DTOs: actions take `$request->validated()` (see Form
   requests). Where "not sent" must differ from "cleared", check
   `array_key_exists()`.
-- **Output**: `app/Data/*Data.php`, `spatie/laravel-data` classes. Anything a
-  page receives is mirrored in `resources/js/types/ryh.ts` (or `index.ts`).
-  Change both together.
+- **Output**: `app/Data/*Data.php`, `spatie/laravel-data` classes. Their
+  TypeScript types, and the enums', are generated into
+  `resources/js/types/generated.ts` by `sail artisan typescript:transform`.
+  Never edit it by hand: change the Data class and regenerate. CI fails if
+  the committed file is out of date. Type a property with its enum, not
+  `string`, so the page gets the exact values; for a fixed set with no enum,
+  use `#[LiteralTypeScriptType]`. `ryh.ts` only names shapes a Data class
+  declares inline, and `index.ts` holds the shared props and UI-only types.
 - **Why Data and not models:** Inertia props are readable in the page source,
   so a `*Data` class is the list of what the browser may see. Never hand a
   model to a page.

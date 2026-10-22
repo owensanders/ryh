@@ -1,21 +1,21 @@
 <script setup lang="ts">
 import PublicLayout from '@/layouts/PublicLayout.vue';
-import type { PlatformStatus, ServiceState } from '@/types/ryh';
+import type { PlatformStatusData, ServiceStateEnum } from '@/types/generated';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted } from 'vue';
 
-const props = defineProps<{ status: PlatformStatus }>();
+const props = defineProps<{ status: PlatformStatusData }>();
 
 // Matches the server-side cache, so each refresh can bring fresh results.
 const REFRESH_MS = 60_000;
 
-const dot: Record<ServiceState, string> = {
+const dot: Record<ServiceStateEnum, string> = {
     operational: 'var(--ryh-mint)',
     degraded: 'var(--ryh-sun)',
     down: 'var(--ryh-coral)',
 };
 
-const headline: Record<ServiceState, { title: string; body: string }> = {
+const headline: Record<ServiceStateEnum, { title: string; body: string }> = {
     operational: { title: 'All systems operational', body: 'Everything in RYH is running normally.' },
     degraded: {
         title: 'Some features are degraded',

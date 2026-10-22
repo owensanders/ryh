@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import LegalDocument from '@/components/legal/LegalDocument.vue';
 import Tbc from '@/components/legal/Tbc.vue';
-import type { Legal } from '@/types/ryh';
+import type { LegalData } from '@/types/generated';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
-const props = defineProps<{ legal: Legal }>();
+const props = defineProps<{ legal: LegalData }>();
 
 const entityKind = computed(() =>
     props.legal.entityType === 'limited_company'

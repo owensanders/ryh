@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import LegalDocument from '@/components/legal/LegalDocument.vue';
 import Tbc from '@/components/legal/Tbc.vue';
-import type { CookieSettings, Legal } from '@/types/ryh';
+import type { CookieSettingsData, LegalData } from '@/types/generated';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
-const props = defineProps<{ legal: Legal; cookies: CookieSettings }>();
+const props = defineProps<{ legal: LegalData; cookies: CookieSettingsData }>();
 
 const sessionLasts = computed(() => {
     if (props.cookies.expireOnClose) {

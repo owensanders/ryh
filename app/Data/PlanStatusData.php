@@ -6,6 +6,7 @@ namespace App\Data;
 
 use App\Models\Household;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
 class PlanStatusData extends Data
 {
@@ -13,7 +14,8 @@ class PlanStatusData extends Data
         public bool $onTrial,
         public ?string $trialEndsLabel,
         public bool $subscribed,
-        /** 'monthly' | 'annual' while subscribed, otherwise null. */
+        /** Null while not subscribed. */
+        #[LiteralTypeScriptType("'monthly' | 'annual' | null")]
         public ?string $interval,
         /** Set once a subscription is cancelled but still running to the end of its paid period. */
         public ?string $endsLabel,

@@ -3,7 +3,7 @@ import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { currentSubscription, disablePush, enablePush, pushSupport, type PushSupport } from '@/lib/push';
-import type { PushCategory } from '@/types/ryh';
+import type { PushCategoryData } from '@/types/generated';
 import { router } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
 import { onMounted, ref } from 'vue';
@@ -11,7 +11,7 @@ import { onMounted, ref } from 'vue';
 defineOptions({ layout: RyhShell });
 
 const props = defineProps<{
-    categories: PushCategory[];
+    categories: PushCategoryData[];
     vapidPublicKey: string | null;
 }>();
 
@@ -57,7 +57,7 @@ function sendTest(): void {
     router.post(route('notifications.test'), {}, { preserveScroll: true });
 }
 
-function toggle(category: PushCategory): void {
+function toggle(category: PushCategoryData): void {
     const optOuts = props.categories.filter((c) => (c.value === category.value ? c.enabled : !c.enabled)).map((c) => c.value);
 
     router.patch(route('notifications.update'), { opt_outs: optOuts }, { preserveScroll: true });

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data;
 
+use App\Enums\PendingReasonEnum;
 use App\Models\User;
 use LogicException;
 use Spatie\LaravelData\Data;
@@ -21,7 +22,7 @@ class HouseMemberData extends Data
         public string $activity,
         public bool $you,
         public bool $pending,
-        public ?string $pendingReason,
+        public ?PendingReasonEnum $pendingReason,
     ) {}
 
     public static function fromModel(User $user, int $viewerId): self
@@ -39,7 +40,7 @@ class HouseMemberData extends Data
             activity: $user->status_line ?? '',
             you: $user->id === $viewerId,
             pending: $membership->pending,
-            pendingReason: $membership->pending_reason?->value,
+            pendingReason: $membership->pending_reason,
         );
     }
 }

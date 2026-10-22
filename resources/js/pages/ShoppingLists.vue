@@ -5,7 +5,7 @@ import { useHouseholdRole } from '@/composables/useHouseholdRole';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import { tickStyle } from '@/lib/ryh';
-import type { ShoppingItem, ShoppingList } from '@/types/ryh';
+import type { ShoppingItemData, ShoppingListData } from '@/types/generated';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -13,8 +13,8 @@ import { computed, ref } from 'vue';
 defineOptions({ layout: RyhShell });
 
 const props = defineProps<{
-    lists: ShoppingList[];
-    active: ShoppingList | null;
+    lists: ShoppingListData[];
+    active: ShoppingListData | null;
 }>();
 
 const COLOURS = ['mint', 'lilac', 'sun', 'sky', 'coral'];
@@ -45,7 +45,7 @@ function toggleItem(id: number): void {
 
 // List create / rename / delete
 const listDialogOpen = ref(false);
-const editingList = ref<ShoppingList | null>(null);
+const editingList = ref<ShoppingListData | null>(null);
 const listDialogTitle = computed(() => (editingList.value ? 'Rename list' : 'New list'));
 
 const listForm = useForm({ name: '', colour: 'mint' });
@@ -58,7 +58,7 @@ function openNewList(): void {
     listDialogOpen.value = true;
 }
 
-function openEditList(list: ShoppingList): void {
+function openEditList(list: ShoppingListData): void {
     editingList.value = list;
     listForm.clearErrors();
     listForm.defaults({ name: list.name, colour: list.colourKey });
@@ -89,11 +89,11 @@ function destroyActiveList(): void {
 
 // Item edit / delete
 const itemDialogOpen = ref(false);
-const editingItem = ref<ShoppingItem | null>(null);
+const editingItem = ref<ShoppingItemData | null>(null);
 
 const itemForm = useForm({ name: '', quantity: '' });
 
-function openEditItem(item: ShoppingItem): void {
+function openEditItem(item: ShoppingItemData): void {
     editingItem.value = item;
     itemForm.clearErrors();
     itemForm.defaults({ name: item.name, quantity: item.quantity ?? '' });

@@ -3,12 +3,12 @@ import { useHouseholdRole } from '@/composables/useHouseholdRole';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import { dial, tickStyle } from '@/lib/ryh';
-import type { Chore, Dashboard } from '@/types/ryh';
+import type { ChoreData, DashboardData } from '@/types/generated';
 import { Link, router, useForm } from '@inertiajs/vue3';
 
 defineOptions({ layout: RyhShell });
 
-const props = defineProps<{ dashboard: Dashboard }>();
+const props = defineProps<{ dashboard: DashboardData }>();
 
 const { canManage, isTeen, canToggleChore } = useHouseholdRole();
 const canToggleShoppingItems = isTeen.value || canManage.value;
@@ -36,7 +36,7 @@ function toggleItem(id: number): void {
     router.patch(route('shopping.items.toggle', { item: id }), {}, { preserveScroll: true });
 }
 
-function toggleChore(chore: Chore): void {
+function toggleChore(chore: ChoreData): void {
     if (!canToggleChore(chore)) {
         return;
     }

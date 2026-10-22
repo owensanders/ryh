@@ -68,6 +68,12 @@ jobs:
       - name: Publish Ziggy Configuration
         run: php artisan ziggy:generate
 
+      - name: Check Generated Types
+        run: |
+          php artisan typescript:transform
+          git diff --exit-code resources/js/types || { echo "::error::resources/js/types is out of date with app/Data. Run: sail artisan typescript:transform"; exit 1; }
+          if [ -n "$(git ls-files --others --exclude-standard resources/js/types)" ]; then echo "::error::typescript:transform created files that aren't committed."; exit 1; fi
+
       - name: Build Assets
         run: npm run build
 

@@ -2,7 +2,7 @@
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
-import type { Document, DocumentFolder } from '@/types/ryh';
+import type { DocumentData, DocumentFolderData } from '@/types/generated';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { Download, Plus, Search, Trash2, Upload } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -10,9 +10,9 @@ import { computed, ref } from 'vue';
 defineOptions({ layout: RyhShell });
 
 const props = defineProps<{
-    folders: DocumentFolder[];
-    active: DocumentFolder | null;
-    documents: Document[];
+    folders: DocumentFolderData[];
+    active: DocumentFolderData | null;
+    documents: DocumentData[];
     storageLabel: string;
     storagePct: number;
 }>();
@@ -94,7 +94,7 @@ function startDrag(id: number): void {
     draggingId.value = id;
 }
 
-function dropOnFolder(folder: DocumentFolder): void {
+function dropOnFolder(folder: DocumentFolderData): void {
     const documentId = draggingId.value;
     draggingId.value = null;
 
@@ -124,9 +124,9 @@ function confirmDestroyFolder(): void {
 
 // Delete document
 const confirmDocOpen = ref(false);
-const deletingDocument = ref<Document | null>(null);
+const deletingDocument = ref<DocumentData | null>(null);
 
-function destroyDocument(document: Document): void {
+function destroyDocument(document: DocumentData): void {
     deletingDocument.value = document;
     confirmDocOpen.value = true;
 }

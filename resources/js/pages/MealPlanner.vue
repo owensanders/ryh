@@ -7,7 +7,8 @@ import { useHouseholdRole } from '@/composables/useHouseholdRole';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import { tint } from '@/lib/ryh';
-import type { AiPlannerOptions, Member, PlannedMeal, PlannerDay, Recipe, ShoppingList, TagOption } from '@/types/ryh';
+import type { MemberData, PlannedMealData, PlannerDayData, RecipeData, ShoppingListData } from '@/types/generated';
+import type { AiPlannerOptions, TagOption } from '@/types/ryh';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { Plus, Sparkles } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -16,12 +17,12 @@ defineOptions({ layout: RyhShell });
 
 const props = defineProps<{
     weekOf: string;
-    days: PlannerDay[];
-    library: Recipe[];
+    days: PlannerDayData[];
+    library: RecipeData[];
     recipeCount: number;
-    recipes: Recipe[];
-    members: Member[];
-    shoppingLists: ShoppingList[];
+    recipes: RecipeData[];
+    members: MemberData[];
+    shoppingLists: ShoppingListData[];
     tagOptions: TagOption[];
     aiConfigured: boolean;
     aiPaused: boolean;
@@ -40,7 +41,7 @@ const draggingId = ref<number | null>(null);
 const dropTarget = ref<string | null>(null);
 
 const open = ref(false);
-const editing = ref<PlannedMeal | null>(null);
+const editing = ref<PlannedMealData | null>(null);
 
 const form = useForm({
     recipe_id: null as number | null,
@@ -70,7 +71,7 @@ function validTags(tags: string[]): string[] {
     return tags.filter((tag) => props.tagOptions.some((option) => option.value === tag));
 }
 
-function populateRecipeDetailFields(recipe: Recipe): void {
+function populateRecipeDetailFields(recipe: RecipeData): void {
     form.new_recipe_description = recipe.description ?? '';
     form.new_recipe_duration_label = recipe.durationLabel ?? '';
     form.new_recipe_difficulty = recipe.difficulty ?? '';
@@ -133,7 +134,7 @@ function openNew(date: string): void {
     open.value = true;
 }
 
-function openEdit(meal: PlannedMeal, date: string): void {
+function openEdit(meal: PlannedMealData, date: string): void {
     editing.value = meal;
     form.clearErrors();
 

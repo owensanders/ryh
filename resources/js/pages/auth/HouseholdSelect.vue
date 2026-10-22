@@ -3,13 +3,13 @@ import RyhLogo from '@/components/ryh/RyhLogo.vue';
 import Toast from '@/components/ryh/Toast.vue';
 import { logout } from '@/lib/logout';
 import type { SharedData } from '@/types';
-import type { HouseholdOption } from '@/types/ryh';
+import type { HouseholdOptionData } from '@/types/generated';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { House, LoaderCircle } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 const props = defineProps<{
-    households: HouseholdOption[];
+    households: HouseholdOptionData[];
     currentHouseholdId: number | null;
 }>();
 
@@ -22,7 +22,7 @@ const form = useForm({
 const selectedHousehold = computed(() => props.households.find((household) => household.id === form.household_id) ?? null);
 
 const initials = computed(() =>
-    (page.props.auth.user.name ?? '')
+    (page.props.auth.user?.name ?? '')
         .split(' ')
         .map((part) => part[0])
         .slice(0, 2)
@@ -67,8 +67,8 @@ function submit(): void {
                         {{ initials }}
                     </span>
                     <div class="min-w-0">
-                        <div class="truncate text-[15.5px] font-extrabold tracking-[-0.02em]">{{ page.props.auth.user.name }}</div>
-                        <div class="mt-0.5 truncate text-[12.5px] text-ryh-onhero2">{{ page.props.auth.user.email }}</div>
+                        <div class="truncate text-[15.5px] font-extrabold tracking-[-0.02em]">{{ page.props.auth.user?.name }}</div>
+                        <div class="mt-0.5 truncate text-[12.5px] text-ryh-onhero2">{{ page.props.auth.user?.email }}</div>
                     </div>
                 </div>
 
