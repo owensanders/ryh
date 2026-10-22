@@ -24,6 +24,7 @@ class RecipeData extends Data
         public array $tags,
         public array $ingredients,
         public bool $isFavourite,
+        public AbilitiesData $can,
     ) {}
 
     public static function fromModel(Recipe $recipe): self
@@ -39,6 +40,7 @@ class RecipeData extends Data
             tags: $recipe->tags ?? [],
             ingredients: $recipe->ingredients ?? [],
             isFavourite: $recipe->is_favourite,
+            can: AbilitiesData::for($recipe, 'update', 'delete'),
         );
     }
 }

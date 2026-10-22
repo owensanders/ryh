@@ -1,3 +1,8 @@
+export type AbilitiesData = {
+    update?: boolean;
+    delete?: boolean;
+    toggle?: boolean;
+};
 export type AgendaEntryData = {
     id: number;
     title: string;
@@ -86,6 +91,7 @@ export type CalendarEventData = {
     isSpanEnd: boolean;
     startsAt: string;
     endsAt: string | null;
+    can: AbilitiesData;
 };
 export type CalendarMonthData = {
     month: string;
@@ -115,6 +121,7 @@ export type ChoreData = {
     status: ChoreStatusEnum;
     done: boolean;
     assignee: MemberData | null;
+    can: AbilitiesData;
 };
 export type ChoreProgressData = {
     done: number;
@@ -213,6 +220,18 @@ export type HouseMemberData = {
     you: boolean;
     pending: boolean;
     pendingReason: PendingReasonEnum | null;
+};
+export type HouseholdAbilitiesData = {
+    manageHousehold: boolean;
+    viewBudget: boolean;
+    viewDocuments: boolean;
+    createChores: boolean;
+    notifyChores: boolean;
+    createShoppingLists: boolean;
+    createShoppingItems: boolean;
+    createCalendarEvents: boolean;
+    createPlannedMeals: boolean;
+    createRecipes: boolean;
 };
 export type HouseholdOptionData = {
     id: number;
@@ -400,6 +419,7 @@ export type PlannedMealData = {
     missingIngredients: number;
     missingLabel: string;
     cook: MemberData | null;
+    can: AbilitiesData;
 };
 export type PlannerDayData = {
     date: string;
@@ -433,6 +453,7 @@ export type RecipeData = {
         quantity: string | null;
     }[];
     isFavourite: boolean;
+    can: AbilitiesData;
 };
 export type RecipeLibraryScreenData = {
     recipes: RecipeData[];
@@ -471,6 +492,7 @@ export type ShoppingItemData = {
     name: string;
     quantity: string | null;
     done: boolean;
+    can: AbilitiesData;
 };
 export type ShoppingListData = {
     id: number;
@@ -481,6 +503,7 @@ export type ShoppingListData = {
     remaining: number;
     total: number;
     items: ShoppingItemData[];
+    can: AbilitiesData;
 };
 export type ShoppingScreenData = {
     lists: ShoppingListData[];

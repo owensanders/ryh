@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Data\AuthUserData;
+use App\Data\HouseholdAbilitiesData;
 use App\Models\User;
 use App\Support\CurrentHouseholdHelper;
 use Illuminate\Http\Request;
@@ -54,21 +55,20 @@ class HandleInertiaRequestsMiddleware extends Middleware
      * they were last in, which the shell's links lead back to. The frontend
      * keeps Ziggy's {household} default in step with the slug.
      *
-     * @return array{id: int, name: string, slug: string, role: string|null}|null
+     * @return array{id: int, name: string, slug: string, can: HouseholdAbilitiesData}|null
      */
     private function household(Request $request): ?array
     {
+        $user = $request->user();
         $household = CurrentHouseholdHelper::find($request);
-        $role = CurrentHouseholdHelper::role($request);
 
-        if ($household === null && $request->user() instanceof User) {
-            $membership = $request->user()->lastMembership();
-            $household = $membership !== null && ! $membership->pending ? $request->user()->lastHousehold : null;
-            $role = $household !== null ? $membership->role : null;
+        if ($household === null && $user instanceof User) {
+            $membership = $user->lastMembership();
+            $household = $membership !== null && ! $membership->pending ? $user->lastHousehold : null;
         }
 
-        return $household !== null
-            ? ['id' => $household->id, 'name' => $household->name, 'slug' => $household->slug, 'role' => $role?->value]
+        return $household !== null && $user instanceof User
+            ? ['id' => $household->id, 'name' => $household->name, 'slug' => $household->slug, 'can' => HouseholdAbilitiesData::for($user, $household)]
             : null;
     }
 }

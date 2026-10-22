@@ -25,6 +25,7 @@ class PlannedMealData extends Data
         public int $missingIngredients,
         public string $missingLabel,
         public ?MemberData $cook,
+        public AbilitiesData $can,
     ) {}
 
     public static function fromModel(PlannedMeal $meal): self
@@ -46,6 +47,7 @@ class PlannedMealData extends Data
             missingIngredients: $missing,
             missingLabel: $missing === 0 ? 'All in' : "{$missing} missing",
             cook: $meal->cook !== null ? MemberData::fromModel($meal->cook) : null,
+            can: AbilitiesData::for($meal, 'update', 'delete'),
         );
     }
 }
