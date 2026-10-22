@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Settings;
 
 use App\Actions\House\CancelHouseholdSubscriptionAction;
+use App\Actions\House\DeleteHouseholdAction;
 use App\Enums\HouseholdRoleEnum;
 use App\Models\Household;
 use App\Models\User;
@@ -16,6 +17,7 @@ class DeleteAccountAction
 {
     public function __construct(
         private readonly CancelHouseholdSubscriptionAction $cancelSubscription,
+        private readonly DeleteHouseholdAction $deleteHousehold,
     ) {}
 
     /** @throws ValidationException */
@@ -33,7 +35,7 @@ class DeleteAccountAction
 
         DB::transaction(function () use ($user, $goingWithThem): void {
             foreach ($goingWithThem as $household) {
-                $household->delete();
+                $this->deleteHousehold->handle($household);
             }
 
             // push_subscriptions is polymorphic, so nothing cascades from users.

@@ -15,6 +15,7 @@ class LeaveHouseholdAction
 {
     public function __construct(
         private readonly CancelHouseholdSubscriptionAction $cancelSubscription,
+        private readonly DeleteHouseholdAction $deleteHousehold,
     ) {}
 
     /** @throws ValidationException */
@@ -43,7 +44,7 @@ class LeaveHouseholdAction
             }
 
             $this->cancelSubscription->handle($household);
-            $household->delete();
+            $this->deleteHousehold->handle($household);
 
             return $household->name;
         }
