@@ -43,6 +43,40 @@ test('the owner saves a recipe, sends its ingredients to a list, and plans it fo
     await expect(page.getByTitle(recipe)).toBeVisible();
 });
 
+test('the owner edits a planned meal, drags it to another day, then removes it', async ({ page }) => {
+    const meal = uniqueName('Fish pie');
+    const dialog = page.getByRole('dialog');
+
+    // The planner labels days d/m in UTC (the app's timezone).
+    const today = new Date();
+    const todayLabel = `${String(today.getUTCDate()).padStart(2, '0')}/${String(today.getUTCMonth() + 1).padStart(2, '0')}`;
+    const dayColumn = (label: string) => page.locator('div.group').filter({ has: page.getByRole('button', { name: `Add a meal on ${label}` }) });
+
+    await page.goto('/meals');
+    await page.getByRole('button', { name: `Add a meal on ${todayLabel}` }).click();
+    await dialog.getByLabel('…or add a new recipe').fill(meal);
+    await dialog.getByRole('button', { name: 'Add meal' }).click();
+    await expect(dialog).toBeHidden();
+
+    await page.getByTitle(meal).click();
+    await expect(dialog.getByRole('heading', { name: 'Edit meal' })).toBeVisible();
+    await dialog.getByLabel('Slot').selectOption('lunch');
+    await dialog.getByRole('button', { name: 'Save changes' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.getByRole('button', { name: new RegExp(`lunch\\s+${meal}`, 'i') })).toBeVisible();
+
+    // Any other day in the week shown.
+    const labels = await page.getByRole('button', { name: /^Add a meal on / }).evaluateAll((buttons) => buttons.map((b) => b.getAttribute('aria-label')!.replace('Add a meal on ', '')));
+    const otherDay = labels.find((label) => label !== todayLabel)!;
+    await page.getByTitle(meal).dragTo(dayColumn(otherDay));
+    await expect(dayColumn(otherDay).getByTitle(meal)).toBeVisible();
+
+    await dayColumn(otherDay).getByTitle(meal).click();
+    await dialog.getByRole('button', { name: 'Remove' }).click();
+    await page.getByRole('dialog').filter({ hasText: 'Remove this meal from the plan?' }).getByRole('button', { name: 'Delete' }).click();
+    await expect(page.getByTitle(meal)).toHaveCount(0);
+});
+
 test.describe('a fresh household', () => {
     test.use({ storageState: { cookies: [], origins: [] } });
 
