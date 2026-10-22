@@ -13,9 +13,16 @@ use Illuminate\Support\Collection;
 
 class CreateBudgetCategoryAction
 {
+    public function __construct(
+        private readonly SetUpBudgetMonthAction $setUpMonth,
+    ) {}
+
     /** @param  array<string, mixed>  $data  BudgetCategoryRequest's validated input: label, icon, budgeted (pounds), is_recurring. */
     public function handle(Household $household, CarbonImmutable $month, array $data): BudgetCategory
     {
+        // Set the month up first, or adding to it early would keep its recurring items out.
+        $this->setUpMonth->handle($household, $month);
+
         $existing = $household->budgetCategories()->forMonth($month)->get();
 
         $category = $household->budgetCategories()->create([

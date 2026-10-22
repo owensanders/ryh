@@ -18,6 +18,8 @@ class BudgetScreenData extends Data
         public string $month,
         /** Whether it's the household's month now, in its time zone. */
         public bool $isCurrentMonth,
+        /** Recurring categories or income from an earlier month that haven't come into this one yet. */
+        public bool $recurringToBringIn,
         public string $monthLabel,
         public string $previousMonth,
         public string $nextMonth,

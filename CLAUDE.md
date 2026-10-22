@@ -67,8 +67,10 @@ Each layer only talks to the one below it.
 - **View models** (`app/ViewModels/<Area>`): everything one page needs, built
   by a public `toData()` that returns its `*ScreenData` (`ChoreBoardViewModel`).
   Plain classes over the Data layer, not `spatie/laravel-view-models`, which
-  is made for Blade. They only read: a write a page needs first (the budget's
-  carry-forward) is an action the controller calls before rendering.
+  is made for Blade. They only read, and so does every GET: anything that
+  must happen before a page makes sense runs on a schedule or a POST (the
+  budget's recurring items come in from `budget:carry-forward`, or from
+  "Bring them in now").
   `LayerShapeTest` checks actions have `handle()` and view models `toData()`.
 - **Models** (`app/Models`): relations (including constrained ones like
   `Household::activeMembers()`), casts, query scopes, and methods that

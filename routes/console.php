@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Actions\Budget\CarryForwardBudgetsAction;
 use App\Actions\Documents\PruneOrphanedDocumentFilesAction;
 use App\Ai\AiConfigService;
 use Illuminate\Foundation\Inspiring;
@@ -37,9 +38,18 @@ Artisan::command('documents:prune-orphans {--hours=24}', function (PruneOrphaned
     $this->info("Deleted {$deleted} orphaned document files.");
 })->purpose('Delete stored document files that no document points to');
 
+Artisan::command('budget:carry-forward', function (CarryForwardBudgetsAction $carryForward) {
+    $households = $carryForward->handle();
+
+    $this->info("Set up this month's budget for {$households} households.");
+})->purpose("Bring recurring budget categories and income into each household's current month");
+
 // Completed chores (Chore::KEEP_COMPLETED_DAYS) and ticked-off shopping items
 // (ShoppingItem::KEEP_COMPLETED_DAYS), then old notifications, then document
 // files nothing points to any more.
 Schedule::command('model:prune')->dailyAt('03:00')->onOneServer()->withoutOverlapping();
 Schedule::command('notifications:prune')->dailyAt('03:15')->onOneServer()->withoutOverlapping();
 Schedule::command('documents:prune-orphans')->dailyAt('03:30')->onOneServer()->withoutOverlapping();
+
+// Hourly, since households reach the 1st at their own midnight. Repeats do nothing.
+Schedule::command('budget:carry-forward')->hourly()->onOneServer()->withoutOverlapping();

@@ -36,6 +36,8 @@ class BudgetViewModel
         return new BudgetScreenData(
             month: $first->format('Y-m'),
             isCurrentMonth: $first->isSameMonth($today),
+            recurringToBringIn: ($categories->isEmpty() && $household->budgetCategories()->recurringBefore($first)->exists())
+                || ($income->isEmpty() && $household->incomeSources()->recurringBefore($first)->exists()),
             monthLabel: $first->format('F Y'),
             previousMonth: $first->subMonth()->format('Y-m'),
             nextMonth: $first->addMonth()->format('Y-m'),
