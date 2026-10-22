@@ -216,6 +216,12 @@ class Household extends Model
         return $this->hasMany(Document::class);
     }
 
+    /** Bytes its documents take up, counted against `documents.quota_bytes`. */
+    public function documentBytes(): int
+    {
+        return (int) $this->documents()->sum('size');
+    }
+
     /**
      * Takes a row lock on the household until the transaction ends, so checks
      * two requests could race (the member cap, the budget carry-forward) run

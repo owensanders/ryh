@@ -9,6 +9,8 @@ const props = defineProps<{ active: DocumentFolderData }>();
 
 const zoneHot = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
+// Why files in the last batch didn't upload. Each upload is its own visit, so the page's errors only hold the last one's.
+const failures = ref<string[]>([]);
 
 function chooseFiles(): void {
     fileInput.value?.click();
@@ -23,13 +25,19 @@ async function uploadFiles(files: FileList | null): Promise<void> {
     }
 
     const folderId = props.active.id;
+    failures.value = [];
 
     for (const file of Array.from(files)) {
         await new Promise<void>((resolve) => {
             router.post(
                 route('documents.store', { folder: folderId }),
                 { file },
-                { preserveScroll: true, forceFormData: true, onFinish: () => resolve() },
+                {
+                    preserveScroll: true,
+                    forceFormData: true,
+                    onError: (errors) => failures.value.push(errors.file ?? `“${file.name}” didn't upload.`),
+                    onFinish: () => resolve(),
+                },
             );
         });
     }
@@ -72,4 +80,8 @@ function onDrop(event: DragEvent): void {
         <button type="button" class="ryh-btn w-full flex-none bg-ryh-coral text-white sm:w-auto" @click="chooseFiles">Choose files</button>
         <input ref="fileInput" type="file" multiple aria-label="Upload files" class="hidden" @change="onFileChange" />
     </section>
+
+    <div v-if="failures.length" role="alert" class="flex flex-col gap-1 text-[13px] text-ryh-coral">
+        <p v-for="(failure, index) in failures" :key="index">{{ failure }}</p>
+    </div>
 </template>
