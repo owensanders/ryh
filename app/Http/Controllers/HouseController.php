@@ -9,7 +9,6 @@ use App\Actions\House\ChangeMemberRoleAction;
 use App\Actions\House\InviteMemberAction;
 use App\Actions\House\RegenerateJoinCodeAction;
 use App\Actions\House\RemoveMemberAction;
-use App\Actions\House\SubscribeHouseholdAction;
 use App\Actions\House\ToggleJoinCodeAction;
 use App\Actions\House\UpdateHouseholdTimezoneAction;
 use App\Enums\HouseholdRoleEnum;
@@ -17,7 +16,6 @@ use App\Http\Requests\HouseTimezoneRequest;
 use App\Http\Requests\InviteRequest;
 use App\Http\Requests\JoinCodeToggleRequest;
 use App\Http\Requests\RoleRequest;
-use App\Http\Requests\SubscribeRequest;
 use App\Models\User;
 use App\Traits\ResolvesHouseholdTrait;
 use App\Traits\ResolvesUserTrait;
@@ -26,7 +24,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class HouseController extends Controller
 {
@@ -96,23 +93,5 @@ class HouseController extends Controller
         $regenerate->handle($this->household($request));
 
         return back()->with('toast', 'New invite code generated');
-    }
-
-    public function subscribe(SubscribeRequest $request, SubscribeHouseholdAction $subscribe): SymfonyResponse
-    {
-        $interval = $request->validated('interval');
-
-        $checkoutUrl = $subscribe->handle(
-            $this->household($request),
-            interval: $interval,
-            successUrl: route('billing.checkout.complete', ['from' => 'house']),
-            cancelUrl: route('house.index'),
-        );
-
-        if ($checkoutUrl !== null) {
-            return Inertia::location($checkoutUrl);
-        }
-
-        return back()->with('toast', 'You are already subscribed');
     }
 }

@@ -58,11 +58,11 @@ class BillingNoticesTest extends TestCase
      *
      * @return TestResponse<Response>
      */
-    private function postSigned(string $type, array $object): TestResponse
+    private function postSigned(string $type, array $object, string $eventId = 'evt_test'): TestResponse
     {
         config(['cashier.webhook.secret' => self::SECRET]);
 
-        $payload = json_encode(['id' => 'evt_test', 'type' => $type, 'data' => ['object' => $object]], JSON_THROW_ON_ERROR);
+        $payload = json_encode(['id' => $eventId, 'type' => $type, 'data' => ['object' => $object]], JSON_THROW_ON_ERROR);
         $timestamp = time();
         $signature = hash_hmac('sha256', "{$timestamp}.{$payload}", self::SECRET);
 
@@ -82,6 +82,21 @@ class BillingNoticesTest extends TestCase
             'currency' => 'gbp',
             'next_payment_attempt' => now()->addDays(14)->startOfDay()->getTimestamp(),
         ];
+    }
+
+    #[Test]
+    public function aRepeatedDeliveryOfTheSameEventSendsOneReminderButANewEventSendsAnother(): void
+    {
+        $this->subscribe('price_annual');
+
+        $this->postSigned('invoice.upcoming', $this->upcomingInvoice(), 'evt_once')->assertOk();
+        $this->postSigned('invoice.upcoming', $this->upcomingInvoice(), 'evt_once')->assertOk()->assertSeeText('Webhook already handled');
+
+        Mail::assertQueued(RenewalReminderMail::class, 1);
+
+        $this->postSigned('invoice.upcoming', $this->upcomingInvoice(), 'evt_next_year')->assertOk();
+
+        Mail::assertQueued(RenewalReminderMail::class, 2);
     }
 
     #[Test]

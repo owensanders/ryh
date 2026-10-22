@@ -13,6 +13,8 @@ class SubscribeRequest extends FormRequest
     {
         return [
             'interval' => ['required', 'string', 'in:monthly,annual'],
+            // Where they started: the House tab returns there; otherwise the paywall.
+            'from' => ['nullable', 'string', 'in:house'],
         ];
     }
 }

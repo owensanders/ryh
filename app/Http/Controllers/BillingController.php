@@ -38,14 +38,21 @@ class BillingController extends Controller
     {
         $interval = $request->validated('interval');
 
+        // The House tab and the paywall both subscribe here; each gets sent back to where it started.
+        $fromHouse = $request->validated('from') === 'house';
+
         $checkoutUrl = $subscribe->handle(
             $this->household($request),
             interval: $interval,
-            successUrl: route('billing.checkout.complete'),
-            cancelUrl: route('billing.required'),
+            successUrl: route('billing.checkout.complete', $fromHouse ? ['from' => 'house'] : []),
+            cancelUrl: route($fromHouse ? 'house.index' : 'billing.required'),
         );
 
-        return $checkoutUrl !== null ? Inertia::location($checkoutUrl) : to_route('dashboard');
+        if ($checkoutUrl !== null) {
+            return Inertia::location($checkoutUrl);
+        }
+
+        return $fromHouse ? back()->with('toast', 'You are already subscribed') : to_route('dashboard');
     }
 
     /**
@@ -57,17 +64,20 @@ class BillingController extends Controller
         $household = $this->household($request);
         $sessionId = $request->string('session_id')->toString();
 
+        $subscribed = false;
+
         if ($sessionId !== '') {
             try {
-                $complete->handle($household, $sessionId);
+                $subscribed = $complete->handle($household, $sessionId);
             } catch (ApiErrorException $e) {
                 // The webhook will still sync the subscription; just log it.
                 Log::warning("Couldn't sync Stripe checkout session {$sessionId}: {$e->getMessage()}");
             }
         }
 
+        // Only say so once it's true; otherwise the webhook is still on its way.
         return to_route($request->query('from') === 'house' ? 'house.index' : 'dashboard')
-            ->with('toast', "You're subscribed. Thanks!");
+            ->with('toast', $subscribed ? "You're subscribed. Thanks!" : "Thanks! We're confirming your payment with Stripe; your plan will update in a moment.");
     }
 
     public function portal(Request $request): SymfonyResponse

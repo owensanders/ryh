@@ -142,7 +142,6 @@ Route::prefix('h/{household}')->middleware(['auth', 'verified', 'household', 'th
         Route::patch('house/join-code', [HouseController::class, 'toggleJoinCode'])->name('house.joinCode.toggle')->can('manage', Household::class);
         Route::patch('house/timezone', [HouseController::class, 'updateTimezone'])->name('house.timezone')->can('manage', Household::class);
         Route::post('house/join-code/regenerate', [HouseController::class, 'regenerateJoinCode'])->name('house.joinCode.regenerate')->can('manage', Household::class);
-        Route::post('house/subscribe', [HouseController::class, 'subscribe'])->name('house.subscribe')->can('manage', Household::class);
     });
 });
 
