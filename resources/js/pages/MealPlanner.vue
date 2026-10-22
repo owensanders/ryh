@@ -3,7 +3,7 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import AiMealPlanDialog from '@/components/ryh/AiMealPlanDialog.vue';
 import RecipeDetailFields from '@/components/ryh/RecipeDetailFields.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useHouseholdRole } from '@/composables/useHouseholdRole';
+import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import { tint } from '@/lib/ryh';
@@ -35,7 +35,7 @@ const aiOpen = ref(false);
 
 const SLOTS = ['breakfast', 'lunch', 'dinner'];
 
-const { canManage } = useHouseholdRole();
+const can = useHouseholdAbilities();
 
 const draggingId = ref<number | null>(null);
 const dropTarget = ref<string | null>(null);
@@ -232,7 +232,7 @@ function drop(date: string): void {
 <template>
     <RyhLayout title="Meal Planner" :subtitle="`Week of ${weekOf}`">
         <div class="flex animate-ryh-rise flex-col gap-4">
-            <div v-if="canManage" class="flex flex-wrap items-center gap-3">
+            <div v-if="can?.createPlannedMeals" class="flex flex-wrap items-center gap-3">
                 <div class="hidden min-w-0 flex-1 text-[13px] text-ryh-ink3 [@media(hover:hover)]:block">
                     Drag any meal card onto another day to reschedule, or click one to edit it.
                 </div>
@@ -262,7 +262,7 @@ function drop(date: string): void {
                         <span class="text-[13px] font-extrabold">{{ day.dayLabel }}</span>
                         <span class="font-mono text-[11px] text-ryh-ink3">{{ day.dateLabel }}</span>
                         <button
-                            v-if="canManage"
+                            v-if="can?.createPlannedMeals"
                             type="button"
                             class="ml-auto grid h-8 w-8 place-items-center rounded-md text-ryh-ink3 transition hover:bg-ryh-soft hover:text-ryh-ink [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:focus-visible:opacity-100 [@media(hover:hover)]:group-hover:opacity-100"
                             :aria-label="`Add a meal on ${day.dateLabel}`"
@@ -276,13 +276,13 @@ function drop(date: string): void {
                         v-for="meal in day.meals"
                         :key="meal.id"
                         type="button"
-                        :draggable="canManage"
+                        :draggable="meal.can.update"
                         class="overflow-hidden rounded-2xl border border-ryh-line bg-ryh-card text-left transition hover:-translate-y-[3px] hover:shadow-ryh"
-                        :class="canManage ? 'cursor-grab' : ''"
+                        :class="meal.can.update ? 'cursor-grab' : ''"
                         :style="{ opacity: draggingId === meal.id ? 0.35 : 1 }"
                         @dragstart="startDrag($event, meal.id)"
                         @dragend="endDrag"
-                        @click="canManage && openEdit(meal, day.date)"
+                        @click="meal.can.update && openEdit(meal, day.date)"
                     >
                         <div class="flex min-h-[76px] flex-col justify-between gap-1 px-3 py-2.5" :style="{ background: tint(meal.tint) }">
                             <span class="self-end text-[10px] font-extrabold uppercase tracking-[0.08em] text-ryh-ontint opacity-60">
@@ -433,7 +433,7 @@ function drop(date: string): void {
                             {{ editing ? 'Save changes' : 'Add meal' }}
                         </button>
                         <button type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="open = false">Cancel</button>
-                        <button v-if="editing" type="button" class="ryh-btn ml-auto w-auto bg-ryh-soft text-ryh-coral" @click="destroy">
+                        <button v-if="editing?.can.delete" type="button" class="ryh-btn ml-auto w-auto bg-ryh-soft text-ryh-coral" @click="destroy">
                             Remove
                         </button>
                     </div>

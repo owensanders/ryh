@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useHouseholdRole } from '@/composables/useHouseholdRole';
+import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import { dial, tickStyle } from '@/lib/ryh';
@@ -19,7 +19,7 @@ const props = defineProps<{
     notifyChoresAvailableAt: string | null;
 }>();
 
-const { canManage, canToggleChore } = useHouseholdRole();
+const can = useHouseholdAbilities();
 
 // Notify chores
 const now = ref(new Date());
@@ -93,7 +93,7 @@ function drop(status: ChoreStatusEnum): void {
 }
 
 function toggle(chore: ChoreData): void {
-    if (!canToggleChore(chore)) {
+    if (!chore.can.toggle) {
         return;
     }
 
@@ -187,7 +187,7 @@ function confirmDestroy(): void {
                 </div>
             </div>
 
-            <div v-if="canManage" class="flex items-center justify-end gap-2.5">
+            <div v-if="can?.notifyChores" class="flex items-center justify-end gap-2.5">
                 <span v-if="notifyChoresCooldownLabel" class="text-[12px] text-ryh-ink3">{{ notifyChoresCooldownLabel }}</span>
                 <button
                     type="button"
@@ -200,7 +200,7 @@ function confirmDestroy(): void {
                 </button>
             </div>
 
-            <section v-if="canManage" class="flex flex-wrap items-center gap-2.5 rounded-[20px] border border-ryh-line bg-ryh-panel p-[18px]">
+            <section v-if="can?.createChores" class="flex flex-wrap items-center gap-2.5 rounded-[20px] border border-ryh-line bg-ryh-panel p-[18px]">
                 <input
                     v-model="draft"
                     type="text"
@@ -239,19 +239,19 @@ function confirmDestroy(): void {
                     <div
                         v-for="chore in column.items"
                         :key="chore.id"
-                        :draggable="canManage"
+                        :draggable="chore.can.update"
                         class="rounded-2xl border border-ryh-line bg-ryh-card px-3.5 py-3 transition hover:-translate-y-0.5 hover:shadow-ryh"
-                        :class="canManage ? 'cursor-grab' : ''"
+                        :class="chore.can.update ? 'cursor-grab' : ''"
                         :style="{ opacity: draggingId === chore.id ? 0.4 : 1 }"
                         @dragstart="startDrag($event, chore.id)"
                         @dragend="draggingId = null"
-                        @click="canManage && openEdit(chore)"
+                        @click="chore.can.update && openEdit(chore)"
                     >
                         <div class="flex items-start gap-2.5">
                             <!-- Ticking lives on the box alone so it can't fire at the end of a drag. -->
                             <button
                                 type="button"
-                                :disabled="!canToggleChore(chore)"
+                                :disabled="!chore.can.toggle"
                                 :aria-label="chore.done ? `Mark ${chore.name} as not done` : `Mark ${chore.name} as done`"
                                 class="mt-px grid h-[19px] w-[19px] flex-none place-items-center rounded-full border-[1.5px] text-[11px] text-[#0E1A2B] disabled:cursor-not-allowed"
                                 :style="tickStyle(chore.done)"
@@ -263,7 +263,7 @@ function confirmDestroy(): void {
                                 {{ chore.name }}
                             </span>
                             <button
-                                v-if="canManage"
+                                v-if="chore.can.delete"
                                 type="button"
                                 title="Delete chore"
                                 class="grid h-6 w-6 flex-none place-items-center rounded-lg border-0 bg-transparent text-ryh-ink3 transition hover:bg-ryh-soft hover:text-ryh-coral"

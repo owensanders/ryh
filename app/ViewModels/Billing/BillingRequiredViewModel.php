@@ -16,7 +16,7 @@ class BillingRequiredViewModel
     {
         return new BillingRequiredScreenData(
             plan: PlanData::current(),
-            isOwner: Gate::forUser($viewer)->allows('manage', Household::class),
+            isOwner: Gate::forUser($viewer)->allows('manage', $household),
             paymentIssue: $household->hasPaymentIssue(),
             billingConfigured: filled(config('plans.intervals.monthly.stripe_price'))
                 && filled(config('plans.intervals.annual.stripe_price')),

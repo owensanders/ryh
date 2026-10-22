@@ -3,7 +3,7 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import RecipeDetailFields from '@/components/ryh/RecipeDetailFields.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAddIngredientsToShoppingList } from '@/composables/useAddIngredientsToShoppingList';
-import { useHouseholdRole } from '@/composables/useHouseholdRole';
+import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import { tint } from '@/lib/ryh';
@@ -17,7 +17,7 @@ defineOptions({ layout: RyhShell });
 
 const props = defineProps<{ recipes: RecipeData[]; tagOptions: TagOption[]; shoppingLists: ShoppingListData[] }>();
 
-const { canManage } = useHouseholdRole();
+const can = useHouseholdAbilities();
 
 // Drops any tag not in tagOptions — e.g. legacy/seeded values that predate
 // the fixed tag list — since there's no checkbox to deselect them and
@@ -143,7 +143,7 @@ function confirmDestroy(): void {
 <template>
     <RyhLayout title="Recipe Library" :subtitle="`${recipes.length} saved`">
         <div class="flex animate-ryh-rise flex-col gap-4">
-            <div v-if="canManage" class="flex items-center gap-2">
+            <div v-if="can?.createRecipes" class="flex items-center gap-2">
                 <button type="button" class="ryh-btn w-auto bg-ryh-coral text-white" @click="openNew">
                     <Plus class="h-4 w-4" :stroke-width="2.5" />
                     New recipe
@@ -156,7 +156,7 @@ function confirmDestroy(): void {
                     :key="recipe.id"
                     type="button"
                     class="flex flex-col rounded-2xl border border-ryh-line bg-ryh-card p-3.5 text-left transition hover:-translate-y-[3px] hover:shadow-ryh"
-                    @click="canManage && openEdit(recipe)"
+                    @click="recipe.can.update && openEdit(recipe)"
                 >
                     <div class="relative mb-2.5 h-[58px] rounded-xl" :style="{ background: tint(recipe.tint) }">
                         <Star
@@ -244,7 +244,7 @@ function confirmDestroy(): void {
                             {{ editing ? 'Save changes' : 'Add recipe' }}
                         </button>
                         <button type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="open = false">Cancel</button>
-                        <button v-if="editing" type="button" class="ryh-btn ml-auto w-auto bg-ryh-soft text-ryh-coral" @click="destroy">
+                        <button v-if="editing?.can.delete" type="button" class="ryh-btn ml-auto w-auto bg-ryh-soft text-ryh-coral" @click="destroy">
                             Delete
                         </button>
                     </div>

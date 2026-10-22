@@ -92,7 +92,7 @@ class HouseholdUrlTest extends TestCase
 
         $this->actingAs($user)->get('/settings/profile')->assertInertia(fn (AssertableInertia $page) => $page
             ->where('household.slug', $household->slug)
-            ->where('household.role', 'owner'));
+            ->where('household.can.manageHousehold', true));
     }
 
     #[Test]

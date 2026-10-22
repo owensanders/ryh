@@ -40,9 +40,13 @@ class ShoppingList extends Model
         return $this->belongsTo(Household::class);
     }
 
-    /** @return HasMany<ShoppingItem, $this> */
+    /**
+     * Chaperoned, so each item knows its list without a query: ShoppingItemPolicy asks it for the household.
+     *
+     * @return HasMany<ShoppingItem, $this>
+     */
     public function items(): HasMany
     {
-        return $this->hasMany(ShoppingItem::class)->orderBy('position')->orderBy('id');
+        return $this->hasMany(ShoppingItem::class)->chaperone('list')->orderBy('position')->orderBy('id');
     }
 }

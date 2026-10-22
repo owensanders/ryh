@@ -19,6 +19,7 @@ class ShoppingListData extends Data
         public int $remaining,
         public int $total,
         public array $items,
+        public AbilitiesData $can,
     ) {}
 
     /** @param  bool  $withItems  lists in the sidebar only need their counts. */
@@ -35,6 +36,7 @@ class ShoppingListData extends Data
             remaining: $items->whereNull('completed_at')->count(),
             total: $items->count(),
             items: $withItems ? $items->map(ShoppingItemData::fromModel(...))->values()->all() : [],
+            can: AbilitiesData::for($list, 'update', 'delete'),
         );
     }
 }

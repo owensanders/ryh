@@ -4,16 +4,18 @@ import NotificationBell from '@/components/ryh/NotificationBell.vue';
 import RyhLogo from '@/components/ryh/RyhLogo.vue';
 import Toast from '@/components/ryh/Toast.vue';
 import { useAppearance } from '@/composables/useAppearance';
-import { useHouseholdRole } from '@/composables/useHouseholdRole';
+import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import { logout } from '@/lib/logout';
 import { pageHeading } from '@/lib/pageHeading';
+import type { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { LogOut } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
-const page = usePage();
+const page = usePage<SharedData>();
 const { appearance, updateAppearance } = useAppearance();
-const { user, canManage, isOwner } = useHouseholdRole();
+const can = useHouseholdAbilities();
+const user = computed(() => page.props.auth.user);
 
 const isDark = computed(() => appearance.value === 'dark');
 
@@ -33,12 +35,10 @@ const nav = computed(() =>
         { label: 'Meal Planner', short: 'Meals', icon: '🍽', route: 'meals.index' },
         { label: 'Shopping Lists', short: 'Lists', icon: '🛒', route: 'shopping.index' },
         { label: 'Chores', short: 'Chores', icon: '✅', route: 'chores.index' },
-        // Budget and Documents involve money or sensitive records — Owner/Adult only.
-        canManage.value ? { label: 'Budget', icon: '💰', route: 'budget.index' } : null,
-        // House manages membership and household settings — Owner only, so an
-        // Adult can never reassign roles or remove people (including the owner).
-        isOwner.value ? { label: 'House', icon: '🏡', route: 'house.index' } : null,
-        canManage.value ? { label: 'Documents', icon: '📂', route: 'documents.index' } : null,
+        // Who sees these is down to the policies: BudgetCategoryPolicy, HouseholdPolicy, DocumentFolderPolicy.
+        can.value?.viewBudget ? { label: 'Budget', icon: '💰', route: 'budget.index' } : null,
+        can.value?.manageHousehold ? { label: 'House', icon: '🏡', route: 'house.index' } : null,
+        can.value?.viewDocuments ? { label: 'Documents', icon: '📂', route: 'documents.index' } : null,
         // Settings has three sub-pages, so match on the URL prefix rather than one route name.
         { label: 'Settings', icon: '⚙', route: 'profile.edit', prefix: '/settings' },
     ].filter((item) => item !== null),

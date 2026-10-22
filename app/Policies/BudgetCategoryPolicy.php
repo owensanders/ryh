@@ -6,7 +6,9 @@ namespace App\Policies;
 
 use App\Enums\HouseholdRoleEnum;
 use App\Models\BudgetCategory;
+use App\Models\Household;
 use App\Models\User;
+use App\Support\CurrentHouseholdHelper;
 use App\Traits\AuthorizesHouseholdAccessTrait;
 use Illuminate\Auth\Access\Response;
 
@@ -14,9 +16,10 @@ class BudgetCategoryPolicy
 {
     use AuthorizesHouseholdAccessTrait;
 
-    public function viewAny(User $user): Response
+    /** The budget screen: in the household in the URL, unless another is passed in. */
+    public function viewAny(User $user, ?Household $household = null): Response
     {
-        return $this->as($user, HouseholdRoleEnum::managers());
+        return $this->asMemberOf($user, $household ?? CurrentHouseholdHelper::household(), HouseholdRoleEnum::managers());
     }
 
     public function create(User $user): Response

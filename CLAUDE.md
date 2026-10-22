@@ -35,8 +35,17 @@ Each layer only talks to the one below it.
   `AuthorizesHouseholdAccessTrait`: another household's record is a **404**
   (never confirm it exists), and a role that can't act is a **403**. Role sets
   come from `HouseholdRoleEnum::managers()` / `managersAndTeens()`. No role or
-  ownership checks anywhere else. When a model only arrives in the request
-  body, the action checks it belongs to the same household.
+  ownership checks anywhere else, the frontend included. Pages show or hide
+  controls from what the policies send: a record's `can`
+  (`AbilitiesData::for($chore, 'update', 'delete', 'toggle')` in its
+  `fromModel()`), and the shared `household.can` (`HouseholdAbilitiesData`)
+  for the nav and the "add" controls, read with `useHouseholdAbilities()`.
+  The role itself isn't sent. A new control asks for a new ability, never
+  for the role. Abilities about the household as a whole
+  (`HouseholdPolicy`, `viewAny` on the budget and documents) take an optional
+  `Household`, so the settings pages' nav can ask about the one they were
+  last in. When a model only arrives in the request body, the action checks
+  it belongs to the same household.
 - **Controllers** (`app/Http/Controllers`): call actions and view models,
   render Inertia pages, redirect with toasts. Nothing else: no queries, no
   business rules.

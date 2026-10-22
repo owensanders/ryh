@@ -14,6 +14,7 @@ class ShoppingItemData extends Data
         public string $name,
         public ?string $quantity,
         public bool $done,
+        public AbilitiesData $can,
     ) {}
 
     public static function fromModel(ShoppingItem $item): self
@@ -23,6 +24,7 @@ class ShoppingItemData extends Data
             name: $item->name,
             quantity: $item->quantity,
             done: $item->isDone(),
+            can: AbilitiesData::for($item, 'update', 'delete', 'toggle'),
         );
     }
 }

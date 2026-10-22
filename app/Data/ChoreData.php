@@ -16,6 +16,7 @@ class ChoreData extends Data
         public ChoreStatusEnum $status,
         public bool $done,
         public ?MemberData $assignee,
+        public AbilitiesData $can,
     ) {}
 
     public static function fromModel(Chore $chore): self
@@ -26,6 +27,7 @@ class ChoreData extends Data
             status: $chore->status,
             done: $chore->status === ChoreStatusEnum::Done,
             assignee: $chore->assignee !== null ? MemberData::fromModel($chore->assignee) : null,
+            can: AbilitiesData::for($chore, 'update', 'delete', 'toggle'),
         );
     }
 }
