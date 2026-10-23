@@ -190,6 +190,12 @@ binding in `AppServiceProvider`.
   `ui/dialog` and `ui/tooltip` are shadcn-vue's, generated: change them
   only to fix them.
 
+- The HTML itself carries a public page's title, description and preview
+  tags (`config/meta.php`, keyed by route name) for link previews and
+  crawlers, which don't run JavaScript; keep a page's entry in step with its
+  `<Head>`. The browser's `route()` knows every route but Telescope's,
+  Stripe's webhook and the file routes (`config/ziggy.php`).
+
 ## Frontend writes
 
 - Where a page has props a write leaves alone, the write names the ones it

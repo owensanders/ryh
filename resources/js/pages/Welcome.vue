@@ -27,7 +27,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <Head title="RYH — your home, organised" />
+    <Head title="Your home, organised" />
 
     <PublicLayout>
         <LandingHero :plan="plan" />
