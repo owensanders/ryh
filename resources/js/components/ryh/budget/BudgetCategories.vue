@@ -3,6 +3,7 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import RecurringIcon from '@/components/ryh/RecurringIcon.vue';
 import Button from '@/components/ryh/ui/Button.vue';
 import IconButton from '@/components/ryh/ui/IconButton.vue';
+import Input from '@/components/ryh/ui/Input.vue';
 import { useConfirm } from '@/composables/useConfirm';
 import type { BudgetCategoryData } from '@/types/generated';
 import { router, useForm } from '@inertiajs/vue3';
@@ -72,9 +73,9 @@ function addCategory(): void {
                 <div class="min-w-0 flex-1">
                     <template v-if="editingCategoryId === category.id">
                         <div class="flex flex-wrap items-center gap-2">
-                            <input v-model="categoryForm.label" type="text" class="ryh-input h-8 basis-full text-[13.5px] sm:flex-1 sm:basis-0" />
+                            <Input v-model="categoryForm.label" type="text" class="h-8 basis-full text-[13.5px] sm:flex-1 sm:basis-0" />
                             <span class="text-[12.5px] text-ryh-ink3">budget £</span>
-                            <input v-model="categoryForm.budgeted" type="text" class="ryh-input h-8 w-[80px] text-[12.5px]" />
+                            <Input v-model="categoryForm.budgeted" type="text" class="h-8 w-[80px] text-[12.5px]" />
                         </div>
                         <label class="mt-1.5 flex items-center gap-1.5 text-[12px] text-ryh-ink3">
                             <input v-model="categoryForm.is_recurring" type="checkbox" class="h-3.5 w-3.5" />
@@ -130,18 +131,18 @@ function addCategory(): void {
         </p>
 
         <div class="mt-2.5 flex flex-wrap gap-2 sm:flex-nowrap">
-            <input
+            <Input
                 v-model="newCategoryForm.label"
                 type="text"
-                class="ryh-input basis-full sm:flex-1 sm:basis-0"
+                class="basis-full sm:flex-1 sm:basis-0"
                 placeholder="New category, e.g. Pets"
                 aria-label="New category"
                 @keydown.enter="addCategory"
             />
-            <input
+            <Input
                 v-model="newCategoryForm.budgeted"
                 type="text"
-                class="ryh-input flex-1 sm:w-[112px] sm:flex-none"
+                class="flex-1 sm:w-[112px] sm:flex-none"
                 placeholder="£ budget"
                 aria-label="New category budget"
                 @keydown.enter="addCategory"

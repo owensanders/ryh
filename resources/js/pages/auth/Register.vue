@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import Button from '@/components/ryh/ui/Button.vue';
+import Field from '@/components/ryh/ui/Field.vue';
+import Input from '@/components/ryh/ui/Input.vue';
 import AuthWizardLayout from '@/layouts/auth/AuthWizardLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
@@ -64,38 +66,27 @@ const submit = () => {
 
             <form class="mt-7 flex flex-col gap-3.5" @submit.prevent="submit">
                 <div class="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-                    <div class="flex flex-col gap-1.5">
-                        <label for="firstName" class="ryh-label">First name</label>
-                        <input
-                            id="firstName"
-                            v-model="firstName"
-                            type="text"
-                            class="ryh-input"
-                            autofocus
-                            autocomplete="given-name"
-                            placeholder="John"
-                        />
-                    </div>
-                    <div class="flex flex-col gap-1.5">
-                        <label for="lastName" class="ryh-label">Last name</label>
-                        <input id="lastName" v-model="lastName" type="text" class="ryh-input" autocomplete="family-name" placeholder="Doe" />
-                    </div>
+                    <Field label="First name" for="firstName">
+                        <Input id="firstName" v-model="firstName" type="text" autofocus autocomplete="given-name" placeholder="John" />
+                    </Field>
+                    <Field label="Last name" for="lastName">
+                        <Input id="lastName" v-model="lastName" type="text" autocomplete="family-name" placeholder="Doe" />
+                    </Field>
                 </div>
 
-                <div class="flex flex-col gap-1.5">
-                    <label for="email" class="ryh-label">Email address</label>
-                    <input id="email" v-model="form.email" type="email" class="ryh-input" autocomplete="email" placeholder="you@example.com" />
+                <Field label="Email address" for="email">
+                    <Input id="email" v-model="form.email" type="email" autocomplete="email" placeholder="you@example.com" />
                     <InputError :message="form.errors.email" />
-                </div>
+                </Field>
 
                 <div class="flex flex-col gap-1.5">
                     <label for="password" class="ryh-label">Password</label>
                     <div class="flex gap-2">
-                        <input
+                        <Input
                             id="password"
                             v-model="form.password"
                             :type="showPassword ? 'text' : 'password'"
-                            class="ryh-input flex-1"
+                            class="flex-1"
                             autocomplete="new-password"
                             placeholder="At least 10 characters"
                         />

@@ -181,7 +181,11 @@ binding in `AppServiceProvider`.
   secondary, danger, dark or card; `href` makes it a link) for anything
   styled `ryh-btn`, and `IconButton` for a button that shows only an icon.
   Its `label` prop is required and becomes the accessible name and tooltip.
-  Inside a reka-ui trigger, wrap them with `as-child`.
+  Inside a reka-ui trigger, wrap them with `as-child`. Form controls are
+  `Input`, `Select` and `Textarea` (`v-model`; other attributes pass
+  through), inside a `Field` (`label`, `for` = the control's id, `error`,
+  `hint`), which links the label and marks the control invalid and
+  described by its error.
 
 ## Frontend writes
 

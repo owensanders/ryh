@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import Button from '@/components/ryh/ui/Button.vue';
+import Field from '@/components/ryh/ui/Field.vue';
+import Input from '@/components/ryh/ui/Input.vue';
 import { TransitionRoot } from '@headlessui/vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 
@@ -42,25 +44,15 @@ const submit = () => {
                 <p class="mt-1 text-[13px] text-ryh-ink3">Update your name and email address.</p>
 
                 <form class="mt-5 flex flex-col gap-4" @submit.prevent="submit">
-                    <div class="flex flex-col gap-1.5">
-                        <label for="name" class="ryh-label">Name</label>
-                        <input id="name" v-model="form.name" type="text" class="ryh-input" required autocomplete="name" placeholder="Full name" />
+                    <Field label="Name" for="name">
+                        <Input id="name" v-model="form.name" type="text" required autocomplete="name" placeholder="Full name" />
                         <InputError :message="form.errors.name" />
-                    </div>
+                    </Field>
 
-                    <div class="flex flex-col gap-1.5">
-                        <label for="email" class="ryh-label">Email address</label>
-                        <input
-                            id="email"
-                            v-model="form.email"
-                            type="email"
-                            class="ryh-input"
-                            required
-                            autocomplete="username"
-                            placeholder="you@example.com"
-                        />
+                    <Field label="Email address" for="email">
+                        <Input id="email" v-model="form.email" type="email" required autocomplete="username" placeholder="you@example.com" />
                         <InputError :message="form.errors.email" />
-                    </div>
+                    </Field>
 
                     <div v-if="!user.emailVerifiedAt" class="rounded-[13px] bg-ryh-sunk p-3.5 text-[13px] text-ryh-ink2">
                         Your email address is unverified.

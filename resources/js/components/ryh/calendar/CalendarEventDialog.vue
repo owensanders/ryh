@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import Button from '@/components/ryh/ui/Button.vue';
+import Field from '@/components/ryh/ui/Field.vue';
 import IconButton from '@/components/ryh/ui/IconButton.vue';
+import Input from '@/components/ryh/ui/Input.vue';
+import Textarea from '@/components/ryh/ui/Textarea.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useCalendarEditor } from '@/composables/useCalendarEditor';
 import { PALETTE } from '@/lib/ryh';
@@ -20,11 +23,9 @@ const { open, editing, form, toggleAttendee, submit, destroy } = useCalendarEdit
             </DialogHeader>
 
             <form class="flex flex-col gap-4" @submit.prevent="submit">
-                <div class="flex flex-col gap-1.5">
-                    <label for="title" class="ryh-label">Title</label>
-                    <input id="title" v-model="form.title" type="text" class="ryh-input" required placeholder="What's happening?" />
-                    <p v-if="form.errors.title" class="text-[12.5px] text-ryh-coral">{{ form.errors.title }}</p>
-                </div>
+                <Field label="Title" for="title" :error="form.errors.title">
+                    <Input id="title" v-model="form.title" type="text" required placeholder="What's happening?" />
+                </Field>
 
                 <label for="is_all_day" class="flex items-center gap-2.5 text-[13px] text-ryh-ink2">
                     <input id="is_all_day" v-model="form.is_all_day" type="checkbox" class="h-4 w-4 accent-ryh-coral" />
@@ -32,24 +33,20 @@ const { open, editing, form, toggleAttendee, submit, destroy } = useCalendarEdit
                 </label>
 
                 <div class="grid grid-cols-2 gap-3">
-                    <div class="flex flex-col gap-1.5">
-                        <label for="starts_at" class="ryh-label">Starts</label>
-                        <input id="starts_at" v-model="form.starts_at" type="datetime-local" class="ryh-input" :min="`${todayDate}T00:00`" required />
-                        <p v-if="form.errors.starts_at" class="text-[12.5px] text-ryh-coral">{{ form.errors.starts_at }}</p>
-                    </div>
+                    <Field label="Starts" for="starts_at" :error="form.errors.starts_at">
+                        <Input id="starts_at" v-model="form.starts_at" type="datetime-local" :min="`${todayDate}T00:00`" required />
+                    </Field>
 
                     <div v-if="!form.is_all_day" class="flex flex-col gap-1.5">
                         <label for="ends_at" class="ryh-label">Ends</label>
-                        <input id="ends_at" v-model="form.ends_at" type="datetime-local" class="ryh-input" />
+                        <Input id="ends_at" v-model="form.ends_at" type="datetime-local" />
                         <p v-if="form.errors.ends_at" class="text-[12.5px] text-ryh-coral">{{ form.errors.ends_at }}</p>
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-1.5">
-                    <label for="location" class="ryh-label">Location</label>
-                    <input id="location" v-model="form.location" type="text" class="ryh-input" maxlength="120" placeholder="Optional" />
-                    <p v-if="form.errors.location" class="text-[12.5px] text-ryh-coral">{{ form.errors.location }}</p>
-                </div>
+                <Field label="Location" for="location" :error="form.errors.location">
+                    <Input id="location" v-model="form.location" type="text" maxlength="120" placeholder="Optional" />
+                </Field>
 
                 <div class="flex flex-col gap-1.5">
                     <span class="ryh-label">Who's it for?</span>
@@ -97,18 +94,9 @@ const { open, editing, form, toggleAttendee, submit, destroy } = useCalendarEdit
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-1.5">
-                    <label for="notes" class="ryh-label">Notes</label>
-                    <textarea
-                        id="notes"
-                        v-model="form.notes"
-                        rows="2"
-                        maxlength="2000"
-                        class="ryh-input h-auto py-2.5"
-                        placeholder="Optional"
-                    ></textarea>
-                    <p v-if="form.errors.notes" class="text-[12.5px] text-ryh-coral">{{ form.errors.notes }}</p>
-                </div>
+                <Field label="Notes" for="notes" :error="form.errors.notes">
+                    <Textarea id="notes" v-model="form.notes" rows="2" maxlength="2000" class="h-auto py-2.5" placeholder="Optional" />
+                </Field>
 
                 <div class="flex items-center gap-2">
                     <Button class="w-auto" type="submit" :disabled="form.processing">

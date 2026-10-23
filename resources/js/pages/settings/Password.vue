@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import Button from '@/components/ryh/ui/Button.vue';
+import Field from '@/components/ryh/ui/Field.vue';
+import Input from '@/components/ryh/ui/Input.vue';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
@@ -48,49 +50,43 @@ const updatePassword = () => {
                 <p class="mt-1 text-[13px] text-ryh-ink3">Use a long, random password to keep the account secure.</p>
 
                 <form class="mt-5 flex flex-col gap-4" @submit.prevent="updatePassword">
-                    <div class="flex flex-col gap-1.5">
-                        <label for="current_password" class="ryh-label">Current password</label>
-                        <input
+                    <Field label="Current password" for="current_password">
+                        <Input
                             id="current_password"
                             ref="currentPasswordInput"
                             v-model="form.current_password"
                             type="password"
-                            class="ryh-input"
                             required
                             autocomplete="current-password"
                             placeholder="••••••••"
                         />
                         <InputError :message="form.errors.current_password" />
-                    </div>
+                    </Field>
 
-                    <div class="flex flex-col gap-1.5">
-                        <label for="password" class="ryh-label">New password</label>
-                        <input
+                    <Field label="New password" for="password">
+                        <Input
                             id="password"
                             ref="passwordInput"
                             v-model="form.password"
                             type="password"
-                            class="ryh-input"
                             required
                             autocomplete="new-password"
                             placeholder="••••••••"
                         />
                         <InputError :message="form.errors.password" />
-                    </div>
+                    </Field>
 
-                    <div class="flex flex-col gap-1.5">
-                        <label for="password_confirmation" class="ryh-label">Confirm password</label>
-                        <input
+                    <Field label="Confirm password" for="password_confirmation">
+                        <Input
                             id="password_confirmation"
                             v-model="form.password_confirmation"
                             type="password"
-                            class="ryh-input"
                             required
                             autocomplete="new-password"
                             placeholder="••••••••"
                         />
                         <InputError :message="form.errors.password_confirmation" />
-                    </div>
+                    </Field>
 
                     <div class="flex items-center gap-4">
                         <Button class="w-auto" type="submit" :disabled="form.processing">Save password</Button>

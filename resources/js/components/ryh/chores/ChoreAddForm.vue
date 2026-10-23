@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import Button from '@/components/ryh/ui/Button.vue';
+import Input from '@/components/ryh/ui/Input.vue';
+import Select from '@/components/ryh/ui/Select.vue';
 import { CHORE_BOARD_PROPS } from '@/lib/ryh';
 import type { MemberData } from '@/types/generated';
 import { router } from '@inertiajs/vue3';
@@ -36,18 +38,18 @@ function addChore(): void {
 
 <template>
     <section class="flex flex-wrap items-center gap-2.5 rounded-[20px] border border-ryh-line bg-ryh-panel p-[18px]">
-        <input
+        <Input
             v-model="draft"
             type="text"
             placeholder="Add a chore, e.g. Clean the bathroom"
             aria-label="New chore"
-            class="ryh-input h-12 min-w-[220px] flex-1"
+            class="h-12 min-w-[220px] flex-1"
             @keydown.enter="addChore"
         />
-        <select v-model="draftAssignedTo" aria-label="Assign new chore to" class="ryh-input h-12 w-[132px]">
+        <Select v-model="draftAssignedTo" aria-label="Assign new chore to" class="h-12 w-[132px]">
             <option value="">Unassigned</option>
             <option v-for="member in members" :key="member.id" :value="String(member.id)">{{ member.name }}</option>
-        </select>
+        </Select>
         <Button class="w-auto" @click="addChore">
             <Plus class="h-4 w-4" :stroke-width="2.5" />
             Add chore

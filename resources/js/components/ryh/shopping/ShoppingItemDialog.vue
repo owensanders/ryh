@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Button from '@/components/ryh/ui/Button.vue';
+import Field from '@/components/ryh/ui/Field.vue';
+import Input from '@/components/ryh/ui/Input.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useConfirm } from '@/composables/useConfirm';
 import type { ShoppingItemData } from '@/types/generated';
@@ -58,16 +60,13 @@ defineExpose({ openEdit });
             </DialogHeader>
 
             <form class="flex flex-col gap-4" @submit.prevent="submitItem">
-                <div class="flex flex-col gap-1.5">
-                    <label for="item-name" class="ryh-label">Name</label>
-                    <input id="item-name" v-model="itemForm.name" type="text" class="ryh-input" required />
-                    <p v-if="itemForm.errors.name" class="text-[12.5px] text-ryh-coral">{{ itemForm.errors.name }}</p>
-                </div>
+                <Field label="Name" for="item-name" :error="itemForm.errors.name">
+                    <Input id="item-name" v-model="itemForm.name" type="text" required />
+                </Field>
 
-                <div class="flex flex-col gap-1.5">
-                    <label for="item-quantity" class="ryh-label">Quantity</label>
-                    <input id="item-quantity" v-model="itemForm.quantity" type="text" class="ryh-input" placeholder="x1" />
-                </div>
+                <Field label="Quantity" for="item-quantity">
+                    <Input id="item-quantity" v-model="itemForm.quantity" type="text" placeholder="x1" />
+                </Field>
 
                 <div class="flex items-center gap-2">
                     <Button class="w-auto" type="submit" :disabled="itemForm.processing">Save changes</Button>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import Button from '@/components/ryh/ui/Button.vue';
+import Select from '@/components/ryh/ui/Select.vue';
 import type { HouseData } from '@/types/generated';
 import { useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
@@ -28,9 +29,9 @@ function save(): void {
         <p class="mt-1 text-[12.5px] text-ryh-ink3">Your calendar and meal plan turn over at midnight here.</p>
 
         <form class="mt-3 flex gap-2" @submit.prevent="save">
-            <select v-model="form.timezone" aria-label="Time zone" class="ryh-input min-w-0 flex-1">
+            <Select v-model="form.timezone" aria-label="Time zone" class="min-w-0 flex-1">
                 <option v-for="timezone in timezones" :key="timezone" :value="timezone">{{ timezone.replaceAll('_', ' ') }}</option>
-            </select>
+            </Select>
             <Button variant="secondary" class="w-auto flex-none" type="submit" :disabled="form.processing || !form.isDirty">Save</Button>
         </form>
         <InputError :message="form.errors.timezone" />

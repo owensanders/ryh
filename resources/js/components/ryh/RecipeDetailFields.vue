@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import Field from '@/components/ryh/ui/Field.vue';
 import IconButton from '@/components/ryh/ui/IconButton.vue';
+import Input from '@/components/ryh/ui/Input.vue';
 import { tint } from '@/lib/ryh';
 import type { TagOption } from '@/types/ryh';
 import { X } from 'lucide-vue-next';
@@ -26,15 +28,13 @@ function removeIngredientRow(index: number): void {
 
 <template>
     <div class="grid grid-cols-2 gap-3">
-        <div class="flex flex-col gap-1.5">
-            <label for="duration_label" class="ryh-label">Duration</label>
-            <input id="duration_label" v-model="durationLabel" type="text" class="ryh-input" placeholder="30 min" />
-        </div>
+        <Field label="Duration" for="duration_label">
+            <Input id="duration_label" v-model="durationLabel" type="text" placeholder="30 min" />
+        </Field>
 
-        <div class="flex flex-col gap-1.5">
-            <label for="difficulty" class="ryh-label">Difficulty</label>
-            <input id="difficulty" v-model="difficulty" type="text" class="ryh-input" placeholder="Easy" />
-        </div>
+        <Field label="Difficulty" for="difficulty">
+            <Input id="difficulty" v-model="difficulty" type="text" placeholder="Easy" />
+        </Field>
     </div>
 
     <div class="flex flex-col gap-1.5">
@@ -50,14 +50,8 @@ function removeIngredientRow(index: number): void {
     <div class="flex flex-col gap-1.5">
         <span class="ryh-label">Ingredients</span>
         <div v-for="(ingredient, index) in ingredients" :key="index" class="flex items-center gap-2">
-            <input v-model="ingredient.name" type="text" class="ryh-input" placeholder="Ingredient" :aria-label="`Ingredient ${index + 1}`" />
-            <input
-                v-model="ingredient.quantity"
-                type="text"
-                class="ryh-input w-24"
-                placeholder="Qty"
-                :aria-label="`Ingredient ${index + 1} quantity`"
-            />
+            <Input v-model="ingredient.name" type="text" placeholder="Ingredient" :aria-label="`Ingredient ${index + 1}`" />
+            <Input v-model="ingredient.quantity" type="text" class="w-24" placeholder="Qty" :aria-label="`Ingredient ${index + 1} quantity`" />
             <IconButton
                 label="Remove ingredient"
                 class="grid h-7 w-7 flex-none place-items-center rounded-md text-ryh-ink3 hover:bg-ryh-soft hover:text-ryh-coral"

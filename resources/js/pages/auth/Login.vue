@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import Button from '@/components/ryh/ui/Button.vue';
+import Field from '@/components/ryh/ui/Field.vue';
+import Input from '@/components/ryh/ui/Input.vue';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { isStandalone } from '@/lib/pwa';
 import { Head, Link, useForm } from '@inertiajs/vue3';
@@ -36,13 +38,11 @@ const submit = () => {
         </div>
 
         <form class="flex flex-col gap-4" @submit.prevent="submit">
-            <div class="flex flex-col gap-1.5">
-                <label for="email" class="ryh-label">Email address</label>
-                <input
+            <Field label="Email address" for="email">
+                <Input
                     id="email"
                     v-model="form.email"
                     type="email"
-                    class="ryh-input"
                     required
                     autofocus
                     tabindex="1"
@@ -50,7 +50,7 @@ const submit = () => {
                     placeholder="you@example.com"
                 />
                 <InputError :message="form.errors.email" />
-            </div>
+            </Field>
 
             <div class="flex flex-col gap-1.5">
                 <div class="flex items-center justify-between">
@@ -64,11 +64,10 @@ const submit = () => {
                         Forgot password?
                     </Link>
                 </div>
-                <input
+                <Input
                     id="password"
                     v-model="form.password"
                     type="password"
-                    class="ryh-input"
                     required
                     tabindex="2"
                     autocomplete="current-password"
