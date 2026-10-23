@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Actions\Meals;
 
 use App\Actions\Shopping\AddRecipeIngredientsToListAction;
-use App\Enums\MealSlotEnum;
+use App\Inputs\PlannedMealInput;
 use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\User;
 use App\Notifications\MealAssignedNotification;
-use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
 class AddPlannedMealAction
@@ -20,25 +19,20 @@ class AddPlannedMealAction
         private readonly AddRecipeIngredientsToListAction $addIngredients,
     ) {}
 
-    /**
-     * @param  array<string, mixed>  $data  PlannedMealRequest's validated input: recipe_id or
-     *                                      new_recipe_name (with any new_recipe_* details),
-     *                                      new_recipe_shopping_list_id, planned_on, slot, cook_id.
-     */
-    public function handle(Household $household, array $data, User $actor): PlannedMeal
+    public function handle(Household $household, PlannedMealInput $input, User $actor): PlannedMeal
     {
         // A recipe named on the form and its meal are made together, or not at all.
         $meal = DB::transaction(fn (): PlannedMeal => $household->plannedMeals()->create([
-            'recipe_id' => $this->resolveRecipe->handle($household, $data)->id,
-            'planned_on' => CarbonImmutable::parse($data['planned_on']),
-            'slot' => MealSlotEnum::from($data['slot']),
-            'cook_id' => $data['cook_id'],
+            'recipe_id' => $this->resolveRecipe->handle($household, $input)->id,
+            'planned_on' => $input->plannedOn,
+            'slot' => $input->slot,
+            'cook_id' => $input->cookId,
         ]));
 
         $meal->refresh()->load(['recipe', 'cook']);
 
-        if ($data['new_recipe_shopping_list_id'] !== null) {
-            $this->addIngredients->handle($household, $meal->recipe, $data['new_recipe_shopping_list_id']);
+        if ($input->newRecipeShoppingListId !== null) {
+            $this->addIngredients->handle($household, $meal->recipe, $input->newRecipeShoppingListId);
         }
 
         if ($meal->cook_id !== null && $meal->cook_id !== $actor->id) {

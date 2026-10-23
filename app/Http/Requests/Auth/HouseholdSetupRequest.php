@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Auth;
 
 use App\Enums\HouseholdRoleEnum;
+use App\Inputs\HouseholdSetupInput;
 use App\Traits\NormalisesInputTrait;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -62,5 +63,10 @@ class HouseholdSetupRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge(['name' => $this->trimmed('name')]);
+    }
+
+    public function toInput(): HouseholdSetupInput
+    {
+        return HouseholdSetupInput::from($this->validated());
     }
 }

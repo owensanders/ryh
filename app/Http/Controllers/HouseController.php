@@ -39,10 +39,10 @@ class HouseController extends Controller
 
     public function invite(InviteRequest $request, InviteMemberAction $invite): RedirectResponse
     {
-        $input = $request->validated();
+        $input = $request->toInput();
         $invite->handle($this->household($request), $input, $this->user($request));
 
-        return back()->with('toast', "Invite sent to {$input['email']}");
+        return back()->with('toast', "Invite sent to {$input->email}");
     }
 
     public function updateRole(RoleRequest $request, User $member, ChangeMemberRoleAction $change): RedirectResponse

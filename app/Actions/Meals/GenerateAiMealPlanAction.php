@@ -8,9 +8,9 @@ use App\Ai\Agents\MealPlanAgent;
 use App\Ai\AiConfigService;
 use App\Data\MealSuggestionData;
 use App\Enums\AiMealPlanStatusEnum;
-use App\Enums\CookingConfidenceEnum;
 use App\Events\AiMealPlanFinishedEvent;
 use App\Exceptions\MealPlanUnavailableException;
+use App\Inputs\AiMealPlanAnswersInput;
 use App\Models\AiMealPlan;
 use App\Models\Household;
 use App\Notifications\AiCreditsExhaustedNotification;
@@ -83,7 +83,7 @@ class GenerateAiMealPlanAction
             try {
                 $household->refresh();
                 $this->ensureAvailable($household);
-                $meals = $this->ask($household, $plan->answers);
+                $meals = $this->ask($household, AiMealPlanAnswersInput::from($plan->answers));
             } catch (MealPlanUnavailableException $e) {
                 $this->finish($plan, $e);
 
@@ -119,27 +119,23 @@ class GenerateAiMealPlanAction
     }
 
     /**
-     * @param  array<string, mixed>  $data  GenerateAiMealPlanRequest's validated input: people,
-     *                                      budget, diets, avoid, goals, confidence, equipment,
-     *                                      use_up, notes.
-     *
      * @return array<int, MealSuggestionData>
      *
      * @throws MealPlanUnavailableException
      */
-    private function ask(Household $household, array $data): array
+    private function ask(Household $household, AiMealPlanAnswersInput $answers): array
     {
         $agent = new MealPlanAgent(
-            (int) $data['people'],
-            isset($data['budget']) ? (float) $data['budget'] : null,
-            $data['diets'] ?? [],
-            $this->splitList((string) ($data['avoid'] ?? '')),
-            $data['goals'] ?? [],
+            $answers->people,
+            $answers->budget,
+            $answers->diets,
+            $this->splitList($answers->avoid ?? ''),
+            $answers->goals,
             $this->recentRecipeNames($household),
-            CookingConfidenceEnum::from($data['confidence']),
-            $data['equipment'] ?? [],
-            $this->splitList((string) ($data['use_up'] ?? '')),
-            trim((string) ($data['notes'] ?? '')),
+            $answers->confidence,
+            $answers->equipment,
+            $this->splitList($answers->useUp ?? ''),
+            trim($answers->notes ?? ''),
         );
 
         try {

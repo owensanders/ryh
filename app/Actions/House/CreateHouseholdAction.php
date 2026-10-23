@@ -6,6 +6,7 @@ namespace App\Actions\House;
 
 use App\Enums\HouseholdRoleEnum;
 use App\Enums\PaletteEnum;
+use App\Inputs\HouseholdSetupInput;
 use App\Models\Household;
 use App\Models\User;
 use DateTimeZone;
@@ -19,18 +20,17 @@ class CreateHouseholdAction
         private readonly InviteMemberAction $inviteMember,
     ) {}
 
-    /** @param  array<string, mixed>  $data  HouseholdSetupRequest's validated input: name, invites (each email and role), timezone (the browser's). */
-    public function handle(User $owner, array $data): Household
+    public function handle(User $owner, HouseholdSetupInput $input): Household
     {
         // The household, its owner's membership and their claimed trial stand
         // or fall together — a household with no owner would strand them
         // with their one free trial spent.
-        $household = DB::transaction(function () use ($owner, $data): Household {
+        $household = DB::transaction(function () use ($owner, $input): Household {
             // One free month per person — otherwise a lapsed owner could just
             // start a new household to reset the clock.
             $household = Household::create([
-                'name' => $data['name'],
-                'timezone' => self::knownTimezone($data['timezone'] ?? null),
+                'name' => $input->name,
+                'timezone' => self::knownTimezone($input->timezone),
                 'trial_ends_at' => $owner->trial_claimed_at === null ? now()->addDays(config('plans.trial_days')) : null,
             ]);
 
@@ -42,7 +42,7 @@ class CreateHouseholdAction
             return $household;
         });
 
-        foreach ($data['invites'] ?? [] as $invite) {
+        foreach ($input->invites as $invite) {
             $this->inviteMember->handle($household, $invite, invitedBy: $owner);
         }
 
@@ -50,9 +50,9 @@ class CreateHouseholdAction
     }
 
     /** A browser's time zone, if PHP knows it; otherwise the UK, where most households are. */
-    private static function knownTimezone(mixed $timezone): string
+    private static function knownTimezone(?string $timezone): string
     {
-        return is_string($timezone) && in_array($timezone, timezone_identifiers_list(DateTimeZone::ALL_WITH_BC), true)
+        return $timezone !== null && in_array($timezone, timezone_identifiers_list(DateTimeZone::ALL_WITH_BC), true)
             ? $timezone
             : self::DEFAULT_TIMEZONE;
     }

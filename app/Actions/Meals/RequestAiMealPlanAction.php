@@ -6,6 +6,7 @@ namespace App\Actions\Meals;
 
 use App\Enums\AiMealPlanStatusEnum;
 use App\Exceptions\MealPlanUnavailableException;
+use App\Inputs\AiMealPlanAnswersInput;
 use App\Jobs\GenerateAiMealPlanJob;
 use App\Models\AiMealPlan;
 use App\Models\Household;
@@ -23,15 +24,11 @@ class RequestAiMealPlanAction
      * Checked under the household's lock, so two adults pressing Generate at
      * once get one plan between them, not one each.
      *
-     * @param  array<string, mixed>  $data  GenerateAiMealPlanRequest's validated input: people,
-     *                                      budget, diets, avoid, goals, confidence, equipment,
-     *                                      use_up, notes.
-     *
      * @throws MealPlanUnavailableException
      */
-    public function handle(Household $household, array $data, User $requester): AiMealPlan
+    public function handle(Household $household, AiMealPlanAnswersInput $answers, User $requester): AiMealPlan
     {
-        $plan = DB::transaction(function () use ($household, $data, $requester): AiMealPlan {
+        $plan = DB::transaction(function () use ($household, $answers, $requester): AiMealPlan {
             $household = $household->lockRow();
 
             $this->generate->ensureAvailable($household);
@@ -43,7 +40,7 @@ class RequestAiMealPlanAction
             return $household->aiMealPlans()->create([
                 'requested_by' => $requester->id,
                 'status' => AiMealPlanStatusEnum::Pending,
-                'answers' => $data,
+                'answers' => $answers->toStored(),
             ]);
         });
 

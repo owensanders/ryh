@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Chores;
 
 use App\Enums\ChoreStatusEnum;
+use App\Inputs\ChoreInput;
 use App\Models\Chore;
 use App\Models\Household;
 use App\Models\User;
@@ -12,13 +13,12 @@ use App\Notifications\ChoreAssignedNotification;
 
 class CreateChoreAction
 {
-    /** @param  array<string, mixed>  $data  ChoreRequest's validated input: name, assigned_to. */
-    public function handle(Household $household, array $data, User $actor): Chore
+    public function handle(Household $household, ChoreInput $input, User $actor): Chore
     {
         // New chores always start on the Today board, after what's already there.
         $chore = $household->chores()->create([
-            'name' => $data['name'],
-            'assigned_to' => $data['assigned_to'],
+            'name' => $input->name,
+            'assigned_to' => $input->assignedTo,
             'created_by' => $actor->id,
             'status' => ChoreStatusEnum::Today,
             'position' => (int) $household->chores()->where('status', ChoreStatusEnum::Today)->max('position') + 1,

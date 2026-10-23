@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Enums\HouseholdRoleEnum;
+use App\Inputs\InviteInput;
 use App\Traits\NormalisesInputTrait;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -36,5 +37,10 @@ class InviteRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge(['email' => $this->trimmed('email')]);
+    }
+
+    public function toInput(): InviteInput
+    {
+        return InviteInput::from($this->validated());
     }
 }

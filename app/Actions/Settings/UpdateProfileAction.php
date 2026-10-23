@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Actions\Settings;
 
+use App\Inputs\ProfileInput;
 use App\Models\User;
 
 class UpdateProfileAction
 {
-    /** @param  array<string, mixed>  $data  ProfileUpdateRequest's validated input: name, email. */
-    public function handle(User $user, array $data): User
+    public function handle(User $user, ProfileInput $input): User
     {
-        $user->fill(['name' => $data['name'], 'email' => $data['email']]);
+        $user->fill(['name' => $input->name, 'email' => $input->email]);
 
         // Changing the address makes the old verification meaningless. Set
         // directly: `email_verified_at` isn't fillable.

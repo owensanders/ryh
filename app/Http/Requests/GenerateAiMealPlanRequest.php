@@ -8,6 +8,7 @@ use App\Enums\CookingConfidenceEnum;
 use App\Enums\KitchenEquipmentEnum;
 use App\Enums\MealDietEnum;
 use App\Enums\MealGoalEnum;
+use App\Inputs\AiMealPlanAnswersInput;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -30,5 +31,10 @@ class GenerateAiMealPlanRequest extends FormRequest
             'use_up' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:500'],
         ];
+    }
+
+    public function toInput(): AiMealPlanAnswersInput
+    {
+        return AiMealPlanAnswersInput::from($this->validated());
     }
 }

@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\Actions\Meals;
 
 use App\Actions\Shopping\AddRecipeIngredientsToListAction;
-use App\Enums\MealSlotEnum;
+use App\Inputs\PlannedMealInput;
 use App\Models\Household;
 use App\Models\PlannedMeal;
 use App\Models\User;
 use App\Notifications\MealAssignedNotification;
 use App\Notifications\MealEditedNotification;
-use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 
@@ -22,23 +21,22 @@ class UpdatePlannedMealAction
         private readonly AddRecipeIngredientsToListAction $addIngredients,
     ) {}
 
-    /** @param  array<string, mixed>  $data  PlannedMealRequest's validated input; see AddPlannedMealAction. */
-    public function handle(Household $household, PlannedMeal $meal, array $data, User $actor): PlannedMeal
+    public function handle(Household $household, PlannedMeal $meal, PlannedMealInput $input, User $actor): PlannedMeal
     {
         $previousCookId = $meal->cook_id;
         $household = $meal->household ?? throw new LogicException('A planned meal always belongs to a household.');
 
         DB::transaction(fn () => $meal->update([
-            'recipe_id' => $this->resolveRecipe->handle($household, $data)->id,
-            'planned_on' => CarbonImmutable::parse($data['planned_on']),
-            'slot' => MealSlotEnum::from($data['slot']),
-            'cook_id' => $data['cook_id'],
+            'recipe_id' => $this->resolveRecipe->handle($household, $input)->id,
+            'planned_on' => $input->plannedOn,
+            'slot' => $input->slot,
+            'cook_id' => $input->cookId,
         ]));
 
         $meal->refresh()->load(['recipe', 'cook']);
 
-        if ($data['new_recipe_shopping_list_id'] !== null) {
-            $this->addIngredients->handle($household, $meal->recipe, $data['new_recipe_shopping_list_id']);
+        if ($input->newRecipeShoppingListId !== null) {
+            $this->addIngredients->handle($household, $meal->recipe, $input->newRecipeShoppingListId);
         }
 
         if ($meal->cook_id !== null && $meal->cook_id !== $actor->id) {

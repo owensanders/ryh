@@ -44,14 +44,14 @@ class MealPlannerController extends Controller
 
     public function store(PlannedMealRequest $request, AddPlannedMealAction $add): RedirectResponse
     {
-        $meal = $add->handle($this->household($request), $request->validated(), $this->user($request));
+        $meal = $add->handle($this->household($request), $request->toInput(), $this->user($request));
 
         return back()->with('toast', "{$meal->recipe->name} added");
     }
 
     public function update(PlannedMealRequest $request, PlannedMeal $meal, UpdatePlannedMealAction $update): RedirectResponse
     {
-        $updated = $update->handle($this->household($request), $meal, $request->validated(), $this->user($request));
+        $updated = $update->handle($this->household($request), $meal, $request->toInput(), $this->user($request));
 
         return back()->with('toast', "{$updated->recipe->name} updated");
     }
@@ -77,7 +77,7 @@ class MealPlannerController extends Controller
     /** The plan itself is written by a queued job; the page picks it up as its aiPlan prop. */
     public function generateAiPlan(GenerateAiMealPlanRequest $request, RequestAiMealPlanAction $requestPlan): RedirectResponse
     {
-        $requestPlan->handle($this->household($request), $request->validated(), $this->user($request));
+        $requestPlan->handle($this->household($request), $request->toInput(), $this->user($request));
 
         return back();
     }

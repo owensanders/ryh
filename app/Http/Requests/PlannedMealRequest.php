@@ -6,6 +6,7 @@ namespace App\Http\Requests;
 
 use App\Enums\MealSlotEnum;
 use App\Enums\RecipeTagEnum;
+use App\Inputs\PlannedMealInput;
 use App\Support\CurrentHouseholdHelper;
 use App\Traits\NormalisesInputTrait;
 use Illuminate\Foundation\Http\FormRequest;
@@ -85,5 +86,10 @@ class PlannedMealRequest extends FormRequest
         if ($this->has('new_recipe_description')) {
             $this->merge(['new_recipe_description' => $this->trimmedOrNull('new_recipe_description')]);
         }
+    }
+
+    public function toInput(): PlannedMealInput
+    {
+        return PlannedMealInput::from($this->validated());
     }
 }

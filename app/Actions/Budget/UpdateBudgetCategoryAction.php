@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace App\Actions\Budget;
 
+use App\Inputs\BudgetCategoryInput;
 use App\Models\BudgetCategory;
-use App\Support\MoneyHelper;
 
 class UpdateBudgetCategoryAction
 {
-    /** @param  array<string, mixed>  $data  BudgetCategoryRequest's validated input; see CreateBudgetCategoryAction. */
-    public function handle(BudgetCategory $category, array $data): BudgetCategory
+    public function handle(BudgetCategory $category, BudgetCategoryInput $input): BudgetCategory
     {
         $category->update([
-            'label' => $data['label'],
-            'icon' => $data['icon'] ?? null,
-            'budgeted_pence' => MoneyHelper::toPence($data['budgeted']),
-            'is_recurring' => (bool) ($data['is_recurring'] ?? false),
+            'label' => $input->label,
+            'icon' => $input->icon,
+            'budgeted_pence' => $input->budgetedPence,
+            'is_recurring' => $input->isRecurring,
         ]);
 
         return $category->refresh();

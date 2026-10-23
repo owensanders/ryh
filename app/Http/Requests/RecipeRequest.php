@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Enums\RecipeTagEnum;
+use App\Inputs\RecipeInput;
 use App\Support\CurrentHouseholdHelper;
 use App\Traits\NormalisesInputTrait;
 use Illuminate\Foundation\Http\FormRequest;
@@ -57,5 +58,10 @@ class RecipeRequest extends FormRequest
             'name' => $this->trimmed('name'),
             'shopping_list_id' => $this->idOrNull('shopping_list_id'),
         ]);
+    }
+
+    public function toInput(): RecipeInput
+    {
+        return RecipeInput::from($this->validated());
     }
 }

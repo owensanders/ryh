@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Settings;
 
+use App\Inputs\ProfileInput;
 use App\Models\User;
 use App\Traits\NormalisesInputTrait;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -33,5 +34,10 @@ class ProfileUpdateRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge(['name' => $this->trimmed('name'), 'email' => $this->trimmed('email')]);
+    }
+
+    public function toInput(): ProfileInput
+    {
+        return ProfileInput::from($this->validated());
     }
 }

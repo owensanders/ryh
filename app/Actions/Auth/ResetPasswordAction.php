@@ -12,13 +12,11 @@ use Illuminate\Support\Str;
 
 class ResetPasswordAction
 {
-    /**
-     * @param  array<string, string>  $credentials  email, token and the new password
-     *
-     * @return string One of the `Password::` status constants.
-     */
-    public function handle(array $credentials, string $password): string
+    /** @return string One of the `Password::` status constants. */
+    public function handle(string $email, string $token, string $password): string
     {
+        $credentials = ['email' => $email, 'token' => $token, 'password' => $password];
+
         $status = Password::reset($credentials, function (User $user) use ($password): void {
             // A reset signs out every "remember me" session too.
             $user->forceFill(['password' => Hash::make($password), 'remember_token' => Str::random(60)])->save();

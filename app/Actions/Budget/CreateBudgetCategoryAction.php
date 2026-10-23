@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Actions\Budget;
 
 use App\Enums\PaletteEnum;
+use App\Inputs\BudgetCategoryInput;
 use App\Models\BudgetCategory;
 use App\Models\Household;
-use App\Support\MoneyHelper;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -17,8 +17,7 @@ class CreateBudgetCategoryAction
         private readonly SetUpBudgetMonthAction $setUpMonth,
     ) {}
 
-    /** @param  array<string, mixed>  $data  BudgetCategoryRequest's validated input: label, icon, budgeted (pounds), is_recurring. */
-    public function handle(Household $household, CarbonImmutable $month, array $data): BudgetCategory
+    public function handle(Household $household, CarbonImmutable $month, BudgetCategoryInput $input): BudgetCategory
     {
         // Set the month up first, or adding to it early would keep its recurring items out.
         $this->setUpMonth->handle($household, $month);
@@ -26,10 +25,10 @@ class CreateBudgetCategoryAction
         $existing = $household->budgetCategories()->forMonth($month)->get();
 
         $category = $household->budgetCategories()->create([
-            'label' => $data['label'],
-            'icon' => $data['icon'] ?? null,
-            'budgeted_pence' => MoneyHelper::toPence($data['budgeted']),
-            'is_recurring' => (bool) ($data['is_recurring'] ?? false),
+            'label' => $input->label,
+            'icon' => $input->icon,
+            'budgeted_pence' => $input->budgetedPence,
+            'is_recurring' => $input->isRecurring,
             'colour' => $this->leastUsedColour($existing),
             'month' => $month->startOfMonth(),
             'position' => (int) $existing->max('position') + 1,

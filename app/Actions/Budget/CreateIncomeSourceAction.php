@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Actions\Budget;
 
+use App\Inputs\IncomeSourceInput;
 use App\Models\Household;
 use App\Models\IncomeSource;
-use App\Support\MoneyHelper;
 use Carbon\CarbonImmutable;
 
 class CreateIncomeSourceAction
@@ -15,17 +15,16 @@ class CreateIncomeSourceAction
         private readonly SetUpBudgetMonthAction $setUpMonth,
     ) {}
 
-    /** @param  array<string, mixed>  $data  IncomeSourceRequest's validated input: label, meta, amount (pounds), is_recurring. */
-    public function handle(Household $household, CarbonImmutable $month, array $data): IncomeSource
+    public function handle(Household $household, CarbonImmutable $month, IncomeSourceInput $input): IncomeSource
     {
         // Set the month up first, or adding to it early would keep its recurring items out.
         $this->setUpMonth->handle($household, $month);
 
         $income = $household->incomeSources()->create([
-            'label' => $data['label'],
-            'meta' => $data['meta'] ?? null,
-            'amount_pence' => MoneyHelper::toPence($data['amount']),
-            'is_recurring' => (bool) ($data['is_recurring'] ?? false),
+            'label' => $input->label,
+            'meta' => $input->meta,
+            'amount_pence' => $input->amountPence,
+            'is_recurring' => $input->isRecurring,
             'month' => $month->startOfMonth(),
             'position' => (int) $household->incomeSources()->forMonth($month)->max('position') + 1,
         ]);

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\House;
 
-use App\Enums\HouseholdRoleEnum;
 use App\Enums\PendingReasonEnum;
+use App\Inputs\InviteInput;
 use App\Mail\HouseholdInviteMail;
 use App\Models\Household;
 use App\Models\User;
@@ -21,11 +21,10 @@ class InviteMemberAction
      * child's parent or guardian (or have their permission) — the caller must
      * have had them tick that box first. It's recorded on the membership.
      */
-    /** @param  array<string, mixed>  $data  An invite: email, role (InviteRequest's validated input, or one of the setup wizard's). */
-    public function handle(Household $household, array $data, User $invitedBy): void
+    public function handle(Household $household, InviteInput $invite, User $invitedBy): void
     {
-        $email = (string) $data['email'];
-        $role = HouseholdRoleEnum::from($data['role']);
+        $email = $invite->email;
+        $role = $invite->role;
 
         $existing = User::query()->where('email', $email)->first();
 

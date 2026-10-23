@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Inputs\BudgetCategoryInput;
 use App\Traits\NormalisesInputTrait;
 use App\Traits\ValidatesBudgetMonthTrait;
 use Illuminate\Foundation\Http\FormRequest;
@@ -37,5 +38,10 @@ class BudgetCategoryRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge(['label' => $this->trimmed('label')]);
+    }
+
+    public function toInput(): BudgetCategoryInput
+    {
+        return BudgetCategoryInput::from($this->validated());
     }
 }

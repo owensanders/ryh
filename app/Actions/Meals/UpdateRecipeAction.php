@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace App\Actions\Meals;
 
+use App\Inputs\RecipeInput;
 use App\Models\Recipe;
 
 class UpdateRecipeAction
 {
-    /** @param  array<string, mixed>  $data  RecipeRequest's validated input; see AddRecipeAction. */
-    public function handle(Recipe $recipe, array $data): Recipe
+    public function handle(Recipe $recipe, RecipeInput $input): Recipe
     {
         $recipe->update([
-            'name' => $data['name'],
-            'description' => $data['description'] ?? null,
-            'duration_label' => $data['duration_label'] ?? null,
-            'difficulty' => $data['difficulty'] ?? null,
-            'tags' => array_values($data['tags'] ?? []),
-            'ingredients' => array_values($data['ingredients'] ?? []),
-            'tint' => (int) ($data['tint'] ?? 0),
-            'is_favourite' => (bool) ($data['is_favourite'] ?? false),
+            'name' => $input->name,
+            'description' => $input->description,
+            'duration_label' => $input->durationLabel,
+            'difficulty' => $input->difficulty,
+            'tags' => $input->tags,
+            'ingredients' => $input->ingredients,
+            'tint' => $input->tint,
+            'is_favourite' => $input->isFavourite,
         ]);
 
         return $recipe->refresh();

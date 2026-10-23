@@ -53,7 +53,7 @@ class BudgetController extends Controller
         $category = $create->handle(
             $this->household($request),
             $month !== null ? CarbonImmutable::createFromFormat('!Y-m', (string) $month) ?? $this->household($request)->now() : $this->household($request)->now(),
-            $request->validated(),
+            $request->toInput(),
         );
 
         return back()->with('toast', "{$category->label} added");
@@ -61,7 +61,7 @@ class BudgetController extends Controller
 
     public function updateCategory(BudgetCategoryRequest $request, BudgetCategory $category, UpdateBudgetCategoryAction $update): RedirectResponse
     {
-        $updated = $update->handle($category, $request->validated());
+        $updated = $update->handle($category, $request->toInput());
 
         return back()->with('toast', "{$updated->label} updated");
     }
