@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
 import Button from '@/components/ui/Button.vue';
 import Field from '@/components/ui/Field.vue';
 import Input from '@/components/ui/Input.vue';
@@ -38,56 +37,30 @@ const submit = () => {
         </div>
 
         <form class="flex flex-col gap-4" @submit.prevent="submit">
-            <Field label="Email address" for="email">
-                <Input
-                    id="email"
-                    v-model="form.email"
-                    type="email"
-                    required
-                    autofocus
-                    tabindex="1"
-                    autocomplete="email"
-                    placeholder="you@example.com"
-                />
-                <InputError :message="form.errors.email" />
+            <Field label="Email address" for="email" :error="form.errors.email">
+                <Input id="email" v-model="form.email" type="email" required autofocus autocomplete="email" placeholder="you@example.com" />
             </Field>
 
-            <div class="flex flex-col gap-1.5">
-                <div class="flex items-center justify-between">
-                    <label for="password" class="ryh-label">Password</label>
-                    <Link
-                        v-if="canResetPassword"
-                        :href="route('password.request')"
-                        class="text-[12.5px] font-semibold text-ryh-coral hover:opacity-75"
-                        tabindex="5"
+            <Field label="Password" for="password" :error="form.errors.password">
+                <template v-if="canResetPassword" #aside>
+                    <Link :href="route('password.request')" class="text-[12.5px] font-semibold text-ryh-coral hover:opacity-75"
+                        >Forgot password?</Link
                     >
-                        Forgot password?
-                    </Link>
-                </div>
-                <Input
-                    id="password"
-                    v-model="form.password"
-                    type="password"
-                    required
-                    tabindex="2"
-                    autocomplete="current-password"
-                    placeholder="••••••••"
-                />
-                <InputError :message="form.errors.password" />
-            </div>
+                </template>
+                <Input id="password" v-model="form.password" type="password" required autocomplete="current-password" placeholder="••••••••" />
+            </Field>
 
             <label for="remember" class="flex items-center gap-2.5 text-[13px] text-ryh-ink2">
                 <input
                     id="remember"
                     v-model="form.remember"
                     type="checkbox"
-                    tabindex="3"
                     class="h-4 w-4 accent-ryh-coral focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ryh-coral"
                 />
                 Remember me
             </label>
 
-            <Button class="mt-2" type="submit" tabindex="4" :disabled="form.processing">
+            <Button class="mt-2" type="submit" :disabled="form.processing">
                 <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                 Sign in
             </Button>
@@ -95,7 +68,7 @@ const submit = () => {
 
         <p class="mt-6 text-center text-[13px] text-ryh-ink3">
             Don't have an account?
-            <Link :href="route('register')" class="font-semibold text-ryh-coral hover:opacity-75" :tabindex="6">Sign up</Link>
+            <Link :href="route('register')" class="font-semibold text-ryh-coral hover:opacity-75">Sign up</Link>
         </p>
     </AuthBase>
 </template>

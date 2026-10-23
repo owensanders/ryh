@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
 import Button from '@/components/ui/Button.vue';
 import Field from '@/components/ui/Field.vue';
 import Input from '@/components/ui/Input.vue';
@@ -35,12 +34,11 @@ const submit = () => {
         <Head title="Reset password" />
 
         <form class="flex flex-col gap-4" @submit.prevent="submit">
-            <Field label="Email" for="email">
+            <Field label="Email" for="email" :error="form.errors.email">
                 <Input id="email" v-model="form.email" type="email" name="email" autocomplete="email" readonly />
-                <InputError :message="form.errors.email" />
             </Field>
 
-            <Field label="Password" for="password">
+            <Field label="Password" for="password" :error="form.errors.password">
                 <Input
                     id="password"
                     v-model="form.password"
@@ -51,10 +49,9 @@ const submit = () => {
                     autofocus
                     placeholder="••••••••"
                 />
-                <InputError :message="form.errors.password" />
             </Field>
 
-            <Field label="Confirm password" for="password_confirmation">
+            <Field label="Confirm password" for="password_confirmation" :error="form.errors.password_confirmation">
                 <Input
                     id="password_confirmation"
                     v-model="form.password_confirmation"
@@ -64,7 +61,6 @@ const submit = () => {
                     autocomplete="new-password"
                     placeholder="••••••••"
                 />
-                <InputError :message="form.errors.password_confirmation" />
             </Field>
 
             <Button class="mt-2" type="submit" :disabled="form.processing">

@@ -3,6 +3,7 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import ShoppingItemDialog from '@/components/shopping/ShoppingItemDialog.vue';
 import Card from '@/components/ui/Card.vue';
 import IconButton from '@/components/ui/IconButton.vue';
+import Input from '@/components/ui/Input.vue';
 import { useConfirm } from '@/composables/useConfirm';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import { useOptimistic } from '@/composables/useOptimistic';
@@ -96,18 +97,8 @@ function destroyActiveList(): void {
         </div>
 
         <form v-if="can?.createShoppingItems" class="my-4 flex gap-2" @submit.prevent="addItem">
-            <input
-                v-model="draft.name"
-                placeholder="Add to this list…"
-                aria-label="Add to this list"
-                class="h-12 min-w-0 flex-1 rounded-[14px] border border-ryh-line bg-ryh-sunk px-4 text-[14.5px] text-ryh-ink placeholder:text-ryh-ink3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ryh-coral"
-            />
-            <input
-                v-model="draft.quantity"
-                placeholder="Qty"
-                aria-label="Quantity"
-                class="h-12 w-16 flex-none rounded-[14px] border border-ryh-line bg-ryh-sunk px-3 text-[14.5px] text-ryh-ink placeholder:text-ryh-ink3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ryh-coral sm:w-20"
-            />
+            <Input v-model="draft.name" size="lg" placeholder="Add to this list…" aria-label="Add to this list" class="flex-1" />
+            <Input v-model="draft.quantity" size="lg" placeholder="Qty" aria-label="Quantity" class="w-16 flex-none px-3 sm:w-20" />
             <button
                 type="submit"
                 :disabled="draft.processing"

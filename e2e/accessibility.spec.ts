@@ -19,7 +19,24 @@ async function seriousProblems(page: Page): Promise<string[]> {
         .map((violation) => `${violation.id} (${violation.impact}): ${violation.help}\n    ${violation.nodes.map((node) => node.target.join(' ')).join('\n    ')}`);
 }
 
-const appPages = ['/dashboard', '/calendar', '/chores', '/meals', '/recipes', '/shopping', '/budget', '/documents', '/house', '/settings/profile', '/settings/notifications'];
+const appPages = [
+    '/dashboard',
+    '/calendar',
+    '/chores',
+    '/meals',
+    '/recipes',
+    '/shopping',
+    '/budget',
+    '/documents',
+    '/house',
+    '/settings/profile',
+    '/settings/password',
+    '/settings/households',
+    '/settings/appearance',
+    '/settings/notifications',
+    '/household/setup',
+    '/household/select',
+];
 
 for (const path of appPages) {
     test(`${path} has no serious accessibility problems`, async ({ page }) => {

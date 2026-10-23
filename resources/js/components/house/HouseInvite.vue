@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import GuardianConfirm from '@/components/GuardianConfirm.vue';
-import InputError from '@/components/InputError.vue';
+import ErrorMessage from '@/components/ui/ErrorMessage.vue';
 import IconButton from '@/components/ui/IconButton.vue';
+import Input from '@/components/ui/Input.vue';
+import Select from '@/components/ui/Select.vue';
 import { forMinors } from '@/lib/house';
 import type { HouseData } from '@/types/generated';
 import { router, useForm } from '@inertiajs/vue3';
@@ -43,22 +45,12 @@ function regenerateJoinCode(): void {
             make room.
         </div>
         <form v-else class="flex flex-col gap-2 sm:flex-row" @submit.prevent="sendInvite">
-            <input
-                v-model="invite.email"
-                type="email"
-                placeholder="their@email.co.uk"
-                aria-label="Email"
-                class="h-[46px] w-full min-w-0 rounded-[13px] border border-ryh-line bg-ryh-sunk px-3.5 text-sm placeholder:text-ryh-ink3 sm:flex-1"
-            />
-            <select
-                v-model="invite.role"
-                aria-label="Role"
-                class="h-[46px] w-full rounded-[13px] border border-ryh-line bg-ryh-sunk px-2.5 text-[13px] font-semibold sm:w-[132px]"
-            >
+            <Input v-model="invite.email" type="email" placeholder="their@email.co.uk" aria-label="Email" class="sm:flex-1" />
+            <Select v-model="invite.role" aria-label="Role" class="px-2.5 text-[13px] font-semibold sm:w-[132px]">
                 <option v-for="option in house.roleOptions" :key="option.value" :value="option.value">
                     {{ option.label }}
                 </option>
-            </select>
+            </Select>
             <button
                 type="submit"
                 :disabled="invite.processing || (inviteNeedsGuardian && !invite.guardian_confirmed)"
@@ -67,10 +59,10 @@ function regenerateJoinCode(): void {
                 Send invite
             </button>
         </form>
-        <InputError :message="invite.errors.email" />
+        <ErrorMessage :message="invite.errors.email" />
         <div v-if="inviteNeedsGuardian" class="mt-2.5">
             <GuardianConfirm id="invite-guardian" v-model="invite.guardian_confirmed" who="the person I'm inviting" />
-            <InputError :message="invite.errors.guardian_confirmed" />
+            <ErrorMessage :message="invite.errors.guardian_confirmed" />
         </div>
         <div class="mt-2.5 text-[12.5px] text-ryh-ink3">Invites expire after 7 days.</div>
 

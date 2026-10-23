@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
 import Button from '@/components/ui/Button.vue';
+import ErrorMessage from '@/components/ui/ErrorMessage.vue';
 import Field from '@/components/ui/Field.vue';
 import Input from '@/components/ui/Input.vue';
 import AuthWizardLayout from '@/layouts/auth/AuthWizardLayout.vue';
@@ -74,9 +74,8 @@ const submit = () => {
                     </Field>
                 </div>
 
-                <Field label="Email address" for="email">
+                <Field label="Email address" for="email" :error="form.errors.email">
                     <Input id="email" v-model="form.email" type="email" autocomplete="email" placeholder="you@example.com" />
-                    <InputError :message="form.errors.email" />
                 </Field>
 
                 <div class="flex flex-col gap-1.5">
@@ -107,7 +106,7 @@ const submit = () => {
                         ></span>
                     </div>
                     <span class="text-xs text-ryh-ink3">{{ passwordNote }}</span>
-                    <InputError :message="form.errors.password" />
+                    <ErrorMessage :message="form.errors.password" />
                 </div>
 
                 <div
@@ -142,7 +141,7 @@ const submit = () => {
                         <template v-if="props.invited"> If I'm under 18, the parent or guardian who invited me has agreed to them for me.</template>
                     </span>
                 </div>
-                <InputError :message="form.errors.terms" />
+                <ErrorMessage :message="form.errors.terms" />
 
                 <div class="mt-2 flex items-center gap-3.5">
                     <Button class="px-6" type="submit" :disabled="!ready || form.processing">

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
 import Button from '@/components/ui/Button.vue';
 import Field from '@/components/ui/Field.vue';
 import Input from '@/components/ui/Input.vue';
@@ -29,7 +28,7 @@ const submit = () => {
         </div>
 
         <form class="flex flex-col gap-4" @submit.prevent="submit">
-            <Field label="Email address" for="email">
+            <Field label="Email address" for="email" :error="form.errors.email">
                 <Input
                     id="email"
                     v-model="form.email"
@@ -40,7 +39,6 @@ const submit = () => {
                     autofocus
                     placeholder="you@example.com"
                 />
-                <InputError :message="form.errors.email" />
             </Field>
 
             <Button class="mt-2" type="submit" :disabled="form.processing">

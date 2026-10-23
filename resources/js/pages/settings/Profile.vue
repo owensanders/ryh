@@ -7,7 +7,6 @@ import { TransitionRoot } from '@headlessui/vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 
 import DeleteUser from '@/components/DeleteUser.vue';
-import InputError from '@/components/InputError.vue';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
@@ -45,14 +44,12 @@ const submit = () => {
                 <p class="mt-1 text-[13px] text-ryh-ink3">Update your name and email address.</p>
 
                 <form class="mt-5 flex flex-col gap-4" @submit.prevent="submit">
-                    <Field label="Name" for="name">
+                    <Field label="Name" for="name" :error="form.errors.name">
                         <Input id="name" v-model="form.name" type="text" required autocomplete="name" placeholder="Full name" />
-                        <InputError :message="form.errors.name" />
                     </Field>
 
-                    <Field label="Email address" for="email">
+                    <Field label="Email address" for="email" :error="form.errors.email">
                         <Input id="email" v-model="form.email" type="email" required autocomplete="username" placeholder="you@example.com" />
-                        <InputError :message="form.errors.email" />
                     </Field>
 
                     <div v-if="!user.emailVerifiedAt" class="rounded-[13px] bg-ryh-sunk p-3.5 text-[13px] text-ryh-ink2">

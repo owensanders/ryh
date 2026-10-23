@@ -3,6 +3,7 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import DocumentCard from '@/components/documents/DocumentCard.vue';
 import Card from '@/components/ui/Card.vue';
 import IconButton from '@/components/ui/IconButton.vue';
+import Input from '@/components/ui/Input.vue';
 import { useConfirm } from '@/composables/useConfirm';
 import type { DocumentData, DocumentFolderData } from '@/types/generated';
 import { router } from '@inertiajs/vue3';
@@ -54,13 +55,17 @@ function destroyDocument(document: DocumentData): void {
                 <div class="mt-1 text-[13px] text-ryh-ink3">{{ documents.length }} files</div>
             </div>
             <div class="ml-auto flex w-full items-center gap-2 sm:w-auto">
-                <div class="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-xl bg-ryh-sunk px-3.5 sm:w-[220px] sm:flex-none">
+                <!-- The pill shows the focus ring, since the bare field inside it has none. -->
+                <div
+                    class="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-xl bg-ryh-sunk px-3.5 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ryh-coral sm:w-[220px] sm:flex-none"
+                >
                     <Search class="h-3.5 w-3.5 flex-none text-ryh-ink3" />
-                    <input
+                    <Input
                         v-model="query"
+                        bare
                         placeholder="Search filenames and tags"
                         aria-label="Search filenames and tags"
-                        class="h-full min-w-0 flex-1 bg-transparent text-[13px] outline-none"
+                        class="h-full flex-1 text-[13px]"
                     />
                 </div>
                 <div class="flex gap-1 rounded-xl bg-ryh-soft p-1">

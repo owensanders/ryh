@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
 import Button from '@/components/ui/Button.vue';
 import Card from '@/components/ui/Card.vue';
+import ErrorMessage from '@/components/ui/ErrorMessage.vue';
 import Select from '@/components/ui/Select.vue';
 import type { HouseData } from '@/types/generated';
 import { useForm } from '@inertiajs/vue3';
@@ -35,6 +35,6 @@ function save(): void {
             </Select>
             <Button variant="secondary" class="w-auto flex-none" type="submit" :disabled="form.processing || !form.isDirty">Save</Button>
         </form>
-        <InputError :message="form.errors.timezone" />
+        <ErrorMessage :message="form.errors.timezone" />
     </Card>
 </template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import IconButton from '@/components/ui/IconButton.vue';
+import Input from '@/components/ui/Input.vue';
 import { moveDocument } from '@/composables/useMoveDocument';
 import type { DocumentFolderData } from '@/types/generated';
 import { Link, useForm } from '@inertiajs/vue3';
@@ -55,11 +56,11 @@ function dropOnFolder(folder: DocumentFolderData): void {
         </Link>
 
         <div class="mt-1 flex gap-2">
-            <input
+            <Input
                 v-model="folderForm.name"
                 placeholder="New folder"
                 aria-label="New folder"
-                class="h-11 flex-1 rounded-[13px] border border-dashed border-ryh-line bg-transparent px-3 text-[13.5px]"
+                class="flex-1 border-dashed bg-transparent px-3 text-[13.5px]"
                 @keydown.enter="addFolder"
             />
             <IconButton

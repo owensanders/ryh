@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
 import Button from '@/components/ui/Button.vue';
 import Field from '@/components/ui/Field.vue';
 import Input from '@/components/ui/Input.vue';
@@ -25,7 +24,7 @@ const submit = () => {
         <Head title="Confirm password" />
 
         <form class="flex flex-col gap-4" @submit.prevent="submit">
-            <Field label="Password" for="password">
+            <Field label="Password" for="password" :error="form.errors.password">
                 <Input
                     id="password"
                     v-model="form.password"
@@ -35,7 +34,6 @@ const submit = () => {
                     autofocus
                     placeholder="••••••••"
                 />
-                <InputError :message="form.errors.password" />
             </Field>
 
             <Button class="mt-2" type="submit" :disabled="form.processing">

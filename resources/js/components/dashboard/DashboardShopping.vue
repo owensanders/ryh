@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Card from '@/components/ui/Card.vue';
+import Input from '@/components/ui/Input.vue';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import { useOptimistic } from '@/composables/useOptimistic';
 import { tickStyle } from '@/lib/ryh';
@@ -82,12 +83,7 @@ function toggleItem(item: ShoppingItemData): void {
             </div>
 
             <form v-if="can?.createShoppingItems" class="mt-auto flex gap-2 pt-3" @submit.prevent="addItem">
-                <input
-                    v-model="draft.name"
-                    placeholder="Add an item…"
-                    aria-label="Add an item"
-                    class="h-11 flex-1 rounded-[13px] border border-ryh-line bg-ryh-sunk px-3.5 text-sm text-ryh-ink placeholder:text-ryh-ink3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ryh-coral"
-                />
+                <Input v-model="draft.name" placeholder="Add an item…" aria-label="Add an item" class="flex-1" />
                 <button
                     type="submit"
                     :disabled="draft.processing"
