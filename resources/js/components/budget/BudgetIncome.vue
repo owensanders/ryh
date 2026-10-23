@@ -3,6 +3,7 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import RecurringIcon from '@/components/RecurringIcon.vue';
 import Button from '@/components/ui/Button.vue';
 import Card from '@/components/ui/Card.vue';
+import Checkbox from '@/components/ui/Checkbox.vue';
 import Field from '@/components/ui/Field.vue';
 import Input from '@/components/ui/Input.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -130,7 +131,7 @@ function destroyIncome(): void {
                 </div>
 
                 <label class="flex items-center gap-1.5 text-[12px] text-ryh-ink3">
-                    <input v-model="incomeForm.is_recurring" type="checkbox" class="h-3.5 w-3.5" />
+                    <Checkbox v-model="incomeForm.is_recurring" size="sm" />
                     Repeat this every month
                 </label>
 

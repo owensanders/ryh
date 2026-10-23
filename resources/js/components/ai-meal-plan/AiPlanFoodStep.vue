@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Checkbox from '@/components/ui/Checkbox.vue';
 import Field from '@/components/ui/Field.vue';
 import Input from '@/components/ui/Input.vue';
 import { useAiMealPlanForm } from '@/composables/useAiMealPlanForm';
@@ -11,7 +12,7 @@ const { form, aiOptions, aiUnavailable, fieldError } = useAiMealPlanForm();
         <span class="ryh-label">Diets</span>
         <div class="flex flex-wrap gap-x-3 gap-y-1.5">
             <label v-for="diet in aiOptions.diets" :key="diet" class="flex items-center gap-1.5 text-[12.5px] text-ryh-ink2">
-                <input v-model="form.diets" type="checkbox" :value="diet" class="h-3.5 w-3.5 accent-ryh-coral" />
+                <Checkbox v-model="form.diets" :value="diet" size="sm" />
                 {{ diet }}
             </label>
         </div>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Button from '@/components/ui/Button.vue';
+import Checkbox from '@/components/ui/Checkbox.vue';
 import Field from '@/components/ui/Field.vue';
 import Input from '@/components/ui/Input.vue';
 import AuthBase from '@/layouts/AuthLayout.vue';
@@ -51,12 +52,7 @@ const submit = () => {
             </Field>
 
             <label for="remember" class="flex items-center gap-2.5 text-[13px] text-ryh-ink2">
-                <input
-                    id="remember"
-                    v-model="form.remember"
-                    type="checkbox"
-                    class="h-4 w-4 accent-ryh-coral focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ryh-coral"
-                />
+                <Checkbox id="remember" v-model="form.remember" />
                 Remember me
             </label>
 

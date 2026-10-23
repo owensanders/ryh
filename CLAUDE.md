@@ -211,7 +211,9 @@ binding in `AppServiceProvider`.
   the control's id, `error`, `hint`, an `aside` slot beside the label,
   `hideLabel`), which links the label and marks the control invalid and
   described by its error. A control without a visible label has an
-  `aria-label`. An error that isn't about one field is an `ErrorMessage`.
+  `aria-label`. A checkbox is a `Checkbox` (`v-model` a boolean, or an
+  array with a `value` per box; `size` `sm` or `md`), inside the `<label>`
+  that names it. An error that isn't about one field is an `ErrorMessage`.
   A bordered panel is a `Card` (`as` for a section), and a small soft label
   a `Badge` (`mono` for times and costs).
   `ui/dialog` and `ui/tooltip` are shadcn-vue's, generated: change them
@@ -220,8 +222,9 @@ binding in `AppServiceProvider`.
 - The HTML itself carries a public page's title, description and preview
   tags (`config/meta.php`, keyed by route name) for link previews and
   crawlers, which don't run JavaScript; keep a page's entry in step with its
-  `<Head>`. The browser's `route()` knows every route but Telescope's,
-  Stripe's webhook and the file routes (`config/ziggy.php`).
+  `<Head>`. Pages render only in the browser: Inertia's SSR is off
+  (`config/inertia.php`). The browser's `route()` knows every route but
+  Telescope's, Stripe's webhook and the file routes (`config/ziggy.php`).
 
 ## Frontend writes
 

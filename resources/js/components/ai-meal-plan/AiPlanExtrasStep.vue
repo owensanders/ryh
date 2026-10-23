@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Checkbox from '@/components/ui/Checkbox.vue';
 import Field from '@/components/ui/Field.vue';
 import Input from '@/components/ui/Input.vue';
 import Textarea from '@/components/ui/Textarea.vue';
@@ -16,7 +17,7 @@ const { form, aiOptions, summary, fieldError } = useAiMealPlanForm();
         <span class="ryh-label">Goals</span>
         <div class="flex flex-wrap gap-x-3 gap-y-1.5">
             <label v-for="goal in aiOptions.goals" :key="goal" class="flex items-center gap-1.5 text-[12.5px] text-ryh-ink2">
-                <input v-model="form.goals" type="checkbox" :value="goal" class="h-3.5 w-3.5 accent-ryh-coral" />
+                <Checkbox v-model="form.goals" :value="goal" size="sm" />
                 {{ goal }}
             </label>
         </div>

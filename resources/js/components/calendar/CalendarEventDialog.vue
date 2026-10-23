@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Button from '@/components/ui/Button.vue';
+import Checkbox from '@/components/ui/Checkbox.vue';
 import Field from '@/components/ui/Field.vue';
 import IconButton from '@/components/ui/IconButton.vue';
 import Input from '@/components/ui/Input.vue';
@@ -28,7 +29,7 @@ const { open, editing, form, toggleAttendee, submit, destroy } = useCalendarEdit
                 </Field>
 
                 <label for="is_all_day" class="flex items-center gap-2.5 text-[13px] text-ryh-ink2">
-                    <input id="is_all_day" v-model="form.is_all_day" type="checkbox" class="h-4 w-4 accent-ryh-coral" />
+                    <Checkbox id="is_all_day" v-model="form.is_all_day" />
                     All day
                 </label>
 

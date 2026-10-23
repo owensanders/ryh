@@ -3,6 +3,7 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import RecurringIcon from '@/components/RecurringIcon.vue';
 import Button from '@/components/ui/Button.vue';
 import Card from '@/components/ui/Card.vue';
+import Checkbox from '@/components/ui/Checkbox.vue';
 import IconButton from '@/components/ui/IconButton.vue';
 import Input from '@/components/ui/Input.vue';
 import { useConfirm } from '@/composables/useConfirm';
@@ -79,7 +80,7 @@ function addCategory(): void {
                             <Input v-model="categoryForm.budgeted" type="text" class="h-8 w-[80px] text-[12.5px]" />
                         </div>
                         <label class="mt-1.5 flex items-center gap-1.5 text-[12px] text-ryh-ink3">
-                            <input v-model="categoryForm.is_recurring" type="checkbox" class="h-3.5 w-3.5" />
+                            <Checkbox v-model="categoryForm.is_recurring" size="sm" />
                             Repeats every month
                         </label>
                     </template>
@@ -154,7 +155,7 @@ function addCategory(): void {
             </Button>
         </div>
         <label class="mt-2 flex items-center gap-1.5 text-[12px] text-ryh-ink3">
-            <input v-model="newCategoryForm.is_recurring" type="checkbox" class="h-3.5 w-3.5" />
+            <Checkbox v-model="newCategoryForm.is_recurring" size="sm" />
             Repeat this every month
         </label>
     </Card>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Button from '@/components/ui/Button.vue';
+import Checkbox from '@/components/ui/Checkbox.vue';
 import Field from '@/components/ui/Field.vue';
 import Input from '@/components/ui/Input.vue';
 import { useForm } from '@inertiajs/vue3';
@@ -87,7 +88,7 @@ const closeModal = () => {
                                 Go promote another member to Owner instead
                             </a>
                             <label class="mt-3 flex items-start gap-2 text-[13px] text-ryh-ink2">
-                                <input v-model="form.confirm_household_deletion" type="checkbox" class="mt-0.5" />
+                                <Checkbox v-model="form.confirm_household_deletion" class="mt-0.5" />
                                 I understand — delete my household and all its data
                             </label>
                         </div>
