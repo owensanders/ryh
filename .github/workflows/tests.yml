@@ -142,8 +142,9 @@ jobs:
       - name: Build Assets
         run: cp .env.e2e .env && npm run build
 
-      - name: Install Playwright Browser
-        run: npx playwright install --with-deps chromium
+      # No browser install: playwright.config.ts runs CI on the runner's own Chrome.
+      - name: Chrome version
+        run: google-chrome --version
 
       - name: End-to-end Tests
         run: npm run e2e

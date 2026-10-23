@@ -47,7 +47,18 @@ const MealCard: React.FC<{ meal: Meal; style?: React.CSSProperties; glow?: numbe
             ...style,
         }}
     >
-        <span style={{ alignSelf: 'flex-start', fontSize: 13, fontWeight: 800, padding: '4px 9px', borderRadius: 8, background: 'rgba(255,255,255,0.6)' }}>{meal.tag}</span>
+        <span
+            style={{
+                alignSelf: 'flex-start',
+                fontSize: 13,
+                fontWeight: 800,
+                padding: '4px 9px',
+                borderRadius: 8,
+                background: 'rgba(255,255,255,0.6)',
+            }}
+        >
+            {meal.tag}
+        </span>
         <div style={{ marginTop: 'auto', fontSize: 23, fontWeight: 900, lineHeight: 1.08, letterSpacing: '-0.02em' }}>{meal.name}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14 }}>
             <Avatar person={meal.cook} size={30} radius={9} />
@@ -158,7 +169,17 @@ export const MealPlanner: React.FC = () => {
                                 return (
                                     <div key={d} style={{ width: colW, opacity: p, transform: `translateY(${(1 - p) * 80}px)` }}>
                                         <div style={{ height: 52, fontFamily: fonts.sans }}>
-                                            <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: light.ink3 }}>{d}</div>
+                                            <div
+                                                style={{
+                                                    fontSize: 14,
+                                                    fontWeight: 800,
+                                                    letterSpacing: '0.08em',
+                                                    textTransform: 'uppercase',
+                                                    color: light.ink3,
+                                                }}
+                                            >
+                                                {d}
+                                            </div>
                                             <div style={{ fontSize: 22, fontWeight: 900 }}>{4 + i}</div>
                                         </div>
                                         {meal && !(i === 2 && lifted && f < AI.fills[0]) ? (
@@ -197,7 +218,8 @@ export const MealPlanner: React.FC = () => {
                                     bottom: 0,
                                     left: -400 + shimmer * (PL.w + 800),
                                     width: 300,
-                                    background: 'linear-gradient(90deg, transparent, rgba(139,124,246,0.35), rgba(255,255,255,0.7), rgba(255,79,64,0.25), transparent)',
+                                    background:
+                                        'linear-gradient(90deg, transparent, rgba(139,124,246,0.35), rgba(255,255,255,0.7), rgba(255,79,64,0.25), transparent)',
                                     transform: 'skewX(-18deg)',
                                 }}
                             />

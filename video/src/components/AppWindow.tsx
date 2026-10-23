@@ -1,8 +1,7 @@
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { spr, springs } from '../anim';
-import { family } from '../theme';
-import { brand, fonts, light, Palette } from '../theme';
+import { brand, family, fonts, light, Palette } from '../theme';
 import { Avatar, Lockup } from './ui';
 
 const nav = [
@@ -47,7 +46,18 @@ export const AppWindow: React.FC<{
                 color: palette.ink,
             }}
         >
-            <div style={{ height: 46, flex: 'none', display: 'flex', alignItems: 'center', gap: 9, padding: '0 20px', borderBottom: `1.5px solid ${palette.line}`, background: palette.panel }}>
+            <div
+                style={{
+                    height: 46,
+                    flex: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 9,
+                    padding: '0 20px',
+                    borderBottom: `1.5px solid ${palette.line}`,
+                    background: palette.panel,
+                }}
+            >
                 {['#ff5f57', '#febc2e', '#28c840'].map((c) => (
                     <span key={c} style={{ width: 13, height: 13, borderRadius: '50%', background: c }} />
                 ))}
@@ -70,7 +80,17 @@ export const AppWindow: React.FC<{
             </div>
 
             <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
-                <div style={{ width: 262, flex: 'none', padding: '26px 18px', borderRight: `1.5px solid ${palette.line}`, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <div
+                    style={{
+                        width: 262,
+                        flex: 'none',
+                        padding: '26px 18px',
+                        borderRight: `1.5px solid ${palette.line}`,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 5,
+                    }}
+                >
                     <div style={{ padding: '2px 8px 24px' }}>
                         <Lockup height={40} color={palette.ink} />
                     </div>

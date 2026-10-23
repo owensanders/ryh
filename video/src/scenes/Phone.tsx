@@ -1,6 +1,7 @@
 import React from 'react';
 import { AbsoluteFill, useCurrentFrame } from 'remotion';
 import { prog, range, spr, springs } from '../anim';
+import { PhoneShell, Ripple, StatusBar } from '../components/PhoneFrame';
 import { Avatar, CircleWipe, Eyebrow, Headline, LogoMark, RoofMark, Sfx, Sub, Tick, WarmBg } from '../components/ui';
 import { brand, family, fonts, heroGradient, light, Person } from '../theme';
 
@@ -16,7 +17,6 @@ const SWITCH = 256; // …and only the content swaps; the header and tab bar sta
 const WIPE = 342;
 
 const PHONE = { x: 1180, y: 124, w: 420, h: 868 };
-const SCREEN_INSET = 14;
 
 // The notification is the app's real wording (ChoreAssignedNotification),
 // titled with the household's name as every RYH push is.
@@ -70,25 +70,6 @@ const perks = [
     { text: 'Every screen, sized for your phone', at: SWITCH + 10 },
 ];
 
-const StatusBar: React.FC<{ dark?: boolean }> = ({ dark }) => (
-    <div
-        style={{
-            height: 54,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 30px',
-            fontSize: 17,
-            fontWeight: 700,
-            color: dark ? light.ink : 'white',
-        }}
-    >
-        <span>07:42</span>
-        <span style={{ width: 120, height: 34, borderRadius: 17, background: '#000' }} />
-        <span>5G ▮</span>
-    </div>
-);
-
 const HomeScreen: React.FC<{ f: number }> = ({ f }) => {
     const add = spr(f, ADD, springs.bouncy);
     return (
@@ -110,29 +91,6 @@ const HomeScreen: React.FC<{ f: number }> = ({ f }) => {
                 )}
             </div>
         </div>
-    );
-};
-
-const Ripple: React.FC<{ f: number; at: number; x: number | string; y: number | string }> = ({ f, at, x, y }) => {
-    const p = prog(f, at, at + 18);
-    if (f < at || p >= 1) return null;
-    return (
-        <div
-            style={{
-                position: 'absolute',
-                left: x,
-                top: y,
-                width: 80,
-                height: 80,
-                marginLeft: -40,
-                marginTop: -40,
-                borderRadius: '50%',
-                background: 'rgba(14,26,43,0.18)',
-                transform: `scale(${0.4 + p * 1.6})`,
-                opacity: 1 - p,
-                pointerEvents: 'none',
-            }}
-        />
     );
 };
 
@@ -184,7 +142,9 @@ const BudgetContent: React.FC<{ f: number }> = ({ f }) => {
     return (
         <div style={{ padding: '16px 16px 0', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ borderRadius: 24, padding: '20px 20px 18px', background: heroGradient, color: brand.onhero }}>
-                <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: brand.onhero2 }}>October</div>
+                <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: brand.onhero2 }}>
+                    October
+                </div>
                 <div style={{ fontSize: 15, color: brand.onhero2, marginTop: 12 }}>Left to spend this month</div>
                 <div style={{ fontSize: 50, fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.05, fontVariantNumeric: 'tabular-nums' }}>
                     £{Math.round(count).toLocaleString('en-GB')}
@@ -193,7 +153,8 @@ const BudgetContent: React.FC<{ f: number }> = ({ f }) => {
                     <div style={{ height: '100%', width: `${prog(f, SWITCH + 10, SWITCH + 40) * 63}%`, background: brand.coral, borderRadius: 6 }} />
                 </div>
                 <div style={{ marginTop: 10, fontSize: 13.5, color: brand.onhero2 }}>
-                    <b style={{ color: brand.onhero }}>{budget.moneyOut}</b> assigned · <b style={{ color: brand.onhero }}>{budget.perDay}</b> a day to stay on track
+                    <b style={{ color: brand.onhero }}>{budget.moneyOut}</b> assigned · <b style={{ color: brand.onhero }}>{budget.perDay}</b> a day
+                    to stay on track
                 </div>
             </div>
 
@@ -203,7 +164,9 @@ const BudgetContent: React.FC<{ f: number }> = ({ f }) => {
                     ['Money out', budget.moneyOut],
                 ].map(([label, value]) => (
                     <div key={label} style={{ borderRadius: 18, padding: '12px 14px', background: light.card, border: `1.5px solid ${light.line}` }}>
-                        <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: light.ink3 }}>{label}</div>
+                        <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: light.ink3 }}>
+                            {label}
+                        </div>
                         <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: '-0.03em', marginTop: 2 }}>{value}</div>
                     </div>
                 ))}
@@ -215,7 +178,19 @@ const BudgetContent: React.FC<{ f: number }> = ({ f }) => {
                     const grow = spr(f, SWITCH + 18 + i * 6, springs.smooth);
                     return (
                         <div key={c.label} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '8px 0' }}>
-                            <span style={{ width: 32, height: 32, borderRadius: 10, background: c.colour, display: 'grid', placeItems: 'center', fontSize: 15 }}>{c.icon}</span>
+                            <span
+                                style={{
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: 10,
+                                    background: c.colour,
+                                    display: 'grid',
+                                    placeItems: 'center',
+                                    fontSize: 15,
+                                }}
+                            >
+                                {c.icon}
+                            </span>
                             <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ display: 'flex', fontSize: 15, fontWeight: 700 }}>
                                     {c.label}
@@ -247,7 +222,9 @@ const AppScreen: React.FC<{ f: number }> = ({ f }) => {
                 <RoofMark width={52} color={light.ink} />
                 <div style={{ fontSize: 26, fontWeight: 900, letterSpacing: '-0.03em' }}>{onBudget ? 'Budget' : 'Chores'}</div>
                 <div style={{ flex: 1 }} />
-                <div style={{ width: 42, height: 42, borderRadius: 13, background: light.soft, display: 'grid', placeItems: 'center', fontSize: 19 }}>🔔</div>
+                <div style={{ width: 42, height: 42, borderRadius: 13, background: light.soft, display: 'grid', placeItems: 'center', fontSize: 19 }}>
+                    🔔
+                </div>
             </div>
 
             {/* Only the content changes between screens: the frame is a persistent layout. */}
@@ -261,12 +238,30 @@ const AppScreen: React.FC<{ f: number }> = ({ f }) => {
                 )}
             </div>
 
-            <div style={{ position: 'relative', display: 'flex', borderTop: `1.5px solid ${light.line}`, padding: '8px 6px 22px', background: light.shell }}>
+            <div
+                style={{
+                    position: 'relative',
+                    display: 'flex',
+                    borderTop: `1.5px solid ${light.line}`,
+                    padding: '8px 6px 22px',
+                    background: light.shell,
+                }}
+            >
                 {tabs.map((tab) => {
                     const on = tab.label === activeTab;
                     return (
                         <div key={tab.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                            <div style={{ width: 52, height: 32, borderRadius: 16, background: on ? light.soft : 'transparent', display: 'grid', placeItems: 'center', fontSize: 18 }}>
+                            <div
+                                style={{
+                                    width: 52,
+                                    height: 32,
+                                    borderRadius: 16,
+                                    background: on ? light.soft : 'transparent',
+                                    display: 'grid',
+                                    placeItems: 'center',
+                                    fontSize: 18,
+                                }}
+                            >
                                 {tab.icon}
                             </div>
                             <div style={{ fontSize: 12, fontWeight: on ? 800 : 600, color: on ? light.ink : light.ink3 }}>{tab.label}</div>
@@ -325,7 +320,19 @@ const AppScreen: React.FC<{ f: number }> = ({ f }) => {
                             ['🌙', 'Dark mode'],
                             ['↪', 'Log out'],
                         ].map(([icon, label]) => (
-                            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 14, height: 50, padding: '0 14px', fontSize: 18, fontWeight: 600, color: light.ink2 }}>
+                            <div
+                                key={label}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 14,
+                                    height: 50,
+                                    padding: '0 14px',
+                                    fontSize: 18,
+                                    fontWeight: 600,
+                                    color: light.ink2,
+                                }}
+                            >
                                 <span style={{ width: 26, textAlign: 'center' }}>{icon}</span>
                                 {label}
                             </div>
@@ -374,8 +381,32 @@ export const Phone: React.FC = () => {
                     {perks.map(({ text: perk, at }) => {
                         const p = spr(f, at, springs.pop);
                         return (
-                            <div key={perk} style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 26, fontWeight: 700, color: light.ink, opacity: Math.min(1, p * 1.5), transform: `translateX(${(1 - p) * -30}px)` }}>
-                                <span style={{ width: 34, height: 34, borderRadius: 11, background: brand.mint, color: brand.onDark, display: 'grid', placeItems: 'center', fontSize: 18, fontWeight: 900 }}>
+                            <div
+                                key={perk}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 14,
+                                    fontSize: 26,
+                                    fontWeight: 700,
+                                    color: light.ink,
+                                    opacity: Math.min(1, p * 1.5),
+                                    transform: `translateX(${(1 - p) * -30}px)`,
+                                }}
+                            >
+                                <span
+                                    style={{
+                                        width: 34,
+                                        height: 34,
+                                        borderRadius: 11,
+                                        background: brand.mint,
+                                        color: brand.onDark,
+                                        display: 'grid',
+                                        placeItems: 'center',
+                                        fontSize: 18,
+                                        fontWeight: 900,
+                                    }}
+                                >
                                     ✓
                                 </span>
                                 {perk}
@@ -410,88 +441,79 @@ export const Phone: React.FC = () => {
             </div>
 
             {/* Phone */}
-            <div
+            <PhoneShell
                 style={{
-                    position: 'absolute',
                     left: PHONE.x,
                     top: PHONE.y,
-                    width: PHONE.w,
-                    height: PHONE.h,
-                    borderRadius: 70,
-                    background: '#0b0e15',
-                    padding: SCREEN_INSET,
-                    boxShadow: '0 60px 120px -40px rgba(14,26,43,0.65)',
                     transform: `translateY(${(1 - phoneIn) * 500}px) rotate(${(1 - phoneIn) * 8}deg)`,
                 }}
             >
-                <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: 56, overflow: 'hidden' }}>
-                    <HomeScreen f={f} />
+                <HomeScreen f={f} />
 
-                    {/* Push notification */}
-                    {f >= BANNER && f < OPEN + 10 && (
-                        <div
-                            style={{
-                                position: 'absolute',
-                                left: 14,
-                                right: 14,
-                                top: 60,
-                                padding: 16,
-                                borderRadius: 26,
-                                background: 'rgba(255,255,255,0.9)',
-                                color: light.ink,
-                                display: 'flex',
-                                gap: 14,
-                                boxShadow: '0 20px 40px -18px rgba(0,0,0,0.5)',
-                                transform: `translateY(${(1 - banner) * -170}px) scale(${1 - bannerGone * 0.1})`,
-                                opacity: 1 - bannerGone,
-                            }}
-                        >
-                            <LogoMark size={46} radius={13} />
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 17, fontWeight: 800 }}>
-                                    {PUSH.household}
-                                    <span style={{ fontSize: 14, fontWeight: 600, color: light.ink3 }}>now</span>
-                                </div>
-                                <div style={{ fontSize: 16, lineHeight: 1.3, color: light.ink2, marginTop: 3 }}>{PUSH.body}</div>
+                {/* Push notification */}
+                {f >= BANNER && f < OPEN + 10 && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            left: 14,
+                            right: 14,
+                            top: 60,
+                            padding: 16,
+                            borderRadius: 26,
+                            background: 'rgba(255,255,255,0.9)',
+                            color: light.ink,
+                            display: 'flex',
+                            gap: 14,
+                            boxShadow: '0 20px 40px -18px rgba(0,0,0,0.5)',
+                            transform: `translateY(${(1 - banner) * -170}px) scale(${1 - bannerGone * 0.1})`,
+                            opacity: 1 - bannerGone,
+                        }}
+                    >
+                        <LogoMark size={46} radius={13} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 17, fontWeight: 800 }}>
+                                {PUSH.household}
+                                <span style={{ fontSize: 14, fontWeight: 600, color: light.ink3 }}>now</span>
                             </div>
-                            {f >= TAP && tapRipple < 1 && (
-                                <div
-                                    style={{
-                                        position: 'absolute',
-                                        left: '50%',
-                                        top: '50%',
-                                        width: 90,
-                                        height: 90,
-                                        marginLeft: -45,
-                                        marginTop: -45,
-                                        borderRadius: '50%',
-                                        background: 'rgba(14,26,43,0.18)',
-                                        transform: `scale(${0.4 + tapRipple * 1.6})`,
-                                        opacity: 1 - tapRipple,
-                                    }}
-                                />
-                            )}
+                            <div style={{ fontSize: 16, lineHeight: 1.3, color: light.ink2, marginTop: 3 }}>{PUSH.body}</div>
                         </div>
-                    )}
+                        {f >= TAP && tapRipple < 1 && (
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    left: '50%',
+                                    top: '50%',
+                                    width: 90,
+                                    height: 90,
+                                    marginLeft: -45,
+                                    marginTop: -45,
+                                    borderRadius: '50%',
+                                    background: 'rgba(14,26,43,0.18)',
+                                    transform: `scale(${0.4 + tapRipple * 1.6})`,
+                                    opacity: 1 - tapRipple,
+                                }}
+                            />
+                        )}
+                    </div>
+                )}
 
-                    {/* The app, opening from the notification */}
-                    {f >= OPEN && (
-                        <div
-                            style={{
-                                position: 'absolute',
-                                inset: 0,
-                                transform: `scale(${0.35 + open * 0.65})`,
-                                transformOrigin: '50% 12%',
-                                opacity: Math.min(1, open * 1.6),
-                                borderRadius: (1 - open) * 40,
-                                overflow: 'hidden',
-                            }}
-                        >
-                            <AppScreen f={f} />
-                        </div>
-                    )}
-                </div>
-            </div>
+                {/* The app, opening from the notification */}
+                {f >= OPEN && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            transform: `scale(${0.35 + open * 0.65})`,
+                            transformOrigin: '50% 12%',
+                            opacity: Math.min(1, open * 1.6),
+                            borderRadius: (1 - open) * 40,
+                            overflow: 'hidden',
+                        }}
+                    >
+                        <AppScreen f={f} />
+                    </div>
+                )}
+            </PhoneShell>
 
             <CircleWipe start={WIPE} len={18} colour={light.bg} x={PHONE.x + PHONE.w / 2} y={PHONE.y + PHONE.h / 2} />
         </AbsoluteFill>

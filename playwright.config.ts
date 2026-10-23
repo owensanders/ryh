@@ -2,6 +2,10 @@ import { defineConfig, devices } from '@playwright/test';
 
 const baseURL = 'http://localhost:8091';
 
+// CI uses the Google Chrome the GitHub runner already has, so no browser (and none of its
+// system libraries) is installed per run; locally it's Playwright's own Chromium.
+const channel = process.env.CI ? 'chrome' : undefined;
+
 /**
  * End-to-end journeys against a separate server (port 8091, `.env.e2e`, the
  * `testing_e2e` database) so a run never touches dev data. Journeys share one
@@ -17,6 +21,7 @@ export default defineConfig({
     reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
     use: {
         baseURL,
+        channel,
         trace: 'retain-on-failure',
         screenshot: 'only-on-failure',
     },

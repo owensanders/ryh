@@ -4,8 +4,11 @@ import { prog, range, spr, springs } from '../anim';
 import { Avatar, Card, CircleWipe, Headline, Sfx, WarmBg } from '../components/ui';
 import { brand, fonts, light, people, tints } from '../theme';
 
-const TW = 540, TH = 340, GAP = 30;
-const X0 = (1920 - (TW * 3 + GAP * 2)) / 2, Y0 = 290;
+const TW = 540,
+    TH = 340,
+    GAP = 30;
+const X0 = (1920 - (TW * 3 + GAP * 2)) / 2,
+    Y0 = 290;
 
 type TileProps = { d: number };
 
@@ -20,11 +23,23 @@ const Budget: React.FC<TileProps> = ({ d }) => {
     return (
         <div style={{ display: 'flex', gap: 28, alignItems: 'flex-end', height: '100%' }}>
             <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: light.ink3 }}>Left to spend</div>
+                <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: light.ink3 }}>
+                    Left to spend
+                </div>
                 <div style={{ fontSize: 58, fontWeight: 900, letterSpacing: '-0.04em' }}>£{left.toLocaleString('en-GB')}</div>
                 <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
                     {['🛒 Food', '💡 Utilities', '⛽ Fuel'].map((c, i) => (
-                        <span key={c} style={{ fontSize: 14, fontWeight: 700, padding: '6px 10px', borderRadius: 10, background: light.soft, transform: `scale(${spr(f, 30 + i * 4, springs.pop)})` }}>
+                        <span
+                            key={c}
+                            style={{
+                                fontSize: 14,
+                                fontWeight: 700,
+                                padding: '6px 10px',
+                                borderRadius: 10,
+                                background: light.soft,
+                                transform: `scale(${spr(f, 30 + i * 4, springs.pop)})`,
+                            }}
+                        >
                             {c}
                         </span>
                     ))}
@@ -55,7 +70,18 @@ const Documents: React.FC<TileProps> = ({ d }) => {
     const found = spr(f, 50, springs.pop);
     return (
         <div>
-            <div style={{ height: 50, borderRadius: 14, background: light.soft, display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px', fontSize: 18 }}>
+            <div
+                style={{
+                    height: 50,
+                    borderRadius: 14,
+                    background: light.soft,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: '0 16px',
+                    fontSize: 18,
+                }}
+            >
                 🔍 <span style={{ color: q ? light.ink : light.ink3 }}>{q || 'Search filenames and tags'}</span>
                 {q && q.length < 3 && <span style={{ width: 2, height: 22, background: brand.coral }} />}
             </div>
@@ -103,7 +129,9 @@ const Documents: React.FC<TileProps> = ({ d }) => {
                     transform: `translateY(${(1 - found) * 20}px)`,
                 }}
             >
-                <span style={{ fontFamily: fonts.mono, fontSize: 12, padding: '4px 7px', borderRadius: 7, background: brand.coral, color: 'white' }}>PDF</span>
+                <span style={{ fontFamily: fonts.mono, fontSize: 12, padding: '4px 7px', borderRadius: 7, background: brand.coral, color: 'white' }}>
+                    PDF
+                </span>
                 MOT certificate — Golf
                 <span style={{ marginLeft: 'auto', fontSize: 13, color: light.ink3 }}>expires Mar</span>
             </div>
@@ -119,7 +147,18 @@ const Roles: React.FC<TileProps> = ({ d }) => {
             {people.map((p, i) => {
                 const s = spr(f, 14 + i * 5, springs.pop);
                 return (
-                    <div key={p.initials} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 16, background: light.panel, transform: `scale(${s})` }}>
+                    <div
+                        key={p.initials}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 12,
+                            padding: 12,
+                            borderRadius: 16,
+                            background: light.panel,
+                            transform: `scale(${s})`,
+                        }}
+                    >
                         <Avatar person={p} size={46} radius={14} />
                         <div>
                             <div style={{ fontSize: 18, fontWeight: 800 }}>{p.name}</div>
@@ -181,10 +220,33 @@ const Invites: React.FC<TileProps> = ({ d }) => {
                 })}
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
-                <div style={{ flex: 1, height: 52, borderRadius: 14, background: light.soft, display: 'flex', alignItems: 'center', padding: '0 14px', fontSize: 17 }}>
+                <div
+                    style={{
+                        flex: 1,
+                        height: 52,
+                        borderRadius: 14,
+                        background: light.soft,
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '0 14px',
+                        fontSize: 17,
+                    }}
+                >
                     ✉️&nbsp;<span style={{ color: typed ? light.ink : light.ink3 }}>{typed || 'Invite by email'}</span>
                 </div>
-                <div style={{ height: 52, padding: '0 18px', borderRadius: 14, background: brand.coral, color: 'white', fontWeight: 800, fontSize: 16, display: 'grid', placeItems: 'center' }}>
+                <div
+                    style={{
+                        height: 52,
+                        padding: '0 18px',
+                        borderRadius: 14,
+                        background: brand.coral,
+                        color: 'white',
+                        fontWeight: 800,
+                        fontSize: 16,
+                        display: 'grid',
+                        placeItems: 'center',
+                    }}
+                >
                     Invite
                 </div>
             </div>
@@ -262,7 +324,16 @@ const Recipes: React.FC<TileProps> = ({ d }) => {
                             zIndex: i === 1 ? 2 : 1,
                         }}
                     >
-                        <span style={{ alignSelf: 'flex-end', fontSize: 22, transform: `scale(${1 + (i === 1 ? Math.max(0, Math.sin(f / 5)) * 0.25 : 0)})`, color: brand.coral }}>♥</span>
+                        <span
+                            style={{
+                                alignSelf: 'flex-end',
+                                fontSize: 22,
+                                transform: `scale(${1 + (i === 1 ? Math.max(0, Math.sin(f / 5)) * 0.25 : 0)})`,
+                                color: brand.coral,
+                            }}
+                        >
+                            ♥
+                        </span>
                         <div style={{ marginTop: 'auto', fontSize: 21, fontWeight: 900, lineHeight: 1.05 }}>{c.n}</div>
                         <span style={{ fontSize: 13, fontWeight: 700, color: light.ink2, marginTop: 6 }}>{c.tag}</span>
                     </div>
@@ -299,7 +370,8 @@ export const Montage: React.FC = () => {
 
             <AbsoluteFill style={{ perspective: 2000 }}>
                 {tiles.map((t, i) => {
-                    const col = i % 3, row = Math.floor(i / 3);
+                    const col = i % 3,
+                        row = Math.floor(i / 3);
                     const d = 14 + i * 7;
                     const p = spr(f, d, { damping: 14, stiffness: 120 });
                     const x = X0 + col * (TW + GAP);
@@ -322,7 +394,19 @@ export const Montage: React.FC = () => {
                         >
                             <Card style={{ width: TW, height: TH, padding: 24, display: 'flex', flexDirection: 'column' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18 }}>
-                                    <span style={{ width: 50, height: 50, borderRadius: 15, background: tints[i % 5], display: 'grid', placeItems: 'center', fontSize: 25 }}>{t.icon}</span>
+                                    <span
+                                        style={{
+                                            width: 50,
+                                            height: 50,
+                                            borderRadius: 15,
+                                            background: tints[i % 5],
+                                            display: 'grid',
+                                            placeItems: 'center',
+                                            fontSize: 25,
+                                        }}
+                                    >
+                                        {t.icon}
+                                    </span>
                                     <div>
                                         <div style={{ fontSize: 23, fontWeight: 900, letterSpacing: '-0.02em' }}>{t.title}</div>
                                         <div style={{ fontSize: 15, color: light.ink3 }}>{t.line}</div>

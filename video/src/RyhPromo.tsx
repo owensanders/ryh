@@ -1,6 +1,5 @@
 import React from 'react';
 import { AbsoluteFill, Audio, interpolate, Sequence, staticFile } from 'remotion';
-import { fonts } from './theme';
 import { Calendar } from './scenes/Calendar';
 import { Chores } from './scenes/Chores';
 import { Dashboard } from './scenes/Dashboard';
@@ -9,13 +8,16 @@ import { Intro } from './scenes/Intro';
 import { MealPlanner } from './scenes/MealPlanner';
 import { Montage } from './scenes/Montage';
 import { Notifications } from './scenes/Notifications';
-import { Outro } from './scenes/Outro';
+import { Ending, Outro } from './scenes/Outro';
 import { Phone } from './scenes/Phone';
 import { Shopping } from './scenes/Shopping';
+import { fonts } from './theme';
+
+export type PromoProps = { ending?: Ending; commentPrompt?: string; music?: boolean };
 
 // Scene lengths are whole bars of the 120 BPM track (1 bar = 60 frames), so
 // every cut lands on a downbeat. The music's drop is at the dashboard (bar 5).
-const scenes: { id: string; frames: number; Component: React.FC }[] = [
+export const scenes: { id: string; frames: number; Component: React.FC<PromoProps> }[] = [
     { id: 'Intro', frames: 120, Component: Intro },
     { id: 'Hook', frames: 180, Component: Hook },
     { id: 'Dashboard', frames: 240, Component: Dashboard },
@@ -32,20 +34,31 @@ const scenes: { id: string; frames: number; Component: React.FC }[] = [
 
 export const TOTAL_FRAMES = scenes.reduce((a, s) => a + s.frames, 0);
 
-export const RyhPromo: React.FC = () => {
+/** Frame each scene starts on, by id. */
+export const sceneStarts: Record<string, number> = {};
+scenes.reduce((from, s) => {
+    sceneStarts[s.id] = from;
+    return from + s.frames;
+}, 0);
+
+// `music: false` drops the track and keeps the SFX, for a sound added on the
+// platform instead (TikTok).
+export const RyhPromo: React.FC<PromoProps> = ({ ending = 'pricing', commentPrompt, music = true }) => {
     let from = 0;
     return (
         <AbsoluteFill style={{ background: '#07090f', fontFamily: fonts.sans }}>
-            <Audio
-                src={staticFile('audio/music.wav')}
-                volume={(f) => interpolate(f, [0, 10, TOTAL_FRAMES - 30, TOTAL_FRAMES], [0, 0.55, 0.55, 0], { extrapolateRight: 'clamp' })}
-            />
+            {music && (
+                <Audio
+                    src={staticFile('audio/music.wav')}
+                    volume={(f) => interpolate(f, [0, 10, TOTAL_FRAMES - 30, TOTAL_FRAMES], [0, 0.55, 0.55, 0], { extrapolateRight: 'clamp' })}
+                />
+            )}
             {scenes.map(({ id, frames, Component }) => {
                 const start = from;
                 from += frames;
                 return (
                     <Sequence key={id} name={id} from={start} durationInFrames={frames}>
-                        <Component />
+                        <Component ending={ending} commentPrompt={commentPrompt} />
                     </Sequence>
                 );
             })}
