@@ -1,15 +1,12 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './support/fixtures';
 import { registerNewUser, verifyEmail } from './support/register';
-import { storageState, uniqueName } from './support/users';
+import { uniqueName } from './support/users';
 
-test('someone joins with the invite code, the owner approves them and gives them a role', async ({ browser }) => {
-    const owner = await browser.newPage({ storageState: storageState('owner') });
+test('someone joins with the invite code, the owner approves them and gives them a role', async ({ page: owner, browser }) => {
     await owner.goto('/house');
 
     const inviteCode = owner.getByRole('switch', { name: 'Invite code' });
-    if ((await inviteCode.getAttribute('aria-checked')) !== 'true') {
-        await inviteCode.click();
-    }
+    // A household's invite code starts switched on.
     await expect(inviteCode).toHaveAttribute('aria-checked', 'true');
     const code = (await owner.getByTestId('join-code').innerText()).trim();
 
@@ -55,26 +52,17 @@ test('someone joins with the invite code, the owner approves them and gives them
     await expect(joiner.getByText(/Good (morning|afternoon|evening), Gran/)).toBeVisible();
     await expect(joiner.getByRole('link', { name: 'Budget', exact: true })).toHaveCount(0);
 
-    await owner.close();
     await joiner.close();
 });
 
-test("the owner changes the household's time zone", async ({ browser }) => {
-    const page = await browser.newPage({ storageState: storageState('owner') });
+test("the owner changes the household's time zone", async ({ page }) => {
     await page.goto('/house');
     const timezone = page.getByLabel('Time zone');
-    const before = await timezone.inputValue();
-    const after = before === 'Asia/Tokyo' ? 'Europe/London' : 'Asia/Tokyo';
+    await expect(timezone).toHaveValue('Europe/London');
 
-    await timezone.selectOption(after);
+    await timezone.selectOption('Asia/Tokyo');
     await page.getByRole('button', { name: 'Save', exact: true }).click();
     await expect(page.getByRole('status').filter({ hasText: 'Time zone updated' })).toBeVisible();
     await page.reload();
-    await expect(timezone).toHaveValue(after);
-
-    // Put it back for the other tests.
-    await timezone.selectOption(before);
-    await page.getByRole('button', { name: 'Save', exact: true }).click();
-    await expect(page.getByRole('status').filter({ hasText: 'Time zone updated' })).toBeVisible();
-    await page.close();
+    await expect(timezone).toHaveValue('Asia/Tokyo');
 });

@@ -1,8 +1,6 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './support/fixtures';
 import { readFileSync } from 'node:fs';
-import { storageState, uniqueName } from './support/users';
-
-test.use({ storageState: storageState('owner') });
+import { uniqueName } from './support/users';
 
 test('the owner adds a budget category', async ({ page }) => {
     const category = uniqueName('Pets');

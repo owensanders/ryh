@@ -140,13 +140,18 @@ npm run e2e                        # or npm run e2e:ui to watch it
 ```
 
 With Sail up, a run serves the app on <http://localhost:8091> from inside
-`ryh-app` with `APP_ENV=e2e` (`.env.e2e`), and rebuilds the separate
-`testing_e2e` database from the seeder first, so your dev data is never touched.
-Registration links are read from Mailpit, and AI meal planning is a fixed fake
-(`App\Ai\Fakes\E2eMealPlanFake`), so no API key or paid call is needed. Journeys
-share that one database, so they run one at a time and name what they create
-uniquely. CI runs the same
-suite in the `e2e` job and uploads the report and traces when it fails.
+`ryh-app` with `APP_ENV=e2e` (`.env.e2e`), and empties the separate
+`testing_e2e` database and documents disk first, so your dev data is never
+touched. Each test makes its own Parker household through a test-only route
+(`routes/e2e.php`, loaded only in e2e) and signs its members in directly
+(`e2e/support/fixtures.ts`), so tests share nothing and run in parallel: four
+workers locally, two in CI. Registration links are read from Mailpit, and AI
+meal planning is a fixed fake (`App\Ai\Fakes\E2eMealPlanFake`), so no API key
+or paid call is needed. CI runs the same suite in the `e2e` job and uploads the
+report and traces when it fails.
+
+Build the frontend in Sail (`sail npm run build`) before a run: the e2e server
+serves `public/build`, and a stale build tests old code.
 
 Run Playwright from your Mac, but install npm packages with `sail npm install`:
 `node_modules` is shared with the Linux container, and a host `npm install`

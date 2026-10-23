@@ -1,9 +1,13 @@
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { logIn } from './support/auth';
+import { expect, test } from './support/fixtures';
 import { ownerOfNewHousehold } from './support/households';
 import { emailHtmlUrl, waitForEmail } from './support/mailpit';
 import { registerNewUser, verifyEmail } from './support/register';
-import { storageState, uniqueName } from './support/users';
+import { uniqueName } from './support/users';
+
+// Most of these start signed out; the owner's page is opened with pageAs().
+test.use({ role: null });
 
 /**
  * Opens the email as a mail client would show it, checks it carries the RYH
@@ -50,8 +54,8 @@ test('a forgotten password is reset from the emailed link', async ({ page, brows
     await expect(guest).toHaveURL(/\/verify-email$/);
 });
 
-test('the owner invites someone new by email, and they sign up from the link into the household', async ({ browser }) => {
-    const owner = await browser.newPage({ storageState: storageState('owner') });
+test('the owner invites someone new by email, and they sign up from the link into the household', async ({ pageAs, browser }) => {
+    const owner = await pageAs('owner');
     const email = `${uniqueName('aunt').replace(/\s/g, '-')}@example.test`;
 
     await owner.goto('/house');
@@ -76,11 +80,11 @@ test('the owner invites someone new by email, and they sign up from the link int
     await expect(invitee.getByText(/Good (morning|afternoon|evening), Aunt/)).toBeVisible();
 });
 
-test('the owner invites someone who already has an account, and they accept from the email', async ({ browser }) => {
+test('the owner invites someone who already has an account, and they accept from the email', async ({ pageAs, browser }) => {
     const invitee = await browser.newPage();
     const email = await registerNewUser(invitee, 'Cousin', 'Parker');
 
-    const owner = await browser.newPage({ storageState: storageState('owner') });
+    const owner = await pageAs('owner');
     await owner.goto('/house');
     await owner.getByLabel('Email', { exact: true }).fill(email);
     await owner.getByRole('button', { name: 'Send invite' }).click();
@@ -96,7 +100,6 @@ test('the owner invites someone who already has an account, and they accept from
     await expect(invitee.getByRole('button', { name: 'Open The Parkers' })).toBeVisible();
 });
 
-// A fresh household, so the new member doesn't crowd the shared seeded Parkers.
 test('the owner invites a child by email after confirming they are their parent or guardian', async ({ browser }) => {
     const owner = await browser.newPage();
     const { householdName } = await ownerOfNewHousehold(owner, 'Gwen', 'Guardian');

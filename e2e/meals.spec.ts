@@ -1,8 +1,6 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './support/fixtures';
 import { ownerOfNewHousehold } from './support/households';
-import { storageState, uniqueName } from './support/users';
-
-test.use({ storageState: storageState('owner') });
+import { uniqueName } from './support/users';
 
 test('the owner saves a recipe, sends its ingredients to a list, and plans it for tonight', async ({ page }) => {
     const recipe = uniqueName('Lemon risotto');
@@ -83,13 +81,13 @@ test('the owner edits a planned meal, drags it to another day, then removes it',
 });
 
 test.describe('a fresh household', () => {
-    test.use({ storageState: { cookies: [], origins: [] } });
+    test.use({ role: null });
 
     // In e2e the AI is a fixed fake (App\Ai\Fakes\E2eMealPlanFake) that answers after ~7s.
     test('plans the week with the AI step by step, then from its recipes once the weekly plan is used', async ({ page }) => {
         test.setTimeout(60_000);
 
-        // A household of its own, so its weekly AI plan and accepted dinners don't touch the shared Parkers.
+        // Signed up from scratch, so it starts with no recipes and its weekly AI plan unused.
         await ownerOfNewHousehold(page, 'Wren', 'Wizard');
 
         await page.goto('/meals');

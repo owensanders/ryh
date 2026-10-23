@@ -1,9 +1,7 @@
-import { expect, test } from '@playwright/test';
-import { storageState, uniqueName, users } from './support/users';
+import { expect, test } from './support/fixtures';
+import { uniqueName } from './support/users';
 
-test.use({ storageState: storageState('owner') });
-
-test('the owner adds a chore for James, ticks it off, and the dashboard counts it', async ({ page }) => {
+test('the owner adds a chore for James, ticks it off, and the dashboard counts it', async ({ page, household }) => {
     const chore = uniqueName('Hoover the stairs');
 
     await page.goto('/dashboard');
@@ -12,7 +10,7 @@ test('the owner adds a chore for James, ticks it off, and the dashboard counts i
 
     await page.goto('/chores');
     await page.getByLabel('New chore', { exact: true }).fill(chore);
-    await page.getByLabel('Assign new chore to').selectOption({ label: users.adult.name });
+    await page.getByLabel('Assign new chore to').selectOption({ label: household.members.adult.name });
     await page.getByRole('button', { name: 'Add chore' }).click();
 
     // The tick shows before the server answers, so wait for it to save before leaving.
@@ -68,7 +66,7 @@ test("a tick that doesn't save is undone, with a message", async ({ page }) => {
     await expect(page.getByRole('button', { name: `Mark ${chore} as done` })).toBeVisible();
 });
 
-test('the owner renames a chore, drags it to Completed, then deletes it', async ({ page }) => {
+test('the owner renames a chore, drags it to Completed, then deletes it', async ({ page, household }) => {
     const chore = uniqueName('Clean the car');
     const dialog = page.getByRole('dialog');
 
@@ -80,7 +78,7 @@ test('the owner renames a chore, drags it to Completed, then deletes it', async 
     await page.getByText(chore, { exact: true }).click();
     await expect(dialog.getByRole('heading', { name: 'Edit chore' })).toBeVisible();
     await dialog.getByLabel('Name').fill(`${chore} inside and out`);
-    await dialog.getByLabel('Assignee').selectOption({ label: users.adult.name });
+    await dialog.getByLabel('Assignee').selectOption({ label: household.members.adult.name });
     await dialog.getByRole('button', { name: 'Save changes' }).click();
     await expect(dialog).toBeHidden();
 

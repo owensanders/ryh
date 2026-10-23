@@ -1,7 +1,4 @@
-import { expect, test } from '@playwright/test';
-import { storageState } from './support/users';
-
-test.use({ storageState: storageState('owner') });
+import { expect, test } from './support/fixtures';
 
 // RYH is online-only: without a connection, any page shows the service
 // worker's offline page, which comes back by itself once the connection does.

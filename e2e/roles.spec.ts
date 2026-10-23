@@ -1,11 +1,11 @@
-import { expect, test } from '@playwright/test';
 import { addChoreAsOwner } from './support/chores';
-import { storageState, uniqueName, users } from './support/users';
+import { expect, test } from './support/fixtures';
+import { uniqueName } from './support/users';
 
 const sidebarLink = (name: string) => ({ name, exact: true });
 
 test.describe('a child', () => {
-    test.use({ storageState: storageState('child') });
+    test.use({ role: 'child' });
 
     test("can't reach money, documents or house management", async ({ page }) => {
         await page.goto('/dashboard');
@@ -19,11 +19,11 @@ test.describe('a child', () => {
         }
     });
 
-    test('ticks off their own chore but not anyone else’s', async ({ page, browser }) => {
+    test('ticks off their own chore but not anyone else’s', async ({ page, pageAs, household }) => {
         const mine = uniqueName('Feed the cat');
         const theirs = uniqueName('Mow the lawn');
-        await addChoreAsOwner(browser, mine, users.child.name);
-        await addChoreAsOwner(browser, theirs, users.adult.name);
+        await addChoreAsOwner(pageAs, mine, household.members.child.name);
+        await addChoreAsOwner(pageAs, theirs, household.members.adult.name);
 
         await page.goto('/chores');
         await expect(page.getByLabel('New chore', { exact: true })).toHaveCount(0);
@@ -35,7 +35,7 @@ test.describe('a child', () => {
 });
 
 test.describe('a teen', () => {
-    test.use({ storageState: storageState('teen') });
+    test.use({ role: 'teen' });
 
     test('can add calendar events but not chores', async ({ page }) => {
         const event = uniqueName('Swim gala');
@@ -52,7 +52,7 @@ test.describe('a teen', () => {
 });
 
 test.describe('an adult', () => {
-    test.use({ storageState: storageState('adult') });
+    test.use({ role: 'adult' });
 
     test('manages the budget but not the house', async ({ page }) => {
         await page.goto('/dashboard');

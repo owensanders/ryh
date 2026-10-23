@@ -1,5 +1,5 @@
 import { expect, type Page } from '@playwright/test';
-import { PASSWORD } from './users';
+import { PASSWORD } from './fixtures';
 
 export async function logIn(page: Page, email: string, password = PASSWORD): Promise<void> {
     await page.goto('/login');

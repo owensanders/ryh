@@ -8,14 +8,16 @@ const channel = process.env.CI ? 'chrome' : undefined;
 
 /**
  * End-to-end journeys against a separate server (port 8091, `.env.e2e`, the
- * `testing_e2e` database) so a run never touches dev data. Journeys share one
- * seeded database, so they run one at a time.
+ * `testing_e2e` database) so a run never touches dev data. Each test makes its
+ * own household (e2e/support/fixtures.ts), so they run in parallel; the server
+ * answers several at once (PHP_CLI_SERVER_WORKERS in .env.e2e). CI's runner has
+ * two cores, shared with MySQL and the server.
  */
 export default defineConfig({
     testDir: './e2e',
     globalSetup: './e2e/global-setup.ts',
-    fullyParallel: false,
-    workers: 1,
+    fullyParallel: true,
+    workers: process.env.CI ? 2 : 4,
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 1 : 0,
     reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
@@ -26,17 +28,14 @@ export default defineConfig({
         screenshot: 'only-on-failure',
     },
     projects: [
-        { name: 'setup', testMatch: /auth\.setup\.ts/ },
         {
             name: 'chromium',
             use: { ...devices['Desktop Chrome'] },
-            dependencies: ['setup'],
             testIgnore: /mobile\.spec\.ts/,
         },
         {
             name: 'mobile',
             use: { ...devices['Pixel 7'] },
-            dependencies: ['setup'],
             testMatch: /mobile\.spec\.ts/,
         },
     ],

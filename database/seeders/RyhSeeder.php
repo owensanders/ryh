@@ -23,7 +23,8 @@ use Illuminate\Support\Str;
 use Laravel\Cashier\Subscription;
 
 /**
- * The Parker household — the demo data the RYH design was drawn against.
+ * The Parker household — the demo data the RYH design was drawn against. The
+ * e2e suite builds one per test with household() (routes/e2e.php).
  */
 class RyhSeeder extends Seeder
 {
@@ -38,9 +39,22 @@ class RyhSeeder extends Seeder
             return;
         }
 
+        $this->household();
+    }
+
+    /**
+     * A Parker household with all its demo data. `$tag` makes each member's
+     * email unique (sarah+tag@ryh.test), so many can exist at once; the
+     * names stay the same.
+     */
+    public function household(string $tag = ''): Household
+    {
         $household = Household::create([
             'name' => 'The Parkers',
             'location' => 'Bristol',
+            // Set, not left to the column's default: create() doesn't read defaults back,
+            // and the calendar converts the demo's local times with it.
+            'timezone' => 'Europe/London',
             'trial_ends_at' => now()->addDays(30),
         ]);
 
@@ -49,23 +63,25 @@ class RyhSeeder extends Seeder
         Subscription::create([
             'household_id' => $household->id,
             'type' => 'default',
-            'stripe_id' => 'sub_dev_test',
+            'stripe_id' => $tag === '' ? 'sub_dev_test' : "sub_dev_test_{$tag}",
             'stripe_status' => 'active',
             'stripe_price' => 'price_home_monthly_dev',
             'quantity' => 1,
         ]);
 
-        $members = $this->seedMembers($household);
+        $members = $this->seedMembers($household, $tag);
         $this->seedShopping($household);
         $this->seedChores($household, $members);
         $this->seedMeals($household, $members);
         $this->seedCalendar($household, $members);
         $this->seedBudget($household);
         $this->seedDocuments($household, $members);
+
+        return $household;
     }
 
     /** @return array<string, User> */
-    private function seedMembers(Household $household): array
+    private function seedMembers(Household $household, string $tag): array
     {
         $people = [
             ['sarah', 'Sarah Parker', 'SP', PaletteEnum::Mint, 'WFH today', HouseholdRoleEnum::Owner],
@@ -83,7 +99,7 @@ class RyhSeeder extends Seeder
                 'initials' => $initials,
                 'colour' => $colour,
                 'status_line' => $status,
-                'email' => "{$key}@ryh.test",
+                'email' => $tag === '' ? "{$key}@ryh.test" : "{$key}+{$tag}@ryh.test",
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
                 // A streak worth showing on the demo dashboard.
@@ -99,7 +115,7 @@ class RyhSeeder extends Seeder
             'initials' => 'MP',
             'colour' => PaletteEnum::Coral,
             'status_line' => null,
-            'email' => 'margaret@parkerhouse.co.uk',
+            'email' => $tag === '' ? 'margaret@parkerhouse.co.uk' : "margaret+{$tag}@parkerhouse.co.uk",
             'password' => Hash::make(Str::random(40)),
         ]);
         $margaret->households()->attach($household->id, [

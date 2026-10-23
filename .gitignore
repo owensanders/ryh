@@ -27,6 +27,5 @@ yarn-error.log
 /.vscode
 /.zed
 # Playwright
-/e2e/.auth
 /test-results
 /playwright-report

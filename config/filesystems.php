@@ -38,6 +38,14 @@ return [
             'report' => false,
         ],
 
+        // The Playwright suite's uploads, kept apart from dev's (DOCUMENTS_DISK=e2e in .env.e2e).
+        'e2e' => [
+            'driver' => 'local',
+            'root' => storage_path('app/e2e'),
+            'throw' => false,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
