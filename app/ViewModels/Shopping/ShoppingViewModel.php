@@ -15,7 +15,8 @@ class ShoppingViewModel
 {
     public function toData(Household $household, User $viewer, ?string $slug = null): ShoppingScreenData
     {
-        $lists = $household->shoppingLists()->with('items')->get();
+        // Only the open list's items are loaded; the sidebar shows counts.
+        $lists = $household->shoppingLists()->withItemCounts()->get();
         $active = $slug !== null ? $lists->firstWhere('slug', $slug) : $lists->first();
 
         if ($slug !== null && $active === null) {
@@ -23,8 +24,8 @@ class ShoppingViewModel
         }
 
         return new ShoppingScreenData(
-            lists: $lists->map(fn (ShoppingList $list) => ShoppingListData::fromModel($list, $viewer, withItems: false))->values()->all(),
-            active: $active !== null ? ShoppingListData::fromModel($active, $viewer) : null,
+            lists: $lists->map(fn (ShoppingList $list) => ShoppingListData::summary($list, $viewer))->values()->all(),
+            active: $active !== null ? ShoppingListData::fromModel($active->load('items'), $viewer) : null,
         );
     }
 }

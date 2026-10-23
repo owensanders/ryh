@@ -19,7 +19,7 @@ const props = defineProps<{
     days: PlannerDayData[];
     library: RecipeData[];
     recipeCount: number;
-    recipes: RecipeData[];
+    recipes?: RecipeData[];
     members: MemberData[];
     shoppingLists: ShoppingListData[];
     tagOptions: TagOption[];
@@ -59,7 +59,7 @@ const aiOpen = ref(false);
             <RecipeLibraryStrip :library="library" :recipe-count="recipeCount" />
         </div>
 
-        <MealDialog :recipes="recipes" :members="members" :shopping-lists="shoppingLists" :tag-options="tagOptions" />
+        <MealDialog :members="members" :shopping-lists="shoppingLists" :tag-options="tagOptions" />
 
         <AiMealPlanDialog
             v-model:open="aiOpen"

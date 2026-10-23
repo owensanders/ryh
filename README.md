@@ -212,7 +212,8 @@ Pages in `resources/js/pages` declare their props and lay out components from
 event dialog and grid, say) live in a composable reached through
 provide/inject. Ticks and drags update at once with `useOptimistic()` and
 reconcile with the server's answer; writes reload only the props they change
-(`only: [...]`). App screens share the persistent `layouts/RyhShell.vue`, and
+(`only: [...]`), and props that query are closures, so the server skips the
+rest. App screens share the persistent `layouts/RyhShell.vue`, and
 the design's `--ryh-*` tokens in `resources/css/app.css` cover light and dark.
 
 ### In the background

@@ -117,8 +117,8 @@ export type CalendarMonthData = {
 export type ChoreBoardScreenData = {
     columns: ChoreColumnData[];
     scores: MemberScoreData[];
-    members: MemberData[];
-    notifyChoresAvailableAt: string | null;
+    members?: MemberData[];
+    notifyChoresAvailableAt?: string | null;
 };
 export type ChoreColumnData = {
     status: ChoreStatusEnum;
@@ -329,17 +329,17 @@ export type MealDietEnum = 'Vegetarian' | 'Vegan' | 'Pescatarian' | 'Gluten free
 export type MealGoalEnum = 'Eat healthier' | 'Spend less' | 'Eat more veg' | 'Quick weeknights' | 'Batch cook';
 export type MealPlannerScreenData = {
     weekOf: string;
-    days: PlannerDayData[];
-    library: RecipeData[];
-    recipeCount: number;
-    recipes: RecipeData[];
-    members: MemberData[];
+    days?: PlannerDayData[];
+    library?: RecipeData[];
+    recipeCount?: number;
+    recipes?: RecipeData[];
+    members?: MemberData[];
     aiConfigured: boolean;
     aiPaused: boolean;
     aiAvailableFrom: string | null;
-    aiSuggestedBudget: number | null;
-    aiPlan: AiMealPlanData | null;
-    shoppingLists: ShoppingListData[];
+    aiSuggestedBudget?: number | null;
+    aiPlan?: AiMealPlanData | null;
+    shoppingLists?: ShoppingListData[];
     tagOptions: {
         value: string;
         label: string;
@@ -468,12 +468,12 @@ export type RecipeData = {
     can: AbilitiesData;
 };
 export type RecipeLibraryScreenData = {
-    recipes: RecipeData[];
+    recipes?: RecipeData[];
     tagOptions: {
         value: string;
         label: string;
     }[];
-    shoppingLists: ShoppingListData[];
+    shoppingLists?: ShoppingListData[];
 };
 export type RecipeTagEnum =
     | 'healthy'

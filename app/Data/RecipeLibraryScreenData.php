@@ -5,18 +5,22 @@ declare(strict_types=1);
 namespace App\Data;
 
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Lazy;
 
-/** The recipe library screen. */
+/**
+ * The recipe library screen. Props that query are closures, so a partial
+ * reload (sending ingredients to a list) runs only the ones it asks for.
+ */
 class RecipeLibraryScreenData extends Data
 {
     /**
-     * @param  array<int, RecipeData>  $recipes
+     * @param  Lazy|array<int, RecipeData>  $recipes
      * @param  list<array{value: string, label: string}>  $tagOptions
-     * @param  array<int, ShoppingListData>  $shoppingLists  Where a recipe's ingredients can be sent.
+     * @param  Lazy|array<int, ShoppingListData>  $shoppingLists  Where a recipe's ingredients can be sent.
      */
     public function __construct(
-        public array $recipes,
+        public Lazy|array $recipes,
         public array $tagOptions,
-        public array $shoppingLists,
+        public Lazy|array $shoppingLists,
     ) {}
 }

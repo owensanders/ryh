@@ -122,6 +122,12 @@ N+1 case, throws in local, test and e2e. In production it logs a warning
 instead, so a miss never breaks a page. A single model loading its own
 relation isn't flagged.
 
+**Counts come from the database**: `withCount` (as in
+`ShoppingList::withItemCounts()`), not loading the rows to count them.
+`PageQueryBudgetTest` loads each page for a small and a large household and
+fails if the query count differs (something runs per row) or goes over the
+page's budget. Raise a budget only for a query the page needs.
+
 Policies and middleware that need to know about membership ask the model
 (`$user->membershipIn($id)`, memoised for authorization) rather than writing
 a query. An action that must see the row as it is now, under a lock, asks
@@ -166,6 +172,12 @@ binding in `AppServiceProvider`.
   changes with `only: [...]`: the chore board skips `members`, and a meal
   write skips the AI options. `flash` is `Inertia::always()`, so a partial
   reload still gets its toast (`PartialReloadTest`).
+- So that `only` saves the server's work as well as bytes, a screen's props
+  that query are `Lazy::closure(...)` in its view model: Inertia runs them
+  only when they're asked for (the meal planner's AI plan poll runs none of
+  the others). A prop only one dialog needs is `Lazy::inertia(...)`, left out
+  until the dialog asks with `router.reload({ only: [...] })`, like the meal
+  planner's `recipes`. Lazy props come out optional in `generated.ts`.
 - Ticks and drags that should feel instant use `useOptimistic()`: change
   the local copy, then send the request with the callbacks it hands you.
   The server's next props replace the copy, and a failed request puts it
