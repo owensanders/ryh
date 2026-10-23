@@ -12,21 +12,22 @@ use App\Models\Household;
 use App\Models\Recipe;
 use App\Models\ShoppingList;
 use App\Models\User;
+use Spatie\LaravelData\Lazy;
 
 class RecipeLibraryViewModel
 {
     public function toData(Household $household, User $viewer): RecipeLibraryScreenData
     {
         return new RecipeLibraryScreenData(
-            recipes: $household->recipes()->inLibraryOrder()->get()
+            recipes: Lazy::closure(fn () => $household->recipes()->inLibraryOrder()->get()
                 ->map(fn (Recipe $recipe) => RecipeData::fromModel($recipe, $viewer))
                 ->values()
-                ->all(),
+                ->all()),
             tagOptions: RecipeTagEnum::options(),
-            shoppingLists: $household->shoppingLists()->with('items')->get()
-                ->map(fn (ShoppingList $list) => ShoppingListData::fromModel($list, $viewer, withItems: false))
+            shoppingLists: Lazy::closure(fn () => $household->shoppingLists()->withItemCounts()->get()
+                ->map(fn (ShoppingList $list) => ShoppingListData::summary($list, $viewer))
                 ->values()
-                ->all(),
+                ->all()),
         );
     }
 }

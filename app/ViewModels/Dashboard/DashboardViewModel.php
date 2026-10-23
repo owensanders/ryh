@@ -21,7 +21,6 @@ use App\Models\CalendarEvent;
 use App\Models\Chore;
 use App\Models\Household;
 use App\Models\PlannedMeal;
-use App\Models\ShoppingList;
 use App\Models\User;
 use App\Support\MoneyHelper;
 use Carbon\CarbonImmutable;
@@ -45,8 +44,7 @@ class DashboardViewModel
             ->where('slot', MealSlotEnum::Dinner)
             ->first();
         // A list that actually has items, so the dashboard doesn't spotlight an empty one.
-        $list = $household->shoppingLists()->with('items')->get()
-            ->first(fn (ShoppingList $list) => $list->items->isNotEmpty());
+        $list = $household->shoppingLists()->has('items')->with('items')->first();
         $remaining = $todays->count() - $done;
 
         // One read of the calendar covers both the summary line and the agenda card.

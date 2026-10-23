@@ -13,6 +13,7 @@ use App\Enums\ChoreStatusEnum;
 use App\Models\Chore;
 use App\Models\Household;
 use App\Models\User;
+use Spatie\LaravelData\Lazy;
 
 class ChoreBoardViewModel
 {
@@ -40,8 +41,8 @@ class ChoreBoardViewModel
                 ))
                 ->values()
                 ->all(),
-            members: $household->members()->get()->map(MemberData::fromModel(...))->values()->all(),
-            notifyChoresAvailableAt: $household->choreRemindersAvailableAt()?->toJSON(),
+            members: Lazy::closure(fn () => $household->members()->get()->map(MemberData::fromModel(...))->values()->all()),
+            notifyChoresAvailableAt: Lazy::closure(fn () => $household->choreRemindersAvailableAt()?->toJSON()),
         );
     }
 }

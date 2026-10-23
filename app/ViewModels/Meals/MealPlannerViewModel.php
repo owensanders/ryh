@@ -24,6 +24,7 @@ use App\Models\Recipe;
 use App\Models\ShoppingList;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Spatie\LaravelData\Lazy;
 
 class MealPlannerViewModel
 {
@@ -34,12 +35,51 @@ class MealPlannerViewModel
     public function toData(Household $household, User $viewer, CarbonImmutable $anyDayInWeek): MealPlannerScreenData
     {
         $start = $anyDayInWeek->startOfWeek();
-        $end = $start->addDays(6);
         $today = $household->today();
 
+        return new MealPlannerScreenData(
+            weekOf: $start->format('j F'),
+            days: Lazy::closure(fn () => $this->days($household, $viewer, $start, $today)),
+            library: Lazy::closure(fn () => $household->recipes()->where('is_favourite', true)->orderBy('name')->limit(self::LIBRARY_SIZE)->get()
+                ->map(fn (Recipe $recipe) => RecipeData::fromModel($recipe, $viewer))
+                ->values()
+                ->all()),
+            recipeCount: Lazy::closure(fn () => $household->recipes()->count()),
+            recipes: Lazy::inertia(fn () => $household->recipes()->inLibraryOrder()->get()
+                ->map(fn (Recipe $recipe) => RecipeData::fromModel($recipe, $viewer))
+                ->values()
+                ->all()),
+            members: Lazy::closure(fn () => $household->activeMembers()->get()
+                ->map(MemberData::fromModel(...))
+                ->values()
+                ->all()),
+            aiConfigured: AiConfigService::isConfigured(),
+            aiPaused: AiConfigService::isPaused(),
+            aiAvailableFrom: $household->canGenerateAiMealPlan()
+                ? null
+                : $household->ai_meal_plan_generated_at?->addWeek()->toDateString(),
+            aiSuggestedBudget: Lazy::closure(fn () => $this->suggestedWeeklyFoodBudget($household, $today)),
+            aiPlan: Lazy::closure(fn () => $this->latestAiPlan($household)),
+            shoppingLists: Lazy::closure(fn () => $household->shoppingLists()->withItemCounts()->get()
+                ->map(fn (ShoppingList $list) => ShoppingListData::summary($list, $viewer))
+                ->values()
+                ->all()),
+            tagOptions: RecipeTagEnum::options(),
+            aiOptions: [
+                'diets' => MealDietEnum::values(),
+                'goals' => MealGoalEnum::values(),
+                'confidence' => CookingConfidenceEnum::options(),
+                'equipment' => KitchenEquipmentEnum::values(),
+            ],
+        );
+    }
+
+    /** @return list<PlannerDayData> The week's seven days, Monday first, with their meals. */
+    private function days(Household $household, User $viewer, CarbonImmutable $start, CarbonImmutable $today): array
+    {
         $planned = $household->plannedMeals()
             ->with(['recipe', 'cook'])
-            ->whereBetween('planned_on', [$start->toDateString(), $end->toDateString()])
+            ->whereBetween('planned_on', [$start->toDateString(), $start->addDays(6)->toDateString()])
             ->orderBy('planned_on')
             ->orderBy('id')
             ->get()
@@ -60,41 +100,7 @@ class MealPlannerViewModel
             );
         }
 
-        return new MealPlannerScreenData(
-            weekOf: $start->format('j F'),
-            days: $days,
-            library: $household->recipes()->where('is_favourite', true)->orderBy('name')->limit(self::LIBRARY_SIZE)->get()
-                ->map(fn (Recipe $recipe) => RecipeData::fromModel($recipe, $viewer))
-                ->values()
-                ->all(),
-            recipeCount: $household->recipes()->count(),
-            recipes: $household->recipes()->inLibraryOrder()->get()
-                ->map(fn (Recipe $recipe) => RecipeData::fromModel($recipe, $viewer))
-                ->values()
-                ->all(),
-            members: $household->activeMembers()->get()
-                ->map(MemberData::fromModel(...))
-                ->values()
-                ->all(),
-            aiConfigured: AiConfigService::isConfigured(),
-            aiPaused: AiConfigService::isPaused(),
-            aiAvailableFrom: $household->canGenerateAiMealPlan()
-                ? null
-                : $household->ai_meal_plan_generated_at?->addWeek()->toDateString(),
-            aiSuggestedBudget: $this->suggestedWeeklyFoodBudget($household, $today),
-            aiPlan: $this->latestAiPlan($household),
-            shoppingLists: $household->shoppingLists()->with('items')->get()
-                ->map(fn (ShoppingList $list) => ShoppingListData::fromModel($list, $viewer, withItems: false))
-                ->values()
-                ->all(),
-            tagOptions: RecipeTagEnum::options(),
-            aiOptions: [
-                'diets' => MealDietEnum::values(),
-                'goals' => MealGoalEnum::values(),
-                'confidence' => CookingConfidenceEnum::options(),
-                'equipment' => KitchenEquipmentEnum::values(),
-            ],
-        );
+        return $days;
     }
 
     /**

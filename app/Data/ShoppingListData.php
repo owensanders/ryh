@@ -7,6 +7,7 @@ namespace App\Data;
 use App\Models\ShoppingItem;
 use App\Models\ShoppingList;
 use App\Models\User;
+use LogicException;
 use Spatie\LaravelData\Data;
 
 class ShoppingListData extends Data
@@ -24,8 +25,8 @@ class ShoppingListData extends Data
         public AbilitiesData $can,
     ) {}
 
-    /** @param  bool  $withItems  lists in the sidebar only need their counts. */
-    public static function fromModel(ShoppingList $list, User $viewer, bool $withItems = true): self
+    /** A list with its items, which must be loaded. */
+    public static function fromModel(ShoppingList $list, User $viewer): self
     {
         $items = $list->items;
 
@@ -37,7 +38,23 @@ class ShoppingListData extends Data
             colourKey: $list->colour->value,
             remaining: $items->whereNull('completed_at')->count(),
             total: $items->count(),
-            items: $withItems ? $items->map(fn (ShoppingItem $item) => ShoppingItemData::fromModel($item, $viewer))->values()->all() : [],
+            items: $items->map(fn (ShoppingItem $item) => ShoppingItemData::fromModel($item, $viewer))->values()->all(),
+            can: AbilitiesData::for($viewer, $list, 'update', 'delete'),
+        );
+    }
+
+    /** A list's name and counts, for a sidebar or picker: loaded with ShoppingList::withItemCounts(), not its items. */
+    public static function summary(ShoppingList $list, User $viewer): self
+    {
+        return new self(
+            id: $list->id,
+            name: $list->name,
+            slug: $list->slug,
+            colour: $list->colour->cssVar(),
+            colourKey: $list->colour->value,
+            remaining: $list->remaining_items_count ?? throw new LogicException('Load the list withItemCounts() to summarise it.'),
+            total: $list->items_count ?? throw new LogicException('Load the list withItemCounts() to summarise it.'),
+            items: [],
             can: AbilitiesData::for($viewer, $list, 'update', 'delete'),
         );
     }

@@ -8,7 +8,8 @@ import { computed, inject, provide, ref, type InjectionKey } from 'vue';
 const HANDLED_ERROR_KEYS = ['recipe_id', 'new_recipe_name', 'new_recipe_description', 'planned_on'];
 
 interface MealEditorSettings {
-    recipes: RecipeData[];
+    /** Left out of the page until the dialog first asks for it. */
+    recipes?: RecipeData[];
     tagOptions: TagOption[];
 }
 
@@ -20,6 +21,8 @@ function createMealEditor(settings: MealEditorSettings) {
     const open = ref(false);
     const editing = ref<PlannedMealData | null>(null);
     const confirmOpen = ref(false);
+    const loadingRecipes = ref(false);
+    const recipes = computed(() => settings.recipes ?? []);
 
     const form = useForm({
         recipe_id: null as number | null,
@@ -67,10 +70,28 @@ function createMealEditor(settings: MealEditorSettings) {
         form.new_recipe_is_favourite = false;
     }
 
+    // The page leaves the saved recipes out, since only this dialog needs them; they're fetched when it first opens.
+    function withRecipes(then: () => void): void {
+        if (settings.recipes !== undefined) {
+            then();
+
+            return;
+        }
+
+        loadingRecipes.value = true;
+        router.reload({
+            only: ['recipes'],
+            onSuccess: then,
+            onFinish: () => {
+                loadingRecipes.value = false;
+            },
+        });
+    }
+
     function onRecipeSelected(): void {
         form.clearErrors();
         form.new_recipe_name = '';
-        const recipe = settings.recipes.find((r) => r.id === form.recipe_id) ?? null;
+        const recipe = recipes.value.find((r) => r.id === form.recipe_id) ?? null;
 
         if (recipe) {
             populateRecipeDetailFields(recipe);
@@ -108,13 +129,19 @@ function createMealEditor(settings: MealEditorSettings) {
         });
         form.reset();
         open.value = true;
+        withRecipes(() => {});
     }
 
+    // The form is filled from the meal's recipe, so it opens once the recipes are here.
     function openEdit(meal: PlannedMealData, date: string): void {
+        withRecipes(() => fillFromMeal(meal, date));
+    }
+
+    function fillFromMeal(meal: PlannedMealData, date: string): void {
         editing.value = meal;
         form.clearErrors();
 
-        const recipe = settings.recipes.find((r) => r.id === meal.recipeId) ?? null;
+        const recipe = recipes.value.find((r) => r.id === meal.recipeId) ?? null;
 
         form.defaults({
             recipe_id: meal.recipeId,
@@ -185,6 +212,8 @@ function createMealEditor(settings: MealEditorSettings) {
         editing,
         confirmOpen,
         form,
+        recipes,
+        loadingRecipes,
         showRecipeDetails,
         hasUnhandledErrors,
         onRecipeSelected,

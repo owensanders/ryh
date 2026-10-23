@@ -3,11 +3,11 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import RecipeDetailFields from '@/components/ryh/RecipeDetailFields.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useMealEditor } from '@/composables/useMealEditor';
-import type { MemberData, RecipeData, ShoppingListData } from '@/types/generated';
+import type { MemberData, ShoppingListData } from '@/types/generated';
 import type { TagOption } from '@/types/ryh';
 
 /** Adding or editing one planned meal. */
-defineProps<{ recipes: RecipeData[]; members: MemberData[]; shoppingLists: ShoppingListData[]; tagOptions: TagOption[] }>();
+defineProps<{ members: MemberData[]; shoppingLists: ShoppingListData[]; tagOptions: TagOption[] }>();
 
 const SLOTS = ['breakfast', 'lunch', 'dinner'];
 
@@ -16,6 +16,8 @@ const {
     editing,
     confirmOpen,
     form,
+    recipes,
+    loadingRecipes,
     showRecipeDetails,
     hasUnhandledErrors,
     onRecipeSelected,
@@ -37,7 +39,7 @@ const {
                 <div class="flex flex-col gap-1.5">
                     <label for="recipe_id" class="ryh-label">Recipe</label>
                     <select id="recipe_id" v-model="form.recipe_id" class="ryh-input" @change="onRecipeSelected">
-                        <option :value="null">— Choose from the library —</option>
+                        <option :value="null">{{ loadingRecipes ? 'Loading your recipes…' : '— Choose from the library —' }}</option>
                         <option v-for="recipe in recipes" :key="recipe.id" :value="recipe.id">{{ recipe.name }}</option>
                     </select>
                     <p v-if="form.errors.recipe_id" class="text-[12.5px] text-ryh-coral">{{ form.errors.recipe_id }}</p>
