@@ -2,7 +2,8 @@
 
 Laravel 12 + Inertia 3 + Vue 3 (TypeScript), run under Sail. The README
 covers setup, features, and the architecture diagrams. This file is the rules.
-Where a test enforces a rule, it's named; a change that breaks the rule fails CI.
+Where a test enforces a rule, it's named; a change that breaks the rule fails
+the checks (see "Checks").
 
 ## Layers
 
@@ -11,7 +12,8 @@ Where a test enforces a rule, it's named; a change that breaks the rule fails CI
 belongs to it (else 404), puts it on the request for
 `CurrentHouseholdHelper::household($request)`, and sets the URL default so
 `route('chores.index')` stays in that household. Controllers read it with
-`ResolvesHouseholdTrait`, form requests with `CurrentHouseholdHelper::id($this)`;
+`ResolvesHouseholdTrait`, form requests with `CurrentHouseholdHelper::id($this)`
+(or `::household($this)` for its clock, as `CalendarEventRequest` does);
 never from the user: `users.last_household_id` only says where `/app` lands.
 The group's bindings are scoped (`->scopeBindings()`, with the short
 parameter names mapped in `Household::childRouteBindingRelationshipName()`),
@@ -38,7 +40,9 @@ Each layer only talks to the one below it.
   take a guess (passwords, join codes) add a named limiter from
   `AppServiceProvider::configureRateLimiting()`. Enforced by
   `RouteThrottleTest`.
-- **Policies** (`app/Policies`): all authorization. One per model, using
+- **Policies** (`app/Policies`): all authorization. One per model a member
+  acts on (`User`, `HouseholdUser`, `AiMealPlan` and `StripeWebhookEvent`
+  have none), using
   `AuthorizesHouseholdAccessTrait::inHouseholdAs()`: the person's role in the
   record's own household (`$chore->household_id`), or in the household passed
   in for abilities with no record (`create(User $user, Household $household)`).
@@ -46,8 +50,12 @@ Each layer only talks to the one below it.
   a page. Not a member there is a **404** (never confirm a record exists), and
   a role that can't act is a **403**. Membership comes from
   `$user->membershipIn($id)`, looked up once per household per request.
-  Role sets come from `HouseholdRoleEnum::managers()` / `managersAndTeens()`. No role or
-  ownership checks anywhere else, the frontend included. Pages show or hide
+  Role sets come from `HouseholdRoleEnum::managers()` / `managersAndTeens()`.
+  Who may do something is decided only here, never in a controller, an
+  action or the frontend. Rules about roles that hold whoever acts are
+  business rules, and live in actions: a household always keeps an Owner
+  (`ChangeMemberRoleAction`), and a Teen or Child joins only with a
+  guardian's confirmation (`JoinHouseholdFromInviteAction`). Pages show or hide
   controls from what the policies send: a record's `can`
   (`AbilitiesData::for($viewer, $chore, 'update', 'delete', 'toggle')` in its
   `fromModel($chore, $viewer)`; view models are given the viewer), and the
@@ -86,21 +94,25 @@ Each layer only talks to the one below it.
 - **View models** (`app/ViewModels/<Area>`): everything one page needs, built
   by a public `toData()` that returns its `*ScreenData` (`ChoreBoardViewModel`).
   Plain classes over the Data layer, not `spatie/laravel-view-models`, which
-  is made for Blade. They only read, and so does every GET: anything that
-  must happen before a page makes sense runs on a schedule or a POST (the
+  is made for Blade. They only read. So does a GET: anything that must
+  happen before a page makes sense runs on a schedule or a POST (the
   budget's recurring items come in from `budget:carry-forward`, or from
-  "Bring them in now"). The one write a GET makes is recording where the
-  visitor is: `ResolveHouseholdMiddleware` sets their own
-  `last_household_id`, so `/app` lands them back there.
+  "Bring them in now"). The exceptions are three, each because a GET is
+  what arrives: `ResolveHouseholdMiddleware` records where the visitor is
+  (their own `last_household_id`, so `/app` lands them back there); a
+  signed link from an email does what it says when followed (accepting an
+  invite, verifying an email address), and needs the person signed in, so
+  a mail scanner opening it can't; and Stripe's return from Checkout notes
+  in the cache that the payment is being confirmed.
   `LayerShapeTest` checks actions have `handle()` and view models `toData()`.
 - **Models** (`app/Models`): relations (including constrained ones like
   `Household::activeMembers()`), casts, query scopes, and methods that
   answer a question about the model or change it (`$household->isFull()`,
   `$user->belongsToHousehold($id)`, `$household->lockRow()`). Used directly
   by actions and view models; see "Where queries live" below. Name each
-  column where you write (`'assigned_to' => $data['assigned_to']`) rather
-  than passing the validated array straight to `create()`, so a new form
-  field never writes a column by accident.
+  column where you write (`'assigned_to' => $input->assignedTo`) rather
+  than passing an array straight to `create()`, so a new form field never
+  writes a column by accident.
 
 ### Where queries live
 
@@ -154,8 +166,8 @@ binding in `AppServiceProvider`.
 - **Output**: `app/Data/*Data.php`, `spatie/laravel-data` classes. Their
   TypeScript types, and the enums', are generated into
   `resources/js/types/generated.ts` by `sail artisan typescript:transform`.
-  Never edit it by hand: change the Data class and regenerate. CI fails if
-  the committed file is out of date. Type a property with its enum, not
+  Never edit it by hand: change the Data class and regenerate. The checks
+  fail if the committed file is out of date. Type a property with its enum, not
   `string`, so the page gets the exact values; for a fixed set with no enum,
   use `#[LiteralTypeScriptType]`. `ryh.ts` only names shapes a Data class
   declares inline, and `index.ts` holds the shared props and UI-only types.
@@ -183,10 +195,13 @@ binding in `AppServiceProvider`.
   then bind the form directly instead of mutating props.
 - A dialog only one place opens exposes `openNew()`/`openEdit()` through
   `defineExpose`, and the parent calls it through a template ref.
-- Confirm-then-delete uses `useConfirm()` with `ConfirmDialog`.
+- A plain confirm-then-delete uses `useConfirm()` with `ConfirmDialog`; one
+  that asks for more (a password to delete an account, a ticked box to leave
+  a household as its sole owner) is its own dialog (`DeleteUser`,
+  `LeaveHousehold`).
 - Controls come from `components/ui`: `Button` (`variant` primary,
-  secondary, danger, dark or card; `href` makes it a link) for anything
-  styled `ryh-btn`, and `IconButton` for a button that shows only an icon.
+  secondary, danger, dark or card; `href` makes it a link) for any button
+  or link styled `ryh-btn`, and `IconButton` for a button that shows only an icon.
   Its `label` prop is required and becomes the accessible name and tooltip.
   Inside a dialog's trigger or close, wrap them with `as-child`. Every text
   input, select and textarea is an `Input`, `Select` or `Textarea`
@@ -196,8 +211,9 @@ binding in `AppServiceProvider`.
   the control's id, `error`, `hint`, an `aside` slot beside the label,
   `hideLabel`), which links the label and marks the control invalid and
   described by its error. A control without a visible label has an
-  `aria-label`. An error that isn't about one field is an `ErrorMessage`. A bordered panel is a `Card` (`as` for a
-  section), and a small soft label a `Badge` (`mono` for times and costs).
+  `aria-label`. An error that isn't about one field is an `ErrorMessage`.
+  A bordered panel is a `Card` (`as` for a section), and a small soft label
+  a `Badge` (`mono` for times and costs).
   `ui/dialog` and `ui/tooltip` are shadcn-vue's, generated: change them
   only to fix them.
 
@@ -279,7 +295,10 @@ Enforced by PHPStan's `UserFacingErrorsRule`.
 
 ## Notifications
 
-Extend `HouseholdNotification`. The bell entry is stored during the request.
+A notification about household activity (a chore, a meal, an event) extends
+`HouseholdNotification`; account emails and alerts (verify email, password
+reset, AI credit) extend Laravel's own classes. The bell entry is stored
+during the request.
 The live update (`UserNotificationBroadcastEvent`, on the recipient's private
 `App.Models.User.{id}` channel) and any Web Push go through the queue, so a
 slow Reverb or push service can't fail a request. Use
@@ -315,14 +334,21 @@ and `DB_DATABASE=schema_dump artisan schema:dump --prune`, keep
 
 ## Checks
 
+Run all of these before merging. CI (`.github/workflows`) is set up to run
+the same, but GitHub Actions don't run on this private repo without
+billing, so they're run locally.
+
 ```bash
-./vendor/bin/sail artisan test           # includes the route and naming tests above
-./vendor/bin/sail bin phpstan analyse    # level 8, clean, plus the layer rules in tests/PHPStan
-./vendor/bin/sail bin pint
-./vendor/bin/sail npm run lint
+./vendor/bin/sail bin pint --test
+./vendor/bin/sail bin phpstan analyse            # level 8, plus the layer rules in tests/PHPStan
+./vendor/bin/sail npm run format:check
+./vendor/bin/sail npx eslint .
+./vendor/bin/sail artisan typescript:transform   # then nothing in resources/js/types may change
 ./vendor/bin/sail npx vue-tsc --noEmit
-./vendor/bin/sail npm test               # Vitest: composables and lib helpers
-npm run e2e                              # Playwright, with Sail up; includes axe on each main page
+./vendor/bin/sail npm test                       # Vitest: composables and lib helpers
+./vendor/bin/sail artisan test                   # includes the route, naming and query-budget tests
+./vendor/bin/sail npm run build                  # the e2e server serves this build
+npm run e2e                                      # Playwright from the Mac, with Sail up; includes axe
 ```
 
 Frontend logic (composables, `lib/`) has Vitest tests beside it

@@ -65,12 +65,17 @@ place.
 `sail up -d` also starts a `ryh-websockets` container (Reverb,
 `php artisan reverb:start`) for live notifications — no separate step needed.
 
-Containers: `ryh-app` (PHP app + Vite), `ryh-websockets` (Reverb),
-`ryh-queue` (`queue:work`: every email, including verification and password resets, plus live notifications, pushes and AI meal plans), `ryh-scheduler` (`schedule:work`: nightly prunes of old notifications, chores completed over 30 days ago, shopping items ticked off over 7 days ago and document files nothing points to; hourly, each household's recurring budget items into its new month), `ryh-mysql`,
-`ryh-redis` (cache, sessions and queue), `ryh-mailpit` (catches all
-outgoing mail — inbox at <http://localhost:8025>). The Compose service names
-(`laravel.test`, `reverb`, `queue`, `scheduler`, `mysql`, `redis`, `mailpit`) are unchanged — they're the in-network hostnames and
-what `sail` commands target.
+Containers: `ryh-app` (PHP app + Vite), `ryh-websockets` (Reverb), `ryh-queue`
+(`queue:work`: every email, including verification and password resets, plus
+live notifications, pushes and AI meal plans), `ryh-scheduler`
+(`schedule:work`: nightly prunes of old notifications, chores completed over
+30 days ago, shopping items ticked off over 7 days ago and document files
+nothing points to; hourly, each household's recurring budget items into its
+new month), `ryh-mysql`, `ryh-redis` (cache, sessions and queue),
+`ryh-mailpit` (catches all outgoing mail — inbox at <http://localhost:8025>).
+The Compose service names (`laravel.test`, `reverb`, `queue`, `scheduler`,
+`mysql`, `redis`, `mailpit`) are unchanged — they're the in-network hostnames
+and what `sail` commands target.
 
 Ports are shifted off the defaults so they don't clash with the `~/docker`
 monorepo's services if both are running: app `8090`, Vite `5174`, MySQL
@@ -123,17 +128,21 @@ Things to check on the phone:
 
 ## Checks
 
-CI runs all of these on every pull request:
+Run all of these before merging a change. CI (`.github/workflows`) is set up
+to run the same, but GitHub Actions don't run on this private repo without
+billing, so they're run locally. The list is kept in step with CLAUDE.md's.
 
 ```bash
-./vendor/bin/sail artisan test                       # includes the route and naming tests
-./vendor/bin/sail bin phpstan analyse                # level 8, plus the layer rules in tests/PHPStan
 ./vendor/bin/sail bin pint --test
-./vendor/bin/sail npm run lint
+./vendor/bin/sail bin phpstan analyse            # level 8, plus the layer rules in tests/PHPStan
 ./vendor/bin/sail npm run format:check
+./vendor/bin/sail npx eslint .
+./vendor/bin/sail artisan typescript:transform   # then nothing in resources/js/types may change
 ./vendor/bin/sail npx vue-tsc --noEmit
-./vendor/bin/sail npm test               # Vitest: composables and lib helpers
-./vendor/bin/sail artisan typescript:transform       # regenerate types after changing app/Data or app/Enums
+./vendor/bin/sail npm test                       # Vitest: composables and lib helpers
+./vendor/bin/sail artisan test                   # includes the route, naming and query-budget tests
+./vendor/bin/sail npm run build                  # the e2e server serves this build
+npm run e2e                                      # Playwright from the Mac, with Sail up; includes axe
 ```
 
 ### End-to-end tests
@@ -156,7 +165,7 @@ touched. Each test makes its own Parker household through a test-only route
 (`e2e/support/fixtures.ts`), so tests share nothing and run in parallel: four
 workers locally, two in CI. Registration links are read from Mailpit, and AI
 meal planning is a fixed fake (`App\Ai\Fakes\E2eMealPlanFake`), so no API key
-or paid call is needed. CI runs the same suite in the `e2e` job and uploads the
+or paid call is needed. CI's `e2e` job runs the same suite and uploads the
 report and traces when it fails. `e2e/accessibility.spec.ts` runs axe on each
 main page and fails on serious WCAG 2.1 A/AA problems, colour contrast aside.
 
@@ -169,8 +178,9 @@ strips the container's native Rollup build, which breaks Vite.
 
 ## Architecture
 
-The rules behind this section are in [`CLAUDE.md`](CLAUDE.md). Tests enforce
-the ones that can drift, so a change that breaks them fails CI.
+The rules behind this section are in [`CLAUDE.md`](CLAUDE.md). Tests and
+PHPStan rules enforce the ones that can drift, so a change that breaks them
+fails the checks.
 
 ### How a request flows
 
@@ -183,7 +193,7 @@ flowchart TD
     page["Inertia page<br/>Vue 3 · resources/js/pages"]
     route["/h/{household}<br/>a member? else 404"]
     policy{"Policy<br/>allowed? else 403"}
-    action["Write: form request → action<br/>rules · transactions · locks"]
+    action["Write: form request → typed input → action<br/>rules · transactions · locks"]
     viewmodel["Read: view model<br/>builds *Data, each record with its can"]
     db[("MySQL, via Eloquent")]
     queue[["Queue"]]
@@ -208,10 +218,12 @@ The ideas that shape it:
   the nav and "add" controls. The page shows or hides; the server enforces.
 - **Types come from the server.** `app/Data` classes are what a page may see,
   and their TypeScript types are generated into `resources/js/types/generated.ts`.
-  CI fails if the committed file is out of date.
+  The checks fail if the committed file is out of date.
 - **A GET doesn't change household data.** Anything a page needs first runs on
-  a schedule or a POST (a budget month's recurring items, for example). The
-  only thing a GET records is which household the visitor was last in.
+  a schedule or a POST (a budget month's recurring items, for example). A GET
+  records only which household the visitor was last in, plus what a signed
+  link from an email exists to do (accepting an invite, verifying an email),
+  which needs the person signed in, so a mail scanner opening it can't.
 - **Races are closed with the household's row lock.** Member caps, the
   document quota, reminders and AI plans check and write under
   `$household->lockRow()`. Calls to Stripe, mail or the AI happen outside
@@ -227,16 +239,19 @@ The ideas that shape it:
 
 ### In the browser
 
-Pages in `resources/js/pages` declare their props and lay out components from
-`components/<area>/`, built from the controls in `components/ui/`. Editors that several components share (a calendar's
-event dialog and grid, say) live in a composable reached through
-provide/inject. Ticks and drags update at once with `useOptimistic()` and
-reconcile with the server's answer; writes reload only the props they change
-(`only: [...]`), and props that query are closures, so the server skips the
-rest. App screens share the persistent `layouts/RyhShell.vue`, and
-the design's `--ryh-*` tokens in `resources/css/app.css` cover light and dark. The landing and other public pages send their title, description and preview
-image in the HTML (`config/meta.php`), so shared links show a proper preview,
-and the routes the browser knows leave out Telescope, Stripe's webhook and the file routes (`config/ziggy.php`).
+Pages in `resources/js/pages` declare their props and lay out components
+from `components/<area>/`, built from the controls in `components/ui/`.
+Editors that several components share (a calendar's event dialog and grid,
+say) live in a composable reached through provide/inject. Ticks and drags
+update at once with `useOptimistic()` and reconcile with the server's answer;
+writes reload only the props they change (`only: [...]`), and props that
+query are closures, so the server skips the rest. App screens share the
+persistent `layouts/RyhShell.vue`, and the design's `--ryh-*` tokens in
+`resources/css/app.css` cover light and dark. The landing and other public
+pages send their title, description and preview image in the HTML
+(`config/meta.php`), so shared links show a proper preview, and the routes
+the browser knows leave out Telescope, Stripe's webhook and the file routes
+(`config/ziggy.php`).
 
 ### In the background
 
@@ -245,7 +260,7 @@ push service, mail provider or AI never fails the user's action:
 
 ```mermaid
 flowchart LR
-    queue[("Queue<br/>Redis locally · managed on Cloud")]
+    queue[("Queue<br/>Redis")]
     worker["Queue worker"]
     scheduler["Scheduler"]
     reverb["Reverb"]
