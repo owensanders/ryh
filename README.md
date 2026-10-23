@@ -229,7 +229,9 @@ provide/inject. Ticks and drags update at once with `useOptimistic()` and
 reconcile with the server's answer; writes reload only the props they change
 (`only: [...]`), and props that query are closures, so the server skips the
 rest. App screens share the persistent `layouts/RyhShell.vue`, and
-the design's `--ryh-*` tokens in `resources/css/app.css` cover light and dark.
+the design's `--ryh-*` tokens in `resources/css/app.css` cover light and dark. The landing and other public pages send their title, description and preview
+image in the HTML (`config/meta.php`), so shared links show a proper preview,
+and the routes the browser knows leave out Telescope, Stripe's webhook and the file routes (`config/ziggy.php`).
 
 ### In the background
 
