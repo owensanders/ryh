@@ -20,6 +20,7 @@ class BillingRequiredViewModel
             paymentIssue: $household->hasPaymentIssue(),
             billingConfigured: filled(config('plans.intervals.monthly.stripe_price'))
                 && filled(config('plans.intervals.annual.stripe_price')),
+            confirmingPayment: $household->isConfirmingPayment(),
         );
     }
 }

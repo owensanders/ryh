@@ -12,18 +12,16 @@ use App\Models\User;
 use DateTimeInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Testing\TestResponse;
 use Laravel\Cashier\Subscription;
 use PHPUnit\Framework\Attributes\Test;
-use Symfony\Component\HttpFoundation\Response;
+use Tests\Support\FakesStripeTrait;
 use Tests\TestCase;
 
 /** The renewal reminder and failed-payment emails promised in the Terms of Service. */
 class BillingNoticesTest extends TestCase
 {
+    use FakesStripeTrait;
     use RefreshDatabase;
-
-    private const string SECRET = 'whsec_test';
 
     private User $owner;
 
@@ -53,35 +51,24 @@ class BillingNoticesTest extends TestCase
         ]);
     }
 
-    /**
-     * @param  array<string, mixed>  $object
-     *
-     * @return TestResponse<Response>
-     */
-    private function postSigned(string $type, array $object, string $eventId = 'evt_test'): TestResponse
-    {
-        config(['cashier.webhook.secret' => self::SECRET]);
-
-        $payload = json_encode(['id' => $eventId, 'type' => $type, 'data' => ['object' => $object]], JSON_THROW_ON_ERROR);
-        $timestamp = time();
-        $signature = hash_hmac('sha256', "{$timestamp}.{$payload}", self::SECRET);
-
-        return $this->call('POST', '/stripe/webhook', server: [
-            'CONTENT_TYPE' => 'application/json',
-            'HTTP_STRIPE_SIGNATURE' => "t={$timestamp},v1={$signature}",
-        ], content: $payload);
-    }
-
     /** @return array<string, mixed> */
     private function upcomingInvoice(): array
     {
-        return [
-            'object' => 'invoice',
+        return $this->stripeFixture('invoice', [
             'customer' => 'cus_test123',
             'amount_due' => 3999,
-            'currency' => 'gbp',
             'next_payment_attempt' => now()->addDays(14)->startOfDay()->getTimestamp(),
-        ];
+        ]);
+    }
+
+    /** @return array<string, mixed> */
+    private function failedInvoice(string $billingReason, int $attempt): array
+    {
+        return $this->stripeFixture('invoice', [
+            'customer' => 'cus_test123',
+            'billing_reason' => $billingReason,
+            'attempt_count' => $attempt,
+        ]);
     }
 
     #[Test]
@@ -89,12 +76,12 @@ class BillingNoticesTest extends TestCase
     {
         $this->subscribe('price_annual');
 
-        $this->postSigned('invoice.upcoming', $this->upcomingInvoice(), 'evt_once')->assertOk();
-        $this->postSigned('invoice.upcoming', $this->upcomingInvoice(), 'evt_once')->assertOk()->assertSeeText('Webhook already handled');
+        $this->postStripeWebhook('invoice.upcoming', $this->upcomingInvoice(), 'evt_once')->assertOk();
+        $this->postStripeWebhook('invoice.upcoming', $this->upcomingInvoice(), 'evt_once')->assertOk()->assertSeeText('Webhook already handled');
 
         Mail::assertQueued(RenewalReminderMail::class, 1);
 
-        $this->postSigned('invoice.upcoming', $this->upcomingInvoice(), 'evt_next_year')->assertOk();
+        $this->postStripeWebhook('invoice.upcoming', $this->upcomingInvoice(), 'evt_next_year')->assertOk();
 
         Mail::assertQueued(RenewalReminderMail::class, 2);
     }
@@ -105,7 +92,7 @@ class BillingNoticesTest extends TestCase
         $this->subscribe('price_annual');
         $adult = User::factory()->create(['household_id' => $this->household->id, 'role' => HouseholdRoleEnum::Adult]);
 
-        $this->postSigned('invoice.upcoming', $this->upcomingInvoice())->assertOk();
+        $this->postStripeWebhook('invoice.upcoming', $this->upcomingInvoice())->assertOk();
 
         Mail::assertQueued(RenewalReminderMail::class, fn (RenewalReminderMail $mail) => $mail->hasTo($this->owner->email)
             && $mail->amountLabel === '£39.99'
@@ -118,7 +105,7 @@ class BillingNoticesTest extends TestCase
     {
         $this->subscribe('price_monthly');
 
-        $this->postSigned('invoice.upcoming', $this->upcomingInvoice())->assertOk();
+        $this->postStripeWebhook('invoice.upcoming', $this->upcomingInvoice())->assertOk();
 
         Mail::assertNotQueued(RenewalReminderMail::class);
     }
@@ -129,7 +116,7 @@ class BillingNoticesTest extends TestCase
         // Cancelled, running to the end of its paid year — it won't renew.
         $this->subscribe('price_annual', endsAt: now()->addDays(14));
 
-        $this->postSigned('invoice.upcoming', $this->upcomingInvoice())->assertOk();
+        $this->postStripeWebhook('invoice.upcoming', $this->upcomingInvoice())->assertOk();
 
         Mail::assertNotQueued(RenewalReminderMail::class);
     }
@@ -139,12 +126,7 @@ class BillingNoticesTest extends TestCase
     {
         $this->subscribe('price_monthly');
 
-        $this->postSigned('invoice.payment_failed', [
-            'object' => 'invoice',
-            'customer' => 'cus_test123',
-            'billing_reason' => 'subscription_cycle',
-            'attempt_count' => 1,
-        ])->assertOk();
+        $this->postStripeWebhook('invoice.payment_failed', $this->failedInvoice('subscription_cycle', 1))->assertOk();
 
         Mail::assertQueued(PaymentFailedMail::class, fn (PaymentFailedMail $mail) => $mail->hasTo($this->owner->email));
     }
@@ -154,12 +136,7 @@ class BillingNoticesTest extends TestCase
     {
         $this->subscribe('price_monthly');
 
-        $this->postSigned('invoice.payment_failed', [
-            'object' => 'invoice',
-            'customer' => 'cus_test123',
-            'billing_reason' => 'subscription_cycle',
-            'attempt_count' => 2,
-        ])->assertOk();
+        $this->postStripeWebhook('invoice.payment_failed', $this->failedInvoice('subscription_cycle', 2))->assertOk();
 
         Mail::assertNotQueued(PaymentFailedMail::class);
     }
@@ -167,12 +144,7 @@ class BillingNoticesTest extends TestCase
     #[Test]
     public function aFailedFirstPaymentInCheckoutIsNotEmailed(): void
     {
-        $this->postSigned('invoice.payment_failed', [
-            'object' => 'invoice',
-            'customer' => 'cus_test123',
-            'billing_reason' => 'subscription_create',
-            'attempt_count' => 1,
-        ])->assertOk();
+        $this->postStripeWebhook('invoice.payment_failed', $this->failedInvoice('subscription_create', 1))->assertOk();
 
         Mail::assertNotQueued(PaymentFailedMail::class);
     }
@@ -182,7 +154,7 @@ class BillingNoticesTest extends TestCase
     {
         $this->subscribe('price_annual');
 
-        $this->postSigned('invoice.upcoming', [...$this->upcomingInvoice(), 'customer' => 'cus_someone_else'])->assertOk();
+        $this->postStripeWebhook('invoice.upcoming', [...$this->upcomingInvoice(), 'customer' => 'cus_someone_else'])->assertOk();
 
         Mail::assertNothingQueued();
     }

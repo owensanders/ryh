@@ -17,5 +17,7 @@ class BillingRequiredScreenData extends Data
         public bool $paymentIssue,
         /** Both Stripe prices are configured, so checkout can start. */
         public bool $billingConfigured,
+        /** Paid at Checkout, waiting for Stripe's webhook: the page checks back instead of asking again. */
+        public bool $confirmingPayment,
     ) {}
 }

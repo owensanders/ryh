@@ -38,7 +38,10 @@ A Laravel 12 + Inertia 3 + Vue 3 (TypeScript) + Tailwind app, running under Lara
   household: one flat price covers everyone in it, and each extra household a
   person runs has its own subscription. The 30-day free trial is once per
   person; a household without an active subscription or trial is routed to
-  `/billing/required`.
+  `/billing/required`. Cashier's webhook records the subscription: after
+  Checkout the paywall says it's confirming the payment until that lands, so
+  locally run `stripe listen --forward-to localhost:8090/stripe/webhook` and
+  put the secret it prints in `STRIPE_WEBHOOK_SECRET`.
 
 ## Running it
 

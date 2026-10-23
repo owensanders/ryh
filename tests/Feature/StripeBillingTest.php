@@ -32,9 +32,9 @@ class StripeBillingTest extends TestCase
     public function subscribingFromThePaywallCreatesACustomerAndSendsTheOwnerToCheckout(): void
     {
         $stripe = $this->fakeStripe()
-            ->respond('POST', '/v1/customers', ['id' => 'cus_new', 'object' => 'customer'])
+            ->respond('POST', '/v1/customers', $this->stripeFixture('customer', ['id' => 'cus_new']))
             // Cashier fetches the customer again on its way into Checkout.
-            ->respond('GET', '/v1/customers/cus_new', ['id' => 'cus_new', 'object' => 'customer'])
+            ->respond('GET', '/v1/customers/cus_new', $this->stripeFixture('customer', ['id' => 'cus_new']))
             ->respond('POST', '/v1/checkout/sessions', $this->checkoutSession());
         $owner = $this->owner(['trial_ends_at' => now()->subDay()]);
 
@@ -54,8 +54,8 @@ class StripeBillingTest extends TestCase
     public function creatingTheStripeCustomerCarriesAnIdempotencyKey(): void
     {
         $stripe = $this->fakeStripe()
-            ->respond('POST', '/v1/customers', ['id' => 'cus_new', 'object' => 'customer'])
-            ->respond('GET', '/v1/customers/cus_new', ['id' => 'cus_new', 'object' => 'customer'])
+            ->respond('POST', '/v1/customers', $this->stripeFixture('customer', ['id' => 'cus_new']))
+            ->respond('GET', '/v1/customers/cus_new', $this->stripeFixture('customer', ['id' => 'cus_new']))
             ->respond('POST', '/v1/checkout/sessions', $this->checkoutSession());
         $owner = $this->owner(['trial_ends_at' => now()->subDay()]);
 
@@ -70,8 +70,10 @@ class StripeBillingTest extends TestCase
     public function aSecondSubscribeReusesTheFirstsCheckoutSessionButADifferentPlanGetsItsOwn(): void
     {
         $stripe = $this->fakeStripe()
-            ->respond('GET', '/v1/customers/cus_existing', ['id' => 'cus_existing', 'object' => 'customer'])
-            ->respond('POST', '/v1/checkout/sessions', $this->checkoutSession());
+            ->respond('GET', '/v1/customers/cus_existing', $this->stripeFixture('customer', ['id' => 'cus_existing']))
+            ->respond('POST', '/v1/checkout/sessions', $this->checkoutSession())
+            // Reused only while Stripe still has it open.
+            ->respond('GET', '/v1/checkout/sessions/cs_test', $this->checkoutSession());
         $owner = $this->owner(['stripe_id' => 'cus_existing', 'trial_ends_at' => now()->subDay()]);
 
         // A double-click, or Back from Checkout and Subscribe again.
@@ -91,7 +93,7 @@ class StripeBillingTest extends TestCase
     public function subscribingFromTheHouseTabUsesTheChosenIntervalAndReturnsThere(): void
     {
         $stripe = $this->fakeStripe()
-            ->respond('GET', '/v1/customers/cus_existing', ['id' => 'cus_existing', 'object' => 'customer'])
+            ->respond('GET', '/v1/customers/cus_existing', $this->stripeFixture('customer', ['id' => 'cus_existing']))
             ->respond('POST', '/v1/checkout/sessions', $this->checkoutSession());
         $owner = $this->owner(['stripe_id' => 'cus_existing']);
 
@@ -108,9 +110,9 @@ class StripeBillingTest extends TestCase
     public function checkoutIsInertiaFriendly(): void
     {
         $this->fakeStripe()
-            ->respond('POST', '/v1/customers', ['id' => 'cus_new', 'object' => 'customer'])
+            ->respond('POST', '/v1/customers', $this->stripeFixture('customer', ['id' => 'cus_new']))
             // Cashier fetches the customer again on its way into Checkout.
-            ->respond('GET', '/v1/customers/cus_new', ['id' => 'cus_new', 'object' => 'customer'])
+            ->respond('GET', '/v1/customers/cus_new', $this->stripeFixture('customer', ['id' => 'cus_new']))
             ->respond('POST', '/v1/checkout/sessions', $this->checkoutSession());
         $owner = $this->owner(['trial_ends_at' => now()->subDay()]);
 
@@ -154,9 +156,9 @@ class StripeBillingTest extends TestCase
     public function stripeFailingToStartCheckoutShowsAnErrorInsteadOfCrashing(): void
     {
         $this->fakeStripe()
-            ->respond('POST', '/v1/customers', ['id' => 'cus_new', 'object' => 'customer'])
+            ->respond('POST', '/v1/customers', $this->stripeFixture('customer', ['id' => 'cus_new']))
             // Cashier fetches the customer again on its way into Checkout.
-            ->respond('GET', '/v1/customers/cus_new', ['id' => 'cus_new', 'object' => 'customer'])
+            ->respond('GET', '/v1/customers/cus_new', $this->stripeFixture('customer', ['id' => 'cus_new']))
             ->respond('POST', '/v1/checkout/sessions', ['error' => ['type' => 'invalid_request_error', 'message' => 'No such price']], 400);
         $owner = $this->owner(['trial_ends_at' => now()->subDay()]);
 
@@ -176,43 +178,57 @@ class StripeBillingTest extends TestCase
     }
 
     #[Test]
-    public function returningFromCheckoutRecordsTheSubscriptionStraightAway(): void
+    public function aRememberedCheckoutSessionThatIsNoLongerOpenGetsANewOne(): void
     {
         $stripe = $this->fakeStripe()
-            ->respond('GET', '/v1/checkout/sessions/cs_test', $this->checkoutSession(
-                subscription: $this->stripeSubscription('sub_new', 'cus_existing', 'price_annual'),
-            ));
+            ->respond('GET', '/v1/customers/cus_existing', $this->stripeFixture('customer', ['id' => 'cus_existing']))
+            ->respond('POST', '/v1/checkout/sessions', $this->checkoutSession())
+            // Paid in another tab, or expired, since it was remembered.
+            ->respond('GET', '/v1/checkout/sessions/cs_test', $this->checkoutSession(status: 'expired'));
+        $owner = $this->owner(['stripe_id' => 'cus_existing', 'trial_ends_at' => now()->subDay()]);
+
+        foreach ([1, 2] as $click) {
+            $this->actingAs($owner)->post($this->hh('/billing/subscribe'), ['interval' => 'monthly']);
+        }
+
+        $this->assertSame(2, collect($stripe->requests)->where('method', 'POST')->where('path', '/v1/checkout/sessions')->count());
+    }
+
+    #[Test]
+    public function returningFromAPaidCheckoutSaysItsBeingConfirmedUntilTheWebhookRecordsIt(): void
+    {
+        $stripe = $this->fakeStripe()
+            ->respond('GET', '/v1/checkout/sessions/cs_test', $this->checkoutSession(status: 'complete'));
         $owner = $this->owner(['stripe_id' => 'cus_existing', 'trial_ends_at' => now()->subDay()]);
 
         $this->actingAs($owner)->get($this->hh('/billing/checkout/complete?session_id=cs_test'))
             ->assertRedirect($this->hh('/dashboard'))
-            ->assertSessionHas('toast', "You're subscribed. Thanks!");
+            ->assertSessionHas('toast', "Thanks! We're confirming your payment with Stripe; your plan will update in a moment.");
+        $stripe->assertRequested('GET', '/v1/checkout/sessions/cs_test');
+
+        // Still unsubscribed, so the paywall waits for the webhook rather than asking again.
+        $this->actingAs($owner)->get($this->hh('/billing/required'))
+            ->assertInertia(fn ($page) => $page->component('BillingRequired')->where('confirmingPayment', true));
+
+        $this->postStripeWebhook('customer.subscription.created', $this->stripeSubscription('sub_new', 'cus_existing', 'price_annual'))->assertOk();
 
         $household = $owner->lastHousehold->fresh();
         $this->assertTrue($household->subscribed('default'));
         $this->assertTrue($household->subscription('default')->hasPrice('price_annual'));
-        $this->assertSame('sub_new', $household->subscription('default')->stripe_id);
-        $this->assertNull($household->trial_ends_at);
-        $this->assertSame(['subscription'], $stripe->assertRequested('GET', '/v1/checkout/sessions/cs_test')['expand']);
-
-        // A fresh user, since $owner's cached household predates the subscription.
-        $this->actingAs($owner->fresh())->get($this->hh('/dashboard'))->assertOk();
+        $this->assertFalse($household->isConfirmingPayment());
+        $this->actingAs($owner->fresh())->get($this->hh('/billing/required'))->assertRedirect($this->hh('/dashboard'));
     }
 
     #[Test]
     public function aCheckoutSessionForAnotherHouseholdIsIgnored(): void
     {
         $this->fakeStripe()
-            ->respond('GET', '/v1/checkout/sessions/cs_test', $this->checkoutSession(
-                customer: 'cus_someone_else',
-                subscription: $this->stripeSubscription('sub_theirs', 'cus_someone_else', 'price_monthly'),
-            ));
+            ->respond('GET', '/v1/checkout/sessions/cs_test', $this->checkoutSession(customer: 'cus_someone_else', status: 'complete'));
         $owner = $this->owner(['stripe_id' => 'cus_existing', 'trial_ends_at' => now()->subDay()]);
 
         $this->actingAs($owner)->get($this->hh('/billing/checkout/complete?session_id=cs_test'));
 
-        $this->assertFalse($owner->lastHousehold->fresh()->subscribed('default'));
-        $this->assertDatabaseMissing('subscriptions', ['stripe_id' => 'sub_theirs']);
+        $this->assertFalse($owner->lastHousehold->fresh()->isConfirmingPayment());
     }
 
     #[Test]
@@ -222,10 +238,10 @@ class StripeBillingTest extends TestCase
             ->respond('GET', '/v1/checkout/sessions/cs_test', $this->checkoutSession(status: 'open'));
         $owner = $this->owner(['stripe_id' => 'cus_existing', 'trial_ends_at' => now()->subDay()]);
 
-        $this->actingAs($owner)->get($this->hh('/billing/checkout/complete?session_id=cs_test'))
-            ->assertSessionHas('toast', "Thanks! We're confirming your payment with Stripe; your plan will update in a moment.");
+        $this->actingAs($owner)->get($this->hh('/billing/checkout/complete?session_id=cs_test'));
 
-        $this->assertFalse($owner->lastHousehold->fresh()->subscribed('default'));
+        $this->actingAs($owner)->get($this->hh('/billing/required'))
+            ->assertInertia(fn ($page) => $page->where('confirmingPayment', false));
     }
 
     #[Test]
@@ -238,21 +254,21 @@ class StripeBillingTest extends TestCase
         $this->actingAs($owner)->get($this->hh('/billing/checkout/complete?session_id=cs_bogus&from=house'))
             ->assertRedirect(route('house.index', absolute: false));
 
-        $this->assertFalse($owner->lastHousehold->fresh()->subscribed('default'));
+        $this->assertFalse($owner->lastHousehold->fresh()->isConfirmingPayment());
     }
 
     #[Test]
-    public function returningFromCheckoutAfterTheWebhookLandedDoesNothingMore(): void
+    public function returningFromCheckoutAfterTheWebhookLandedSaysSo(): void
     {
         $stripe = $this->fakeStripe();
         $owner = $this->owner(['stripe_id' => 'cus_existing']);
         $this->subscribe($owner->lastHousehold);
 
         $this->actingAs($owner)->get($this->hh('/billing/checkout/complete?session_id=cs_test'))
-            ->assertRedirect($this->hh('/dashboard'));
+            ->assertRedirect($this->hh('/dashboard'))
+            ->assertSessionHas('toast', "You're subscribed. Thanks!");
 
         $stripe->assertNothingRequested();
-        $this->assertSame(1, $owner->lastHousehold->subscriptions()->count());
     }
 
     #[Test]
@@ -291,31 +307,22 @@ class StripeBillingTest extends TestCase
         ]);
     }
 
-    /**
-     * @param  array<string, mixed>|null  $subscription
-     *
-     * @return array<string, mixed>
-     */
-    private function checkoutSession(string $customer = 'cus_existing', string $status = 'complete', ?array $subscription = null): array
+    /** @return array<string, mixed> A Checkout session, as Stripe returns it while open or once paid. */
+    private function checkoutSession(string $customer = 'cus_existing', string $status = 'open'): array
     {
-        return [
+        return $this->stripeFixture('checkout.session', [
             'id' => 'cs_test',
-            'object' => 'checkout.session',
             'customer' => $customer,
-            'mode' => 'subscription',
             'status' => $status,
-            'subscription' => $subscription,
+            'payment_status' => $status === 'complete' ? 'paid' : 'unpaid',
+            'subscription' => $status === 'complete' ? 'sub_new' : null,
             'url' => 'https://checkout.stripe.com/c/pay/cs_test',
-        ];
+        ]);
     }
 
     /** @return array<string, mixed> */
     private function portalSession(): array
     {
-        return [
-            'id' => 'bps_test',
-            'object' => 'billing_portal.session',
-            'url' => 'https://billing.stripe.com/p/session/test',
-        ];
+        return $this->stripeFixture('billing_portal.session', ['url' => 'https://billing.stripe.com/p/session/test']);
     }
 }

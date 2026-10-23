@@ -64,20 +64,18 @@ class BillingController extends Controller
         $household = $this->household($request);
         $sessionId = $request->string('session_id')->toString();
 
-        $subscribed = false;
-
         if ($sessionId !== '') {
             try {
-                $subscribed = $complete->handle($household, $sessionId);
+                $complete->handle($household, $sessionId);
             } catch (ApiErrorException $e) {
-                // The webhook will still sync the subscription; just log it.
-                Log::warning("Couldn't sync Stripe checkout session {$sessionId}: {$e->getMessage()}");
+                // The webhook still records the subscription; the paywall just can't say it's on its way.
+                Log::warning("Couldn't check Stripe checkout session {$sessionId}: {$e->getMessage()}");
             }
         }
 
         // Only say so once it's true; otherwise the webhook is still on its way.
         return to_route($request->query('from') === 'house' ? 'house.index' : 'dashboard')
-            ->with('toast', $subscribed ? "You're subscribed. Thanks!" : "Thanks! We're confirming your payment with Stripe; your plan will update in a moment.");
+            ->with('toast', $household->subscribed('default') ? "You're subscribed. Thanks!" : "Thanks! We're confirming your payment with Stripe; your plan will update in a moment.");
     }
 
     public function portal(Request $request): SymfonyResponse

@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Laravel\Cashier\Billable;
 use Laravel\Cashier\Subscription;
@@ -40,6 +41,9 @@ class Household extends Model
 
     /** @use HasFactory<HouseholdFactory> */
     use HasFactory;
+
+    /** How long the paywall waits on Stripe's webhook after a paid Checkout before asking again. */
+    private const int CHECKOUT_CONFIRMING_MINUTES = 10;
 
     /** @var list<string> */
     protected $fillable = ['name', 'slug', 'join_code', 'join_code_enabled', 'location', 'timezone', 'trial_ends_at', 'ai_meal_plan_generated_at', 'last_chore_notification_sent_at'];
@@ -326,6 +330,21 @@ class Household extends Model
 
         return $subscription !== null
             && ($subscription->hasIncompletePayment() || $subscription->stripe_status === 'unpaid');
+    }
+
+    /**
+     * Stripe has said a Checkout for this household is paid; Cashier's webhook
+     * records the subscription soon after (CompleteCheckoutAction).
+     */
+    public function markCheckoutPaid(): void
+    {
+        Cache::put("household:{$this->id}:checkout-paid", true, now()->addMinutes(self::CHECKOUT_CONFIRMING_MINUTES));
+    }
+
+    /** Paid at Checkout, but the webhook that records the subscription hasn't landed yet. */
+    public function isConfirmingPayment(): bool
+    {
+        return ! $this->subscribed('default') && Cache::has("household:{$this->id}:checkout-paid");
     }
 
     /** When "Notify Chores" can next be used — null once it already can. */

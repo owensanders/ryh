@@ -35,6 +35,7 @@ export type BillingRequiredScreenData = {
     isOwner: boolean;
     paymentIssue: boolean;
     billingConfigured: boolean;
+    confirmingPayment: boolean;
 };
 export type BudgetCategoryData = {
     id: number;
