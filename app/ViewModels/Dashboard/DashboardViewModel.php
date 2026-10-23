@@ -51,15 +51,15 @@ class DashboardViewModel
 
         // One read of the calendar covers both the summary line and the agenda card.
         $events = $household->calendarEvents()->with('attendees')->overlapping(
-            $today->startOfDay(),
-            $today->addDays(self::AGENDA_DAYS - 1)->endOfDay(),
+            $household->momentAt($today->startOfDay()->toDateTimeString()),
+            $household->momentAt($today->addDays(self::AGENDA_DAYS - 1)->endOfDay()->toDateTimeString()),
         )->get();
 
         return new DashboardData(
             firstName: str($viewer->name)->before(' ')->toString(),
             summaryLine: $this->summaryLine(
                 $tonight,
-                $events->filter(fn (CalendarEvent $event) => $event->starts_at->isSameDay($today))->count(),
+                $events->filter(fn (CalendarEvent $event) => $event->startsIn($household->timezone)->toDateString() === $today->toDateString())->count(),
                 $remaining,
             ),
             streakDays: $viewer->currentStreak($today),
@@ -68,7 +68,7 @@ class DashboardViewModel
             shoppingList: $list !== null ? ShoppingListData::fromModel($list, $viewer) : null,
             chores: $todays->map(fn (Chore $chore) => ChoreData::fromModel($chore, $viewer))->values()->all(),
             choreProgress: ChoreProgressData::make($done, $todays->count()),
-            agenda: $this->agenda($events, $today),
+            agenda: $this->agenda($events, $today, $household->timezone),
             budget: $this->budget($household, $today),
         );
     }
@@ -94,15 +94,15 @@ class DashboardViewModel
      *
      * @return array<int, AgendaGroupData>
      */
-    private function agenda(Collection $events, CarbonImmutable $today): array
+    private function agenda(Collection $events, CarbonImmutable $today, string $timezone): array
     {
         $groups = [];
 
         for ($offset = 0; $offset < self::AGENDA_DAYS; $offset++) {
             $day = $today->addDays($offset);
             $items = $events
-                ->filter(fn (CalendarEvent $event) => $event->starts_at->isSameDay($day))
-                ->map(AgendaEntryData::fromModel(...))
+                ->filter(fn (CalendarEvent $event) => $event->startsIn($timezone)->toDateString() === $day->toDateString())
+                ->map(fn (CalendarEvent $event) => AgendaEntryData::fromModel($event, $timezone))
                 ->values()
                 ->all();
 

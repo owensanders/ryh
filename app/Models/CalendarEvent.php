@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\UtcDateTimeCast;
 use App\Enums\PaletteEnum;
 use Carbon\CarbonImmutable;
 use Database\Factories\CalendarEventFactory;
@@ -41,8 +42,8 @@ class CalendarEvent extends Model
     protected function casts(): array
     {
         return [
-            'starts_at' => 'datetime',
-            'ends_at' => 'datetime',
+            'starts_at' => UtcDateTimeCast::class,
+            'ends_at' => UtcDateTimeCast::class,
             'is_all_day' => 'boolean',
             'colour' => PaletteEnum::class,
         ];
@@ -55,7 +56,7 @@ class CalendarEvent extends Model
     }
 
     /**
-     * Events that touch the window: they start before it ends, and either end
+     * Events that touch the window (two moments): they start before it ends, and either end
      * inside or after it, or (with no end time) start inside it. In date order.
      *
      * @param  Builder<self>  $query
@@ -63,6 +64,10 @@ class CalendarEvent extends Model
     #[Scope]
     protected function overlapping(Builder $query, CarbonImmutable $from, CarbonImmutable $to): void
     {
+        // The columns hold UTC; a bound Carbon is written out in its own zone, unconverted.
+        $from = $from->utc();
+        $to = $to->utc();
+
         $query->where('starts_at', '<=', $to)
             ->where(function (Builder $query) use ($from): void {
                 $query->where('ends_at', '>=', $from)
@@ -88,28 +93,38 @@ class CalendarEvent extends Model
         return $this->belongsToMany(User::class)->orderBy('id');
     }
 
-    /**
-     * Over once its end has passed: its end time, or for an all-day event or
-     * one with no end, the end of the day it starts. `$now` is the household's
-     * clock (Household::now()), since event times are stored as it reads them.
-     */
-    public function hasEndedBy(CarbonImmutable $now): bool
+    /** When it starts on a clock in `$timezone` (the household's). It's stored as a UTC moment. */
+    public function startsIn(string $timezone): CarbonImmutable
     {
-        $end = $this->ends_at ?? $this->starts_at->copy()->endOfDay();
-
-        return $end->lt($now);
+        return $this->starts_at->toImmutable()->setTimezone($timezone);
     }
 
-    /** 'All day', '18:00', or '18:00–19:30'. */
-    public function timeLabel(): string
+    /** When it ends on a clock in `$timezone`, if it has an end time. */
+    public function endsIn(string $timezone): ?CarbonImmutable
+    {
+        return $this->ends_at?->toImmutable()->setTimezone($timezone);
+    }
+
+    /**
+     * Over once its end has passed: its end time, or for an all-day event or
+     * one with no end, the end of the day it starts on the household's clock.
+     */
+    public function hasEndedBy(CarbonImmutable $moment, string $timezone): bool
+    {
+        return ($this->endsIn($timezone) ?? $this->startsIn($timezone)->endOfDay())->lt($moment);
+    }
+
+    /** 'All day', '18:00', or '18:00–19:30', on the household's clock. */
+    public function timeLabel(string $timezone): string
     {
         if ($this->is_all_day) {
             return 'All day';
         }
 
-        $start = $this->starts_at->format('H:i');
+        $start = $this->startsIn($timezone)->format('H:i');
+        $end = $this->endsIn($timezone);
 
-        return $this->ends_at !== null ? "{$start}–{$this->ends_at->format('H:i')}" : $start;
+        return $end !== null ? "{$start}–{$end->format('H:i')}" : $start;
     }
 
     /** First names of the attendees, or 'Everyone' when the event is for the whole house. */

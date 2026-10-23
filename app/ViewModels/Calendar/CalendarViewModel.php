@@ -20,19 +20,25 @@ class CalendarViewModel
 
     public function toData(Household $household, User $viewer, CarbonImmutable $month): CalendarMonthData
     {
-        $now = $household->now();
-        $today = $now->startOfDay();
+        $timezone = $household->timezone;
+        $today = $household->today();
         $first = $month->startOfMonth();
         $start = $first->startOfWeek();
         $end = $start->addDays(self::CELLS - 1)->endOfDay();
 
         $eventsByDate = [];
 
-        foreach ($household->calendarEvents()->with('attendees')->overlapping($start, $end)->get() as $event) {
-            $spanStart = $event->starts_at->toImmutable()->max($start)->startOfDay();
-            $spanEnd = ($event->ends_at ?? $event->starts_at)->toImmutable()->min($end)->startOfDay();
+        // The grid's dates are the household's; events are found by the moments those dates span.
+        $events = $household->calendarEvents()->with('attendees')->overlapping(
+            $household->momentAt($start->toDateTimeString()),
+            $household->momentAt($end->toDateTimeString()),
+        )->get();
 
-            for ($date = $spanStart; $date->lte($spanEnd); $date = $date->addDay()) {
+        foreach ($events as $event) {
+            $spanStart = max($event->startsIn($timezone)->toDateString(), $start->toDateString());
+            $spanEnd = min(($event->endsIn($timezone) ?? $event->startsIn($timezone))->toDateString(), $end->toDateString());
+
+            for ($date = CarbonImmutable::parse($spanStart); $date->toDateString() <= $spanEnd; $date = $date->addDay()) {
                 $eventsByDate[$date->toDateString()][] = $event;
             }
         }
@@ -55,7 +61,7 @@ class CalendarViewModel
                 isToday: $day->isSameDay($today),
                 isCurrentMonth: $day->month === $first->month,
                 events: collect($eventsByDate[$key] ?? [])
-                    ->map(fn (CalendarEvent $event) => CalendarEventData::fromModel($event, $viewer, $key, $now))
+                    ->map(fn (CalendarEvent $event) => CalendarEventData::fromModel($event, $viewer, $key, $timezone))
                     ->values()
                     ->all(),
             );
