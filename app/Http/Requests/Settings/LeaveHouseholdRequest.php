@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Settings;
 
+use App\Inputs\LeaveHouseholdInput;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,5 +21,10 @@ class LeaveHouseholdRequest extends FormRequest
             ],
             'confirm_household_deletion' => ['sometimes', 'boolean'],
         ];
+    }
+
+    public function toInput(): LeaveHouseholdInput
+    {
+        return LeaveHouseholdInput::from($this->validated());
     }
 }

@@ -20,7 +20,6 @@ use App\Models\PlannedMeal;
 use App\Traits\ResolvesHouseholdTrait;
 use App\Traits\ResolvesUserTrait;
 use App\ViewModels\Meals\MealPlannerViewModel;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -33,13 +32,7 @@ class MealPlannerController extends Controller
 
     public function index(IndexMealPlannerRequest $request, MealPlannerViewModel $mealPlanner): Response
     {
-        $week = $request->validated('week');
-
-        return Inertia::render('MealPlanner', $mealPlanner->toData(
-            $this->household($request),
-            $this->user($request),
-            $week !== null ? CarbonImmutable::createFromFormat('!Y-m-d', $week) ?? $this->household($request)->now() : $this->household($request)->now(),
-        ));
+        return Inertia::render('MealPlanner', $mealPlanner->toData($this->household($request), $this->user($request), $request->week()));
     }
 
     public function store(PlannedMealRequest $request, AddPlannedMealAction $add): RedirectResponse
@@ -69,7 +62,7 @@ class MealPlannerController extends Controller
         PlannedMeal $meal,
         RescheduleMealAction $rescheduleMeal,
     ): RedirectResponse {
-        $moved = $rescheduleMeal->handle($meal, CarbonImmutable::parse($request->validated('planned_on')));
+        $moved = $rescheduleMeal->handle($meal, $request->plannedOn());
 
         return back()->with('toast', "{$moved->recipe->name} moved");
     }
@@ -84,11 +77,7 @@ class MealPlannerController extends Controller
 
     public function suggestLibraryPlan(SuggestLibraryMealPlanRequest $request, SuggestLibraryMealPlanAction $suggest): RedirectResponse
     {
-        $meals = $suggest->handle(
-            $this->household($request),
-            $request->validated('diets', []),
-            (string) $request->validated('avoid', ''),
-        );
+        $meals = $suggest->handle($this->household($request), $request->toInput());
 
         return back()->with('libraryMeals', array_map(fn (MealSuggestionData $meal) => $meal->toArray(), $meals));
     }

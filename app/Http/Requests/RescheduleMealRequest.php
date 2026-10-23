@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RescheduleMealRequest extends FormRequest
@@ -22,5 +23,10 @@ class RescheduleMealRequest extends FormRequest
         return [
             'planned_on.required' => 'Choose a day to move the meal to.',
         ];
+    }
+
+    public function plannedOn(): CarbonImmutable
+    {
+        return CarbonImmutable::parse((string) $this->validated('planned_on'));
     }
 }

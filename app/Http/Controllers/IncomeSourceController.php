@@ -10,7 +10,6 @@ use App\Actions\Budget\UpdateIncomeSourceAction;
 use App\Http\Requests\IncomeSourceRequest;
 use App\Models\IncomeSource;
 use App\Traits\ResolvesHouseholdTrait;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 
 class IncomeSourceController extends Controller
@@ -19,13 +18,7 @@ class IncomeSourceController extends Controller
 
     public function store(IncomeSourceRequest $request, CreateIncomeSourceAction $create): RedirectResponse
     {
-        $month = $request->validated('month');
-
-        $income = $create->handle(
-            $this->household($request),
-            $month !== null ? CarbonImmutable::createFromFormat('!Y-m', (string) $month) ?? $this->household($request)->now() : $this->household($request)->now(),
-            $request->toInput(),
-        );
+        $income = $create->handle($this->household($request), $request->month(), $request->toInput());
 
         return back()->with('toast', "{$income->label} added");
     }

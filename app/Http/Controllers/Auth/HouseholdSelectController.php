@@ -28,7 +28,7 @@ class HouseholdSelectController extends Controller
 
     public function store(HouseholdSelectRequest $request, SwitchCurrentHouseholdAction $switch): RedirectResponse
     {
-        $switch->handle($this->user($request), (int) $request->validated('household_id'));
+        $switch->handle($this->user($request), $request->householdId());
 
         return to_route('app');
     }

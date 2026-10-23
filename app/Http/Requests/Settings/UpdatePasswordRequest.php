@@ -17,4 +17,10 @@ class UpdatePasswordRequest extends FormRequest
             'password' => ['required', 'confirmed', Password::defaults()],
         ];
     }
+
+    /** The new password. */
+    public function password(): string
+    {
+        return (string) $this->validated('password');
+    }
 }

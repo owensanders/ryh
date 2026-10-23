@@ -15,4 +15,9 @@ class AddRecipeIngredientsRequest extends FormRequest
             'shopping_list_id' => ['required', 'integer', 'exists:shopping_lists,id'],
         ];
     }
+
+    public function shoppingListId(): int
+    {
+        return (int) $this->validated('shopping_list_id');
+    }
 }

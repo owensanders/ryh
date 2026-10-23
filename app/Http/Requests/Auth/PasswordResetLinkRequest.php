@@ -15,4 +15,9 @@ class PasswordResetLinkRequest extends FormRequest
             'email' => ['required', 'email'],
         ];
     }
+
+    public function email(): string
+    {
+        return (string) $this->validated('email');
+    }
 }

@@ -23,4 +23,9 @@ class HouseTimezoneRequest extends FormRequest
             'timezone.timezone' => 'Pick a time zone from the list.',
         ];
     }
+
+    public function timezone(): string
+    {
+        return (string) $this->validated('timezone');
+    }
 }

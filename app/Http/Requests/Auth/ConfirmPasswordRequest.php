@@ -15,4 +15,9 @@ class ConfirmPasswordRequest extends FormRequest
             'password' => ['required', 'string'],
         ];
     }
+
+    public function password(): string
+    {
+        return (string) $this->validated('password');
+    }
 }

@@ -13,7 +13,6 @@ use App\Models\CalendarEvent;
 use App\Traits\ResolvesHouseholdTrait;
 use App\Traits\ResolvesUserTrait;
 use App\ViewModels\Calendar\CalendarViewModel;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -26,16 +25,8 @@ class CalendarController extends Controller
 
     public function index(IndexCalendarRequest $request, CalendarViewModel $getCalendarMonth): Response
     {
-        $month = $request->validated('month');
-
         return Inertia::render('Calendar', [
-            'calendar' => $getCalendarMonth->toData(
-                $this->household($request),
-                $this->user($request),
-                // `!` resets the unspecified day/time — without it PHP fills the day from
-                // today, so on the 31st "2026-09" would roll over into October.
-                $month !== null ? CarbonImmutable::createFromFormat('!Y-m', $month) ?? $this->household($request)->now() : $this->household($request)->now(),
-            ),
+            'calendar' => $getCalendarMonth->toData($this->household($request), $this->user($request), $request->month()),
         ]);
     }
 

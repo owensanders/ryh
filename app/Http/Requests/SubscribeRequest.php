@@ -17,4 +17,16 @@ class SubscribeRequest extends FormRequest
             'from' => ['nullable', 'string', 'in:house'],
         ];
     }
+
+    /** @return 'monthly'|'annual' */
+    public function billingInterval(): string
+    {
+        return $this->validated('interval') === 'annual' ? 'annual' : 'monthly';
+    }
+
+    /** Started from the House tab, so Checkout sends them back there. */
+    public function fromHouse(): bool
+    {
+        return $this->validated('from') === 'house';
+    }
 }

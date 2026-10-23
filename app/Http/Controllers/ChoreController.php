@@ -65,7 +65,7 @@ class ChoreController extends Controller
 
     public function move(MoveChoreRequest $request, Chore $chore, MoveChoreAction $move): RedirectResponse
     {
-        $status = ChoreStatusEnum::from($request->validated('status'));
+        $status = $request->status();
         $move->handle($chore, $status);
 
         return back()->with('toast', "Moved to {$status->label()}");

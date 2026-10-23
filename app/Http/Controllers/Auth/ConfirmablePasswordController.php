@@ -25,7 +25,7 @@ class ConfirmablePasswordController extends Controller
     /** @throws ValidationException */
     public function store(ConfirmPasswordRequest $request, ConfirmPasswordAction $confirm): RedirectResponse
     {
-        if (! $confirm->handle($this->user($request), $request->validated('password'))) {
+        if (! $confirm->handle($this->user($request), $request->password())) {
             throw ValidationException::withMessages([
                 'password' => __('auth.password'),
             ]);

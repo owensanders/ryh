@@ -25,11 +25,12 @@ class UserFacingErrorsRuleTest extends RuleTestCase
     public function catchesAbortsAndRuntimeExceptionCatchesInActions(): void
     {
         $this->analyse([__DIR__.'/../../PHPStan/Fixtures/Actions/ErrorsInAnAction.php'], [
-            ['abort'.self::ABORT, 15],
-            ['abort_if'.self::ABORT, 20],
-            [self::CATCH, 27],
+            ['abort'.self::ABORT, 16],
+            ['abort_if'.self::ABORT, 21],
+            [self::CATCH, 28],
             // In a union, fully qualified.
-            [self::CATCH, 32],
+            [self::CATCH, 33],
+            ['ValidationException in an action or view model. Throw a UserFacingException subclass with a named constructor instead.', 44],
         ]);
     }
 

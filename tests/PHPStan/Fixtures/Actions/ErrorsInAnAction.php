@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\PHPStan\Fixtures\Actions;
 
+use Illuminate\Validation\ValidationException;
 use LogicException;
 use RuntimeException;
 
@@ -36,6 +37,11 @@ class ErrorsInAnAction
             $this->work();
         } catch (LogicException $e) {
         }
+    }
+
+    public function validates(): void
+    {
+        throw ValidationException::withMessages(['email' => 'Already a member.']);
     }
 
     private function work(): void {}

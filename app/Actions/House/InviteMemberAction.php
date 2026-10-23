@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\House;
 
 use App\Enums\PendingReasonEnum;
+use App\Exceptions\MembershipException;
 use App\Inputs\InviteInput;
 use App\Mail\HouseholdInviteMail;
 use App\Models\Household;
@@ -12,7 +13,6 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Validation\ValidationException;
 
 class InviteMemberAction
 {
@@ -35,13 +35,11 @@ class InviteMemberAction
             $household = $household->lockRow();
 
             if ($household->members()->where('email', $email)->exists()) {
-                throw ValidationException::withMessages(['email' => 'This person is already part of the household.']);
+                throw MembershipException::alreadyMember();
             }
 
             if ($household->isFull()) {
-                throw ValidationException::withMessages([
-                    'email' => 'Your household is full — it can have up to '.config('plans.max_members').' members, including pending invites.',
-                ]);
+                throw MembershipException::fullForInvites((int) config('plans.max_members'));
             }
 
             if ($existing !== null) {

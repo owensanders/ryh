@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\PHPStan;
 
+use Illuminate\Validation\ValidationException;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Expr\New_;
+use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Catch_;
 use PHPStan\Analyser\Scope;
@@ -15,7 +18,8 @@ use RuntimeException;
 
 /**
  * Actions and view models say what went wrong with an exception, never with
- * HTTP: a UserFacingException subclass for a message people should read, and
+ * HTTP or Laravel's ValidationException: a UserFacingException subclass for a
+ * message people should read, and
  * ModelNotFoundException for "not in this household" (CLAUDE.md, "Errors").
  * And nothing catches RuntimeException, because a database error is one too
  * and its message isn't for people.
@@ -50,6 +54,22 @@ final class UserFacingErrorsRule implements Rule
             && array_filter($this->noAbort, fn (string $layer): bool => str_starts_with($namespace, $layer)) !== []) {
             return [
                 RuleErrorBuilder::message("{$node->name->toString()}() in an action or view model. Throw a UserFacingException or ModelNotFoundException instead.")
+                    ->identifier('ryh.userFacingErrors')
+                    ->build(),
+            ];
+        }
+
+        // Laravel's ValidationException carries its wording at the throw; a UserFacingException names it once.
+        $validation = match (true) {
+            $node instanceof StaticCall && $node->class instanceof Name => $scope->resolveName($node->class),
+            $node instanceof New_ && $node->class instanceof Name => $scope->resolveName($node->class),
+            default => null,
+        };
+
+        if ($validation !== null && ltrim($validation, '\\') === ValidationException::class
+            && array_filter($this->noAbort, fn (string $layer): bool => str_starts_with($namespace, $layer)) !== []) {
+            return [
+                RuleErrorBuilder::message('ValidationException in an action or view model. Throw a UserFacingException subclass with a named constructor instead.')
                     ->identifier('ryh.userFacingErrors')
                     ->build(),
             ];

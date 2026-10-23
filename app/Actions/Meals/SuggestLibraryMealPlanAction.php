@@ -8,6 +8,7 @@ use App\Data\MealSuggestionData;
 use App\Enums\MealDietEnum;
 use App\Enums\RecipeTagEnum;
 use App\Exceptions\MealPlanUnavailableException;
+use App\Inputs\LibraryMealPlanInput;
 use App\Models\Household;
 use App\Models\Recipe;
 
@@ -23,14 +24,11 @@ class SuggestLibraryMealPlanAction
 
     private const int RECENT_DAYS = 14;
 
-    /**
-     * @param  list<string>  $diets
-     *
-     * @return array<int, MealSuggestionData>
-     */
-    public function handle(Household $household, array $diets, string $avoid): array
+    /** @return array<int, MealSuggestionData> */
+    public function handle(Household $household, LibraryMealPlanInput $input): array
     {
-        $avoidWords = collect(explode(',', $avoid))->map(fn (string $item) => mb_strtolower(trim($item)))->filter()->values();
+        $diets = $input->diets;
+        $avoidWords = collect(explode(',', $input->avoid ?? ''))->map(fn (string $item) => mb_strtolower(trim($item)))->filter()->values();
         $today = $household->today();
         $recentRecipeIds = $household->plannedMeals()
             ->whereBetween('planned_on', [$today->subDays(self::RECENT_DAYS)->toDateString(), $today->addDays(self::RECENT_DAYS)->toDateString()])

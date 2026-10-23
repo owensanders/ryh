@@ -26,8 +26,9 @@ use PHPStan\Type\TypeCombinator;
 
 /**
  * Queries belong in actions, view models and models (CLAUDE.md, "Where
- * queries live"), never in the HTTP layer, policies, listeners, mail or
- * notifications: nothing there starts a query, runs one, or writes a model.
+ * queries live"), never in the HTTP layer, policies, listeners, mail,
+ * notifications or the Data classes a page is built from: nothing there
+ * starts a query, runs one, or writes a model.
  * Judged by type, so a query is caught however it's written, split over
  * lines or held in a variable. Asking a model a question
  * (`$user->membershipIn($id)`) is the allowed way, and so is reading a model
@@ -40,7 +41,7 @@ use PHPStan\Type\TypeCombinator;
 final class QueryBoundaryRule implements Rule
 {
     /** Where queries must not appear. */
-    private const array LAYERS = ['App\\Http\\', 'App\\Policies\\', 'App\\Listeners\\', 'App\\Mail\\', 'App\\Notifications\\'];
+    private const array LAYERS = ['App\\Http\\', 'App\\Policies\\', 'App\\Listeners\\', 'App\\Mail\\', 'App\\Notifications\\', 'App\\Data\\'];
 
     /** Model methods that write or reload. */
     private const array MODEL_WRITES = [

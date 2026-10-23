@@ -35,10 +35,10 @@ class ShoppingListController extends Controller
 
     public function store(ShoppingItemRequest $request, string $slug, AddShoppingItemAction $addItem): RedirectResponse
     {
-        $name = (string) $request->validated('name');
-        $list = $addItem->handle($this->household($request), $slug, $name, $request->validated('quantity'));
+        $item = $request->toInput();
+        $list = $addItem->handle($this->household($request), $slug, $item);
 
-        return back()->with('toast', "“{$name}” added to {$list->name}");
+        return back()->with('toast', "“{$item->name}” added to {$list->name}");
     }
 
     public function toggle(ShoppingItem $item, ToggleShoppingItemAction $toggle): RedirectResponse
@@ -73,11 +73,7 @@ class ShoppingListController extends Controller
 
     public function updateItem(ShoppingItemRequest $request, ShoppingItem $item, UpdateShoppingItemAction $update): RedirectResponse
     {
-        $updated = $update->handle(
-            $item,
-            (string) $request->validated('name'),
-            $request->validated('quantity'),
-        );
+        $updated = $update->handle($item, $request->toInput());
 
         return back()->with('toast', "“{$updated->name}” updated");
     }

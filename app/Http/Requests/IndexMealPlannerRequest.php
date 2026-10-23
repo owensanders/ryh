@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Support\CurrentHouseholdHelper;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -37,5 +39,13 @@ class IndexMealPlannerRequest extends FormRequest
         throw new HttpResponseException(
             redirect()->route('meals.index')->withErrors($validator)->withInput(),
         );
+    }
+
+    /** A day in the week asked for, or the household's today. */
+    public function week(): CarbonImmutable
+    {
+        $week = $this->validated('week');
+
+        return (is_string($week) ? CarbonImmutable::createFromFormat('!Y-m-d', $week) : null) ?? CurrentHouseholdHelper::household($this)->today();
     }
 }

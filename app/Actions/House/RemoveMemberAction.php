@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Actions\House;
 
 use App\Enums\HouseholdRoleEnum;
+use App\Exceptions\MembershipException;
 use App\Models\CalendarEvent;
 use App\Models\Household;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
 class RemoveMemberAction
 {
@@ -20,7 +20,7 @@ class RemoveMemberAction
      * events they were the only attendee of are deleted; they're taken off
      * events with other attendees and off planned meals they were cooking.
      *
-     * @throws ValidationException
+     * @throws MembershipException
      */
     /** @return bool Whether they were still pending: an invite cancelled rather than a member removed. */
     public function handle(User $member, Household $household): bool
@@ -29,7 +29,7 @@ class RemoveMemberAction
         $currentRole = $membership?->role;
 
         if ($currentRole === HouseholdRoleEnum::Owner && $household->isSoleOwner($member)) {
-            throw ValidationException::withMessages(['member' => "You're the only owner — promote someone else first."]);
+            throw MembershipException::soleOwnerCantBeRemoved();
         }
 
         DB::transaction(function () use ($member, $household): void {

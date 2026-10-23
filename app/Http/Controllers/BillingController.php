@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\House\CompleteCheckoutAction;
 use App\Actions\House\SubscribeHouseholdAction;
+use App\Http\Requests\CompleteCheckoutRequest;
 use App\Http\Requests\SubscribeRequest;
 use App\Traits\ResolvesHouseholdTrait;
 use App\Traits\ResolvesUserTrait;
@@ -36,14 +37,12 @@ class BillingController extends Controller
 
     public function subscribe(SubscribeRequest $request, SubscribeHouseholdAction $subscribe): SymfonyResponse
     {
-        $interval = $request->validated('interval');
-
         // The House tab and the paywall both subscribe here; each gets sent back to where it started.
-        $fromHouse = $request->validated('from') === 'house';
+        $fromHouse = $request->fromHouse();
 
         $checkoutUrl = $subscribe->handle(
             $this->household($request),
-            interval: $interval,
+            interval: $request->billingInterval(),
             successUrl: route('billing.checkout.complete', $fromHouse ? ['from' => 'house'] : []),
             cancelUrl: route($fromHouse ? 'house.index' : 'billing.required'),
         );
@@ -59,12 +58,12 @@ class BillingController extends Controller
      * Where Stripe Checkout sends the owner back to. `from=house` returns
      * them to the House tab they started on; otherwise the dashboard.
      */
-    public function complete(Request $request, CompleteCheckoutAction $complete): RedirectResponse
+    public function complete(CompleteCheckoutRequest $request, CompleteCheckoutAction $complete): RedirectResponse
     {
         $household = $this->household($request);
-        $sessionId = $request->string('session_id')->toString();
+        $sessionId = $request->sessionId();
 
-        if ($sessionId !== '') {
+        if ($sessionId !== null) {
             try {
                 $complete->handle($household, $sessionId);
             } catch (ApiErrorException $e) {
@@ -74,7 +73,7 @@ class BillingController extends Controller
         }
 
         // Only say so once it's true; otherwise the webhook is still on its way.
-        return to_route($request->query('from') === 'house' ? 'house.index' : 'dashboard')
+        return to_route($request->fromHouse() ? 'house.index' : 'dashboard')
             ->with('toast', $household->subscribed('default') ? "You're subscribed. Thanks!" : "Thanks! We're confirming your payment with Stripe; your plan will update in a moment.");
     }
 

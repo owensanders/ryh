@@ -19,6 +19,15 @@ trait ValidatesBudgetMonthTrait
 
     private const int BUDGET_YEARS_AHEAD = 2;
 
+    /** The first of the month asked for, or of the household's current month when none was. */
+    public function month(): CarbonImmutable
+    {
+        $month = $this->validated('month');
+        $requested = is_string($month) ? CarbonImmutable::createFromFormat('!Y-m', $month) : null;
+
+        return ($requested ?? CurrentHouseholdHelper::household($this)->today())->startOfMonth();
+    }
+
     /** @return list<mixed> */
     protected function budgetMonthRules(bool $required = false): array
     {

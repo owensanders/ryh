@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Settings;
 
+use App\Inputs\PushSubscriptionInput;
 use App\Models\User;
 
 /**
@@ -12,8 +13,8 @@ use App\Models\User;
  */
 class SavePushSubscriptionAction
 {
-    public function handle(User $user, string $endpoint, string $publicKey, string $authToken, ?string $contentEncoding): void
+    public function handle(User $user, PushSubscriptionInput $subscription): void
     {
-        $user->updatePushSubscription($endpoint, $publicKey, $authToken, $contentEncoding);
+        $user->updatePushSubscription($subscription->endpoint, $subscription->publicKey, $subscription->authToken, $subscription->contentEncoding);
     }
 }

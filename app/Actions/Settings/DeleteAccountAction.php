@@ -7,11 +7,11 @@ namespace App\Actions\Settings;
 use App\Actions\House\CancelHouseholdSubscriptionAction;
 use App\Actions\House\DeleteHouseholdAction;
 use App\Enums\HouseholdRoleEnum;
+use App\Exceptions\MembershipException;
 use App\Models\Household;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
 class DeleteAccountAction
 {
@@ -20,7 +20,7 @@ class DeleteAccountAction
         private readonly DeleteHouseholdAction $deleteHousehold,
     ) {}
 
-    /** @throws ValidationException */
+    /** @throws MembershipException */
     public function handle(User $user, bool $confirmHouseholdDeletion = false): void
     {
         $goingWithThem = $this->householdsGoingWithThem($user, $confirmHouseholdDeletion);
@@ -53,7 +53,7 @@ class DeleteAccountAction
      *
      * @return list<Household>
      *
-     * @throws ValidationException when others would lose a household too and they haven't confirmed that
+     * @throws MembershipException when others would lose a household too and they haven't confirmed that
      */
     private function householdsGoingWithThem(User $user, bool $confirmHouseholdDeletion): array
     {
@@ -77,12 +77,7 @@ class DeleteAccountAction
         }
 
         if ($sharedWithOthers !== [] && ! $confirmHouseholdDeletion) {
-            $which = count($sharedWithOthers) === 1 ? 'this household' : 'these households ('.implode(', ', $sharedWithOthers).')';
-            $them = count($sharedWithOthers) === 1 ? 'the household and all its data' : 'them and all their data';
-
-            throw ValidationException::withMessages([
-                'household' => "You're the sole owner of {$which}. Deleting your account will permanently delete {$them} (chores, meals, shopping lists, calendar, budget, documents). Consider promoting another member to Owner instead, or confirm to delete everything.",
-            ]);
+            throw MembershipException::soleOwnerDeletingAccount($sharedWithOthers);
         }
 
         return $goingWithThem;

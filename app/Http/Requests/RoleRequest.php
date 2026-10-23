@@ -27,4 +27,9 @@ class RoleRequest extends FormRequest
             'guardian_confirmed.accepted_if' => 'Confirm you\'re their parent or guardian, or have their permission, to add someone as a Teen or Child.',
         ];
     }
+
+    public function role(): HouseholdRoleEnum
+    {
+        return HouseholdRoleEnum::from((string) $this->validated('role'));
+    }
 }
