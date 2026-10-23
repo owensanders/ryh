@@ -4,6 +4,11 @@ Family home organiser — dashboard, meal planner, shopping lists, chores,
 shared calendar, budget and a document vault, with live in-app notifications.
 A Laravel 12 + Inertia 3 + Vue 3 (TypeScript) + Tailwind app, running under Laravel Sail.
 
+RYH is for UK households, by design: dates are written the UK way (en-GB),
+money is in pounds (£), and AI meal plans are costed at UK supermarket prices.
+There's no language, currency or date-format setting. Each household still
+has its own time zone, so a household living abroad sees its own day.
+
 ## Features
 
 - **Dashboard** — daily overview across the household, with each person's
