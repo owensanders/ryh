@@ -1,6 +1,6 @@
 import { withSetup } from '@/test/withSetup';
 import type { PlannerDayData } from '@/types/generated';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { provideAiMealPlanForm, type AiMealPlanSettings } from './useAiMealPlanForm';
 
 const day = (date: string, extra: Partial<PlannerDayData> = {}): PlannerDayData => ({
@@ -19,6 +19,7 @@ const settings = (overrides: Partial<AiMealPlanSettings> = {}): AiMealPlanSettin
     aiSuggestedBudget: null,
     aiOptions: { diets: [], goals: [], confidence: [], equipment: [] },
     days: [day('2026-10-19'), day('2026-10-20', { isToday: true }), day('2026-10-21'), day('2026-10-22')],
+    todayDate: '2026-10-20',
     shoppingLists: [],
     ...overrides,
 });
@@ -40,6 +41,17 @@ describe('useAiMealPlanForm', () => {
         expect(form.selectedDays.value).toEqual([1, 3]);
         expect(form.budgetAmount.value).toBe(60);
         expect(form.summary.value).toBe('2 dinners · 4 people · Oven, Hob · £60.00');
+    });
+
+    it("judges another week by the household's today, not the reader's clock", () => {
+        // The reader's clock is a week ahead of the household's.
+        vi.useFakeTimers({ now: new Date('2026-10-28T12:00:00') });
+        const form = withSetup(() => provideAiMealPlanForm(settings({ days: [day('2026-10-26'), day('2026-10-27')] })));
+
+        form.reset();
+        vi.useRealTimers();
+
+        expect(form.selectedDays.value).toEqual([0, 1]);
     });
 
     it('only asks the questions the library plan needs when the AI can’t be used', () => {

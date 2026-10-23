@@ -338,6 +338,7 @@ export type MealDietEnum = 'Vegetarian' | 'Vegan' | 'Pescatarian' | 'Gluten free
 export type MealGoalEnum = 'Eat healthier' | 'Spend less' | 'Eat more veg' | 'Quick weeknights' | 'Batch cook';
 export type MealPlannerScreenData = {
     weekOf: string;
+    todayDate: string;
     days?: PlannerDayData[];
     library?: RecipeData[];
     recipeCount?: number;

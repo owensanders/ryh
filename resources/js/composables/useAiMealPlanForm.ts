@@ -12,6 +12,8 @@ export interface AiMealPlanSettings {
     aiSuggestedBudget: number | null;
     aiOptions: AiPlannerOptions;
     days: PlannerDayData[];
+    /** The household's today, from the server, so any week shown is judged by its clock. */
+    todayDate: string;
     shoppingLists: ShoppingListData[];
 }
 
@@ -99,8 +101,7 @@ function createAiMealPlanForm(settings: AiMealPlanSettings) {
 
     function freeDayIndexes(): number[] {
         // Past days are never preselected - planning dinners for them is wasted.
-        const today = settings.days.find((day) => day.isToday)?.date ?? new Date().toLocaleDateString('en-CA');
-        const upcoming = settings.days.map((day, index) => ({ day, index })).filter(({ day }) => day.date >= today);
+        const upcoming = settings.days.map((day, index) => ({ day, index })).filter(({ day }) => day.date >= settings.todayDate);
         const free = upcoming.filter(({ day }) => !day.meals.some((m) => m.slotKey === 'dinner'));
 
         return (free.length ? free : upcoming).map(({ index }) => index);
