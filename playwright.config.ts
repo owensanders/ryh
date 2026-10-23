@@ -21,6 +21,7 @@ export default defineConfig({
     reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
     use: {
         baseURL,
+        channel,
         trace: 'retain-on-failure',
         screenshot: 'only-on-failure',
     },
@@ -28,13 +29,13 @@ export default defineConfig({
         { name: 'setup', testMatch: /auth\.setup\.ts/ },
         {
             name: 'chromium',
-            use: { ...devices['Desktop Chrome'], channel },
+            use: { ...devices['Desktop Chrome'] },
             dependencies: ['setup'],
             testIgnore: /mobile\.spec\.ts/,
         },
         {
             name: 'mobile',
-            use: { ...devices['Pixel 7'], channel },
+            use: { ...devices['Pixel 7'] },
             dependencies: ['setup'],
             testMatch: /mobile\.spec\.ts/,
         },

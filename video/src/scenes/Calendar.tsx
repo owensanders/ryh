@@ -43,7 +43,8 @@ export const Calendar: React.FC = () => {
 
     // Where the highlighted "Swim club" on the 5th sits.
     const fifthIndex = cells.findIndex((c) => !c.out && c.n === 5);
-    const col = fifthIndex % 7, row = Math.floor(fifthIndex / 7);
+    const col = fifthIndex % 7,
+        row = Math.floor(fifthIndex / 7);
     const anchorX = C.x + C.pad + col * cellW;
     const anchorY = C.y + C.pad + C.head + C.dow + row * cellH;
 
@@ -59,7 +60,13 @@ export const Calendar: React.FC = () => {
             <AbsoluteFill style={{ transform: `scale(${1 - exit * 0.1})`, opacity: 1 - exit * 0.5 }}>
                 <div style={{ position: 'absolute', left: 100, top: 70 }}>
                     <Eyebrow icon="📅" label="Shared calendar" delay={4} dark />
-                    <Headline segments={['One calendar.', { accent: 'Everyone', colour: brand.sky }, 'on it.']} delay={10} size={104} colour={dark.ink} style={{ marginTop: 26 }} />
+                    <Headline
+                        segments={['One calendar.', { accent: 'Everyone', colour: brand.sky }, 'on it.']}
+                        delay={10}
+                        size={104}
+                        colour={dark.ink}
+                        style={{ marginTop: 26 }}
+                    />
                 </div>
                 <div style={{ position: 'absolute', left: 100, top: 262, width: 1720 }}>
                     <Sub delay={30} dark size={27}>
@@ -67,7 +74,15 @@ export const Calendar: React.FC = () => {
                     </Sub>
                 </div>
 
-                <div style={{ position: 'absolute', left: C.x, top: C.y, transform: `translateY(${(1 - cardIn) * 600}px) rotateX(${(1 - cardIn) * 30}deg)`, perspective: 1800 }}>
+                <div
+                    style={{
+                        position: 'absolute',
+                        left: C.x,
+                        top: C.y,
+                        transform: `translateY(${(1 - cardIn) * 600}px) rotateX(${(1 - cardIn) * 30}deg)`,
+                        perspective: 1800,
+                    }}
+                >
                     <Card palette={dark} style={{ width: C.w, height: C.h, padding: C.pad }}>
                         <div style={{ height: C.head, display: 'flex', alignItems: 'flex-start', gap: 14 }}>
                             <span style={{ fontSize: 34, fontWeight: 900, letterSpacing: '-0.03em' }}>August</span>
@@ -93,14 +108,36 @@ export const Calendar: React.FC = () => {
                                         {p.name}
                                     </div>
                                 ))}
-                                <div style={{ height: 44, padding: '0 18px', borderRadius: 13, background: brand.coral, color: 'white', fontWeight: 800, fontSize: 16, display: 'grid', placeItems: 'center' }}>
+                                <div
+                                    style={{
+                                        height: 44,
+                                        padding: '0 18px',
+                                        borderRadius: 13,
+                                        background: brand.coral,
+                                        color: 'white',
+                                        fontWeight: 800,
+                                        fontSize: 16,
+                                        display: 'grid',
+                                        placeItems: 'center',
+                                    }}
+                                >
                                     + New event
                                 </div>
                             </div>
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', height: C.dow }}>
                             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
-                                <span key={d} style={{ fontSize: 14, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: dark.ink3, paddingLeft: 10 }}>
+                                <span
+                                    key={d}
+                                    style={{
+                                        fontSize: 14,
+                                        fontWeight: 800,
+                                        letterSpacing: '0.08em',
+                                        textTransform: 'uppercase',
+                                        color: dark.ink3,
+                                        paddingLeft: 10,
+                                    }}
+                                >
                                     {d}
                                 </span>
                             ))}
@@ -163,7 +200,9 @@ export const Calendar: React.FC = () => {
                                                     }}
                                                 >
                                                     <span style={{ width: 3, height: 14, borderRadius: 2, background: e.colour, flex: 'none' }} />
-                                                    {e.time && <span style={{ fontFamily: fonts.mono, fontSize: 11, color: dark.ink2 }}>{e.time}</span>}
+                                                    {e.time && (
+                                                        <span style={{ fontFamily: fonts.mono, fontSize: 11, color: dark.ink2 }}>{e.time}</span>
+                                                    )}
                                                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.title}</span>
                                                 </div>
                                             );
@@ -187,7 +226,10 @@ export const Calendar: React.FC = () => {
                             opacity: Math.min(1, pop * 2),
                         }}
                     >
-                        <Card palette={light} style={{ width: 430, padding: 26, fontFamily: fonts.sans, boxShadow: '0 40px 80px -20px rgba(0,0,0,0.7)' }}>
+                        <Card
+                            palette={light}
+                            style={{ width: 430, padding: 26, fontFamily: fonts.sans, boxShadow: '0 40px 80px -20px rgba(0,0,0,0.7)' }}
+                        >
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                 <span style={{ width: 6, height: 44, borderRadius: 3, background: brand.sun }} />
                                 <div>
@@ -198,7 +240,13 @@ export const Calendar: React.FC = () => {
                             <div style={{ marginTop: 16, fontSize: 17, color: light.ink2 }}>📍 Leisure centre, lane 3</div>
                             <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
                                 {[family.james, family.mia].map((p, i) => (
-                                    <Avatar key={p.initials} person={p} size={40} radius={12} style={{ transform: `scale(${spr(f, POPOVER + 8 + i * 4, springs.bouncy)})` }} />
+                                    <Avatar
+                                        key={p.initials}
+                                        person={p}
+                                        size={40}
+                                        radius={12}
+                                        style={{ transform: `scale(${spr(f, POPOVER + 8 + i * 4, springs.bouncy)})` }}
+                                    />
                                 ))}
                                 <span style={{ fontSize: 16, fontWeight: 700 }}>James & Mia going</span>
                             </div>
