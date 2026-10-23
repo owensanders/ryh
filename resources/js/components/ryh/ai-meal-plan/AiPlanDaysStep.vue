@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Input from '@/components/ryh/ui/Input.vue';
 import { useAiMealPlanForm } from '@/composables/useAiMealPlanForm';
 
 const { form, days, selectedDays, toggleDay, aiUnavailable, fieldError } = useAiMealPlanForm();
@@ -28,7 +29,7 @@ const { form, days, selectedDays, toggleDay, aiUnavailable, fieldError } = useAi
 
     <div v-if="!aiUnavailable" class="flex flex-col gap-1.5">
         <label for="ai_people" class="ryh-label">People</label>
-        <input id="ai_people" v-model.number="form.people" type="number" min="1" max="12" class="ryh-input w-28" />
+        <Input id="ai_people" v-model.number="form.people" type="number" min="1" max="12" class="w-28" />
         <p v-if="fieldError('people')" class="text-[12.5px] text-ryh-coral">{{ fieldError('people') }}</p>
     </div>
 </template>

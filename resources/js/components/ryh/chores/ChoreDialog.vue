@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import Button from '@/components/ryh/ui/Button.vue';
+import Field from '@/components/ryh/ui/Field.vue';
+import Input from '@/components/ryh/ui/Input.vue';
+import Select from '@/components/ryh/ui/Select.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CHORE_BOARD_PROPS } from '@/lib/ryh';
 import type { ChoreData, MemberData } from '@/types/generated';
@@ -58,21 +61,18 @@ defineExpose({ openEdit });
             </DialogHeader>
 
             <form class="flex flex-col gap-4" @submit.prevent="submit">
-                <div class="flex flex-col gap-1.5">
-                    <label for="name" class="ryh-label">Name</label>
-                    <input id="name" v-model="form.name" type="text" class="ryh-input" required placeholder="What needs doing?" />
-                    <p v-if="form.errors.name" class="text-[12.5px] text-ryh-coral">{{ form.errors.name }}</p>
-                </div>
+                <Field label="Name" for="name" :error="form.errors.name">
+                    <Input id="name" v-model="form.name" type="text" required placeholder="What needs doing?" />
+                </Field>
 
-                <div class="flex flex-col gap-1.5">
-                    <label for="assigned_to" class="ryh-label">Assignee</label>
-                    <select id="assigned_to" v-model="form.assigned_to" class="ryh-input">
+                <Field label="Assignee" for="assigned_to">
+                    <Select id="assigned_to" v-model="form.assigned_to">
                         <option value="">Unassigned</option>
                         <option v-for="member in members" :key="member.id" :value="String(member.id)">
                             {{ member.name }}
                         </option>
-                    </select>
-                </div>
+                    </Select>
+                </Field>
 
                 <div class="flex items-center gap-2">
                     <Button class="w-auto" type="submit" :disabled="form.processing">Save changes</Button>

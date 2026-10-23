@@ -2,6 +2,10 @@
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import RecipeDetailFields from '@/components/ryh/RecipeDetailFields.vue';
 import Button from '@/components/ryh/ui/Button.vue';
+import Field from '@/components/ryh/ui/Field.vue';
+import Input from '@/components/ryh/ui/Input.vue';
+import Select from '@/components/ryh/ui/Select.vue';
+import Textarea from '@/components/ryh/ui/Textarea.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAddIngredientsToShoppingList } from '@/composables/useAddIngredientsToShoppingList';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
@@ -183,11 +187,9 @@ function confirmDestroy(): void {
                 </DialogHeader>
 
                 <form class="flex flex-col gap-4" @submit.prevent="submit">
-                    <div class="flex flex-col gap-1.5">
-                        <label for="name" class="ryh-label">Name</label>
-                        <input id="name" v-model="form.name" type="text" class="ryh-input" required placeholder="What's cooking?" />
-                        <p v-if="form.errors.name" class="text-[12.5px] text-ryh-coral">{{ form.errors.name }}</p>
-                    </div>
+                    <Field label="Name" for="name" :error="form.errors.name">
+                        <Input id="name" v-model="form.name" type="text" required placeholder="What's cooking?" />
+                    </Field>
 
                     <RecipeDetailFields
                         v-model:duration-label="form.duration_label"
@@ -199,24 +201,22 @@ function confirmDestroy(): void {
                         :tag-options="tagOptions"
                     />
 
-                    <div class="flex flex-col gap-1.5">
-                        <label for="description" class="ryh-label">Notes</label>
-                        <textarea
+                    <Field label="Notes" for="description" :error="form.errors.description">
+                        <Textarea
                             id="description"
                             v-model="form.description"
                             rows="2"
                             maxlength="2000"
-                            class="ryh-input h-auto py-2.5"
+                            class="h-auto py-2.5"
                             placeholder="Optional"
-                        ></textarea>
-                        <p v-if="form.errors.description" class="text-[12.5px] text-ryh-coral">{{ form.errors.description }}</p>
-                    </div>
+                        />
+                    </Field>
 
                     <div v-if="editing && editing.ingredients.length > 0" class="flex items-center gap-2 border-t border-ryh-line pt-4">
-                        <select v-model="selectedListId" aria-label="Shopping list for ingredients" class="ryh-input">
+                        <Select v-model="selectedListId" aria-label="Shopping list for ingredients">
                             <option :value="null">Add ingredients to…</option>
                             <option v-for="list in shoppingLists" :key="list.id" :value="list.id">{{ list.name }}</option>
-                        </select>
+                        </Select>
                         <Button variant="secondary" class="w-auto" :disabled="selectedListId === null" @click="submitAddIngredients">
                             Add to list
                         </Button>
@@ -227,10 +227,10 @@ function confirmDestroy(): void {
                         class="flex flex-col gap-1.5 border-t border-ryh-line pt-4"
                     >
                         <label for="shopping_list_id" class="ryh-label">Also add ingredients to a shopping list</label>
-                        <select id="shopping_list_id" v-model="form.shopping_list_id" class="ryh-input">
+                        <Select id="shopping_list_id" v-model="form.shopping_list_id">
                             <option :value="null">Don't add</option>
                             <option v-for="list in shoppingLists" :key="list.id" :value="list.id">{{ list.name }}</option>
-                        </select>
+                        </Select>
                     </div>
 
                     <p v-if="hasUnhandledErrors" class="text-[12.5px] text-ryh-coral">Couldn't save — check the recipe details above.</p>

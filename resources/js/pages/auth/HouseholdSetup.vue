@@ -2,6 +2,9 @@
 import InputError from '@/components/InputError.vue';
 import GuardianConfirm from '@/components/ryh/GuardianConfirm.vue';
 import Button from '@/components/ryh/ui/Button.vue';
+import Field from '@/components/ryh/ui/Field.vue';
+import Input from '@/components/ryh/ui/Input.vue';
+import Select from '@/components/ryh/ui/Select.vue';
 import AuthWizardLayout from '@/layouts/auth/AuthWizardLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
@@ -139,18 +142,16 @@ function submitJoin(): void {
                 class="mt-5 flex flex-col gap-3.5 rounded-[20px] border border-ryh-line bg-ryh-card p-6"
                 @submit.prevent="submitCreate"
             >
-                <div class="flex flex-col gap-1.5">
-                    <label for="householdName" class="ryh-label">Household name</label>
-                    <input id="householdName" v-model="createForm.name" type="text" class="ryh-input" placeholder="The Doe household" />
+                <Field label="Household name" for="householdName">
+                    <Input id="householdName" v-model="createForm.name" type="text" placeholder="The Doe household" />
                     <InputError :message="createForm.errors.name" />
-                </div>
+                </Field>
 
-                <div class="flex flex-col gap-1.5">
-                    <label for="householdSize" class="ryh-label">Household size</label>
-                    <select id="householdSize" v-model="createForm.size" class="ryh-input font-semibold">
+                <Field label="Household size" for="householdSize">
+                    <Select id="householdSize" v-model="createForm.size" class="font-semibold">
                         <option v-for="option in sizes" :key="option" :value="option">{{ option }}</option>
-                    </select>
-                </div>
+                    </Select>
+                </Field>
 
                 <div class="rounded-[16px] bg-ryh-soft px-4 py-3 text-[13px] leading-relaxed text-ryh-ink2">
                     <template v-if="props.trialAvailable">
@@ -228,18 +229,17 @@ function submitJoin(): void {
             </form>
 
             <form v-else class="mt-5 flex flex-col gap-3.5 rounded-[20px] border border-ryh-line bg-ryh-card p-6" @submit.prevent="submitJoin">
-                <div class="flex flex-col gap-1.5">
-                    <label for="joinCode" class="ryh-label">Invite code</label>
-                    <input
+                <Field label="Invite code" for="joinCode">
+                    <Input
                         id="joinCode"
                         v-model="joinForm.code"
                         type="text"
-                        class="ryh-input font-mono text-lg uppercase tracking-[0.12em]"
+                        class="font-mono text-lg uppercase tracking-[0.12em]"
                         placeholder="DOE-4Q72KD"
                     />
                     <span class="text-[12.5px] text-ryh-ink3">Ask whoever set the household up to send you the code.</span>
                     <InputError :message="joinForm.errors.code" />
-                </div>
+                </Field>
 
                 <div class="mt-2 flex items-center gap-3.5">
                     <Button class="px-6" type="submit" :disabled="!codeLooksValid || joinForm.processing">

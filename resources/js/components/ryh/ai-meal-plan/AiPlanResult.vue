@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Button from '@/components/ryh/ui/Button.vue';
 import IconButton from '@/components/ryh/ui/IconButton.vue';
+import Select from '@/components/ryh/ui/Select.vue';
 import { useMealPlanSuggestions } from '@/composables/useMealPlanSuggestions';
 import { pounds } from '@/lib/ryh';
 import { ArrowLeftRight } from 'lucide-vue-next';
@@ -91,10 +92,10 @@ const {
 
         <div v-if="shoppingLists.length > 0" class="flex flex-col gap-1.5 border-t border-ryh-line pt-4">
             <label for="ai_shopping_list" class="ryh-label">Add missing ingredients to</label>
-            <select id="ai_shopping_list" v-model="targetListId" class="ryh-input">
+            <Select id="ai_shopping_list" v-model="targetListId">
                 <option :value="null">Don't add</option>
                 <option v-for="list in shoppingLists" :key="list.id" :value="list.id">{{ list.name }}</option>
-            </select>
+            </Select>
         </div>
 
         <p v-if="acceptFailures.length > 0" class="text-[12.5px] text-ryh-coral">{{ acceptFailureMessage }}</p>

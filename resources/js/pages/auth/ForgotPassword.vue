@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import Button from '@/components/ryh/ui/Button.vue';
+import Field from '@/components/ryh/ui/Field.vue';
+import Input from '@/components/ryh/ui/Input.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
@@ -27,21 +29,19 @@ const submit = () => {
         </div>
 
         <form class="flex flex-col gap-4" @submit.prevent="submit">
-            <div class="flex flex-col gap-1.5">
-                <label for="email" class="ryh-label">Email address</label>
-                <input
+            <Field label="Email address" for="email">
+                <Input
                     id="email"
                     v-model="form.email"
                     type="email"
                     name="email"
-                    class="ryh-input"
                     required
                     autocomplete="off"
                     autofocus
                     placeholder="you@example.com"
                 />
                 <InputError :message="form.errors.email" />
-            </div>
+            </Field>
 
             <Button class="mt-2" type="submit" :disabled="form.processing">
                 <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Button from '@/components/ryh/ui/Button.vue';
+import Input from '@/components/ryh/ui/Input.vue';
 import { useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
@@ -69,13 +70,12 @@ const closeModal = () => {
 
                         <div class="flex flex-col gap-1.5">
                             <label for="password" class="sr-only">Password</label>
-                            <input
+                            <Input
                                 id="password"
                                 ref="passwordInput"
                                 v-model="form.password"
                                 type="password"
                                 name="password"
-                                class="ryh-input"
                                 required
                                 autocomplete="current-password"
                                 placeholder="Password"

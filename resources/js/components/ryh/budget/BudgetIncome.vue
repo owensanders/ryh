@@ -2,6 +2,8 @@
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import RecurringIcon from '@/components/ryh/RecurringIcon.vue';
 import Button from '@/components/ryh/ui/Button.vue';
+import Field from '@/components/ryh/ui/Field.vue';
+import Input from '@/components/ryh/ui/Input.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useConfirm } from '@/composables/useConfirm';
 import type { IncomeSourceData } from '@/types/generated';
@@ -112,23 +114,18 @@ function destroyIncome(): void {
             </DialogHeader>
 
             <form class="flex flex-col gap-4" @submit.prevent="submitIncome">
-                <div class="flex flex-col gap-1.5">
-                    <label for="income-label" class="ryh-label">Name</label>
-                    <input id="income-label" v-model="incomeForm.label" type="text" class="ryh-input" required placeholder="Salary" />
-                    <p v-if="incomeForm.errors.label" class="text-[12.5px] text-ryh-coral">{{ incomeForm.errors.label }}</p>
-                </div>
+                <Field label="Name" for="income-label" :error="incomeForm.errors.label">
+                    <Input id="income-label" v-model="incomeForm.label" type="text" required placeholder="Salary" />
+                </Field>
 
                 <div class="grid grid-cols-2 gap-3">
-                    <div class="flex flex-col gap-1.5">
-                        <label for="income-meta" class="ryh-label">Details</label>
-                        <input id="income-meta" v-model="incomeForm.meta" type="text" class="ryh-input" placeholder="Paid 28th" />
-                    </div>
+                    <Field label="Details" for="income-meta">
+                        <Input id="income-meta" v-model="incomeForm.meta" type="text" placeholder="Paid 28th" />
+                    </Field>
 
-                    <div class="flex flex-col gap-1.5">
-                        <label for="income-amount" class="ryh-label">Amount</label>
-                        <input id="income-amount" v-model="incomeForm.amount" type="text" class="ryh-input" placeholder="£" />
-                        <p v-if="incomeForm.errors.amount" class="text-[12.5px] text-ryh-coral">{{ incomeForm.errors.amount }}</p>
-                    </div>
+                    <Field label="Amount" for="income-amount" :error="incomeForm.errors.amount">
+                        <Input id="income-amount" v-model="incomeForm.amount" type="text" placeholder="£" />
+                    </Field>
                 </div>
 
                 <label class="flex items-center gap-1.5 text-[12px] text-ryh-ink3">

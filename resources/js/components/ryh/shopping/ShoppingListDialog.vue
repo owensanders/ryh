@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import Button from '@/components/ryh/ui/Button.vue';
+import Field from '@/components/ryh/ui/Field.vue';
 import IconButton from '@/components/ryh/ui/IconButton.vue';
+import Input from '@/components/ryh/ui/Input.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PALETTE } from '@/lib/ryh';
 import type { ShoppingListData } from '@/types/generated';
@@ -50,11 +52,9 @@ defineExpose({ openNew, openEdit });
             </DialogHeader>
 
             <form class="flex flex-col gap-4" @submit.prevent="submitList">
-                <div class="flex flex-col gap-1.5">
-                    <label for="list-name" class="ryh-label">Name</label>
-                    <input id="list-name" v-model="listForm.name" type="text" class="ryh-input" required placeholder="e.g. Tesco" />
-                    <p v-if="listForm.errors.name" class="text-[12.5px] text-ryh-coral">{{ listForm.errors.name }}</p>
-                </div>
+                <Field label="Name" for="list-name" :error="listForm.errors.name">
+                    <Input id="list-name" v-model="listForm.name" type="text" required placeholder="e.g. Tesco" />
+                </Field>
 
                 <div class="flex flex-col gap-1.5">
                     <span class="ryh-label">Colour</span>
