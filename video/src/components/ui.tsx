@@ -56,27 +56,16 @@ export const WarmBg: React.FC<{ palette?: Palette }> = ({ palette = light }) => 
     );
 };
 
-/**
- * The navy hero gradient, with the coral glow the app uses behind heroes.
- * `w`/`h` are the frame size; the glows and particles are placed for 1920×1080
- * and scaled to fit, so the vertical TikTok frame gets the same composition.
- */
-export const HeroBg: React.FC<{ glow?: number; gradient?: string; w?: number; h?: number }> = ({
-    glow = 1,
-    gradient = heroGradient,
-    w = 1920,
-    h = 1080,
-}) => {
+/** The navy hero gradient, with the coral glow the app uses behind heroes. */
+export const HeroBg: React.FC<{ glow?: number; gradient?: string }> = ({ glow = 1, gradient = heroGradient }) => {
     const f = useCurrentFrame();
-    const sx = w / 1920,
-        sy = h / 1080;
     return (
         <AbsoluteFill style={{ background: gradient, overflow: 'hidden' }}>
             <div
                 style={{
                     position: 'absolute',
-                    left: (1150 + Math.sin(f / 40) * 120) * sx,
-                    top: (-220 + Math.cos(f / 55) * 60) * sy,
+                    left: 1150 + Math.sin(f / 40) * 120,
+                    top: -220 + Math.cos(f / 55) * 60,
                     width: 820,
                     height: 820,
                     borderRadius: '50%',
@@ -88,8 +77,8 @@ export const HeroBg: React.FC<{ glow?: number; gradient?: string; w?: number; h?
             <div
                 style={{
                     position: 'absolute',
-                    left: (-200 + Math.cos(f / 45) * 80) * sx,
-                    top: (620 + Math.sin(f / 50) * 60) * sy,
+                    left: -200 + Math.cos(f / 45) * 80,
+                    top: 620 + Math.sin(f / 50) * 60,
                     width: 700,
                     height: 700,
                     borderRadius: '50%',
@@ -98,20 +87,19 @@ export const HeroBg: React.FC<{ glow?: number; gradient?: string; w?: number; h?
                     filter: 'blur(120px)',
                 }}
             />
-            <Particles w={w} h={h} />
+            <Particles />
         </AbsoluteFill>
     );
 };
 
-const Particles: React.FC<{ w: number; h: number }> = ({ w, h }) => {
+const Particles: React.FC = () => {
     const f = useCurrentFrame();
-    const span = h + 120;
     return (
         <AbsoluteFill>
-            {new Array(Math.round((40 * w * h) / (1920 * 1080))).fill(0).map((_, i) => {
-                const x = random(`px${i}`) * w;
+            {new Array(40).fill(0).map((_, i) => {
+                const x = random(`px${i}`) * 1920;
                 const speed = 0.3 + random(`ps${i}`) * 0.8;
-                const y = ((((random(`py${i}`) * span - f * speed) % span) + span) % span) - 60;
+                const y = (((random(`py${i}`) * 1200 - f * speed) % 1200) + 1200) % 1200 - 60;
                 const s = 2 + random(`pz${i}`) * 3;
                 return (
                     <div
@@ -254,11 +242,7 @@ export const Avatar: React.FC<{ person: Person; size?: number; radius?: number; 
     </div>
 );
 
-export const Card: React.FC<{ palette?: Palette; style?: React.CSSProperties; children?: React.ReactNode }> = ({
-    palette = light,
-    style,
-    children,
-}) => (
+export const Card: React.FC<{ palette?: Palette; style?: React.CSSProperties; children?: React.ReactNode }> = ({ palette = light, style, children }) => (
     <div
         style={{
             background: palette.card,
@@ -273,11 +257,7 @@ export const Card: React.FC<{ palette?: Palette; style?: React.CSSProperties; ch
     </div>
 );
 
-export const Chip: React.FC<{ children: React.ReactNode; palette?: Palette; style?: React.CSSProperties }> = ({
-    children,
-    palette = light,
-    style,
-}) => (
+export const Chip: React.FC<{ children: React.ReactNode; palette?: Palette; style?: React.CSSProperties }> = ({ children, palette = light, style }) => (
     <span
         style={{
             background: palette.soft,
@@ -309,31 +289,22 @@ export const Tick: React.FC<{ done: number; size?: number; palette?: Palette }> 
             transform: `scale(${1 + Math.sin(Math.min(done, 1) * Math.PI) * 0.35})`,
         }}
     >
-        <svg
-            width={size * 0.62}
-            height={size * 0.62}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke={brand.onDark}
-            strokeWidth={3.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
+        <svg width={size * 0.62} height={size * 0.62} viewBox="0 0 24 24" fill="none" stroke={brand.onDark} strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 12.5l5 5L20 6.5" pathLength={1} strokeDasharray={1} strokeDashoffset={1 - Math.min(1, done)} />
         </svg>
     </div>
 );
 
 /** A circular progress dial, like the chores score rings. */
-export const Dial: React.FC<{
-    pct: number;
-    size: number;
-    colour: string;
-    track: string;
-    thickness?: number;
-    children?: React.ReactNode;
-    inner: string;
-}> = ({ pct, size, colour, track, thickness = 9, children, inner }) => (
+export const Dial: React.FC<{ pct: number; size: number; colour: string; track: string; thickness?: number; children?: React.ReactNode; inner: string }> = ({
+    pct,
+    size,
+    colour,
+    track,
+    thickness = 9,
+    children,
+    inner,
+}) => (
     <div
         style={{
             width: size,
@@ -380,10 +351,7 @@ export const Headline: React.FC<{
     const f = useCurrentFrame();
     const words: { text: string; accent: boolean; colour?: string }[] = [];
     for (const seg of segments) {
-        if (typeof seg === 'string')
-            seg.split(' ')
-                .filter(Boolean)
-                .forEach((w) => words.push({ text: w, accent: false }));
+        if (typeof seg === 'string') seg.split(' ').filter(Boolean).forEach((w) => words.push({ text: w, accent: false }));
         else seg.accent.split(' ').forEach((w) => words.push({ text: w, accent: true, colour: seg.colour }));
     }
     return (
@@ -406,15 +374,7 @@ export const Headline: React.FC<{
             {words.map((w, i) => {
                 const p = spr(f, delay + i * stagger, springs.snappy);
                 return (
-                    <span
-                        key={i}
-                        style={{
-                            display: 'inline-block',
-                            overflow: 'hidden',
-                            padding: `0 ${size * 0.04}px ${size * 0.12}px`,
-                            margin: `0 -${size * 0.04}px -${size * 0.12}px`,
-                        }}
-                    >
+                    <span key={i} style={{ display: 'inline-block', overflow: 'hidden', padding: `0 ${size * 0.04}px ${size * 0.12}px`, margin: `0 -${size * 0.04}px -${size * 0.12}px` }}>
                         <span
                             style={{
                                 display: 'inline-block',
@@ -463,17 +423,7 @@ export const Eyebrow: React.FC<{ icon: string; label: string; delay?: number; da
                 boxShadow: dark ? undefined : '0 12px 30px -18px rgba(14,26,43,0.4)',
             }}
         >
-            <span
-                style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 11,
-                    background: dark ? brand.heroline : light.soft,
-                    display: 'grid',
-                    placeItems: 'center',
-                    fontSize: 20,
-                }}
-            >
+            <span style={{ width: 36, height: 36, borderRadius: 11, background: dark ? brand.heroline : light.soft, display: 'grid', placeItems: 'center', fontSize: 20 }}>
                 {icon}
             </span>
             {label}
@@ -517,11 +467,9 @@ export type CursorKey = { f: number; x: number; y: number };
 export const Cursor: React.FC<{ keys: CursorKey[]; clicks?: number[]; show?: [number, number] }> = ({ keys, clicks = [], show = [0, 99999] }) => {
     const f = useCurrentFrame();
     const ease = Easing.bezier(0.65, 0, 0.35, 1);
-    let x = keys[0].x,
-        y = keys[0].y;
+    let x = keys[0].x, y = keys[0].y;
     for (let i = 0; i < keys.length - 1; i++) {
-        const a = keys[i],
-            b = keys[i + 1];
+        const a = keys[i], b = keys[i + 1];
         if (f >= a.f && f <= b.f) {
             const t = ease((f - a.f) / Math.max(1, b.f - a.f));
             x = lerp(t, a.x, b.x);
@@ -575,59 +523,10 @@ export const Cursor: React.FC<{ keys: CursorKey[]; clicks?: number[]; show?: [nu
     );
 };
 
-// ---------------------------------------------------------------- launch teaser
-
-/** "Coming soon" in a coral block that slams in at `at`, tilted like a stamp. `size` is the type size. */
-export const ComingSoonStamp: React.FC<{ f: number; at: number; size: number }> = ({ f, at, size }) => {
-    const p = spr(f, at, springs.pop);
-    const ring = prog(f, at + 2, at + 30);
-    return (
-        <div style={{ position: 'relative', display: 'grid', placeItems: 'center' }}>
-            {f >= at && ring < 1 && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        inset: -size * 0.2,
-                        borderRadius: size * 0.4,
-                        border: `${size * 0.03}px solid ${brand.coral}`,
-                        transform: `scale(${1 + ring * 0.5}) rotate(-4deg)`,
-                        opacity: (1 - ring) * 0.7,
-                    }}
-                />
-            )}
-            <div
-                style={{
-                    padding: `${size * 0.1}px ${size * 0.26}px ${size * 0.14}px`,
-                    borderRadius: size * 0.22,
-                    background: brand.coral,
-                    color: 'white',
-                    fontFamily: fonts.sans,
-                    fontWeight: 900,
-                    fontSize: size,
-                    lineHeight: 1,
-                    letterSpacing: '-0.045em',
-                    whiteSpace: 'nowrap',
-                    boxShadow: `0 ${size * 0.2}px ${size * 0.5}px -${size * 0.15}px rgba(255,79,64,0.7)`,
-                    transform: `scale(${lerp(Math.min(p, 1.2), 2.6, 1)}) rotate(${lerp(p, -14, -4)}deg)`,
-                    opacity: f < at ? 0 : Math.min(1, p * 3),
-                }}
-            >
-                Coming soon
-            </div>
-        </div>
-    );
-};
-
 // ---------------------------------------------------------------- transitions
 
 /** A circle that grows from a point to cover the frame — used as a wipe. */
-export const CircleWipe: React.FC<{ start: number; len?: number; colour: string; x?: number; y?: number }> = ({
-    start,
-    len = 14,
-    colour,
-    x = 960,
-    y = 540,
-}) => {
+export const CircleWipe: React.FC<{ start: number; len?: number; colour: string; x?: number; y?: number }> = ({ start, len = 14, colour, x = 960, y = 540 }) => {
     const f = useCurrentFrame();
     const p = prog(f, start, start + len, Easing.in(Easing.cubic));
     if (p <= 0) return null;

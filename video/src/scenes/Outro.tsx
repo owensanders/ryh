@@ -1,7 +1,7 @@
 import React from 'react';
 import { AbsoluteFill, Easing, useCurrentFrame } from 'remotion';
 import { prog, range, spr, springs } from '../anim';
-import { ComingSoonStamp, Confetti, Cursor, HeroBg, RoofMark, Sfx, Wordmark } from '../components/ui';
+import { Confetti, Cursor, HeroBg, RoofMark, Sfx, Wordmark } from '../components/ui';
 import { brand, fonts } from '../theme';
 
 // The price holds for six seconds so it can be read properly, then the logo
@@ -10,56 +10,10 @@ const HIT = 180;
 const CTA = HIT + 44;
 const CLICK = HIT + 90;
 
-export const SOON_CHIPS = ['Meals & shopping', 'Chores & calendar', 'Budget & documents'];
-
-const CheckChip: React.FC<{ label: string; p: number }> = ({ label, p }) => (
-    <span
-        style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            height: 58,
-            padding: '0 22px',
-            borderRadius: 18,
-            border: `1.5px solid ${brand.heroline}`,
-            background: brand.herofilm,
-            color: brand.onhero,
-            fontSize: 24,
-            fontWeight: 700,
-            transform: `scale(${p})`,
-        }}
-    >
-        <span
-            style={{
-                width: 28,
-                height: 28,
-                borderRadius: 9,
-                background: brand.mint,
-                color: brand.onDark,
-                display: 'grid',
-                placeItems: 'center',
-                fontSize: 16,
-                fontWeight: 900,
-            }}
-        >
-            ✓
-        </span>
-        {label}
-    </span>
-);
-
-export type Ending = 'pricing' | 'comingSoon';
-
-export const DEFAULT_COMMENT_PROMPT = 'Comment what your house argues about most 👇';
-
 // 360 frames: price, then the logo on the last big chord, then the CTA, which
 // the video ends and holds on (the landing page plays it once, no loop).
-// `comingSoon` swaps the price for a launch teaser and the CTA for a follow
-// and a comment prompt, for social posts before launch. Same beats, so the
-// music still lines up.
-export const Outro: React.FC<{ ending?: Ending; commentPrompt?: string }> = ({ ending = 'pricing', commentPrompt = DEFAULT_COMMENT_PROMPT }) => {
+export const Outro: React.FC = () => {
     const f = useCurrentFrame();
-    const soon = ending === 'comingSoon';
 
     const priceIn = spr(f, 2, springs.pop);
     const priceOut = prog(f, HIT - 8, HIT + 2, Easing.in(Easing.cubic));
@@ -77,7 +31,7 @@ export const Outro: React.FC<{ ending?: Ending; commentPrompt?: string }> = ({ e
             <HeroBg glow={1 + logo * 0.4} />
             <Sfx at={0} name="riser" volume={0.45} />
             <Sfx at={4} name="swish" volume={0.4} />
-            {soon ? <Sfx at={8} name="impact" volume={0.55} /> : <Sfx at={36} name="coin" volume={0.6} />}
+            <Sfx at={36} name="coin" volume={0.6} />
             {[40, 45, 50].map((a, i) => (
                 <Sfx key={a} at={a} name="pop" volume={0.4} rate={1 + i * 0.12} />
             ))}
@@ -88,7 +42,7 @@ export const Outro: React.FC<{ ending?: Ending; commentPrompt?: string }> = ({ e
             <Sfx at={CLICK + 1} name="sparkle" volume={0.55} />
 
             {/* Pricing */}
-            {!soon && f < HIT + 4 && (
+            {f < HIT + 4 && (
                 <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center' }}>
                     <div
                         style={{
@@ -115,52 +69,40 @@ export const Outro: React.FC<{ ending?: Ending; commentPrompt?: string }> = ({ e
                             First month free
                         </span>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginTop: 30, color: brand.onhero }}>
-                            <span
-                                style={{
-                                    fontSize: 240,
-                                    fontWeight: 900,
-                                    letterSpacing: '-0.06em',
-                                    lineHeight: 1,
-                                    fontVariantNumeric: 'tabular-nums',
-                                }}
-                            >
-                                £{price.toFixed(2)}
-                            </span>
+                            <span style={{ fontSize: 240, fontWeight: 900, letterSpacing: '-0.06em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>£{price.toFixed(2)}</span>
                             <span style={{ fontSize: 44, fontWeight: 700, color: brand.onhero2 }}>/month</span>
                         </div>
                         <div style={{ fontSize: 34, fontWeight: 600, color: brand.onhero2, marginTop: 10, opacity: prog(f, 26, 38) }}>
                             or £39.99 a year · one subscription for the whole house
                         </div>
                         <div style={{ display: 'flex', gap: 14, marginTop: 36 }}>
-                            {['No card needed', 'Up to 8 people', 'Cancel anytime'].map((c, i) => (
-                                <CheckChip key={c} label={c} p={spr(f, 40 + i * 5, springs.pop)} />
-                            ))}
-                        </div>
-                    </div>
-                </AbsoluteFill>
-            )}
-
-            {/* Coming soon */}
-            {soon && f < HIT + 4 && (
-                <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center' }}>
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            transform: `scale(${(1 + hold * 0.04) * (1 - priceOut * 0.6)}) translateY(${priceOut * -200}px)`,
-                            opacity: 1 - priceOut,
-                            filter: `blur(${priceOut * 20}px)`,
-                        }}
-                    >
-                        <ComingSoonStamp f={f} at={8} size={190} />
-                        <div style={{ fontSize: 40, fontWeight: 600, color: brand.onhero2, marginTop: 44, opacity: prog(f, 26, 40) }}>
-                            One app for the <span style={{ color: brand.onhero, fontWeight: 800 }}>whole house.</span>
-                        </div>
-                        <div style={{ display: 'flex', gap: 14, marginTop: 36 }}>
-                            {SOON_CHIPS.map((c, i) => (
-                                <CheckChip key={c} label={c} p={spr(f, 40 + i * 5, springs.pop)} />
-                            ))}
+                            {['No card needed', 'Up to 8 people', 'Cancel anytime'].map((c, i) => {
+                                const p = spr(f, 40 + i * 5, springs.pop);
+                                return (
+                                    <span
+                                        key={c}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 10,
+                                            height: 58,
+                                            padding: '0 22px',
+                                            borderRadius: 18,
+                                            border: `1.5px solid ${brand.heroline}`,
+                                            background: brand.herofilm,
+                                            color: brand.onhero,
+                                            fontSize: 24,
+                                            fontWeight: 700,
+                                            transform: `scale(${p})`,
+                                        }}
+                                    >
+                                        <span style={{ width: 28, height: 28, borderRadius: 9, background: brand.mint, color: brand.onDark, display: 'grid', placeItems: 'center', fontSize: 16, fontWeight: 900 }}>
+                                            ✓
+                                        </span>
+                                        {c}
+                                    </span>
+                                );
+                            })}
                         </div>
                     </div>
                 </AbsoluteFill>
@@ -225,28 +167,10 @@ export const Outro: React.FC<{ ending?: Ending; commentPrompt?: string }> = ({ e
                             boxShadow: `0 30px 70px -20px rgba(255,79,64,${0.6 + press * 0.4})`,
                         }}
                     >
-                        {soon ? (
-                            <>
-                                <span style={{ fontSize: 46, lineHeight: 1 }}>＋</span> Follow for launch day
-                            </>
-                        ) : (
-                            <>
-                                Start your free month{' '}
-                                <span style={{ transform: `translateX(${Math.sin(f / 6) * 6}px)`, display: 'inline-block' }}>→</span>
-                            </>
-                        )}
+                        Start your free month <span style={{ transform: `translateX(${Math.sin(f / 6) * 6}px)`, display: 'inline-block' }}>→</span>
                     </div>
-                    <div
-                        style={{
-                            position: 'absolute',
-                            top: 850,
-                            fontSize: soon ? 34 : 26,
-                            fontWeight: soon ? 700 : 600,
-                            color: soon ? brand.onhero : brand.onhero2,
-                            opacity: prog(f, CTA + 14, CTA + 30),
-                        }}
-                    >
-                        {soon ? commentPrompt : 'Set it up before the kettle boils.'}
+                    <div style={{ position: 'absolute', top: 850, fontSize: 26, fontWeight: 600, color: brand.onhero2, opacity: prog(f, CTA + 14, CTA + 30) }}>
+                        Set it up before the kettle boils.
                     </div>
                 </AbsoluteFill>
             )}

@@ -35,9 +35,7 @@ export const Notifications: React.FC = () => {
             ))}
             <Sfx at={104} name="whoosh" volume={0.5} />
 
-            <div
-                style={{ position: 'absolute', top: 80, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18 }}
-            >
+            <div style={{ position: 'absolute', top: 80, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18 }}>
                 <Headline segments={['Everyone in the loop,', { accent: 'live.' }]} delay={4} size={100} colour={brand.onhero} align="center" />
                 <div style={{ fontSize: 28, fontWeight: 500, color: brand.onhero2, opacity: prog(f, 20, 36) }}>
                     Assignments, edits and reminders land the moment they happen.
@@ -130,9 +128,7 @@ export const Notifications: React.FC = () => {
                             <Avatar person={t.who} size={52} radius={16} />
                             <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ fontSize: 19, fontWeight: 800, lineHeight: 1.25 }}>{t.title}</div>
-                                <div style={{ fontSize: 17, color: light.ink2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                    {t.body}
-                                </div>
+                                <div style={{ fontSize: 17, color: light.ink2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.body}</div>
                             </div>
                             <span style={{ fontSize: 14, fontWeight: 700, color: brand.coral, alignSelf: 'flex-start' }}>now</span>
                         </div>

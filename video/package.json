@@ -6,9 +6,7 @@
     "audio": "node scripts/generate-audio.mjs",
     "studio": "npm run audio && remotion studio src/index.ts",
     "render": "npm run audio && remotion render src/index.ts RyhPromo out/ryh-promo.mp4 && npm run compress",
-    "compress": "remotion ffmpeg -y -i out/ryh-promo.mp4 -c:v libx264 -preset slow -crf 27 -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart out/ryh-promo-web.mp4",
-    "render:coming-soon": "npm run audio && remotion render src/index.ts RyhPromoComingSoon out/ryh-promo-coming-soon.mp4 --codec=h264 --crf=18 --pixel-format=yuv420p",
-    "render:tiktok": "npm run audio && node scripts/render-tiktok.mjs"
+    "compress": "remotion ffmpeg -y -i out/ryh-promo.mp4 -c:v libx264 -preset slow -crf 27 -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart out/ryh-promo-web.mp4"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.531",

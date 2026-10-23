@@ -57,23 +57,15 @@ function normalise(b, peak = 0.9) {
 // RBJ biquad band-pass with a per-sample centre frequency.
 function bandpass(input, freqAt, q = 1.2) {
     const out = new Float32Array(input.length);
-    let x1 = 0,
-        x2 = 0,
-        y1 = 0,
-        y2 = 0;
+    let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
     for (let i = 0; i < input.length; i++) {
         const w = (2 * Math.PI * Math.min(freqAt(i / SR), SR * 0.45)) / SR;
         const alpha = Math.sin(w) / (2 * q);
         const a0 = 1 + alpha;
-        const b0 = alpha / a0,
-            b2 = -alpha / a0;
-        const a1 = (-2 * Math.cos(w)) / a0,
-            a2 = (1 - alpha) / a0;
+        const b0 = alpha / a0, b2 = -alpha / a0;
+        const a1 = (-2 * Math.cos(w)) / a0, a2 = (1 - alpha) / a0;
         const y = b0 * input[i] + b2 * x2 - a1 * y1 - a2 * y2;
-        x2 = x1;
-        x1 = input[i];
-        y2 = y1;
-        y1 = y;
+        x2 = x1; x1 = input[i]; y2 = y1; y1 = y;
         out[i] = y;
     }
     return out;
@@ -88,18 +80,7 @@ const onePole = (input, cutoff) => {
 };
 
 // Bell-ish partials, used by chime, sparkle, coin and the plucks.
-function bell(
-    b,
-    start,
-    freq,
-    amp,
-    decay,
-    partials = [
-        [1, 1],
-        [2.76, 0.35],
-        [5.4, 0.12],
-    ],
-) {
+function bell(b, start, freq, amp, decay, partials = [[1, 1], [2.76, 0.35], [5.4, 0.12]]) {
     const s0 = Math.floor(start * SR);
     const len = Math.floor(decay * 5 * SR);
     for (let i = 0; i < len && s0 + i < b.length; i++) {
@@ -113,10 +94,8 @@ function bell(
 
 console.log('Sound effects');
 
-{
-    // whoosh — swept band-passed noise, swelling then gone
-    const d = 0.7,
-        n = buf(d);
+{ // whoosh — swept band-passed noise, swelling then gone
+    const d = 0.7, n = buf(d);
     for (let i = 0; i < n.length; i++) n[i] = noise();
     const f = bandpass(n, (t) => 250 * 14 ** Math.sin((Math.PI * t) / d), 0.9);
     for (let i = 0; i < f.length; i++) {
@@ -126,18 +105,15 @@ console.log('Sound effects');
     writeWav('whoosh', [normalise(f, 0.8)]);
 }
 
-{
-    // swish — shorter, brighter whoosh for card entrances
-    const d = 0.32,
-        n = buf(d);
+{ // swish — shorter, brighter whoosh for card entrances
+    const d = 0.32, n = buf(d);
     for (let i = 0; i < n.length; i++) n[i] = noise();
     const f = bandpass(n, (t) => 1200 + 5000 * (t / d), 1.4);
     for (let i = 0; i < f.length; i++) f[i] *= Math.sin((Math.PI * i) / f.length) ** 3;
     writeWav('swish', [normalise(f, 0.6)]);
 }
 
-{
-    // pop — pitch-dropping sine blip
+{ // pop — pitch-dropping sine blip
     const b = buf(0.16);
     let ph = 0;
     for (let i = 0; i < b.length; i++) {
@@ -148,8 +124,7 @@ console.log('Sound effects');
     writeWav('pop', [normalise(b, 0.8)]);
 }
 
-{
-    // tick — tiny bright double-sine for checkboxes
+{ // tick — tiny bright double-sine for checkboxes
     const b = buf(0.09);
     for (let i = 0; i < b.length; i++) {
         const t = i / SR;
@@ -158,64 +133,49 @@ console.log('Sound effects');
     writeWav('tick', [normalise(b, 0.55)]);
 }
 
-{
-    // click — UI button press
+{ // click — UI button press
     const b = buf(0.06);
     for (let i = 0; i < b.length; i++) {
         const t = i / SR;
-        b[i] = 0.6 * noise() * Math.exp(-t / 0.002) + Math.sin(2 * Math.PI * 1500 * t) * Math.exp(-t / 0.008);
+        b[i] = (0.6 * noise() * Math.exp(-t / 0.002) + Math.sin(2 * Math.PI * 1500 * t) * Math.exp(-t / 0.008));
     }
     writeWav('click', [normalise(onePole(b, 7000), 0.6)]);
 }
 
-{
-    // chime — two-note notification bell (E6 → B6)
+{ // chime — two-note notification bell (E6 → B6)
     const b = buf(2);
     bell(b, 0, midi(88), 0.7, 0.35);
     bell(b, 0.11, midi(95), 0.8, 0.45);
     writeWav('chime', [normalise(b, 0.7)]);
 }
 
-{
-    // sparkle — fast ascending pentatonic glitter
+{ // sparkle — fast ascending pentatonic glitter
     const b = buf(1.6);
     [84, 86, 89, 91, 93, 96, 98, 101].forEach((n, k) => bell(b, k * 0.045, midi(n), 0.5 - k * 0.03, 0.18));
     writeWav('sparkle', [normalise(b, 0.55)]);
 }
 
-{
-    // coin — price reveal
+{ // coin — price reveal
     const b = buf(1);
-    bell(b, 0, midi(91), 0.6, 0.08, [
-        [1, 1],
-        [2, 0.3],
-    ]);
-    bell(b, 0.07, midi(96), 0.8, 0.3, [
-        [1, 1],
-        [2, 0.3],
-        [3, 0.1],
-    ]);
+    bell(b, 0, midi(91), 0.6, 0.08, [[1, 1], [2, 0.3]]);
+    bell(b, 0.07, midi(96), 0.8, 0.3, [[1, 1], [2, 0.3], [3, 0.1]]);
     writeWav('coin', [normalise(b, 0.6)]);
 }
 
-{
-    // riser — 2s noise + sine sweep that cuts dead
-    const d = 2,
-        n = buf(d);
+{ // riser — 2s noise + sine sweep that cuts dead
+    const d = 2, n = buf(d);
     for (let i = 0; i < n.length; i++) n[i] = noise();
     const f = bandpass(n, (t) => 200 * 30 ** (t / d), 2.5);
     let ph = 0;
     for (let i = 0; i < f.length; i++) {
-        const t = i / SR,
-            p = t / d;
+        const t = i / SR, p = t / d;
         ph += (2 * Math.PI * (110 * 8 ** p)) / SR;
         f[i] = (f[i] * 1.4 + 0.25 * Math.sin(ph)) * p ** 2.2 * Math.min(1, (d - t) / 0.01);
     }
     writeWav('riser', [normalise(f, 0.7)]);
 }
 
-{
-    // impact — sub drop + crunchy transient + air tail
+{ // impact — sub drop + crunchy transient + air tail
     const b = buf(2.2);
     let ph = 0;
     for (let i = 0; i < b.length; i++) {
@@ -236,15 +196,9 @@ console.log('Music');
 // The video is 41 bars: the outro (pricing) starts at bar 35 and its logo
 // lands on the final chord three bars later. Keep these in step with the
 // scene lengths in src/RyhPromo.tsx.
-const BPM = 120,
-    BEAT = 60 / BPM,
-    BAR = BEAT * 4,
-    BARS = 41,
-    OUTRO_BAR = 35,
-    HIT_BAR = 38;
+const BPM = 120, BEAT = 60 / BPM, BAR = BEAT * 4, BARS = 41, OUTRO_BAR = 35, HIT_BAR = 38;
 const LEN = BARS * BAR + 3;
-const L = buf(LEN),
-    R = buf(LEN);
+const L = buf(LEN), R = buf(LEN);
 const chords = [
     [53, 57, 60, 65], // F
     [48, 55, 60, 64], // C
@@ -263,17 +217,11 @@ const has = (bar, part) => {
     return true;
 };
 
-const add = (ch, i, v) => {
-    if (i >= 0 && i < ch.length) ch[i] += v;
-};
-const addStereo = (i, v, pan = 0) => {
-    add(L, i, v * (1 - pan) * 0.5 + v * 0.5);
-    add(R, i, v * (1 + pan) * 0.5 + v * 0.5);
-};
+const add = (ch, i, v) => { if (i >= 0 && i < ch.length) ch[i] += v; };
+const addStereo = (i, v, pan = 0) => { add(L, i, v * (1 - pan) * 0.5 + v * 0.5); add(R, i, v * (1 + pan) * 0.5 + v * 0.5); };
 
 function kick(t0, amp = 1) {
-    const s0 = Math.floor(t0 * SR);
-    let ph = 0;
+    const s0 = Math.floor(t0 * SR); let ph = 0;
     for (let i = 0; i < 0.45 * SR; i++) {
         const t = i / SR;
         ph += (2 * Math.PI * (45 + 110 * Math.exp(-t / 0.035))) / SR;
@@ -281,8 +229,7 @@ function kick(t0, amp = 1) {
     }
 }
 function clap(t0) {
-    const s0 = Math.floor(t0 * SR),
-        len = Math.floor(0.25 * SR);
+    const s0 = Math.floor(t0 * SR), len = Math.floor(0.25 * SR);
     const n = new Float32Array(len);
     for (let i = 0; i < len; i++) {
         const t = i / SR;
@@ -293,19 +240,14 @@ function clap(t0) {
     for (let i = 0; i < len; i++) addStereo(s0 + i, f[i] * 0.3, 0.1);
 }
 function hat(t0, amp, pan) {
-    const s0 = Math.floor(t0 * SR);
-    let prev = 0;
+    const s0 = Math.floor(t0 * SR); let prev = 0;
     for (let i = 0; i < 0.06 * SR; i++) {
-        const x = noise(),
-            hp = x - prev;
-        prev = x;
+        const x = noise(), hp = x - prev; prev = x;
         addStereo(s0 + i, hp * Math.exp(-(i / SR) / 0.018) * amp, pan);
     }
 }
 function bassNote(t0, note, dur) {
-    const s0 = Math.floor(t0 * SR),
-        len = Math.floor(dur * SR),
-        f = midi(note);
+    const s0 = Math.floor(t0 * SR), len = Math.floor(dur * SR), f = midi(note);
     let y = 0;
     for (let i = 0; i < len; i++) {
         const t = i / SR;
@@ -319,16 +261,11 @@ function bassNote(t0, note, dur) {
     }
 }
 function padChord(t0, notes, dur, amp) {
-    const s0 = Math.floor(t0 * SR),
-        len = Math.floor(dur * SR);
+    const s0 = Math.floor(t0 * SR), len = Math.floor(dur * SR);
     for (const [k, note] of notes.entries()) {
         const f = midi(note + 12);
-        for (const [det, pan] of [
-            [-0.12, -0.7],
-            [0.12, 0.7],
-        ]) {
-            const fd = f * 2 ** (det / 12);
-            let y = 0;
+        for (const [det, pan] of [[-0.12, -0.7], [0.12, 0.7]]) {
+            const fd = f * 2 ** (det / 12); let y = 0;
             const a = Math.exp((-2 * Math.PI * 1800) / SR);
             const phase0 = k * 1.3 + det * 10;
             for (let i = 0; i < len; i++) {
@@ -343,8 +280,7 @@ function padChord(t0, notes, dur, amp) {
     }
 }
 function pluck(t0, note, amp, pan) {
-    const s0 = Math.floor(t0 * SR),
-        f = midi(note);
+    const s0 = Math.floor(t0 * SR), f = midi(note);
     for (let i = 0; i < 0.5 * SR; i++) {
         const t = i / SR;
         const v = Math.sin(2 * Math.PI * f * t) + 0.3 * Math.sin(2 * Math.PI * f * 2 * t) * Math.exp(-t / 0.05);
@@ -353,26 +289,18 @@ function pluck(t0, note, amp, pan) {
 }
 
 for (let bar = 0; bar < BARS; bar++) {
-    const t = bar * BAR,
-        c = bar % 4;
+    const t = bar * BAR, c = bar % 4;
     if (has(bar, 'pad')) {
         padChord(t, chords[c], BAR + 0.3, bar < 2 ? 0.5 + bar * 0.25 : 0.8);
     }
-    if (bar === HIT_BAR) {
-        kick(t, 1.3);
-        bassNote(t, roots[0], BAR * 1.5);
-    }
+    if (bar === HIT_BAR) { kick(t, 1.3); bassNote(t, roots[0], BAR * 1.5); }
     if (has(bar, 'kick')) for (let b = 0; b < 4; b++) kick(t + b * BEAT);
-    if (has(bar, 'clap')) {
-        clap(t + BEAT);
-        clap(t + 3 * BEAT);
+    if (has(bar, 'clap')) { clap(t + BEAT); clap(t + 3 * BEAT); }
+    if (has(bar, 'hat')) for (let e = 0; e < 8; e++) {
+        const off = e % 2 === 1;
+        if (bar < 5 && !off) continue;
+        hat(t + e * (BEAT / 2), off ? 0.2 : 0.08, off ? 0.4 : -0.4);
     }
-    if (has(bar, 'hat'))
-        for (let e = 0; e < 8; e++) {
-            const off = e % 2 === 1;
-            if (bar < 5 && !off) continue;
-            hat(t + e * (BEAT / 2), off ? 0.2 : 0.08, off ? 0.4 : -0.4);
-        }
     if (has(bar, 'bass')) for (let e = 0; e < 8; e++) bassNote(t + e * (BEAT / 2), roots[c] + (e === 7 ? 12 : 0), BEAT / 2 - 0.02);
     if (has(bar, 'pluck')) {
         const tones = chords[c].map((n) => n + 24);
@@ -392,12 +320,8 @@ const master = (ch) => {
         ch[i] = Math.tanh(ch[i] * 1.2) * fade;
     }
 };
-master(L);
-master(R);
+master(L); master(R);
 let peak = 0;
 for (let i = 0; i < L.length; i++) peak = Math.max(peak, Math.abs(L[i]), Math.abs(R[i]));
-for (let i = 0; i < L.length; i++) {
-    L[i] = (L[i] / peak) * 0.85;
-    R[i] = (R[i] / peak) * 0.85;
-}
+for (let i = 0; i < L.length; i++) { L[i] = (L[i] / peak) * 0.85; R[i] = (R[i] / peak) * 0.85; }
 writeWav('music', [L, R]);

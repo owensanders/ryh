@@ -76,9 +76,7 @@ export const Hook: React.FC = () => {
                                 >
                                     {q.icon}
                                 </div>
-                                <div
-                                    style={{ fontFamily: fonts.sans, fontWeight: 900, fontSize: 132, letterSpacing: '-0.045em', color: brand.onhero }}
-                                >
+                                <div style={{ fontFamily: fonts.sans, fontWeight: 900, fontSize: 132, letterSpacing: '-0.045em', color: brand.onhero }}>
                                     {q.text}
                                 </div>
                             </div>

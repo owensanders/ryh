@@ -48,11 +48,9 @@ export const Dashboard: React.FC = () => {
             <Sfx at={0} name="whoosh" volume={0.5} />
             <Sfx at={48} name="swish" volume={0.4} />
             <Sfx at={60} name="swish" volume={0.35} rate={1.2} />
-            {list
-                .filter((i) => i.tick)
-                .map((i, k) => (
-                    <Sfx key={i.name} at={i.tick} name="tick" volume={0.7} rate={1 + k * 0.1} />
-                ))}
+            {list.filter((i) => i.tick).map((i, k) => (
+                <Sfx key={i.name} at={i.tick} name="tick" volume={0.7} rate={1 + k * 0.1} />
+            ))}
             <Sfx at={150} name="pop" volume={0.5} />
             <Sfx at={220} name="whoosh" volume={0.5} />
 
@@ -78,19 +76,7 @@ export const Dashboard: React.FC = () => {
                                     flex: 'none',
                                 }}
                             >
-                                <div
-                                    style={{
-                                        position: 'absolute',
-                                        top: -120,
-                                        right: 200,
-                                        width: 360,
-                                        height: 360,
-                                        borderRadius: '50%',
-                                        background: brand.coral,
-                                        opacity: 0.25,
-                                        filter: 'blur(60px)',
-                                    }}
-                                />
+                                <div style={{ position: 'absolute', top: -120, right: 200, width: 360, height: 360, borderRadius: '50%', background: brand.coral, opacity: 0.25, filter: 'blur(60px)' }} />
                                 <div
                                     style={{
                                         display: 'inline-flex',
@@ -107,19 +93,9 @@ export const Dashboard: React.FC = () => {
                                         textTransform: 'uppercase',
                                     }}
                                 >
-                                    <span style={{ transform: `scale(${1 + Math.sin(f / 5) * 0.12})`, display: 'inline-block' }}>🔥</span> {streak}{' '}
-                                    day streak
+                                    <span style={{ transform: `scale(${1 + Math.sin(f / 5) * 0.12})`, display: 'inline-block' }}>🔥</span> {streak} day streak
                                 </div>
-                                <div
-                                    style={{
-                                        position: 'relative',
-                                        marginTop: 14,
-                                        fontSize: 52,
-                                        fontWeight: 900,
-                                        letterSpacing: '-0.035em',
-                                        lineHeight: 1.05,
-                                    }}
-                                >
+                                <div style={{ position: 'relative', marginTop: 14, fontSize: 52, fontWeight: 900, letterSpacing: '-0.035em', lineHeight: 1.05 }}>
                                     {typed}
                                     <span style={{ opacity: f < 60 && Math.floor(f / 8) % 2 === 0 ? 1 : 0, color: brand.coral }}>|</span>
                                 </div>
@@ -223,9 +199,7 @@ export const Dashboard: React.FC = () => {
                                 <Card style={{ ...rise(58), padding: 24 }}>
                                     <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 8 }}>
                                         <span style={{ fontSize: 19, fontWeight: 800 }}>Tesco list</span>
-                                        <span style={{ marginLeft: 'auto', fontFamily: fonts.mono, fontSize: 15, color: light.ink3 }}>
-                                            {7 - ticked} left
-                                        </span>
+                                        <span style={{ marginLeft: 'auto', fontFamily: fonts.mono, fontSize: 15, color: light.ink3 }}>{7 - ticked} left</span>
                                     </div>
                                     {list.map((item, i) => {
                                         const d = item.tick ? prog(f, item.tick, item.tick + 8) : 0;
@@ -245,17 +219,17 @@ export const Dashboard: React.FC = () => {
                                                 <Tick done={d} />
                                                 <span style={{ flex: 1, fontSize: 18, color: d > 0.5 ? light.ink3 : light.ink }}>
                                                     <span style={{ position: 'relative' }}>
-                                                        {item.name}
-                                                        <span
-                                                            style={{
-                                                                position: 'absolute',
-                                                                left: 0,
-                                                                top: '52%',
-                                                                height: 2,
-                                                                width: `${d * 100}%`,
-                                                                background: light.ink3,
-                                                            }}
-                                                        />
+                                                    {item.name}
+                                                    <span
+                                                        style={{
+                                                            position: 'absolute',
+                                                            left: 0,
+                                                            top: '52%',
+                                                            height: 2,
+                                                            width: `${d * 100}%`,
+                                                            background: light.ink3,
+                                                        }}
+                                                    />
                                                     </span>
                                                 </span>
                                                 <span style={{ fontFamily: fonts.mono, fontSize: 14, color: light.ink3 }}>{item.qty}</span>
@@ -277,16 +251,7 @@ export const Dashboard: React.FC = () => {
                                     </div>
                                 </Card>
                                 <Card style={{ ...rise(76), padding: '20px 24px' }}>
-                                    <div
-                                        style={{
-                                            fontSize: 15,
-                                            fontWeight: 800,
-                                            letterSpacing: '0.08em',
-                                            textTransform: 'uppercase',
-                                            color: light.ink3,
-                                            marginBottom: 10,
-                                        }}
-                                    >
+                                    <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: light.ink3, marginBottom: 10 }}>
                                         Coming up
                                     </div>
                                     <div style={{ display: 'flex', gap: 10 }}>

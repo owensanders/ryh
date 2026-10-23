@@ -1,8 +1,8 @@
 import React from 'react';
-import { AbsoluteFill, useCurrentFrame } from 'remotion';
+import { AbsoluteFill, Easing, useCurrentFrame } from 'remotion';
 import { lerp, prog, range, spr, springs } from '../anim';
 import { Avatar, Card, CircleWipe, Cursor, Dial, Eyebrow, Headline, Sfx, Sub, Tick, WarmBg } from '../components/ui';
-import { brand, family, fonts, light, people, Person } from '../theme';
+import { brand, family, fonts, light, Person, people } from '../theme';
 
 type Chore = { id: string; name: string; who: Person; moveAt?: number };
 
@@ -23,8 +23,7 @@ const all = [...today, ...done];
 const B = { x: 690, y: 140, w: 1140, h: 790, pad: 28 };
 const colW = (B.w - B.pad * 2 - 20) / 2;
 const colTop = B.y + B.pad + 74 + 160 + 50;
-const rowH = 76,
-    rowGap = 10;
+const rowH = 76, rowGap = 10;
 const NOTIFY = 176;
 const btn = { x: B.x + B.w - B.pad - 120, y: B.y + B.pad + 28 };
 
@@ -74,14 +73,7 @@ export const Chores: React.FC = () => {
                 </Sub>
             </div>
 
-            <div
-                style={{
-                    position: 'absolute',
-                    left: B.x,
-                    top: B.y,
-                    transform: `translateX(${(1 - boardIn) * 1000}px) rotate(${(1 - boardIn) * 5}deg)`,
-                }}
-            >
+            <div style={{ position: 'absolute', left: B.x, top: B.y, transform: `translateX(${(1 - boardIn) * 1000}px) rotate(${(1 - boardIn) * 5}deg)` }}>
                 <Card style={{ width: B.w, height: B.h, padding: B.pad }}>
                     <div style={{ height: 74, display: 'flex', alignItems: 'flex-start' }}>
                         <div>
@@ -120,18 +112,7 @@ export const Chores: React.FC = () => {
                             const shown = intro * (((d0 + Math.max(0, extra - 1) + grow) / total) * 100);
                             const bump = last ? range(f, [last.moveAt! + 6, last.moveAt! + 12, last.moveAt! + 24], [0, 1, 0]) : 0;
                             return (
-                                <div
-                                    key={p.initials}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 14,
-                                        padding: 16,
-                                        borderRadius: 20,
-                                        background: light.panel,
-                                        transform: `scale(${1 + bump * 0.05})`,
-                                    }}
-                                >
+                                <div key={p.initials} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: 16, borderRadius: 20, background: light.panel, transform: `scale(${1 + bump * 0.05})` }}>
                                     <Dial pct={shown} size={84} colour={p.colour} track={light.sunk} inner={light.panel} thickness={9}>
                                         <Avatar person={p} size={46} radius={14} />
                                     </Dial>
@@ -194,17 +175,7 @@ export const Chores: React.FC = () => {
                         }}
                     >
                         <Tick done={tickP} size={30} />
-                        <span
-                            style={{
-                                flex: 1,
-                                fontSize: 19,
-                                fontWeight: 700,
-                                color: ticked ? light.ink3 : light.ink,
-                                textDecoration: ticked ? 'line-through' : undefined,
-                            }}
-                        >
-                            {c.name}
-                        </span>
+                        <span style={{ flex: 1, fontSize: 19, fontWeight: 700, color: ticked ? light.ink3 : light.ink, textDecoration: ticked ? 'line-through' : undefined }}>{c.name}</span>
                         <Avatar person={c.who} size={38} radius={11} />
                     </div>
                 );

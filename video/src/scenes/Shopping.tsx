@@ -56,51 +56,19 @@ export const Shopping: React.FC = () => {
             <Sfx at={164} name="whoosh" volume={0.5} />
 
             {/* Recipe card */}
-            <div
-                style={{
-                    position: 'absolute',
-                    left: R.x,
-                    top: R.y,
-                    transform: `translateY(${(1 - recipeIn) * 700}px) rotate(${(1 - recipeIn) * -10}deg)`,
-                }}
-            >
+            <div style={{ position: 'absolute', left: R.x, top: R.y, transform: `translateY(${(1 - recipeIn) * 700}px) rotate(${(1 - recipeIn) * -10}deg)` }}>
                 <Card style={{ width: R.w, padding: 24, fontFamily: fonts.sans }}>
                     <div style={{ height: 180, borderRadius: 20, background: tints[0], padding: 20, display: 'flex', flexDirection: 'column' }}>
-                        <span
-                            style={{
-                                alignSelf: 'flex-start',
-                                fontSize: 14,
-                                fontWeight: 800,
-                                padding: '5px 10px',
-                                borderRadius: 9,
-                                background: 'rgba(255,255,255,0.6)',
-                            }}
-                        >
+                        <span style={{ alignSelf: 'flex-start', fontSize: 14, fontWeight: 800, padding: '5px 10px', borderRadius: 9, background: 'rgba(255,255,255,0.6)' }}>
                             ♥ Favourite · 45 min
                         </span>
-                        <div style={{ marginTop: 'auto', fontSize: 34, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.05 }}>
-                            Lemon chicken traybake
-                        </div>
+                        <div style={{ marginTop: 'auto', fontSize: 34, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.05 }}>Lemon chicken traybake</div>
                     </div>
-                    <div
-                        style={{
-                            fontSize: 14,
-                            fontWeight: 800,
-                            letterSpacing: '0.08em',
-                            textTransform: 'uppercase',
-                            color: light.ink3,
-                            margin: '22px 0 8px',
-                        }}
-                    >
-                        Ingredients
-                    </div>
+                    <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: light.ink3, margin: '22px 0 8px' }}>Ingredients</div>
                     {ingredients.map((ing, i) => {
                         const gone = prog(f, launch(i), launch(i) + 4);
                         return (
-                            <div
-                                key={ing.name}
-                                style={{ height: 50, display: 'flex', alignItems: 'center', fontSize: 19, borderTop: `1.5px solid ${light.line}` }}
-                            >
+                            <div key={ing.name} style={{ height: 50, display: 'flex', alignItems: 'center', fontSize: 19, borderTop: `1.5px solid ${light.line}` }}>
                                 <span style={{ flex: 1 }}>{ing.name}</span>
                                 <span style={{ fontFamily: fonts.mono, fontSize: 15, color: light.ink3 }}>{ing.qty}</span>
                                 <span style={{ marginLeft: 12, width: 22, color: brand.mint, fontWeight: 900, opacity: gone }}>✓</span>
@@ -128,9 +96,7 @@ export const Shopping: React.FC = () => {
             </div>
 
             {/* Shopping list card */}
-            <div
-                style={{ position: 'absolute', left: L.x, top: L.y, transform: `translateY(${(1 - listIn) * 800}px) rotate(${(1 - listIn) * 8}deg)` }}
-            >
+            <div style={{ position: 'absolute', left: L.x, top: L.y, transform: `translateY(${(1 - listIn) * 800}px) rotate(${(1 - listIn) * 8}deg)` }}>
                 <Card style={{ width: L.w, height: L.h, padding: 26, fontFamily: fonts.sans, position: 'relative', overflow: 'hidden' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', height: 50 }}>
                         <span style={{ fontSize: 32, fontWeight: 900, letterSpacing: '-0.03em' }}>Tesco</span>
@@ -170,12 +136,7 @@ export const Shopping: React.FC = () => {
                     </div>
                     <div style={{ height: 30 }} />
                     {items.map((it, i) => {
-                        const arrived =
-                            i < 3
-                                ? spr(f, 20 + i * 4, springs.snappy)
-                                : f >= launch(i - 3) + FLIGHT
-                                  ? spr(f, launch(i - 3) + FLIGHT, springs.bouncy)
-                                  : 0;
+                        const arrived = i < 3 ? spr(f, 20 + i * 4, springs.snappy) : f >= launch(i - 3) + FLIGHT ? spr(f, launch(i - 3) + FLIGHT, springs.bouncy) : 0;
                         const d = ticks[it.name] ? prog(f, ticks[it.name], ticks[it.name] + 8) : 0;
                         return (
                             <div
@@ -188,10 +149,7 @@ export const Shopping: React.FC = () => {
                                     opacity: Math.min(1, arrived * 1.5),
                                     transform: `scale(${0.6 + arrived * 0.4})`,
                                     transformOrigin: 'left center',
-                                    background:
-                                        i >= 3
-                                            ? `rgba(61,220,151,${0.14 * (1 - prog(f, launch(i - 3) + FLIGHT, launch(i - 3) + FLIGHT + 30))})`
-                                            : undefined,
+                                    background: i >= 3 ? `rgba(61,220,151,${0.14 * (1 - prog(f, launch(i - 3) + FLIGHT, launch(i - 3) + FLIGHT + 30))})` : undefined,
                                     borderRadius: 12,
                                     margin: '0 -10px',
                                     padding: '0 10px',
@@ -201,16 +159,7 @@ export const Shopping: React.FC = () => {
                                 <span style={{ flex: 1, fontSize: 20, color: d > 0.5 ? light.ink3 : light.ink }}>
                                     <span style={{ position: 'relative' }}>
                                         {it.name}
-                                        <span
-                                            style={{
-                                                position: 'absolute',
-                                                left: 0,
-                                                top: '52%',
-                                                height: 2,
-                                                width: `${d * 100}%`,
-                                                background: light.ink3,
-                                            }}
-                                        />
+                                        <span style={{ position: 'absolute', left: 0, top: '52%', height: 2, width: `${d * 100}%`, background: light.ink3 }} />
                                     </span>
                                 </span>
                                 <span style={{ fontFamily: fonts.mono, fontSize: 15, color: light.ink3 }}>{it.qty}</span>
@@ -238,19 +187,7 @@ export const Shopping: React.FC = () => {
                             opacity: toast,
                         }}
                     >
-                        <span
-                            style={{
-                                width: 34,
-                                height: 34,
-                                borderRadius: 10,
-                                background: brand.mint,
-                                display: 'grid',
-                                placeItems: 'center',
-                                color: dark.bg,
-                            }}
-                        >
-                            ✓
-                        </span>
+                        <span style={{ width: 34, height: 34, borderRadius: 10, background: brand.mint, display: 'grid', placeItems: 'center', color: dark.bg }}>✓</span>
                         5 ingredients added to Tesco
                     </div>
                 </Card>
@@ -292,12 +229,7 @@ export const Shopping: React.FC = () => {
 
             <div style={{ position: 'absolute', left: 1250, top: 300, width: 590 }}>
                 <Eyebrow icon="🛒" label="Shopping lists" delay={10} />
-                <Headline
-                    segments={['Every shop,', { accent: 'one list', colour: brand.mint }, 'away.']}
-                    delay={16}
-                    size={92}
-                    style={{ marginTop: 30 }}
-                />
+                <Headline segments={['Every shop,', { accent: 'one list', colour: brand.mint }, 'away.']} delay={16} size={92} style={{ marginTop: 30 }} />
                 <Sub delay={36} style={{ marginTop: 26 }}>
                     Tesco, Aldi, DIY, Christmas — as many lists as you need. Send a recipe's ingredients across in one tap.
                 </Sub>
