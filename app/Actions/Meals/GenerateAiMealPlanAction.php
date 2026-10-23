@@ -6,6 +6,7 @@ namespace App\Actions\Meals;
 
 use App\Ai\Agents\MealPlanAgent;
 use App\Ai\AiConfigService;
+use App\Ai\MealSuggestionCheckService;
 use App\Data\MealSuggestionData;
 use App\Enums\AiMealPlanStatusEnum;
 use App\Events\AiMealPlanFinishedEvent;
@@ -34,6 +35,8 @@ class GenerateAiMealPlanAction
     private const int RECENT_RECIPES = 10;
 
     private const int LOCK_SECONDS = 180;
+
+    public function __construct(private readonly MealSuggestionCheckService $check) {}
 
     /**
      * Whether the household may have a plan now. Asked when the request comes
@@ -139,7 +142,7 @@ class GenerateAiMealPlanAction
         );
 
         try {
-            $response = $agent->prompt('Suggest this week\'s dinners.');
+            $response = $agent->prompt($agent->message());
         } catch (InsufficientCreditsException $e) {
             $this->pauseForMissingCredit($e);
 
@@ -155,13 +158,22 @@ class GenerateAiMealPlanAction
             throw new LogicException('MealPlanAgent answered without its structured schema.');
         }
 
+        // Only what passes the check is shown; the rest is dropped, and counted here.
+        $suggested = is_array($response['meals'] ?? null) ? $response['meals'] : [];
+        $usable = $this->check->usable($suggested);
+
         Log::info('AI meal plan generated', [
             'household_id' => $household->id,
             'input_tokens' => $response->usage->promptTokens,
             'output_tokens' => $response->usage->completionTokens,
+            'meals_dropped' => count($suggested) - count($usable),
         ]);
 
-        return array_map(MealSuggestionData::fromAi(...), $response['meals']);
+        if ($usable === []) {
+            throw MealPlanUnavailableException::unusableAnswer();
+        }
+
+        return array_map(MealSuggestionData::fromAi(...), $usable);
     }
 
     /** @return array<int, string> */

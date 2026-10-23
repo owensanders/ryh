@@ -20,8 +20,10 @@ class MealPlanAgentTest extends TestCase
         $instructions = (string) $agent->instructions();
 
         $this->assertStringContainsString(CookingConfidenceEnum::Beginner->instruction(), $instructions);
-        $this->assertStringContainsString('use these up first', $instructions);
-        $this->assertStringContainsString('chickpeas, spinach', $instructions);
+        $this->assertStringContainsString('use up the ingredients in "use_up" first', $instructions);
+        $this->assertStringNotContainsString('chickpeas', $instructions);
+        $this->assertStringContainsString('"use_up": [', $agent->message());
+        $this->assertStringContainsString('"chickpeas"', $agent->message());
         $this->assertStringContainsString('£85', $instructions);
         $this->assertStringContainsString('sentence case', $instructions);
     }
@@ -29,7 +31,10 @@ class MealPlanAgentTest extends TestCase
     #[Test]
     public function itLeavesOutTheUseUpLineWhenThereIsNothingToUseUp(): void
     {
-        $this->assertStringNotContainsString('use these up first', (string) $this->agent(CookingConfidenceEnum::Comfortable, [])->instructions());
+        $agent = $this->agent(CookingConfidenceEnum::Comfortable, []);
+
+        $this->assertStringNotContainsString('use_up', (string) $agent->instructions());
+        $this->assertSame("Suggest this week's dinners.", $agent->message());
     }
 
     #[Test]
@@ -40,6 +45,7 @@ class MealPlanAgentTest extends TestCase
         $recipe = $schema['meals']->toArray()['items']['properties'];
 
         $this->assertArrayHasKey('estimated_cost', $recipe);
+        $this->assertSame(['Easy', 'Medium', 'Hard'], $recipe['difficulty']['enum']);
         $this->assertSame('number', $recipe['estimated_cost']['type']);
     }
 
@@ -58,16 +64,16 @@ class MealPlanAgentTest extends TestCase
     #[Test]
     public function itAsksForSharedBaseDinnersWhenNotesDescribeMixedDiets(): void
     {
-        $instructions = (string) $this->agent(CookingConfidenceEnum::Comfortable, [], 'My wife is pescatarian but I eat meat')->instructions();
+        $agent = $this->agent(CookingConfidenceEnum::Comfortable, [], 'My wife is pescatarian but I eat meat');
 
-        $this->assertStringContainsString('"My wife is pescatarian but I eat meat"', $instructions);
-        $this->assertStringContainsString('shares one base with a simple swap', $instructions);
+        $this->assertStringContainsString('"notes": "My wife is pescatarian but I eat meat"', $agent->message());
+        $this->assertStringContainsString('shares one base with a simple swap', (string) $agent->instructions());
     }
 
     #[Test]
     public function itLeavesNotesOutWhenThereAreNone(): void
     {
-        $this->assertStringNotContainsString('Notes from the household', (string) $this->agent(CookingConfidenceEnum::Comfortable, [])->instructions());
+        $this->assertStringNotContainsString('"notes"', (string) $this->agent(CookingConfidenceEnum::Comfortable, [])->instructions());
     }
 
     #[Test]

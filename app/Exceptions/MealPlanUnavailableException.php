@@ -44,6 +44,12 @@ final class MealPlanUnavailableException extends UserFacingException
         return new self('We couldn\'t generate a meal plan right now — please try again in a few minutes.', previous: $previous);
     }
 
+    /** The AI answered, but nothing it suggested passed MealSuggestionCheckService. */
+    public static function unusableAnswer(): self
+    {
+        return new self('We couldn\'t generate a meal plan right now — please try again in a few minutes.');
+    }
+
     public static function noMatchingRecipes(): self
     {
         return new self('None of your saved recipes match — try loosening the filters or add more recipes.');
