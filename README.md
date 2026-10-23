@@ -212,6 +212,11 @@ The ideas that shape it:
   Stripe webhooks are handled once each, however often they're delivered.
 - **Each household has a time zone.** Its day turns over at its own midnight
   (`$household->today()`). Event times are stored in UTC and shown on its clock.
+- **What people type never instructs the AI.** The meal plan form's free text
+  is cleaned to short plain lines and sent as JSON data the instructions say
+  not to obey (`MealPlanAgent::message()`), and every suggestion is checked
+  before it's shown (`MealSuggestionCheckService`): the exact schema, saveable
+  lengths, and no links, markup or talk of instructions.
 
 ### In the browser
 

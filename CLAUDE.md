@@ -211,6 +211,15 @@ The browser gets dates it needs from the server (`todayDate`, `hasEnded`,
 greeting or "today's date" for the reader comes from their own clock
 (`lib/clock.ts`).
 
+## AI
+
+Text a person typed goes to the AI only as data in the user message
+(`MealPlanAgent::message()`), never into `instructions()`, which may hold
+only our own words and validated enum values. The form request cleans it
+first (`NormalisesInputTrait::plainText()`, length limits). Whatever the AI
+answers passes `MealSuggestionCheckService` before anyone sees it, and a
+plan with nothing usable fails without using the household's week.
+
 ## Transactions
 
 An action that writes more than once wraps the writes in `DB::transaction`.
