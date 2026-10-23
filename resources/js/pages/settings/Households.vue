@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import LeaveHousehold from '@/components/LeaveHousehold.vue';
-import Button from '@/components/ryh/ui/Button.vue';
+import Button from '@/components/ui/Button.vue';
+import Card from '@/components/ui/Card.vue';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
@@ -23,7 +24,7 @@ function switchTo(householdId: number): void {
 <template>
     <RyhLayout title="Settings" subtitle="Switch households or leave one you no longer need">
         <SettingsLayout>
-            <section class="rounded-[22px] border border-ryh-line bg-ryh-card p-4 sm:p-[22px]">
+            <Card as="section">
                 <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">Your households</h3>
                 <p class="mt-1 text-[13px] text-ryh-ink3">Switch which household is open, or leave one you belong to.</p>
 
@@ -85,7 +86,7 @@ function switchTo(householdId: number): void {
                     </span>
                     <Button variant="card" class="w-full px-4 sm:w-auto" :href="route('household.setup')">Add household</Button>
                 </div>
-            </section>
+            </Card>
         </SettingsLayout>
     </RyhLayout>
 </template>

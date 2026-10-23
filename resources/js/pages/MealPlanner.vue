@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import AiMealPlanDialog from '@/components/ryh/ai-meal-plan/AiMealPlanDialog.vue';
-import MealDialog from '@/components/ryh/meals/MealDialog.vue';
-import MealPlannerWeek from '@/components/ryh/meals/MealPlannerWeek.vue';
-import RecipeLibraryStrip from '@/components/ryh/meals/RecipeLibraryStrip.vue';
-import Button from '@/components/ryh/ui/Button.vue';
+import AiMealPlanDialog from '@/components/ai-meal-plan/AiMealPlanDialog.vue';
+import MealDialog from '@/components/meals/MealDialog.vue';
+import MealPlannerWeek from '@/components/meals/MealPlannerWeek.vue';
+import RecipeLibraryStrip from '@/components/meals/RecipeLibraryStrip.vue';
+import Button from '@/components/ui/Button.vue';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import { provideMealEditor } from '@/composables/useMealEditor';
 import RyhLayout from '@/layouts/RyhLayout.vue';

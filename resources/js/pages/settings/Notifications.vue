@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import Button from '@/components/ryh/ui/Button.vue';
-import IconButton from '@/components/ryh/ui/IconButton.vue';
+import Button from '@/components/ui/Button.vue';
+import Card from '@/components/ui/Card.vue';
+import IconButton from '@/components/ui/IconButton.vue';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
@@ -69,7 +70,7 @@ function toggle(category: PushCategoryData): void {
 <template>
     <RyhLayout title="Settings" subtitle="Manage your profile and account">
         <SettingsLayout>
-            <section class="rounded-[22px] border border-ryh-line bg-ryh-card p-4 sm:p-[22px]" aria-labelledby="device-heading">
+            <Card as="section" aria-labelledby="device-heading">
                 <h3 id="device-heading" class="text-[15px] font-extrabold tracking-[-0.01em]">This device</h3>
                 <p class="mt-1 text-[13px] text-ryh-ink3">Get a notification on this phone or computer when something in the household needs you.</p>
 
@@ -114,9 +115,9 @@ function toggle(category: PushCategoryData): void {
                     </div>
                     <p v-if="error" class="mt-2 text-[12.5px] font-semibold text-ryh-coral" role="alert">{{ error }}</p>
                 </div>
-            </section>
+            </Card>
 
-            <section class="rounded-[22px] border border-ryh-line bg-ryh-card p-4 sm:p-[22px]" aria-labelledby="categories-heading">
+            <Card as="section" aria-labelledby="categories-heading">
                 <h3 id="categories-heading" class="text-[15px] font-extrabold tracking-[-0.01em]">What to send</h3>
                 <p class="mt-1 text-[13px] text-ryh-ink3">
                     Applies to every device you've turned notifications on for. The bell in RYH always shows everything.
@@ -143,7 +144,7 @@ function toggle(category: PushCategoryData): void {
                         </IconButton>
                     </div>
                 </div>
-            </section>
+            </Card>
         </SettingsLayout>
     </RyhLayout>
 </template>

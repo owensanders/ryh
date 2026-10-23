@@ -221,7 +221,7 @@ The ideas that shape it:
 ### In the browser
 
 Pages in `resources/js/pages` declare their props and lay out components from
-`components/ryh/<area>/`. Editors that several components share (a calendar's
+`components/<area>/`, built from the controls in `components/ui/`. Editors that several components share (a calendar's
 event dialog and grid, say) live in a composable reached through
 provide/inject. Ticks and drags update at once with `useOptimistic()` and
 reconcile with the server's answer; writes reload only the props they change

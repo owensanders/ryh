@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import RyhLogo from '@/components/ryh/RyhLogo.vue';
-import Toast from '@/components/ryh/Toast.vue';
-import Button from '@/components/ryh/ui/Button.vue';
+import RyhLogo from '@/components/RyhLogo.vue';
+import Toast from '@/components/Toast.vue';
+import Button from '@/components/ui/Button.vue';
 import { logout } from '@/lib/logout';
 import type { SharedData } from '@/types';
 import type { HouseholdOptionData } from '@/types/generated';

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import RyhLogo from '@/components/ryh/RyhLogo.vue';
-import IconButton from '@/components/ryh/ui/IconButton.vue';
+import RyhLogo from '@/components/RyhLogo.vue';
+import IconButton from '@/components/ui/IconButton.vue';
 import { useAppearance } from '@/composables/useAppearance';
 import type { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';

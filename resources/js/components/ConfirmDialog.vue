@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Button from '@/components/ryh/ui/Button.vue';
+import Button from '@/components/ui/Button.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 defineProps<{

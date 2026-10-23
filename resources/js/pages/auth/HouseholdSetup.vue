@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import GuardianConfirm from '@/components/GuardianConfirm.vue';
 import InputError from '@/components/InputError.vue';
-import GuardianConfirm from '@/components/ryh/GuardianConfirm.vue';
-import Button from '@/components/ryh/ui/Button.vue';
-import Field from '@/components/ryh/ui/Field.vue';
-import Input from '@/components/ryh/ui/Input.vue';
-import Select from '@/components/ryh/ui/Select.vue';
+import Button from '@/components/ui/Button.vue';
+import Field from '@/components/ui/Field.vue';
+import Input from '@/components/ui/Input.vue';
+import Select from '@/components/ui/Select.vue';
 import AuthWizardLayout from '@/layouts/auth/AuthWizardLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';

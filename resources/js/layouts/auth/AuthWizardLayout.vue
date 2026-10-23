@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import RyhLogo from '@/components/ryh/RyhLogo.vue';
-import Toast from '@/components/ryh/Toast.vue';
+import RyhLogo from '@/components/RyhLogo.vue';
+import Toast from '@/components/Toast.vue';
 import { logout } from '@/lib/logout';
 import { Link } from '@inertiajs/vue3';
 

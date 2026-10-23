@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import ShoppingListDialog from '@/components/ryh/shopping/ShoppingListDialog.vue';
-import ShoppingListPanel from '@/components/ryh/shopping/ShoppingListPanel.vue';
-import Button from '@/components/ryh/ui/Button.vue';
+import ShoppingListDialog from '@/components/shopping/ShoppingListDialog.vue';
+import ShoppingListPanel from '@/components/shopping/ShoppingListPanel.vue';
+import Button from '@/components/ui/Button.vue';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';

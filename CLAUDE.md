@@ -168,7 +168,7 @@ binding in `AppServiceProvider`.
 ## Frontend structure
 
 - A page in `resources/js/pages` declares its props and lays out components
-  from `components/ryh/<area>/` (`landing/` for the public site). Aim for no
+  from `components/<area>/` (`landing/` for the public site). Aim for no
   file over about 250 lines; the legal pages are long prose and exempt.
 - State several components share (an editor's form and what's open) lives
   in a composable they reach through provide/inject: the page calls
@@ -177,15 +177,18 @@ binding in `AppServiceProvider`.
 - A dialog only one place opens exposes `openNew()`/`openEdit()` through
   `defineExpose`, and the parent calls it through a template ref.
 - Confirm-then-delete uses `useConfirm()` with `ConfirmDialog`.
-- Controls come from `components/ryh/ui`: `Button` (`variant` primary,
+- Controls come from `components/ui`: `Button` (`variant` primary,
   secondary, danger, dark or card; `href` makes it a link) for anything
   styled `ryh-btn`, and `IconButton` for a button that shows only an icon.
   Its `label` prop is required and becomes the accessible name and tooltip.
-  Inside a reka-ui trigger, wrap them with `as-child`. Form controls are
+  Inside a dialog's trigger or close, wrap them with `as-child`. Form controls are
   `Input`, `Select` and `Textarea` (`v-model`; other attributes pass
   through), inside a `Field` (`label`, `for` = the control's id, `error`,
   `hint`), which links the label and marks the control invalid and
-  described by its error.
+  described by its error. A bordered panel is a `Card` (`as` for a
+  section), and a small soft label a `Badge` (`mono` for times and costs).
+  `ui/dialog` and `ui/tooltip` are shadcn-vue's, generated: change them
+  only to fix them.
 
 ## Frontend writes
 

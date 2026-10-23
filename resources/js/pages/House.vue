@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import HouseHero from '@/components/ryh/house/HouseHero.vue';
-import HouseMembers from '@/components/ryh/house/HouseMembers.vue';
-import HousePlan from '@/components/ryh/house/HousePlan.vue';
-import HouseRoles from '@/components/ryh/house/HouseRoles.vue';
-import HouseTimezone from '@/components/ryh/house/HouseTimezone.vue';
+import HouseHero from '@/components/house/HouseHero.vue';
+import HouseMembers from '@/components/house/HouseMembers.vue';
+import HousePlan from '@/components/house/HousePlan.vue';
+import HouseRoles from '@/components/house/HouseRoles.vue';
+import HouseTimezone from '@/components/house/HouseTimezone.vue';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import type { HouseData } from '@/types/generated';

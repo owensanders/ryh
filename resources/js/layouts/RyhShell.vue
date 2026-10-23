@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import InstallPrompt from '@/components/ryh/InstallPrompt.vue';
-import NotificationBell from '@/components/ryh/NotificationBell.vue';
-import RyhLogo from '@/components/ryh/RyhLogo.vue';
-import Toast from '@/components/ryh/Toast.vue';
-import IconButton from '@/components/ryh/ui/IconButton.vue';
+import InstallPrompt from '@/components/InstallPrompt.vue';
+import NotificationBell from '@/components/NotificationBell.vue';
+import RyhLogo from '@/components/RyhLogo.vue';
+import Toast from '@/components/Toast.vue';
+import IconButton from '@/components/ui/IconButton.vue';
 import { useAppearance } from '@/composables/useAppearance';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import { logout } from '@/lib/logout';

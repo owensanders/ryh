@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import RyhLogo from '@/components/ryh/RyhLogo.vue';
+import RyhLogo from '@/components/RyhLogo.vue';
 import { useSubscribe } from '@/composables/useSubscribe';
 import { logout } from '@/lib/logout';
 import { formatPlanPrice } from '@/lib/ryh';

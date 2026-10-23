@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import CalendarDayDialog from '@/components/ryh/calendar/CalendarDayDialog.vue';
-import CalendarEventDialog from '@/components/ryh/calendar/CalendarEventDialog.vue';
-import CalendarMonthGrid from '@/components/ryh/calendar/CalendarMonthGrid.vue';
-import CalendarPhoneMonth from '@/components/ryh/calendar/CalendarPhoneMonth.vue';
-import CalendarToolbar from '@/components/ryh/calendar/CalendarToolbar.vue';
+import CalendarDayDialog from '@/components/calendar/CalendarDayDialog.vue';
+import CalendarEventDialog from '@/components/calendar/CalendarEventDialog.vue';
+import CalendarMonthGrid from '@/components/calendar/CalendarMonthGrid.vue';
+import CalendarPhoneMonth from '@/components/calendar/CalendarPhoneMonth.vue';
+import CalendarToolbar from '@/components/calendar/CalendarToolbar.vue';
 import { provideCalendarEditor } from '@/composables/useCalendarEditor';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import RyhLayout from '@/layouts/RyhLayout.vue';
