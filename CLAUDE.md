@@ -215,6 +215,9 @@ binding in `AppServiceProvider`.
 
 ## Dates and time zones
 
+RYH is UK-only by choice (README): dates format as en-GB and money as £,
+written directly, with no locale or currency machinery. Don't add any.
+
 Each household has a `timezone` (from the creator's browser; the owner can
 change it on the House page). Anything about a household's date uses
 `$household->today()` / `$household->now()`, never `today()` / `now()`,
