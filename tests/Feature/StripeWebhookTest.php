@@ -7,11 +7,9 @@ namespace Tests\Feature;
 use App\Actions\Billing\HandleStripeEventOnceAction;
 use App\Models\Household;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Testing\TestResponse;
 use Laravel\Cashier\Subscription;
 use PHPUnit\Framework\Attributes\Test;
 use RuntimeException;
-use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\FakesStripeTrait;
 use Tests\TestCase;
 
@@ -51,7 +49,7 @@ class StripeWebhookTest extends TestCase
     {
         $household = Household::factory()->create(['stripe_id' => 'cus_test123', 'trial_ends_at' => now()->subDay()]);
 
-        $this->postSigned('customer.subscription.created', $this->stripeSubscription('sub_live', 'cus_test123', 'price_monthly'))
+        $this->postStripeWebhook('customer.subscription.created', $this->stripeSubscription('sub_live', 'cus_test123', 'price_monthly'))
             ->assertOk();
 
         $household->refresh();
@@ -64,7 +62,7 @@ class StripeWebhookTest extends TestCase
     #[Test]
     public function aSignedEventForAnUnknownCustomerChangesNothing(): void
     {
-        $this->postSigned('customer.subscription.created', $this->stripeSubscription('sub_live', 'cus_nobody', 'price_monthly'))
+        $this->postStripeWebhook('customer.subscription.created', $this->stripeSubscription('sub_live', 'cus_nobody', 'price_monthly'))
             ->assertOk();
 
         $this->assertDatabaseCount('subscriptions', 0);
@@ -75,14 +73,15 @@ class StripeWebhookTest extends TestCase
     {
         $periodEnd = now()->addDays(12)->startOfSecond();
         // Cashier asks Stripe when the current period ends.
-        $this->fakeStripe()->respond('GET', '/v1/subscription_items/si_live', [
-            'id' => 'si_live', 'object' => 'subscription_item', 'quantity' => 1,
+        $this->fakeStripe()->respond('GET', '/v1/subscription_items/si_live', $this->stripeFixture('subscription_item', [
+            'id' => 'si_live',
+            'subscription' => 'sub_live',
             'current_period_end' => $periodEnd->timestamp,
-            'price' => ['id' => 'price_monthly', 'object' => 'price', 'product' => 'prod_home'],
-        ]);
+            'price' => ['id' => 'price_monthly'],
+        ]));
         $household = $this->subscribedHousehold();
 
-        $this->postSigned('customer.subscription.updated', [
+        $this->postStripeWebhook('customer.subscription.updated', [
             ...$this->stripeSubscription('sub_live', 'cus_test123', 'price_monthly'),
             'cancel_at_period_end' => true,
         ])->assertOk();
@@ -98,7 +97,7 @@ class StripeWebhookTest extends TestCase
     {
         $household = $this->subscribedHousehold();
 
-        $this->postSigned('customer.subscription.updated', $this->stripeSubscription('sub_live', 'cus_test123', 'price_monthly', 'past_due'))
+        $this->postStripeWebhook('customer.subscription.updated', $this->stripeSubscription('sub_live', 'cus_test123', 'price_monthly', 'past_due'))
             ->assertOk();
 
         $household->refresh();
@@ -111,7 +110,7 @@ class StripeWebhookTest extends TestCase
     {
         $household = $this->subscribedHousehold();
 
-        $this->postSigned('customer.subscription.updated', $this->stripeSubscription('sub_live', 'cus_test123', 'price_annual'))
+        $this->postStripeWebhook('customer.subscription.updated', $this->stripeSubscription('sub_live', 'cus_test123', 'price_annual'))
             ->assertOk();
 
         $this->assertTrue($household->fresh()->subscription('default')->hasPrice('price_annual'));
@@ -122,7 +121,7 @@ class StripeWebhookTest extends TestCase
     {
         $household = $this->subscribedHousehold();
 
-        $this->postSigned('customer.subscription.deleted', $this->stripeSubscription('sub_live', 'cus_test123', 'price_monthly', 'canceled'))
+        $this->postStripeWebhook('customer.subscription.deleted', $this->stripeSubscription('sub_live', 'cus_test123', 'price_monthly', 'canceled'))
             ->assertOk();
 
         $household->refresh();
@@ -174,25 +173,6 @@ class StripeWebhookTest extends TestCase
         ]);
 
         return $household;
-    }
-
-    /**
-     * @param  array<string, mixed>  $object
-     *
-     * @return TestResponse<Response>
-     */
-    private function postSigned(string $type, array $object): TestResponse
-    {
-        config(['cashier.webhook.secret' => self::SECRET]);
-
-        $payload = json_encode(['id' => 'evt_test', 'type' => $type, 'data' => ['object' => $object]], JSON_THROW_ON_ERROR);
-        $timestamp = time();
-        $signature = hash_hmac('sha256', "{$timestamp}.{$payload}", self::SECRET);
-
-        return $this->call('POST', '/stripe/webhook', server: [
-            'CONTENT_TYPE' => 'application/json',
-            'HTTP_STRIPE_SIGNATURE' => "t={$timestamp},v1={$signature}",
-        ], content: $payload);
     }
 
     /** @return array<string, mixed> */

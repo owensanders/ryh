@@ -4,7 +4,7 @@ import { useSubscribe } from '@/composables/useSubscribe';
 import { logout } from '@/lib/logout';
 import { formatPlanPrice } from '@/lib/ryh';
 import type { PlanData } from '@/types/generated';
-import { Head, usePage } from '@inertiajs/vue3';
+import { Head, usePage, usePoll } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 const props = defineProps<{
@@ -12,12 +12,19 @@ const props = defineProps<{
     isOwner: boolean;
     paymentIssue: boolean;
     billingConfigured: boolean;
+    confirmingPayment: boolean;
 }>();
 
 const page = usePage();
 const interval = ref<'monthly' | 'annual'>('monthly');
 
 const { subscribing, subscribe } = useSubscribe();
+
+// Paid, and waiting on Stripe's webhook: check back until it lands, when this page sends them on to the dashboard.
+const { start } = usePoll(3000, {}, { autoStart: false });
+if (props.confirmingPayment) {
+    start();
+}
 </script>
 
 <template>
@@ -28,10 +35,16 @@ const { subscribing, subscribe } = useSubscribe();
             <RyhLogo class="h-9" />
 
             <h1 class="mt-6 text-[26px] font-black leading-tight tracking-[-0.03em]">
-                {{ props.paymentIssue ? 'Your last payment didn’t go through' : 'Your free month has ended' }}
+                <template v-if="props.confirmingPayment">Confirming your payment</template>
+                <template v-else>{{ props.paymentIssue ? 'Your last payment didn’t go through' : 'Your free month has ended' }}</template>
             </h1>
 
-            <template v-if="!props.billingConfigured">
+            <template v-if="props.confirmingPayment">
+                <p class="mt-2.5 text-[14.5px] leading-relaxed text-ryh-ink2" role="status">
+                    Thanks for subscribing! Stripe is confirming your payment, which usually takes a few seconds. This page carries on by itself.
+                </p>
+            </template>
+            <template v-else-if="!props.billingConfigured">
                 <p class="mt-2.5 text-[14.5px] leading-relaxed text-ryh-ink2">
                     Billing isn't set up yet on this household — please contact support to keep using RYH.
                 </p>

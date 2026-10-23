@@ -1,0 +1,43 @@
+{
+    "amount_due": 0,
+    "amount_overpaid": 0,
+    "amount_paid": 0,
+    "amount_paid_off_stripe": 0,
+    "amount_remaining": 0,
+    "amount_shipping": 0,
+    "attempt_count": 0,
+    "attempted": false,
+    "auto_advance": false,
+    "automatic_tax": {
+        "enabled": false
+    },
+    "collection_method": "charge_automatically",
+    "created": 1792732800,
+    "currency": "gbp",
+    "customer": "cus_test",
+    "default_tax_rates": [],
+    "discounts": [],
+    "id": "in_test",
+    "issuer": {
+        "type": "account"
+    },
+    "lines": {
+        "data": [],
+        "has_more": false,
+        "object": "list",
+        "url": "/v1/lines"
+    },
+    "livemode": false,
+    "object": "invoice",
+    "payment_settings": {},
+    "period_end": 0,
+    "period_start": 1792732800,
+    "post_payment_credit_notes_amount": 0,
+    "pre_payment_credit_notes_amount": 0,
+    "starting_balance": 0,
+    "status": "open",
+    "status_transitions": {},
+    "subscription": "sub_test",
+    "subtotal": 0,
+    "total": 0
+}

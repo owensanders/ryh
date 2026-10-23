@@ -9,6 +9,7 @@ use App\Models\Household;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Laravel\Cashier\Cashier;
 use Stripe\Exception\ApiErrorException;
 
 class SubscribeHouseholdAction
@@ -49,6 +50,23 @@ class SubscribeHouseholdAction
         }
     }
 
+    /**
+     * The remembered session's URL, if Stripe still has it open. One that's
+     * been paid, or expired, would show the owner a dead page.
+     *
+     * @throws ApiErrorException
+     */
+    private function reusableCheckoutUrl(mixed $remembered): ?string
+    {
+        if (! is_array($remembered) || ! is_string($remembered['id'] ?? null) || ! is_string($remembered['url'] ?? null)) {
+            return null;
+        }
+
+        $session = Cashier::stripe()->checkout->sessions->retrieve($remembered['id']);
+
+        return $session->status === 'open' ? $remembered['url'] : null;
+    }
+
     private function checkoutUrl(Household $household, string $stripePrice, string $successUrl, string $cancelUrl): ?string
     {
         if ($household->subscribed('default')) {
@@ -62,9 +80,9 @@ class SubscribeHouseholdAction
                 return $household->billingPortalUrl($cancelUrl);
             }
 
-            $reusable = Cache::get($reuseKey);
+            $reusable = $this->reusableCheckoutUrl(Cache::get($reuseKey));
 
-            if (is_string($reusable)) {
+            if ($reusable !== null) {
                 return $reusable;
             }
 
@@ -80,10 +98,10 @@ class SubscribeHouseholdAction
                 'cancel_url' => $cancelUrl.(str_contains($cancelUrl, '?') ? '&' : '?').'plan_checkout=cancelled',
             ]);
 
-            $url = $checkout->asStripeCheckoutSession()->url;
-            Cache::put($reuseKey, $url, now()->addMinutes(self::REUSE_MINUTES));
+            $session = $checkout->asStripeCheckoutSession();
+            Cache::put($reuseKey, ['id' => $session->id, 'url' => $session->url], now()->addMinutes(self::REUSE_MINUTES));
 
-            return $url;
+            return $session->url;
         } catch (ApiErrorException $e) {
             Log::error("Couldn't start Stripe checkout for household {$household->id}: {$e->getMessage()}");
 

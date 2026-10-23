@@ -1,0 +1,20 @@
+{
+    "automatic_tax": {
+        "enabled": false
+    },
+    "created": 1792732800,
+    "custom_fields": [],
+    "custom_text": {},
+    "customer": "cus_test",
+    "expires_at": 0,
+    "id": "cs_test_a1",
+    "livemode": false,
+    "mode": "subscription",
+    "object": "checkout.session",
+    "payment_method_types": [],
+    "payment_status": "paid",
+    "shipping_options": [],
+    "status": "complete",
+    "subscription": "sub_test",
+    "url": "https://checkout.stripe.com/c/pay/cs_test_a1"
+}

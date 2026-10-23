@@ -5,23 +5,18 @@ declare(strict_types=1);
 namespace App\Actions\House;
 
 use App\Models\Household;
-use App\Support\StripeSubscriptionSyncHelper;
 use Laravel\Cashier\Cashier;
 use Stripe\Exception\ApiErrorException;
-use Stripe\Subscription as StripeSubscription;
 
 class CompleteCheckoutAction
 {
-    public function __construct(
-        private readonly StripeSubscriptionSyncHelper $syncSubscription,
-    ) {}
-
     /**
-     * Records the subscription a finished Stripe Checkout session created,
-     * so the household isn't bounced back to the paywall while the
-     * `customer.subscription.created` webhook is still on its way.
+     * Checks with Stripe that a Checkout session the owner came back from is
+     * this household's and paid. The subscription itself is recorded by
+     * Cashier's `customer.subscription.created` webhook; until it lands, the
+     * paywall says the payment is being confirmed instead of asking again.
      *
-     * @return bool Whether the household is subscribed now. False leaves it to the webhook.
+     * @return bool Whether the household has paid: subscribed already, or Stripe says the session is complete.
      *
      * @throws ApiErrorException When Stripe can't be reached.
      */
@@ -31,14 +26,14 @@ class CompleteCheckoutAction
             return true;
         }
 
-        $session = Cashier::stripe()->checkout->sessions->retrieve($sessionId, ['expand' => ['subscription']]);
+        $session = Cashier::stripe()->checkout->sessions->retrieve($sessionId);
 
-        if ($session->customer !== $household->stripe_id || $session->status !== 'complete' || ! $session->subscription instanceof StripeSubscription) {
+        if ($session->customer !== $household->stripe_id || $session->status !== 'complete') {
             return false;
         }
 
-        $this->syncSubscription->sync($session->subscription->toArray());
+        $household->markCheckoutPaid();
 
-        return $household->refresh()->subscribed('default');
+        return true;
     }
 }
