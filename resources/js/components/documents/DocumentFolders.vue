@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import IconButton from '@/components/ui/IconButton.vue';
+import { moveDocument } from '@/composables/useMoveDocument';
 import type { DocumentFolderData } from '@/types/generated';
-import { Link, router, useForm } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
 
 /** The folder list (drop a document on one to move it there), a new-folder field, and storage used. */
@@ -31,7 +32,7 @@ function dropOnFolder(folder: DocumentFolderData): void {
         return;
     }
 
-    router.patch(route('documents.move', { document: documentId }), { folder_id: folder.id }, { preserveScroll: true });
+    moveDocument(documentId, folder.id);
 }
 </script>
 

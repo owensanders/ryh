@@ -13,6 +13,7 @@
         "e2e:serve": "./e2e/scripts/artisan.sh serve --host=0.0.0.0 --port=8091"
     },
     "devDependencies": {
+        "@axe-core/playwright": "^4.14.0",
         "@eslint/js": "^9.19.0",
         "@playwright/test": "^1.63.0",
         "@vue/eslint-config-typescript": "^14.3.0",

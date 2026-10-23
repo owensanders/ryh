@@ -128,6 +128,22 @@ test('the owner searches a folder, moves a document to another folder, then dele
     await expect(page.getByRole('link', { name: new RegExp(to) })).toHaveCount(0);
 });
 
+test('a document moves to another folder from its menu, with the keyboard alone', async ({ page }) => {
+    await page.goto('/documents');
+    await page.getByRole('link', { name: /Property/ }).click();
+    await expect(page.getByRole('heading', { name: 'Property' })).toBeVisible();
+
+    // A native select: it takes focus from the keyboard, and a choice moves the document.
+    const menu = page.getByLabel('Move EPC certificate.pdf to another folder');
+    await menu.focus();
+    await expect(menu).toBeFocused();
+    await menu.selectOption({ label: 'Insurance' });
+    await expect(page.getByText('EPC certificate.pdf')).toHaveCount(0);
+
+    await page.getByRole('link', { name: /Insurance/ }).click();
+    await expect(page.getByText('EPC certificate.pdf')).toBeVisible();
+});
+
 test("a file that can't be uploaded says why", async ({ page }) => {
     const folder = uniqueName('Misc');
 

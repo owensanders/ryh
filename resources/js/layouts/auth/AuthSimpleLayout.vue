@@ -14,7 +14,7 @@ defineProps<{
         <Toast />
 
         <div class="w-full max-w-[420px] animate-ryh-rise rounded-[22px] border border-ryh-line bg-ryh-card p-[22px] shadow-ryh sm:p-7">
-            <Link :href="route('home')" class="mb-6 flex" aria-label="RYH home">
+            <Link :href="route('home')" class="mb-6 flex">
                 <RyhLogo class="h-9" />
             </Link>
 

@@ -45,7 +45,7 @@ function toggleTheme(): void {
     <div class="min-h-screen bg-ryh-bg text-ryh-ink transition-colors">
         <div class="mx-auto max-w-[1440px] bg-ryh-shell">
             <header class="sticky top-0 z-20 flex h-[76px] items-center gap-3 border-b border-ryh-line bg-ryh-shell px-5 sm:px-8 lg:px-14">
-                <Link :href="route('home')" class="flex items-center gap-[11px]" aria-label="RYH home">
+                <Link :href="route('home')" class="flex items-center gap-[11px]">
                     <RyhLogo class="h-9" />
                 </Link>
 

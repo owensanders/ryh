@@ -297,8 +297,15 @@ and `DB_DATABASE=schema_dump artisan schema:dump --prune`, keep
 ./vendor/bin/sail bin pint
 ./vendor/bin/sail npm run lint
 ./vendor/bin/sail npx vue-tsc --noEmit
-npm run e2e                              # Playwright, with Sail up
+npm run e2e                              # Playwright, with Sail up; includes axe on each main page
 ```
+
+`e2e/accessibility.spec.ts` runs axe on each main page and fails on any
+serious or critical WCAG 2.1 A/AA problem. Colour contrast is left out: the
+design's greys and coral are below AA for small text, by choice. A new page
+gets a line there. Anything that can be dragged also has a keyboard and
+touch way to do the same (a document's "Move to" menu, a chore's tick, a
+meal's day in its dialog).
 
 ## Keep in step
 
