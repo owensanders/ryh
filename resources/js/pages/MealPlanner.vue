@@ -17,6 +17,7 @@ defineOptions({ layout: RyhShell });
 
 const props = defineProps<{
     weekOf: string;
+    todayDate: string;
     days: PlannerDayData[];
     library: RecipeData[];
     recipeCount: number;
@@ -64,6 +65,7 @@ const aiOpen = ref(false);
 
         <AiMealPlanDialog
             v-model:open="aiOpen"
+            :today-date="todayDate"
             :ai-configured="aiConfigured"
             :ai-paused="aiPaused"
             :ai-available-from="aiAvailableFrom"

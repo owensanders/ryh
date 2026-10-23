@@ -39,6 +39,7 @@ class MealPlannerViewModel
 
         return new MealPlannerScreenData(
             weekOf: $start->format('j F'),
+            todayDate: $today->toDateString(),
             days: Lazy::closure(fn () => $this->days($household, $viewer, $start, $today)),
             library: Lazy::closure(fn () => $household->recipes()->where('is_favourite', true)->orderBy('name')->limit(self::LIBRARY_SIZE)->get()
                 ->map(fn (Recipe $recipe) => RecipeData::fromModel($recipe, $viewer))

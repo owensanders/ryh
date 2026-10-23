@@ -26,6 +26,8 @@ class MealPlannerScreenData extends Data
      */
     public function __construct(
         public string $weekOf,
+        /** The household's today: the planner also shows other weeks, where no day is it. */
+        public string $todayDate,
         public Lazy|array $days,
         public Lazy|array $library,
         public Lazy|int $recipeCount,

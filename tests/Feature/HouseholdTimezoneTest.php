@@ -61,6 +61,10 @@ class HouseholdTimezoneTest extends TestCase
 
                 $this->assertSame(['2026-10-23'], array_column(array_filter($days, fn (array $day) => $day['isToday']), 'date'));
             });
+
+        // Another week has no day that's today, so the planner sends the date itself.
+        $this->actingAs($this->owner)->get($this->hh('/meals?week=2026-11-02'))
+            ->assertInertia(fn ($page) => $page->where('todayDate', '2026-10-23'));
     }
 
     #[Test]
