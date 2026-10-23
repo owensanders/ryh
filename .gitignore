@@ -5,6 +5,11 @@
 /public/storage
 # Rendered promo video (see video/) — kept local until it's hosted on S3.
 /public/videos/*.mp4
+# The TikTok cut of the promo video, kept local for now.
+/video/src/tiktok/
+/video/src/components/PhoneFrame.tsx
+/video/scripts/render-tiktok.mjs
+.DS_Store
 /storage/*.key
 /storage/pail
 /vendor
