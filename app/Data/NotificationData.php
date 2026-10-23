@@ -14,7 +14,7 @@ class NotificationData extends Data
     public function __construct(
         public string $id,
         public array $data,
-        public ?string $read_at,
+        public ?string $readAt,
     ) {}
 
     public static function fromModel(DatabaseNotification $notification): self

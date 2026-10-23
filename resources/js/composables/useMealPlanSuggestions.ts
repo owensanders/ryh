@@ -66,7 +66,7 @@ function createMealPlanSuggestions(
 
     const regenerateLabel = computed(() => (marked.value.length === 0 ? 'Regenerate all' : `Regenerate ${marked.value.length}`));
 
-    const estimatedTotal = computed(() => assignment.value.reduce((sum, entry) => sum + (entry.suggestion.estimated_cost ?? 0), 0));
+    const estimatedTotal = computed(() => assignment.value.reduce((sum, entry) => sum + (entry.suggestion.estimatedCost ?? 0), 0));
 
     const overBudget = computed(() => budgetAmount.value !== null && estimatedTotal.value > budgetAmount.value);
 
@@ -135,15 +135,15 @@ function createMealPlanSuggestions(
         const common = { new_recipe_shopping_list_id: targetListId.value, planned_on: entry.day.date, slot: 'dinner', cook_id: null };
 
         // A library recipe is planned by id alone, which leaves its saved details untouched.
-        if (entry.suggestion.recipe_id !== undefined) {
-            return { recipe_id: entry.suggestion.recipe_id, ...common };
+        if (entry.suggestion.recipeId !== undefined) {
+            return { recipe_id: entry.suggestion.recipeId, ...common };
         }
 
         return {
             recipe_id: null,
             new_recipe_name: entry.suggestion.name,
             new_recipe_description: entry.suggestion.description,
-            new_recipe_duration_label: entry.suggestion.duration_label,
+            new_recipe_duration_label: entry.suggestion.durationLabel,
             new_recipe_difficulty: entry.suggestion.difficulty,
             new_recipe_tags: [],
             new_recipe_ingredients: entry.suggestion.ingredients.map((i) => ({ name: i.name, quantity: i.quantity ?? '' })),

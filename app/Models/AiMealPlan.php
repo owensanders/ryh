@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $requested_by
  * @property AiMealPlanStatusEnum $status
  * @property array<string, mixed> $answers The form's answers, as AiMealPlanAnswersInput::toStored() writes them.
- * @property list<array<string, mixed>>|null $meals MealSuggestionData, as arrays.
+ * @property list<array<string, mixed>>|null $meals MealSuggestionData, as toArray() writes it (camelCase).
  * @property string|null $error A message written for the person, when it failed.
  * @property Carbon|null $finished_at
  * @property Carbon $created_at

@@ -26,9 +26,9 @@ export type AuthUserData = {
     name: string;
     email: string;
     avatar: string | null;
-    email_verified_at: string | null;
-    created_at: string;
-    updated_at: string;
+    emailVerifiedAt: string | null;
+    createdAt: string;
+    updatedAt: string;
 };
 export type BillingRequiredScreenData = {
     plan: PlanData;
@@ -358,17 +358,17 @@ export type MealSlotEnum = 'breakfast' | 'lunch' | 'dinner';
 export type MealSuggestionData = {
     name: string;
     description: string | null;
-    duration_label: string | null;
+    durationLabel: string | null;
     difficulty: string | null;
-    estimated_cost: number | null;
+    estimatedCost: number | null;
     tags: string[];
     ingredients: {
         name: string;
         quantity: string | null;
     }[];
-    recipe_id?: number;
+    recipeId?: number;
     tint?: number;
-    is_favourite?: boolean;
+    isFavourite?: boolean;
 };
 export type MemberData = {
     id: number;
@@ -387,7 +387,7 @@ export type NotificationCategoryEnum = 'chores' | 'calendar' | 'meals';
 export type NotificationData = {
     id: string;
     data: Record<string, any>;
-    read_at: string | null;
+    readAt: string | null;
 };
 export type NotificationSettingsData = {
     categories: PushCategoryData[];

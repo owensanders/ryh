@@ -14,9 +14,9 @@ class AuthUserData extends Data
         public string $name,
         public string $email,
         public ?string $avatar,
-        public ?string $email_verified_at,
-        public string $created_at,
-        public string $updated_at,
+        public ?string $emailVerifiedAt,
+        public string $createdAt,
+        public string $updatedAt,
     ) {}
 
     public static function fromModel(User $user): self
@@ -26,9 +26,9 @@ class AuthUserData extends Data
             name: $user->name,
             email: $user->email,
             avatar: null,
-            email_verified_at: $user->email_verified_at?->toJSON(),
-            created_at: $user->created_at->toJSON(),
-            updated_at: $user->updated_at->toJSON(),
+            emailVerifiedAt: $user->email_verified_at?->toJSON(),
+            createdAt: $user->created_at->toJSON(),
+            updatedAt: $user->updated_at->toJSON(),
         );
     }
 }

@@ -31,7 +31,8 @@ class AiMealPlanData extends Data
         return new self(
             id: $plan->id,
             status: $plan->status,
-            meals: array_map(fn (array $meal) => MealSuggestionData::from($meal), $plan->meals ?? []),
+            // Not plain from(): laravel-data would pick fromAi() for an array, which reads the AI's snake_case.
+            meals: array_map(fn (array $meal) => MealSuggestionData::factory()->withoutMagicalCreation()->from($meal), $plan->meals ?? []),
             error: $plan->error,
         );
     }

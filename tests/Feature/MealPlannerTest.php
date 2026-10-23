@@ -453,7 +453,7 @@ class MealPlannerTest extends TestCase
             ->assertInertia(fn ($page) => $page
                 ->where('aiPlan.status', 'ready')
                 ->where('aiPlan.meals.0.name', 'Lemon chicken traybake')
-                ->where('aiPlan.meals.0.estimated_cost', 7.5));
+                ->where('aiPlan.meals.0.estimatedCost', 7.5));
     }
 
     #[Test]
@@ -789,10 +789,10 @@ class MealPlannerTest extends TestCase
             ->post($this->hh('/meals/library-plan'), ['diets' => [], 'avoid' => ''])
             ->assertRedirect()
             ->assertSessionHas('libraryMeals', fn ($meals) => count($meals) === 1
-                && $meals[0]['recipe_id'] === $recipe->id
-                && $meals[0]['estimated_cost'] === null
+                && $meals[0]['recipeId'] === $recipe->id
+                && $meals[0]['estimatedCost'] === null
                 && $meals[0]['tint'] === 3
-                && $meals[0]['is_favourite'] === true
+                && $meals[0]['isFavourite'] === true
                 && $meals[0]['ingredients'][0]['name'] === 'Lasagne sheets');
     }
 
