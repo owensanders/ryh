@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Chores;
 
+use App\Inputs\ChoreInput;
 use App\Models\Chore;
 use App\Models\Household;
 use App\Models\User;
@@ -13,12 +14,11 @@ use App\Support\RecipientsHelper;
 
 class UpdateChoreAction
 {
-    /** @param  array<string, mixed>  $data  ChoreRequest's validated input: name, assigned_to. */
-    public function handle(Household $household, Chore $chore, array $data, User $actor): Chore
+    public function handle(Household $household, Chore $chore, ChoreInput $input, User $actor): Chore
     {
         $previousAssignee = $chore->assigned_to;
 
-        $chore->update(['name' => $data['name'], 'assigned_to' => $data['assigned_to']]);
+        $chore->update(['name' => $input->name, 'assigned_to' => $input->assignedTo]);
         $updated = $chore->refresh();
 
         $reassigned = $updated->assigned_to !== null && $updated->assigned_to !== $previousAssignee;

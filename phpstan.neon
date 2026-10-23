@@ -6,6 +6,7 @@ includes:
 rules:
     - Tests\PHPStan\QueryBoundaryRule
     - Tests\PHPStan\UserFacingErrorsRule
+    - Tests\PHPStan\TypedActionInputRule
 
 parameters:
     level: 8

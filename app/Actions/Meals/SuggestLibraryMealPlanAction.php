@@ -24,7 +24,7 @@ class SuggestLibraryMealPlanAction
     private const int RECENT_DAYS = 14;
 
     /**
-     * @param  array<int, string>  $diets
+     * @param  list<string>  $diets
      *
      * @return array<int, MealSuggestionData>
      */
@@ -56,7 +56,7 @@ class SuggestLibraryMealPlanAction
             ->all();
     }
 
-    /** @param  array<int, string>  $diets */
+    /** @param  list<string>  $diets */
     private function suitsDiets(Recipe $recipe, array $diets): bool
     {
         $tags = array_map(mb_strtolower(...), $recipe->tags ?? []);

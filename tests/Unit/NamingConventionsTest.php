@@ -34,6 +34,7 @@ class NamingConventionsTest extends TestCase
         'Http/Controllers' => 'Controller',
         'Http/Middleware' => 'Middleware',
         'Http/Requests' => 'Request',
+        'Inputs' => 'Input',
         'Jobs' => 'Job',
         'Listeners' => 'Listener',
         'Mail' => 'Mail',

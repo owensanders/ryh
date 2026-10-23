@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Actions\Meals;
 
+use App\Inputs\PlannedMealInput;
 use App\Models\Household;
 use App\Models\Recipe;
+use Spatie\LaravelData\Optional;
 
 /**
  * The recipe a planned meal is for: an existing one picked by id, or one
@@ -25,24 +27,12 @@ class ResolvePlannedRecipeAction
         'is_favourite' => false,
     ];
 
-    /** The meal form's recipe fields => the recipe's columns. */
-    private const array DETAIL_COLUMNS = [
-        'new_recipe_description' => 'description',
-        'new_recipe_duration_label' => 'duration_label',
-        'new_recipe_difficulty' => 'difficulty',
-        'new_recipe_tags' => 'tags',
-        'new_recipe_ingredients' => 'ingredients',
-        'new_recipe_tint' => 'tint',
-        'new_recipe_is_favourite' => 'is_favourite',
-    ];
-
-    /** @param  array<string, mixed>  $data  PlannedMealRequest's validated input. */
-    public function handle(Household $household, array $data): Recipe
+    public function handle(Household $household, PlannedMealInput $input): Recipe
     {
-        $details = $this->sentDetails($data);
+        $details = $this->sentDetails($input);
 
-        if ($data['recipe_id'] !== null) {
-            $recipe = $household->recipes()->findOrFail((int) $data['recipe_id']);
+        if ($input->recipeId !== null) {
+            $recipe = $household->recipes()->findOrFail($input->recipeId);
 
             // Only what was sent changes, so planning a recipe by id alone can't
             // blank its description, tags and so on.
@@ -54,7 +44,7 @@ class ResolvePlannedRecipeAction
         }
 
         return $household->recipes()->create([
-            'name' => $data['new_recipe_name'],
+            'name' => $input->newRecipeName,
             ...self::NEW_RECIPE_DEFAULTS,
             ...$details,
         ]);
@@ -63,29 +53,20 @@ class ResolvePlannedRecipeAction
     /**
      * Recipe columns for just the details the form sent.
      *
-     * @param  array<string, mixed>  $data
-     *
      * @return array<string, mixed>
      */
-    private function sentDetails(array $data): array
+    private function sentDetails(PlannedMealInput $input): array
     {
-        $details = [];
+        $details = [
+            'description' => $input->newRecipeDescription,
+            'duration_label' => $input->newRecipeDurationLabel,
+            'difficulty' => $input->newRecipeDifficulty,
+            'tags' => $input->newRecipeTags,
+            'ingredients' => $input->newRecipeIngredients,
+            'tint' => $input->newRecipeTint instanceof Optional ? $input->newRecipeTint : ($input->newRecipeTint ?? 0),
+            'is_favourite' => $input->newRecipeIsFavourite,
+        ];
 
-        foreach (self::DETAIL_COLUMNS as $field => $column) {
-            if (! array_key_exists($field, $data)) {
-                continue;
-            }
-
-            $value = $data[$field];
-
-            $details[$column] = match ($column) {
-                'tags', 'ingredients' => array_values(is_array($value) ? $value : []),
-                'tint' => (int) ($value ?? 0),
-                'is_favourite' => (bool) $value,
-                default => $value,
-            };
-        }
-
-        return $details;
+        return array_filter($details, fn (mixed $value): bool => ! $value instanceof Optional);
     }
 }

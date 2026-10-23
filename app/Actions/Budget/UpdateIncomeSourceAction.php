@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace App\Actions\Budget;
 
+use App\Inputs\IncomeSourceInput;
 use App\Models\IncomeSource;
-use App\Support\MoneyHelper;
 
 class UpdateIncomeSourceAction
 {
-    /** @param  array<string, mixed>  $data  IncomeSourceRequest's validated input; see CreateIncomeSourceAction. */
-    public function handle(IncomeSource $income, array $data): IncomeSource
+    public function handle(IncomeSource $income, IncomeSourceInput $input): IncomeSource
     {
         $income->update([
-            'label' => $data['label'],
-            'meta' => $data['meta'] ?? null,
-            'amount_pence' => MoneyHelper::toPence($data['amount']),
-            'is_recurring' => (bool) ($data['is_recurring'] ?? false),
+            'label' => $input->label,
+            'meta' => $input->meta,
+            'amount_pence' => $input->amountPence,
+            'is_recurring' => $input->isRecurring,
         ]);
 
         return $income->refresh();

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Calendar;
 
-use App\Enums\PaletteEnum;
+use App\Inputs\CalendarEventInput;
 use App\Models\CalendarEvent;
 use App\Models\Household;
 use App\Models\User;
@@ -15,23 +15,21 @@ use Illuminate\Support\Facades\DB;
 
 class UpdateCalendarEventAction
 {
-    /** @param  array<string, mixed>  $data  CalendarEventRequest's validated input; see AddCalendarEventAction. */
-    public function handle(Household $household, CalendarEvent $event, array $data, User $actor): CalendarEvent
+    public function handle(Household $household, CalendarEvent $event, CalendarEventInput $input, User $actor): CalendarEvent
     {
         $previousAttendeeIds = $event->attendees()->pluck('users.id')->map(fn (mixed $id): int => (int) $id)->all();
-        $isAllDay = (bool) ($data['is_all_day'] ?? false);
 
-        DB::transaction(function () use ($household, $event, $data, $isAllDay): void {
+        DB::transaction(function () use ($household, $event, $input): void {
             $event->update([
-                'title' => $data['title'],
-                'starts_at' => $household->momentAt($data['starts_at']),
-                'ends_at' => ! $isAllDay && isset($data['ends_at']) ? $household->momentAt($data['ends_at']) : null,
-                'is_all_day' => $isAllDay,
-                'location' => $data['location'] ?? null,
-                'notes' => $data['notes'] ?? null,
-                'colour' => PaletteEnum::from($data['colour']),
+                'title' => $input->title,
+                'starts_at' => $household->momentAt($input->startsAt),
+                'ends_at' => ! $input->isAllDay && $input->endsAt !== null ? $household->momentAt($input->endsAt) : null,
+                'is_all_day' => $input->isAllDay,
+                'location' => $input->location,
+                'notes' => $input->notes,
+                'colour' => $input->colour,
             ]);
-            $event->attendees()->sync($data['attendees'] ?? []);
+            $event->attendees()->sync($input->attendees);
         });
 
         $event->refresh()->load('attendees');

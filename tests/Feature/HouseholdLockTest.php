@@ -10,6 +10,8 @@ use App\Actions\Documents\UploadDocumentAction;
 use App\Actions\House\InviteMemberAction;
 use App\Actions\Meals\RequestAiMealPlanAction;
 use App\Enums\HouseholdRoleEnum;
+use App\Inputs\AiMealPlanAnswersInput;
+use App\Inputs\InviteInput;
 use App\Models\Chore;
 use App\Models\DocumentFolder;
 use App\Models\Household;
@@ -57,11 +59,11 @@ class HouseholdLockTest extends TestCase
                 function (): void {
                     config(['ai.providers.anthropic.key' => 'test-key']);
                 },
-                fn (User $owner, Household $household) => app(RequestAiMealPlanAction::class)->handle($household, ['people' => 4, 'confidence' => 'comfortable'], $owner),
+                fn (User $owner, Household $household) => app(RequestAiMealPlanAction::class)->handle($household, AiMealPlanAnswersInput::from(['people' => 4, 'confidence' => 'comfortable']), $owner),
             ],
             'invite a member' => [
                 fn () => Mail::fake(),
-                fn (User $owner, Household $household) => app(InviteMemberAction::class)->handle($household, ['email' => 'gran@example.com', 'role' => 'adult'], $owner),
+                fn (User $owner, Household $household) => app(InviteMemberAction::class)->handle($household, new InviteInput('gran@example.com', HouseholdRoleEnum::Adult), $owner),
             ],
             'set up a budget month' => [
                 $nothing,

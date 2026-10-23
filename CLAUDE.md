@@ -62,19 +62,20 @@ Each layer only talks to the one below it.
   business rules.
 - **Form requests** (`app/Http/Requests`): validate, and normalise first in
   `prepareForValidation()` (trim text, `''` → null, cast ids to int,
-  defaults), so `$request->validated()` is already what gets stored. The
-  controller passes `$request->validated()` to the action.
+  defaults), so `$request->validated()` is already what gets stored. A
+  request for a write builds its typed input in `toInput()`
+  (`ChoreInput::from($this->validated())`), and the controller passes that
+  to the action.
 - **Actions** (`app/Actions/<Area>`): all business rules, one class per
   operation (`CreateChoreAction`), run by a public `handle()` method, the way
   Laravel's own Fortify and Jetstream actions work. They take models, enums,
-  scalars, or a form request's validated array (`@param array<string, mixed>
-  $data` naming its keys, as Fortify does), and return the model they worked
-  on (or nothing),
+  scalars, lists, or a typed input (`app/Inputs`), never a keyed array, and
+  return the model they worked on (or nothing),
   never a shaped array. `*Data` is for what the browser receives, so view
   models build it, not actions. The exceptions are suggestions an action
   produces rather than reads: `MealSuggestionData`, flashed by the library plan
   and stored on an `AiMealPlan` by its job. Transactions and
-  notifications start here.
+  notifications start here. Enforced by PHPStan's `TypedActionInputRule`.
 - **View models** (`app/ViewModels/<Area>`): everything one page needs, built
   by a public `toData()` that returns its `*ScreenData` (`ChoreBoardViewModel`).
   Plain classes over the Data layer, not `spatie/laravel-view-models`, which
@@ -136,9 +137,13 @@ binding in `AppServiceProvider`.
 
 ## Data
 
-- **Input**: no DTOs: actions take `$request->validated()` (see Form
-  requests). Where "not sent" must differ from "cleared", check
-  `array_key_exists()`.
+- **Input**: `app/Inputs/*Input.php`, `spatie/laravel-data` `Dto` classes
+  with readonly camelCase properties, built from a form request's validated
+  array by `from()` (`#[MapInputName(SnakeCaseMapper::class)]` maps the
+  form's snake_case keys; enums and dates are cast; `PoundsToPenceCast` turns
+  a form's pounds into pence). They don't validate: the form request already
+  has. Where "not sent" must differ from "cleared", the property takes
+  `Optional` (`PlannedMealInput`'s recipe details).
 - **Output**: `app/Data/*Data.php`, `spatie/laravel-data` classes. Their
   TypeScript types, and the enums', are generated into
   `resources/js/types/generated.ts` by `sail artisan typescript:transform`.

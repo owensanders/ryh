@@ -31,14 +31,14 @@ class RecipeController extends Controller
 
     public function store(RecipeRequest $request, AddRecipeAction $add): RedirectResponse
     {
-        $recipe = $add->handle($this->household($request), $request->validated());
+        $recipe = $add->handle($this->household($request), $request->toInput());
 
         return back()->with('toast', "{$recipe->name} added");
     }
 
     public function update(RecipeRequest $request, Recipe $recipe, UpdateRecipeAction $update): RedirectResponse
     {
-        $updated = $update->handle($recipe, $request->validated());
+        $updated = $update->handle($recipe, $request->toInput());
 
         return back()->with('toast', "{$updated->name} updated");
     }

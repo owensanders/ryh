@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Inputs\ChoreInput;
 use App\Support\CurrentHouseholdHelper;
 use App\Traits\NormalisesInputTrait;
 use Illuminate\Foundation\Http\FormRequest;
@@ -41,5 +42,10 @@ class ChoreRequest extends FormRequest
             'name' => $this->trimmed('name'),
             'assigned_to' => $this->idOrNull('assigned_to'),
         ]);
+    }
+
+    public function toInput(): ChoreInput
+    {
+        return ChoreInput::from($this->validated());
     }
 }

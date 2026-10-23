@@ -28,8 +28,9 @@ class NewPasswordController extends Controller
     public function store(NewPasswordRequest $request, ResetPasswordAction $reset): RedirectResponse
     {
         $status = $reset->handle(
-            $request->safe()->only('email', 'password', 'token'),
-            $request->validated('password'),
+            $request->safe()->string('email')->toString(),
+            $request->safe()->string('token')->toString(),
+            $request->safe()->string('password')->toString(),
         );
 
         if ($status === Password::PasswordReset) {

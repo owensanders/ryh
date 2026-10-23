@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Calendar;
 
-use App\Enums\PaletteEnum;
+use App\Inputs\CalendarEventInput;
 use App\Models\CalendarEvent;
 use App\Models\Household;
 use App\Models\User;
@@ -13,28 +13,20 @@ use Illuminate\Support\Facades\DB;
 
 class AddCalendarEventAction
 {
-    /**
-     * @param  array<string, mixed>  $data  CalendarEventRequest's validated input: title, starts_at,
-     *                                      ends_at (left out when all-day), is_all_day, location,
-     *                                      notes, colour, attendees (empty for the whole house).
-     *                                      Times are as the household's clock reads them.
-     */
-    public function handle(Household $household, array $data, User $actor): CalendarEvent
+    public function handle(Household $household, CalendarEventInput $input, User $actor): CalendarEvent
     {
-        $isAllDay = (bool) ($data['is_all_day'] ?? false);
-
-        $event = DB::transaction(function () use ($household, $data, $actor, $isAllDay): CalendarEvent {
+        $event = DB::transaction(function () use ($household, $input, $actor): CalendarEvent {
             $event = $household->calendarEvents()->create([
-                'title' => $data['title'],
-                'starts_at' => $household->momentAt($data['starts_at']),
-                'ends_at' => ! $isAllDay && isset($data['ends_at']) ? $household->momentAt($data['ends_at']) : null,
-                'is_all_day' => $isAllDay,
-                'location' => $data['location'] ?? null,
-                'notes' => $data['notes'] ?? null,
-                'colour' => PaletteEnum::from($data['colour']),
+                'title' => $input->title,
+                'starts_at' => $household->momentAt($input->startsAt),
+                'ends_at' => ! $input->isAllDay && $input->endsAt !== null ? $household->momentAt($input->endsAt) : null,
+                'is_all_day' => $input->isAllDay,
+                'location' => $input->location,
+                'notes' => $input->notes,
+                'colour' => $input->colour,
                 'created_by' => $actor->id,
             ]);
-            $event->attendees()->sync($data['attendees'] ?? []);
+            $event->attendees()->sync($input->attendees);
 
             return $event->load('attendees');
         });

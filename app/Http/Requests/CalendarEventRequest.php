@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Enums\PaletteEnum;
+use App\Inputs\CalendarEventInput;
 use App\Models\CalendarEvent;
 use App\Support\CurrentHouseholdHelper;
 use App\Traits\NormalisesInputTrait;
@@ -102,5 +103,10 @@ class CalendarEventRequest extends FormRequest
                 ? array_values(array_map(fn (mixed $id) => is_numeric($id) ? (int) $id : $id, $attendees))
                 : $attendees,
         ]);
+    }
+
+    public function toInput(): CalendarEventInput
+    {
+        return CalendarEventInput::from($this->validated());
     }
 }

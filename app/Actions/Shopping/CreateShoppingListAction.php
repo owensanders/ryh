@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace App\Actions\Shopping;
 
-use App\Enums\PaletteEnum;
+use App\Inputs\ShoppingListInput;
 use App\Models\Household;
 use App\Models\ShoppingList;
 use Illuminate\Support\Str;
 
 class CreateShoppingListAction
 {
-    /** @param  array<string, mixed>  $data  ShoppingListRequest's validated input: name, colour. */
-    public function handle(Household $household, array $data): ShoppingList
+    public function handle(Household $household, ShoppingListInput $input): ShoppingList
     {
         return $household->shoppingLists()->create([
-            'name' => $data['name'],
-            'slug' => $this->uniqueSlug($household, $data['name']),
-            'colour' => PaletteEnum::from($data['colour']),
+            'name' => $input->name,
+            'slug' => $this->uniqueSlug($household, $input->name),
+            'colour' => $input->colour,
         ]);
     }
 
