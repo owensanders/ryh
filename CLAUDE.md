@@ -177,6 +177,11 @@ binding in `AppServiceProvider`.
 - A dialog only one place opens exposes `openNew()`/`openEdit()` through
   `defineExpose`, and the parent calls it through a template ref.
 - Confirm-then-delete uses `useConfirm()` with `ConfirmDialog`.
+- Controls come from `components/ryh/ui`: `Button` (`variant` primary,
+  secondary, danger, dark or card; `href` makes it a link) for anything
+  styled `ryh-btn`, and `IconButton` for a button that shows only an icon.
+  Its `label` prop is required and becomes the accessible name and tooltip.
+  Inside a reka-ui trigger, wrap them with `as-child`.
 
 ## Frontend writes
 

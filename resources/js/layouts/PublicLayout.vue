@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import RyhLogo from '@/components/ryh/RyhLogo.vue';
+import IconButton from '@/components/ryh/ui/IconButton.vue';
 import { useAppearance } from '@/composables/useAppearance';
 import type { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
@@ -93,17 +94,16 @@ function toggleTheme(): void {
                     </Link>
                 </template>
 
-                <button
-                    type="button"
+                <IconButton
+                    :label="menuOpen ? 'Close menu' : 'Open menu'"
                     class="grid h-10 w-10 flex-none place-items-center rounded-xl bg-ryh-soft transition-colors hover:bg-ryh-line lg:hidden"
                     :aria-expanded="menuOpen"
                     aria-controls="landing-menu"
-                    :aria-label="menuOpen ? 'Close menu' : 'Open menu'"
                     @click="menuOpen = !menuOpen"
                 >
                     <X v-if="menuOpen" class="h-[18px] w-[18px]" />
                     <Menu v-else class="h-[18px] w-[18px]" />
-                </button>
+                </IconButton>
 
                 <div
                     v-if="menuOpen"

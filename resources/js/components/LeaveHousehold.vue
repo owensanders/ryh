@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/ryh/ui/Button.vue';
 import { useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
@@ -47,7 +48,7 @@ const closeModal = () => {
 
 <template>
     <Dialog>
-        <DialogTrigger class="ryh-btn w-auto bg-ryh-sunk px-4 text-ryh-coral"> Leave </DialogTrigger>
+        <DialogTrigger as-child><Button :variant="null" class="w-auto bg-ryh-sunk px-4 text-ryh-coral">Leave</Button></DialogTrigger>
         <DialogContent class="rounded-[22px] border-ryh-line bg-ryh-card text-ryh-ink sm:rounded-[22px]">
             <form class="flex flex-col gap-5" @submit="leaveHousehold">
                 <DialogHeader class="space-y-2">
@@ -69,15 +70,11 @@ const closeModal = () => {
                 </div>
 
                 <DialogFooter class="gap-2">
-                    <DialogClose class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="closeModal"> Cancel </DialogClose>
+                    <DialogClose as-child><Button variant="secondary" class="w-auto" @click="closeModal">Cancel</Button></DialogClose>
 
-                    <button
-                        type="submit"
-                        class="ryh-btn w-auto bg-ryh-coral text-white"
-                        :disabled="form.processing || (!!householdError && !form.confirm_household_deletion)"
-                    >
+                    <Button class="w-auto" type="submit" :disabled="form.processing || (!!householdError && !form.confirm_household_deletion)">
                         Leave household
-                    </button>
+                    </Button>
                 </DialogFooter>
             </form>
         </DialogContent>

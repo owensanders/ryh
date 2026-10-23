@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
+import Button from '@/components/ryh/ui/Button.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useConfirm } from '@/composables/useConfirm';
 import type { ShoppingItemData } from '@/types/generated';
@@ -69,16 +70,9 @@ defineExpose({ openEdit });
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <button type="submit" class="ryh-btn w-auto bg-ryh-coral text-white" :disabled="itemForm.processing">Save changes</button>
-                    <button type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="itemDialogOpen = false">Cancel</button>
-                    <button
-                        v-if="editingItem?.can.delete"
-                        type="button"
-                        class="ryh-btn ml-auto w-auto bg-ryh-soft text-ryh-coral"
-                        @click="destroyItem"
-                    >
-                        Delete
-                    </button>
+                    <Button class="w-auto" type="submit" :disabled="itemForm.processing">Save changes</Button>
+                    <Button variant="secondary" class="w-auto" @click="itemDialogOpen = false">Cancel</Button>
+                    <Button variant="danger" class="ml-auto w-auto" v-if="editingItem?.can.delete" @click="destroyItem"> Delete </Button>
                 </div>
             </form>
         </DialogContent>

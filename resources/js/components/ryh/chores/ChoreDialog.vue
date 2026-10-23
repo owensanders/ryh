@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/ryh/ui/Button.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CHORE_BOARD_PROPS } from '@/lib/ryh';
 import type { ChoreData, MemberData } from '@/types/generated';
@@ -74,8 +75,8 @@ defineExpose({ openEdit });
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <button type="submit" class="ryh-btn w-auto bg-ryh-coral text-white" :disabled="form.processing">Save changes</button>
-                    <button type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="open = false">Cancel</button>
+                    <Button class="w-auto" type="submit" :disabled="form.processing">Save changes</Button>
+                    <Button variant="secondary" class="w-auto" @click="open = false">Cancel</Button>
                 </div>
             </form>
         </DialogContent>

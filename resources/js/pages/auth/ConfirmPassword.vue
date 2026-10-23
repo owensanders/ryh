@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
+import Button from '@/components/ryh/ui/Button.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
@@ -37,10 +38,10 @@ const submit = () => {
                 <InputError :message="form.errors.password" />
             </div>
 
-            <button type="submit" class="ryh-btn mt-2 bg-ryh-coral text-white" :disabled="form.processing">
+            <Button class="mt-2" type="submit" :disabled="form.processing">
                 <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                 Confirm password
-            </button>
+            </Button>
         </form>
     </AuthLayout>
 </template>

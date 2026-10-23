@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/ryh/ui/Button.vue';
 import { CHORE_BOARD_PROPS } from '@/lib/ryh';
 import type { MemberData } from '@/types/generated';
 import { router } from '@inertiajs/vue3';
@@ -47,9 +48,9 @@ function addChore(): void {
             <option value="">Unassigned</option>
             <option v-for="member in members" :key="member.id" :value="String(member.id)">{{ member.name }}</option>
         </select>
-        <button type="button" class="ryh-btn w-auto bg-ryh-coral text-white" @click="addChore">
+        <Button class="w-auto" @click="addChore">
             <Plus class="h-4 w-4" :stroke-width="2.5" />
             Add chore
-        </button>
+        </Button>
     </section>
 </template>

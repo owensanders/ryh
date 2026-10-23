@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Button from '@/components/ryh/ui/Button.vue';
+import IconButton from '@/components/ryh/ui/IconButton.vue';
 import { useMealPlanSuggestions } from '@/composables/useMealPlanSuggestions';
 import { pounds } from '@/lib/ryh';
 import { ArrowLeftRight } from 'lucide-vue-next';
@@ -56,17 +58,15 @@ const {
                     >
                         Replace
                     </button>
-                    <button
+                    <IconButton
+                        :label="`Swap ${entry.day.dayLabel}'s dinner`"
                         v-if="canSwap"
-                        type="button"
                         class="grid h-7 w-7 flex-none place-items-center rounded-md text-ryh-ink3 transition hover:bg-ryh-soft hover:text-ryh-ink"
-                        :aria-label="`Swap ${entry.day.dayLabel}'s dinner`"
-                        title="Swap this dinner"
                         :disabled="accepting"
                         @click="swap(entry.position)"
                     >
                         <ArrowLeftRight class="h-3.5 w-3.5" :stroke-width="2.5" />
-                    </button>
+                    </IconButton>
                 </div>
                 <p v-if="entry.suggestion.description" class="mt-1 text-[12.5px] text-ryh-ink2">{{ entry.suggestion.description }}</p>
                 <div class="mt-1.5 flex flex-wrap gap-1.5">
@@ -100,19 +100,13 @@ const {
         <p v-if="acceptFailures.length > 0" class="text-[12.5px] text-ryh-coral">{{ acceptFailureMessage }}</p>
 
         <div class="flex items-center gap-2">
-            <button
-                v-if="acceptFailures.length === 0"
-                type="button"
-                class="ryh-btn w-auto bg-ryh-coral text-white"
-                :disabled="accepting"
-                @click="accept(() => emit('close'))"
-            >
+            <Button class="w-auto" v-if="acceptFailures.length === 0" :disabled="accepting" @click="accept(() => emit('close'))">
                 {{ accepting ? `Adding ${acceptIndex + 1} of ${assignment.length}…` : 'Accept this week' }}
-            </button>
-            <button v-if="canRegenerate" type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" :disabled="accepting" @click="regenerate">
+            </Button>
+            <Button variant="secondary" class="w-auto" v-if="canRegenerate" :disabled="accepting" @click="regenerate">
                 {{ regenerateLabel }}
-            </button>
-            <button type="button" class="ryh-btn ml-auto w-auto bg-ryh-soft text-ryh-ink" :disabled="accepting" @click="emit('close')">Close</button>
+            </Button>
+            <Button variant="secondary" class="ml-auto w-auto" :disabled="accepting" @click="emit('close')">Close</Button>
         </div>
     </div>
 </template>

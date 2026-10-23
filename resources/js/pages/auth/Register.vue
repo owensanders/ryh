@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
+import Button from '@/components/ryh/ui/Button.vue';
 import AuthWizardLayout from '@/layouts/auth/AuthWizardLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
@@ -153,10 +154,10 @@ const submit = () => {
                 <InputError :message="form.errors.terms" />
 
                 <div class="mt-2 flex items-center gap-3.5">
-                    <button type="submit" class="ryh-btn bg-ryh-coral px-6 text-white" :disabled="!ready || form.processing">
+                    <Button class="px-6" type="submit" :disabled="!ready || form.processing">
                         <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                         Continue
-                    </button>
+                    </Button>
                     <span v-if="!ready" class="text-[13px] text-ryh-ink3">Name, email, a strong password and the terms box.</span>
                 </div>
             </form>

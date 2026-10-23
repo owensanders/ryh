@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import RecipeDetailFields from '@/components/ryh/RecipeDetailFields.vue';
+import Button from '@/components/ryh/ui/Button.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAddIngredientsToShoppingList } from '@/composables/useAddIngredientsToShoppingList';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
@@ -144,10 +145,10 @@ function confirmDestroy(): void {
     <RyhLayout title="Recipe Library" :subtitle="`${recipes.length} saved`">
         <div class="flex animate-ryh-rise flex-col gap-4">
             <div v-if="can?.createRecipes" class="flex items-center gap-2">
-                <button type="button" class="ryh-btn w-auto bg-ryh-coral text-white" @click="openNew">
+                <Button class="w-auto" @click="openNew">
                     <Plus class="h-4 w-4" :stroke-width="2.5" />
                     New recipe
-                </button>
+                </Button>
             </div>
 
             <div class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
@@ -216,14 +217,9 @@ function confirmDestroy(): void {
                             <option :value="null">Add ingredients to…</option>
                             <option v-for="list in shoppingLists" :key="list.id" :value="list.id">{{ list.name }}</option>
                         </select>
-                        <button
-                            type="button"
-                            class="ryh-btn w-auto bg-ryh-soft text-ryh-ink"
-                            :disabled="selectedListId === null"
-                            @click="submitAddIngredients"
-                        >
+                        <Button variant="secondary" class="w-auto" :disabled="selectedListId === null" @click="submitAddIngredients">
                             Add to list
-                        </button>
+                        </Button>
                     </div>
 
                     <div
@@ -240,13 +236,11 @@ function confirmDestroy(): void {
                     <p v-if="hasUnhandledErrors" class="text-[12.5px] text-ryh-coral">Couldn't save — check the recipe details above.</p>
 
                     <div class="flex items-center gap-2">
-                        <button type="submit" class="ryh-btn w-auto bg-ryh-coral text-white" :disabled="form.processing">
+                        <Button class="w-auto" type="submit" :disabled="form.processing">
                             {{ editing ? 'Save changes' : 'Add recipe' }}
-                        </button>
-                        <button type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="open = false">Cancel</button>
-                        <button v-if="editing?.can.delete" type="button" class="ryh-btn ml-auto w-auto bg-ryh-soft text-ryh-coral" @click="destroy">
-                            Delete
-                        </button>
+                        </Button>
+                        <Button variant="secondary" class="w-auto" @click="open = false">Cancel</Button>
+                        <Button variant="danger" class="ml-auto w-auto" v-if="editing?.can.delete" @click="destroy"> Delete </Button>
                     </div>
                 </form>
             </DialogContent>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import RyhLogo from '@/components/ryh/RyhLogo.vue';
 import Toast from '@/components/ryh/Toast.vue';
+import Button from '@/components/ryh/ui/Button.vue';
 import { logout } from '@/lib/logout';
 import type { SharedData } from '@/types';
 import type { HouseholdOptionData } from '@/types/generated';
@@ -181,15 +182,10 @@ function submit(): void {
                     </div>
 
                     <div class="mt-6 flex items-center gap-3.5">
-                        <button
-                            type="button"
-                            class="ryh-btn bg-ryh-coral px-6 text-white"
-                            :disabled="form.household_id === null || form.processing"
-                            @click="submit"
-                        >
+                        <Button class="px-6" :disabled="form.household_id === null || form.processing" @click="submit">
                             <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                             {{ selectedHousehold ? `Open ${selectedHousehold.name}` : 'Open household' }}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </main>

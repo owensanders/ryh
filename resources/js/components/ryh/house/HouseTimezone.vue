@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
+import Button from '@/components/ryh/ui/Button.vue';
 import type { HouseData } from '@/types/generated';
 import { useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
@@ -30,7 +31,7 @@ function save(): void {
             <select v-model="form.timezone" aria-label="Time zone" class="ryh-input min-w-0 flex-1">
                 <option v-for="timezone in timezones" :key="timezone" :value="timezone">{{ timezone.replaceAll('_', ' ') }}</option>
             </select>
-            <button type="submit" class="ryh-btn w-auto flex-none bg-ryh-soft text-ryh-ink" :disabled="form.processing || !form.isDirty">Save</button>
+            <Button variant="secondary" class="w-auto flex-none" type="submit" :disabled="form.processing || !form.isDirty">Save</Button>
         </form>
         <InputError :message="form.errors.timezone" />
     </section>

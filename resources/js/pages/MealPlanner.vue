@@ -3,6 +3,7 @@ import AiMealPlanDialog from '@/components/ryh/ai-meal-plan/AiMealPlanDialog.vue
 import MealDialog from '@/components/ryh/meals/MealDialog.vue';
 import MealPlannerWeek from '@/components/ryh/meals/MealPlannerWeek.vue';
 import RecipeLibraryStrip from '@/components/ryh/meals/RecipeLibraryStrip.vue';
+import Button from '@/components/ryh/ui/Button.vue';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import { provideMealEditor } from '@/composables/useMealEditor';
 import RyhLayout from '@/layouts/RyhLayout.vue';
@@ -49,10 +50,10 @@ const aiOpen = ref(false);
                 <div class="min-w-0 flex-1 text-[13px] text-ryh-ink3 [@media(hover:hover)]:hidden">
                     Tap a meal to edit it or move it to another day.
                 </div>
-                <button type="button" class="ryh-btn ml-auto w-auto flex-none whitespace-nowrap bg-ryh-ink text-ryh-shell" @click="aiOpen = true">
+                <Button variant="dark" class="ml-auto w-auto flex-none whitespace-nowrap" @click="aiOpen = true">
                     <Sparkles class="mr-1.5 inline h-3.5 w-3.5" :stroke-width="2.5" />
                     Plan my week
-                </button>
+                </Button>
             </div>
 
             <MealPlannerWeek :days="days" />

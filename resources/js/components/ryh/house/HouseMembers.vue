@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import GuardianConfirm from '@/components/ryh/GuardianConfirm.vue';
 import HouseInvite from '@/components/ryh/house/HouseInvite.vue';
+import Button from '@/components/ryh/ui/Button.vue';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { forMinors } from '@/lib/house';
 import type { HouseData } from '@/types/generated';
@@ -138,10 +139,8 @@ function approveMember(memberId: number): void {
             </DialogHeader>
             <GuardianConfirm id="role-guardian" v-model="pendingRoleConfirmed" :who="pendingRole?.name" />
             <div class="flex items-center gap-2">
-                <button type="button" class="ryh-btn w-auto bg-ryh-coral text-white" :disabled="!pendingRoleConfirmed" @click="confirmPendingRole">
-                    Change role
-                </button>
-                <button type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="cancelPendingRole(false)">Cancel</button>
+                <Button class="w-auto" :disabled="!pendingRoleConfirmed" @click="confirmPendingRole"> Change role </Button>
+                <Button variant="secondary" class="w-auto" @click="cancelPendingRole(false)">Cancel</Button>
             </div>
         </DialogContent>
     </Dialog>

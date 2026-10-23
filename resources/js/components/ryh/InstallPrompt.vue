@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Button from '@/components/ryh/ui/Button.vue';
+import IconButton from '@/components/ryh/ui/IconButton.vue';
 import { installPrompt, isIos, isStandalone, promptInstall } from '@/lib/pwa';
 import { Share, SquarePlus, X } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
@@ -53,14 +55,13 @@ async function install(): Promise<void> {
                     <div class="text-[15px] font-extrabold tracking-tight">Get the RYH app</div>
                     <p class="mt-0.5 text-[13px] text-ryh-ink2">Add it to your home screen for one-tap access to the household.</p>
                 </div>
-                <button
-                    type="button"
-                    aria-label="Not now"
+                <IconButton
+                    label="Not now"
                     class="-mr-1 -mt-1 grid h-8 w-8 flex-none place-items-center rounded-lg text-ryh-ink3 hover:bg-ryh-soft"
                     @click="dismiss"
                 >
                     <X class="h-4 w-4" />
-                </button>
+                </IconButton>
             </div>
 
             <ol v-if="ios && !installPrompt" class="mt-3 flex flex-col gap-2 text-[13px] text-ryh-ink2">
@@ -75,8 +76,8 @@ async function install(): Promise<void> {
             </ol>
 
             <div v-else class="mt-3 flex gap-2">
-                <button type="button" class="ryh-btn flex-1 bg-ryh-soft text-ryh-ink" @click="dismiss">Not now</button>
-                <button type="button" class="ryh-btn flex-1 bg-ryh-coral text-white" @click="install">Install</button>
+                <Button variant="secondary" class="flex-1" @click="dismiss">Not now</Button>
+                <Button class="flex-1" @click="install">Install</Button>
             </div>
         </section>
     </Transition>

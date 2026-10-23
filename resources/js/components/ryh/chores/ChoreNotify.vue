@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/ryh/ui/Button.vue';
 import { router } from '@inertiajs/vue3';
 import { Bell } from 'lucide-vue-next';
 import { computed, onUnmounted, ref } from 'vue';
@@ -34,14 +35,14 @@ function notifyChores(): void {
 <template>
     <div class="flex items-center justify-end gap-2.5">
         <span v-if="notifyChoresCooldownLabel" class="text-[12px] text-ryh-ink3">{{ notifyChoresCooldownLabel }}</span>
-        <button
-            type="button"
+        <Button
+            variant="secondary"
+            class="w-auto disabled:cursor-not-allowed disabled:opacity-50"
             :disabled="!notifyChoresReady"
-            class="ryh-btn w-auto bg-ryh-soft text-ryh-ink disabled:cursor-not-allowed disabled:opacity-50"
             @click="notifyChores"
         >
             <Bell class="h-4 w-4" :stroke-width="2.5" />
             Notify Chores
-        </button>
+        </Button>
     </div>
 </template>

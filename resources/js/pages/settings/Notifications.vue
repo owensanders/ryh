@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Button from '@/components/ryh/ui/Button.vue';
+import IconButton from '@/components/ryh/ui/IconButton.vue';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
@@ -105,10 +107,10 @@ function toggle(category: PushCategoryData): void {
                                 Turn off
                             </button>
                         </template>
-                        <button v-else type="button" class="ryh-btn bg-ryh-coral text-white" :disabled="busy" @click="turnOn">
+                        <Button v-else :disabled="busy" @click="turnOn">
                             <LoaderCircle v-if="busy" class="h-4 w-4 animate-spin" />
                             Turn on
-                        </button>
+                        </Button>
                     </div>
                     <p v-if="error" class="mt-2 text-[12.5px] font-semibold text-ryh-coral" role="alert">{{ error }}</p>
                 </div>
@@ -126,10 +128,9 @@ function toggle(category: PushCategoryData): void {
                             <div class="text-[13px] font-semibold">{{ category.label }}</div>
                             <div class="mt-0.5 text-[11.5px] text-ryh-ink3">{{ category.description }}</div>
                         </div>
-                        <button
-                            type="button"
+                        <IconButton
+                            :label="category.label"
                             role="switch"
-                            :aria-label="category.label"
                             :aria-checked="category.enabled"
                             class="h-[26px] w-11 flex-none rounded-full p-[3px] transition-colors"
                             :style="{ background: category.enabled ? 'var(--ryh-mint)' : 'var(--ryh-line)' }"
@@ -139,7 +140,7 @@ function toggle(category: PushCategoryData): void {
                                 class="block h-5 w-5 rounded-full bg-white transition-transform"
                                 :style="{ transform: category.enabled ? 'translateX(18px)' : 'translateX(0)' }"
                             ></span>
-                        </button>
+                        </IconButton>
                     </div>
                 </div>
             </section>

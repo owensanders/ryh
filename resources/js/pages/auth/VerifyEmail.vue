@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/ryh/ui/Button.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { logout } from '@/lib/logout';
 import { Head, useForm } from '@inertiajs/vue3';
@@ -24,10 +25,10 @@ const submit = () => {
         </div>
 
         <form class="flex flex-col gap-4" @submit.prevent="submit">
-            <button type="submit" class="ryh-btn bg-ryh-soft text-ryh-ink" :disabled="form.processing">
+            <Button variant="secondary" type="submit" :disabled="form.processing">
                 <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                 Resend verification email
-            </button>
+            </Button>
         </form>
 
         <p class="mt-6 text-center text-[13px] text-ryh-ink3">
