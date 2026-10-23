@@ -6,12 +6,17 @@ namespace App\Exceptions;
 
 use Throwable;
 
-/** Checkout couldn't be started: billing isn't configured, or Stripe didn't answer. */
+/** Checkout or the billing portal couldn't be opened: billing isn't configured, there's nothing to manage yet, or Stripe didn't answer. */
 final class BillingUnavailableException extends UserFacingException
 {
     public static function notConfigured(): self
     {
         return new self('Billing is not set up yet.');
+    }
+
+    public static function noBillingDetails(): self
+    {
+        return new self('There are no billing details to manage yet.');
     }
 
     public static function providerUnreachable(Throwable $previous): self

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\House;
 
 use App\Models\Household;
+use Illuminate\Support\Facades\Log;
 use Laravel\Cashier\Cashier;
 use Stripe\Exception\ApiErrorException;
 
@@ -16,9 +17,10 @@ class CompleteCheckoutAction
      * Cashier's `customer.subscription.created` webhook; until it lands, the
      * paywall says the payment is being confirmed instead of asking again.
      *
-     * @return bool Whether the household has paid: subscribed already, or Stripe says the session is complete.
+     * If Stripe can't be reached, the webhook still records the
+     * subscription; the paywall just can't say it's on its way.
      *
-     * @throws ApiErrorException When Stripe can't be reached.
+     * @return bool Whether the household has paid: subscribed already, or Stripe says the session is complete.
      */
     public function handle(Household $household, string $sessionId): bool
     {
@@ -26,7 +28,13 @@ class CompleteCheckoutAction
             return true;
         }
 
-        $session = Cashier::stripe()->checkout->sessions->retrieve($sessionId);
+        try {
+            $session = Cashier::stripe()->checkout->sessions->retrieve($sessionId);
+        } catch (ApiErrorException $e) {
+            Log::warning("Couldn't check Stripe checkout session {$sessionId}: {$e->getMessage()}");
+
+            return false;
+        }
 
         if ($session->customer !== $household->stripe_id || $session->status !== 'complete') {
             return false;

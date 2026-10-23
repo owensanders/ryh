@@ -245,6 +245,12 @@ export type HouseholdAbilitiesData = {
     createPlannedMeals: boolean;
     createRecipes: boolean;
 };
+export type HouseholdDoneScreenData = {
+    mode: 'create' | 'join';
+    householdName: string;
+    inviteCount: number;
+    pending: boolean;
+};
 export type HouseholdOptionData = {
     id: number;
     name: string;
@@ -257,6 +263,12 @@ export type HouseholdOptionData = {
     }[];
 };
 export type HouseholdRoleEnum = 'owner' | 'adult' | 'teen' | 'child';
+export type HouseholdSetupScreenData = {
+    trialAvailable: boolean;
+    fullHousehold: string | null;
+    reinviteHousehold: string | null;
+    maxMembers: number;
+};
 export type IncomeSourceData = {
     id: number;
     label: string;

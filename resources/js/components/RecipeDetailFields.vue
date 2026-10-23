@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Checkbox from '@/components/ui/Checkbox.vue';
 import Field from '@/components/ui/Field.vue';
 import IconButton from '@/components/ui/IconButton.vue';
 import Input from '@/components/ui/Input.vue';
@@ -41,7 +42,7 @@ function removeIngredientRow(index: number): void {
         <span class="ryh-label">Tags</span>
         <div class="flex flex-wrap gap-x-3 gap-y-1.5">
             <label v-for="option in tagOptions" :key="option.value" class="flex items-center gap-1.5 text-[12.5px] text-ryh-ink2">
-                <input v-model="tags" type="checkbox" :value="option.value" class="h-3.5 w-3.5 accent-ryh-coral" />
+                <Checkbox v-model="tags" :value="option.value" size="sm" />
                 {{ option.label }}
             </label>
         </div>
@@ -82,7 +83,7 @@ function removeIngredientRow(index: number): void {
     </div>
 
     <label class="flex items-center gap-2.5 text-[13px] text-ryh-ink2">
-        <input v-model="isFavourite" type="checkbox" class="h-4 w-4 accent-ryh-coral" />
+        <Checkbox v-model="isFavourite" />
         Show in the planner's quick-pick favourites
     </label>
 </template>

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\EnsureNotPendingMiddleware;
 use App\Http\Middleware\EnsureTrialActiveMiddleware;
 use App\Http\Middleware\ForgetHouseholdParameterMiddleware;
 use App\Http\Middleware\HandleInertiaRequestsMiddleware;
@@ -49,6 +50,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'household' => ResolveHouseholdMiddleware::class,
             'household.unbind' => ForgetHouseholdParameterMiddleware::class,
             'trial.active' => EnsureTrialActiveMiddleware::class,
+            'not.pending' => EnsureNotPendingMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

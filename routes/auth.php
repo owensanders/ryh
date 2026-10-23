@@ -43,14 +43,15 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['auth', 'throttle:app'])->group(function () {
     Route::get('household/setup', [HouseholdSetupController::class, 'create'])
+        ->middleware('not.pending')
         ->name('household.setup');
 
     Route::post('household/setup', [HouseholdSetupController::class, 'store'])
-        ->middleware('throttle:emails')
+        ->middleware(['not.pending', 'throttle:emails'])
         ->name('household.setup.store');
 
     Route::post('household/join', [HouseholdSetupController::class, 'join'])
-        ->middleware('throttle:join-code')
+        ->middleware(['not.pending', 'throttle:join-code'])
         ->name('household.join');
 
     Route::get('household/done', [HouseholdSetupController::class, 'done'])

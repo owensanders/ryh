@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\House\CompleteCheckoutAction;
+use App\Actions\House\OpenBillingPortalAction;
 use App\Actions\House\SubscribeHouseholdAction;
 use App\Http\Requests\CompleteCheckoutRequest;
 use App\Http\Requests\SubscribeRequest;
@@ -13,10 +14,8 @@ use App\Traits\ResolvesUserTrait;
 use App\ViewModels\Billing\BillingRequiredViewModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
-use Stripe\Exception\ApiErrorException;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class BillingController extends Controller
@@ -64,12 +63,7 @@ class BillingController extends Controller
         $sessionId = $request->sessionId();
 
         if ($sessionId !== null) {
-            try {
-                $complete->handle($household, $sessionId);
-            } catch (ApiErrorException $e) {
-                // The webhook still records the subscription; the paywall just can't say it's on its way.
-                Log::warning("Couldn't check Stripe checkout session {$sessionId}: {$e->getMessage()}");
-            }
+            $complete->handle($household, $sessionId);
         }
 
         // Only say so once it's true; otherwise the webhook is still on its way.
@@ -77,20 +71,8 @@ class BillingController extends Controller
             ->with('toast', $household->subscribed('default') ? "You're subscribed. Thanks!" : "Thanks! We're confirming your payment with Stripe; your plan will update in a moment.");
     }
 
-    public function portal(Request $request): SymfonyResponse
+    public function portal(Request $request, OpenBillingPortalAction $openPortal): SymfonyResponse
     {
-        $household = $this->household($request);
-
-        if (! $household->hasStripeId()) {
-            return back()->withErrors(['plan' => 'There are no billing details to manage yet.']);
-        }
-
-        try {
-            return Inertia::location($household->billingPortalUrl(route('house.index')));
-        } catch (ApiErrorException $e) {
-            Log::error("Couldn't open the Stripe billing portal for household {$household->id}: {$e->getMessage()}");
-
-            return back()->withErrors(['plan' => "We couldn't reach our payment provider. Please try again in a moment."]);
-        }
+        return Inertia::location($openPortal->handle($this->household($request), route('house.index')));
     }
 }

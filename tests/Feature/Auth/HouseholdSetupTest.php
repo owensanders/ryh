@@ -163,6 +163,21 @@ class HouseholdSetupTest extends TestCase
     }
 
     #[Test]
+    public function aPendingMemberCantSetUpOrJoinAnotherHouseholdWhileTheyWait(): void
+    {
+        $household = Household::factory()->create();
+        $other = Household::factory()->create();
+        $user = User::factory()->create(['household_id' => $household->id, 'pending' => true]);
+
+        $this->actingAs($user)->post('/household/setup', ['household_name' => 'Second home', 'timezone' => 'Europe/London'])
+            ->assertRedirect(route('household.done', absolute: false));
+        $this->actingAs($user)->post('/household/join', ['code' => $other->join_code])
+            ->assertRedirect(route('household.done', absolute: false));
+
+        $this->assertSame(1, $user->households()->count());
+    }
+
+    #[Test]
     public function thePendingMemberSeesJoinCopyOnTheWaitingScreenEvenWithoutFreshFlashData(): void
     {
         $household = Household::factory()->create(['name' => 'The Parker household']);

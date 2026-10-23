@@ -69,9 +69,9 @@ Containers: `ryh-app` (PHP app + Vite), `ryh-websockets` (Reverb), `ryh-queue`
 (`queue:work`: every email, including verification and password resets, plus
 live notifications, pushes and AI meal plans), `ryh-scheduler`
 (`schedule:work`: nightly prunes of old notifications, chores completed over
-30 days ago, shopping items ticked off over 7 days ago and document files
-nothing points to; hourly, each household's recurring budget items into its
-new month), `ryh-mysql`, `ryh-redis` (cache, sessions and queue),
+30 days ago, shopping items ticked off over 7 days ago, document files
+nothing points to and Stripe webhook records over 30 days old; hourly, each
+household's recurring budget items into its new month), `ryh-mysql`, `ryh-redis` (cache, sessions and queue),
 `ryh-mailpit` (catches all outgoing mail — inbox at <http://localhost:8025>).
 The Compose service names (`laravel.test`, `reverb`, `queue`, `scheduler`,
 `mysql`, `redis`, `mailpit`) are unchanged — they're the in-network hostnames
@@ -220,10 +220,8 @@ The ideas that shape it:
   and their TypeScript types are generated into `resources/js/types/generated.ts`.
   The checks fail if the committed file is out of date.
 - **A GET doesn't change household data.** Anything a page needs first runs on
-  a schedule or a POST (a budget month's recurring items, for example). A GET
-  records only which household the visitor was last in, plus what a signed
-  link from an email exists to do (accepting an invite, verifying an email),
-  which needs the person signed in, so a mail scanner opening it can't.
+  a schedule or a POST (a budget month's recurring items, for example).
+  CLAUDE.md lists the few exceptions.
 - **Races are closed with the household's row lock.** Member caps, the
   document quota, reminders and AI plans check and write under
   `$household->lockRow()`. Calls to Stripe, mail or the AI happen outside
