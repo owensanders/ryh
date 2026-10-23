@@ -35,7 +35,7 @@ class ShoppingListController extends Controller
 
     public function store(ShoppingItemRequest $request, string $slug, AddShoppingItemAction $addItem): RedirectResponse
     {
-        $name = trim((string) $request->validated('name'));
+        $name = (string) $request->validated('name');
         $list = $addItem->handle($this->household($request), $slug, $name, $request->validated('quantity'));
 
         return back()->with('toast', "“{$name}” added to {$list->name}");

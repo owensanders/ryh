@@ -4,31 +4,19 @@ declare(strict_types=1);
 
 use App\Actions\Budget\CarryForwardBudgetsAction;
 use App\Actions\Documents\PruneOrphanedDocumentFilesAction;
+use App\Actions\Notifications\PruneNotificationsAction;
 use App\Ai\AiConfigService;
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Notifications\DatabaseNotification;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
-
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
 
 Artisan::command('ai:resume', function () {
     AiConfigService::resume();
     $this->info('AI features resumed.');
 })->purpose('Resume AI features after topping up provider credit');
 
-Artisan::command('notifications:prune {--days=90}', function () {
-    $cutoff = now()->subDays((int) $this->option('days'));
-    $deleted = 0;
-
-    // In batches, so a big first prune never holds a long lock on the table.
-    do {
-        $batch = DatabaseNotification::query()->where('created_at', '<', $cutoff)->limit(1000)->delete();
-        $deleted += $batch;
-    } while ($batch > 0);
-
+Artisan::command('notifications:prune {--days=90}', function (PruneNotificationsAction $prune) {
+    $deleted = $prune->handle(CarbonImmutable::now()->subDays((int) $this->option('days')));
     $this->info("Pruned {$deleted} notifications.");
 })->purpose('Delete bell notifications older than the given number of days');
 

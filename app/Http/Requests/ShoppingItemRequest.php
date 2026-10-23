@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Traits\NormalisesInputTrait;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ShoppingItemRequest extends FormRequest
 {
+    use NormalisesInputTrait;
+
     /** @return array<string, mixed> */
     public function rules(): array
     {
@@ -23,5 +26,11 @@ class ShoppingItemRequest extends FormRequest
         return [
             'name.required' => 'Give the item a name.',
         ];
+    }
+
+    /** Validated as it'll be stored: a trimmed name, and no quantity as null. */
+    protected function prepareForValidation(): void
+    {
+        $this->merge(['name' => $this->trimmed('name'), 'quantity' => $this->trimmedOrNull('quantity')]);
     }
 }
