@@ -11,7 +11,6 @@ use App\Models\User;
 use App\Notifications\CalendarEventAssignedNotification;
 use App\Notifications\CalendarEventUpdatedNotification;
 use App\Support\RecipientsHelper;
-use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
 class UpdateCalendarEventAction
@@ -22,11 +21,11 @@ class UpdateCalendarEventAction
         $previousAttendeeIds = $event->attendees()->pluck('users.id')->map(fn (mixed $id): int => (int) $id)->all();
         $isAllDay = (bool) ($data['is_all_day'] ?? false);
 
-        DB::transaction(function () use ($event, $data, $isAllDay): void {
+        DB::transaction(function () use ($household, $event, $data, $isAllDay): void {
             $event->update([
                 'title' => $data['title'],
-                'starts_at' => CarbonImmutable::parse($data['starts_at']),
-                'ends_at' => ! $isAllDay && isset($data['ends_at']) ? CarbonImmutable::parse($data['ends_at']) : null,
+                'starts_at' => $household->momentAt($data['starts_at']),
+                'ends_at' => ! $isAllDay && isset($data['ends_at']) ? $household->momentAt($data['ends_at']) : null,
                 'is_all_day' => $isAllDay,
                 'location' => $data['location'] ?? null,
                 'notes' => $data['notes'] ?? null,

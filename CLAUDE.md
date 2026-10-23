@@ -174,10 +174,14 @@ binding in `AppServiceProvider`.
 ## Dates and time zones
 
 Each household has a `timezone` (from the creator's browser; the owner can
-change it on the House page). Anything about a household's day uses
+change it on the House page). Anything about a household's date uses
 `$household->today()` / `$household->now()`, never `today()` / `now()`,
-which are UTC. Times a household enters (calendar events) are stored as its
-clock reads them, not converted, so compare them with `$household->now()`.
+which are UTC. Those two are what the household's clock reads, for dates and
+for comparing with times it typed; they aren't moments. Calendar event times
+are UTC moments (`UtcDateTimeCast`): `$household->momentAt()` turns a typed
+time into one, and `$event->startsIn($household->timezone)` shows it on the
+household's clock. Changing a household's time zone keeps its events at the
+same moment.
 The browser gets dates it needs from the server (`todayDate`, `hasEnded`,
 `isCurrentMonth`) rather than working them out from `toISOString()`. A
 greeting or "today's date" for the reader comes from their own clock
@@ -221,7 +225,7 @@ A class name ends with what it is: `ChoreStatusEnum`, `CreateChoreAction`,
 `ChoreRequest`, `ChoreController`,
 `ChoreAssignedNotification`, `QueueHeartbeatJob`, `RecordLoginStreakListener`,
 `UserNotificationBroadcastEvent`, `ResolveHouseholdMiddleware`,
-`MoneyHelper`, `PlatformProbesService`, `AuthorizesHouseholdAccessTrait`.
+`MoneyHelper`, `UtcDateTimeCast`, `PlatformProbesService`, `AuthorizesHouseholdAccessTrait`.
 **Models are the one exception.** Their class names are stored in the database
 (`notifications.notifiable_type`) and used in channel names. Enforced by
 `NamingConventionsTest`, which also fails when a new folder has no naming rule.

@@ -178,8 +178,8 @@ class AbilitiesTest extends TestCase
         // June 2026 starts on a Monday, so the 1st is the grid's first day.
         CalendarEvent::factory()->create([
             'household_id' => $teen->household_id,
-            'starts_at' => CarbonImmutable::parse('2026-06-01 18:00'),
-            'ends_at' => CarbonImmutable::parse('2026-06-01 19:00'),
+            'starts_at' => CarbonImmutable::parse('2026-06-01 18:00', 'Europe/London'),
+            'ends_at' => CarbonImmutable::parse('2026-06-01 19:00', 'Europe/London'),
         ]);
 
         $this->actingAs($teen)->get($this->hh('/calendar?month=2026-06'))

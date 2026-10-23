@@ -17,12 +17,13 @@ class AgendaEntryData extends Data
         public string $colour,
     ) {}
 
-    public static function fromModel(CalendarEvent $event): self
+    /** `$timezone` is the household's, whose clock the time is shown on. */
+    public static function fromModel(CalendarEvent $event, string $timezone): self
     {
         return new self(
             id: $event->id,
             title: $event->title,
-            time: $event->timeLabel(),
+            time: $event->timeLabel($timezone),
             who: $event->whoLabel(),
             colour: $event->colour->cssVar(),
         );

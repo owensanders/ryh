@@ -150,8 +150,8 @@ class CalendarTest extends TestCase
 
         $event = CalendarEvent::factory()->create([
             'household_id' => $user->household_id,
-            'starts_at' => CarbonImmutable::tomorrow()->setTime(18, 0),
-            'ends_at' => CarbonImmutable::tomorrow()->setTime(19, 30),
+            'starts_at' => CarbonImmutable::tomorrow('Europe/London')->setTime(18, 0),
+            'ends_at' => CarbonImmutable::tomorrow('Europe/London')->setTime(19, 30),
         ]);
 
         // The hidden end time is still in the payload and is now before the start.
@@ -180,8 +180,8 @@ class CalendarTest extends TestCase
         $event = CalendarEvent::factory()->create([
             'household_id' => $user->household_id,
             'title' => 'Football practice',
-            'starts_at' => CarbonImmutable::today()->setTime(18, 0),
-            'ends_at' => CarbonImmutable::today()->setTime(19, 30),
+            'starts_at' => CarbonImmutable::today('Europe/London')->setTime(18, 0),
+            'ends_at' => CarbonImmutable::today('Europe/London')->setTime(19, 30),
         ]);
         $event->attendees()->sync([$partner->id]);
 
@@ -204,7 +204,7 @@ class CalendarTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $start = CarbonImmutable::today()->addDays(3);
+        $start = CarbonImmutable::today('Europe/London')->addDays(3);
         $end = $start->addDays(4);
 
         CalendarEvent::factory()->create([
@@ -362,7 +362,7 @@ class CalendarTest extends TestCase
         $user = User::factory()->create();
         $event = CalendarEvent::factory()->create([
             'household_id' => $user->household_id,
-            'starts_at' => CarbonImmutable::tomorrow()->setTime(10, 0),
+            'starts_at' => CarbonImmutable::tomorrow('Europe/London')->setTime(10, 0),
         ]);
 
         $this->actingAs($user)
@@ -380,7 +380,7 @@ class CalendarTest extends TestCase
         $event = CalendarEvent::factory()->create([
             'household_id' => $user->household_id,
             'title' => 'Old event',
-            'starts_at' => CarbonImmutable::yesterday()->setTime(10, 0),
+            'starts_at' => CarbonImmutable::yesterday('Europe/London')->setTime(10, 0),
         ]);
 
         $this->actingAs($user)

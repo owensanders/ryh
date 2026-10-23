@@ -59,7 +59,7 @@ class CalendarEventRequest extends FormRequest
             function (Validator $validator): void {
                 $event = $this->route('event');
 
-                if ($event instanceof CalendarEvent && $event->hasEndedBy(CurrentHouseholdHelper::household($this)->now())) {
+                if ($event instanceof CalendarEvent && $event->hasEndedBy(CarbonImmutable::now(), CurrentHouseholdHelper::household($this)->timezone)) {
                     $validator->errors()->add('starts_at', 'This event has already happened, so it can\'t be changed.');
                 }
             },
@@ -69,7 +69,8 @@ class CalendarEventRequest extends FormRequest
     /**
      * Before the household's today is refused, so nothing new lands in the
      * past. Keeping an event's start as it was is always fine: an event
-     * already under way can still have its details changed.
+     * already under way can still have its details changed. The form sends
+     * times as the household's clock reads them.
      */
     private function notInThePast(string $attribute, mixed $value, Closure $fail): void
     {
@@ -77,14 +78,14 @@ class CalendarEventRequest extends FormRequest
             return;
         }
 
-        $startsAt = CarbonImmutable::parse($value);
+        $household = CurrentHouseholdHelper::household($this);
         $event = $this->route('event');
 
-        if ($event instanceof CalendarEvent && $startsAt->equalTo($event->starts_at)) {
+        if ($event instanceof CalendarEvent && $household->momentAt($value)->equalTo($event->starts_at)) {
             return;
         }
 
-        if ($startsAt->lt(CurrentHouseholdHelper::household($this)->today())) {
+        if (CarbonImmutable::parse($value)->lt($household->today())) {
             $fail('The event can\'t be scheduled in the past.');
         }
     }

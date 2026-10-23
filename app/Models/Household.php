@@ -270,14 +270,29 @@ class Household extends Model
     }
 
     /**
-     * The household's wall-clock time right now, in the app's time zone.
-     *
-     * Times the household enters (calendar events) are stored as the clock
-     * showed them, not converted to UTC, so this is what they compare with.
+     * What the household's clock reads right now, labelled with the app's
+     * time zone. For working out the household's date and comparing with
+     * times it typed; never store it or compare it with a moment.
      */
     public function now(): CarbonImmutable
     {
         return CarbonImmutable::parse(CarbonImmutable::now($this->timezone)->toDateTimeString());
+    }
+
+    /**
+     * A time as the household's clock reads it ('2026-10-25T01:30', say) as
+     * the UTC moment it means. When the clocks go back, a time that happens
+     * twice is the first one (summer time); when they go forward, a time that
+     * never happens is read on the winter clock, so it lands an hour later.
+     */
+    public function momentAt(string $localTime): CarbonImmutable
+    {
+        $moment = CarbonImmutable::parse($localTime, $this->timezone);
+        // PHP takes the second of a time that happens twice; a day earlier the clock was ahead by the
+        // difference, so stepping back that far finds the first, if it reads the same.
+        $first = $moment->subSeconds(max(0, $moment->subDay()->utcOffset() * 60 - $moment->utcOffset() * 60));
+
+        return ($first->toDateTimeString() === $moment->toDateTimeString() ? $first : $moment)->utc();
     }
 
     /** The household's date today: it turns over at their midnight, not UTC's. */

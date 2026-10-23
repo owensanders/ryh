@@ -203,7 +203,7 @@ The ideas that shape it:
   the transaction, and notifications go to the queue only once it commits.
   Stripe webhooks are handled once each, however often they're delivered.
 - **Each household has a time zone.** Its day turns over at its own midnight
-  (`$household->today()`), and event times are stored as its clock reads them.
+  (`$household->today()`). Event times are stored in UTC and shown on its clock.
 
 ### In the browser
 

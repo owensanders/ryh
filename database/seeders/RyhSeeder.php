@@ -308,8 +308,8 @@ class RyhSeeder extends Seeder
 
             $event = $household->calendarEvents()->create([
                 'title' => $title,
-                'starts_at' => $day->setTimeFromTimeString($start),
-                'ends_at' => $end !== null ? $day->setTimeFromTimeString($end) : null,
+                'starts_at' => $household->momentAt("{$day->toDateString()} {$start}"),
+                'ends_at' => $end !== null ? $household->momentAt("{$day->toDateString()} {$end}") : null,
                 'is_all_day' => $allDay,
                 'location' => $location,
                 'colour' => $colour,

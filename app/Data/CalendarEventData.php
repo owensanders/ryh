@@ -34,13 +34,17 @@ class CalendarEventData extends Data
         public bool $hasEnded,
     ) {}
 
-    public static function fromModel(CalendarEvent $event, User $viewer, string $forDate, CarbonImmutable $now): self
+    /** `$timezone` is the household's: times are shown, and edited, on its clock. */
+    public static function fromModel(CalendarEvent $event, User $viewer, string $forDate, string $timezone): self
     {
+        $startsAt = $event->startsIn($timezone);
+        $endsAt = $event->endsIn($timezone);
+
         return new self(
             id: $event->id,
             title: $event->title,
             date: $forDate,
-            time: $event->timeLabel(),
+            time: $event->timeLabel($timezone),
             who: $event->whoLabel(),
             isAllDay: $event->is_all_day,
             location: $event->location,
@@ -48,12 +52,12 @@ class CalendarEventData extends Data
             colour: $event->colour->cssVar(),
             colourKey: $event->colour->value,
             attendees: $event->attendees->map(MemberData::fromModel(...))->values()->all(),
-            isSpanStart: $forDate === $event->starts_at->toDateString(),
-            isSpanEnd: $forDate === ($event->ends_at ?? $event->starts_at)->toDateString(),
-            startsAt: $event->starts_at->format('Y-m-d\TH:i'),
-            endsAt: $event->ends_at?->format('Y-m-d\TH:i'),
+            isSpanStart: $forDate === $startsAt->toDateString(),
+            isSpanEnd: $forDate === ($endsAt ?? $startsAt)->toDateString(),
+            startsAt: $startsAt->format('Y-m-d\TH:i'),
+            endsAt: $endsAt?->format('Y-m-d\TH:i'),
             can: AbilitiesData::for($viewer, $event, 'update', 'delete'),
-            hasEnded: $event->hasEndedBy($now),
+            hasEnded: $event->hasEndedBy(CarbonImmutable::now(), $timezone),
         );
     }
 }

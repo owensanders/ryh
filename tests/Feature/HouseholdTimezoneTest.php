@@ -97,8 +97,8 @@ class HouseholdTimezoneTest extends TestCase
         $event = CalendarEvent::factory()->create([
             'household_id' => $this->owner->household_id,
             'title' => 'Camping',
-            'starts_at' => CarbonImmutable::parse('2026-10-22 09:00'),
-            'ends_at' => CarbonImmutable::parse('2026-10-24 17:00'),
+            'starts_at' => CarbonImmutable::parse('2026-10-22 09:00', 'Pacific/Auckland'),
+            'ends_at' => CarbonImmutable::parse('2026-10-24 17:00', 'Pacific/Auckland'),
         ]);
 
         $this->assertSame([false], $this->hasEndedFlags());
@@ -128,8 +128,8 @@ class HouseholdTimezoneTest extends TestCase
         $event = CalendarEvent::factory()->create([
             'household_id' => $this->owner->household_id,
             'title' => 'Breakfast',
-            'starts_at' => CarbonImmutable::parse('2026-10-23 08:00'),
-            'ends_at' => CarbonImmutable::parse('2026-10-23 09:00'),
+            'starts_at' => CarbonImmutable::parse('2026-10-23 08:00', 'Pacific/Auckland'),
+            'ends_at' => CarbonImmutable::parse('2026-10-23 09:00', 'Pacific/Auckland'),
         ]);
 
         $this->assertSame([true], $this->hasEndedFlags());

@@ -26,6 +26,7 @@ class NamingConventionsTest extends TestCase
         'Ai/Agents' => 'Agent',
         'Ai/Fakes' => 'Fake',
         'Ai' => 'Service',
+        'Casts' => 'Cast',
         'Data' => 'Data',
         'Enums' => 'Enum',
         'Events' => 'Event',
