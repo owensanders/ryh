@@ -3,8 +3,11 @@
 /public/build
 /public/hot
 /public/storage
-# Rendered promo video (see video/) — kept local until it's hosted on S3.
+# The promo video's Remotion project, and what it renders, live only locally;
+# the rendered .mp4 stays local until it's hosted on S3.
+/video/
 /public/videos/*.mp4
+.DS_Store
 /storage/*.key
 /storage/pail
 /vendor
