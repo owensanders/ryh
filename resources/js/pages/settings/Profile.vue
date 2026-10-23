@@ -61,7 +61,7 @@ const submit = () => {
                         <InputError :message="form.errors.email" />
                     </div>
 
-                    <div v-if="!user.email_verified_at" class="rounded-[13px] bg-ryh-sunk p-3.5 text-[13px] text-ryh-ink2">
+                    <div v-if="!user.emailVerifiedAt" class="rounded-[13px] bg-ryh-sunk p-3.5 text-[13px] text-ryh-ink2">
                         Your email address is unverified.
                         <Link :href="route('verification.send')" method="post" as="button" class="font-semibold text-ryh-coral hover:opacity-75">
                             Re-send the verification email.

@@ -8,13 +8,13 @@ export interface AppNotification {
     id: string;
     body: string;
     url: string;
-    read_at: string | null;
+    readAt: string | null;
 }
 
 interface NotificationRow {
     id: string;
     data: { body: string; user_id: number; url: string; [key: string]: unknown };
-    read_at: string | null;
+    readAt: string | null;
 }
 
 interface LiveNotificationPayload {
@@ -38,20 +38,20 @@ export function subscribeToNotifications(): void {
     fetch(route('notifications.index'), { headers: { Accept: 'application/json' } })
         .then((response) => (response.ok ? (response.json() as Promise<NotificationRow[]>) : Promise.reject(new Error(`HTTP ${response.status}`))))
         .then((rows) => {
-            notifications.value = rows.map((row) => ({ id: row.id, body: row.data.body, url: row.data.url, read_at: row.read_at }));
+            notifications.value = rows.map((row) => ({ id: row.id, body: row.data.body, url: row.data.url, readAt: row.readAt }));
         })
         .catch(() => (notifications.value = []));
 
     // The server only sends someone their own notifications, on their own channel.
     useEchoNotification<LiveNotificationPayload>(`App.Models.User.${userId}`, (notification) => {
-        notifications.value.unshift({ id: notification.id, body: notification.body, url: notification.url, read_at: null });
+        notifications.value.unshift({ id: notification.id, body: notification.body, url: notification.url, readAt: null });
         showToast(notification.body);
     });
 }
 
 /** Marks the notification read, then goes to its page, even if marking it failed. */
 export function openNotification(notification: AppNotification): void {
-    notification.read_at = new Date().toISOString();
+    notification.readAt = new Date().toISOString();
 
     router.patch(
         route('notifications.read', { id: notification.id }),
@@ -61,7 +61,7 @@ export function openNotification(notification: AppNotification): void {
 }
 
 export function markAllAsRead(): void {
-    notifications.value.forEach((notification) => (notification.read_at = new Date().toISOString()));
+    notifications.value.forEach((notification) => (notification.readAt = new Date().toISOString()));
 
     router.post(route('notifications.readAll'), {}, { preserveScroll: true, preserveState: true, only: [] });
 }

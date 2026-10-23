@@ -11,7 +11,7 @@ const root = ref<HTMLElement | null>(null);
 
 onClickOutside(root, () => (open.value = false));
 
-const unreadCount = computed(() => notifications.value.filter((notification) => notification.read_at === null).length);
+const unreadCount = computed(() => notifications.value.filter((notification) => notification.readAt === null).length);
 
 function toggle(): void {
     open.value = !open.value;
@@ -73,8 +73,8 @@ function toggle(): void {
                 class="flex w-full items-start gap-2 rounded-xl px-2 py-2 text-left text-[13px] transition-colors hover:bg-ryh-soft"
                 @click="openNotification(notification)"
             >
-                <span class="mt-1.5 h-1.5 w-1.5 flex-none rounded-full" :class="notification.read_at === null ? 'bg-ryh-coral' : 'bg-transparent'" />
-                <span :class="notification.read_at === null ? 'font-semibold text-ryh-ink' : 'text-ryh-ink3'">{{ notification.body }}</span>
+                <span class="mt-1.5 h-1.5 w-1.5 flex-none rounded-full" :class="notification.readAt === null ? 'bg-ryh-coral' : 'bg-transparent'" />
+                <span :class="notification.readAt === null ? 'font-semibold text-ryh-ink' : 'text-ryh-ink3'">{{ notification.body }}</span>
             </button>
         </div>
     </div>

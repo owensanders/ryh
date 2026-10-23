@@ -152,6 +152,13 @@ binding in `AppServiceProvider`.
   `string`, so the page gets the exact values; for a fixed set with no enum,
   use `#[LiteralTypeScriptType]`. `ryh.ts` only names shapes a Data class
   declares inline, and `index.ts` holds the shared props and UI-only types.
+  Everything the browser receives is camelCase; only what it sends (form
+  fields) is snake_case, like the validation rules. Data classes are built by
+  named factories (`fromModel()`, `fromRecipe()`), not `from()` with mappers:
+  most fields are derived (colours, labels, abilities), and a factory says so.
+  Beware that laravel-data's `from()` calls any static `from*()` that takes
+  the same type, so a Data class with a `from*(array)` factory reads stored
+  arrays with `factory()->withoutMagicalCreation()->from()`.
 - **Why Data and not models:** Inertia props are readable in the page source,
   so a `*Data` class is the list of what the browser may see. Never hand a
   model to a page.

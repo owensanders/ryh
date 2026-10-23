@@ -70,14 +70,14 @@ const {
                 </div>
                 <p v-if="entry.suggestion.description" class="mt-1 text-[12.5px] text-ryh-ink2">{{ entry.suggestion.description }}</p>
                 <div class="mt-1.5 flex flex-wrap gap-1.5">
-                    <span v-if="entry.suggestion.duration_label" class="rounded-md bg-ryh-soft px-1.5 py-[3px] font-mono text-[10.5px] text-ryh-ink2">
-                        {{ entry.suggestion.duration_label }}
+                    <span v-if="entry.suggestion.durationLabel" class="rounded-md bg-ryh-soft px-1.5 py-[3px] font-mono text-[10.5px] text-ryh-ink2">
+                        {{ entry.suggestion.durationLabel }}
                     </span>
                     <span v-if="entry.suggestion.difficulty" class="rounded-md bg-ryh-soft px-1.5 py-[3px] text-[10.5px] font-semibold text-ryh-ink2">
                         {{ entry.suggestion.difficulty }}
                     </span>
-                    <span v-if="entry.suggestion.estimated_cost" class="rounded-md bg-ryh-soft px-1.5 py-[3px] font-mono text-[10.5px] text-ryh-ink2">
-                        ~{{ pounds(entry.suggestion.estimated_cost) }}
+                    <span v-if="entry.suggestion.estimatedCost" class="rounded-md bg-ryh-soft px-1.5 py-[3px] font-mono text-[10.5px] text-ryh-ink2">
+                        ~{{ pounds(entry.suggestion.estimatedCost) }}
                     </span>
                 </div>
             </div>
