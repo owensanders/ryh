@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import LeaveHousehold from '@/components/LeaveHousehold.vue';
+import Button from '@/components/ryh/ui/Button.vue';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import type { HouseholdOptionData } from '@/types/generated';
-import { Link, router } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import { House } from 'lucide-vue-next';
 
 defineOptions({ layout: RyhShell });
@@ -63,14 +64,9 @@ function switchTo(householdId: number): void {
                             >
                                 Currently open
                             </span>
-                            <button
-                                v-else
-                                type="button"
-                                class="ryh-btn flex-1 bg-ryh-soft px-4 text-ryh-ink md:w-auto md:flex-none"
-                                @click="switchTo(household.id)"
-                            >
+                            <Button variant="secondary" class="flex-1 px-4 md:w-auto md:flex-none" v-else @click="switchTo(household.id)">
                                 Switch
-                            </button>
+                            </Button>
 
                             <LeaveHousehold :household-id="household.id" :household-name="household.name" />
                         </div>
@@ -87,7 +83,7 @@ function switchTo(householdId: number): void {
                             >Join another household with an invite code, or set one up from scratch.</span
                         >
                     </span>
-                    <Link :href="route('household.setup')" class="ryh-btn w-full bg-ryh-card px-4 text-ryh-ink sm:w-auto">Add household</Link>
+                    <Button variant="card" class="w-full px-4 sm:w-auto" :href="route('household.setup')">Add household</Button>
                 </div>
             </section>
         </SettingsLayout>

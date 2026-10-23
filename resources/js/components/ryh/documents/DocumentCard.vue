@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import IconButton from '@/components/ryh/ui/IconButton.vue';
 import type { DocumentData } from '@/types/generated';
 import { Download, Trash2 } from 'lucide-vue-next';
 
@@ -61,15 +62,13 @@ const draggingId = defineModel<number | null>('draggingId', { required: true });
                 >
                     <Download class="h-3.5 w-3.5" />
                 </a>
-                <button
-                    type="button"
-                    title="Delete"
-                    :aria-label="`Delete ${document.name}`"
+                <IconButton
+                    :label="`Delete ${document.name}`"
                     class="grid h-[30px] w-[30px] place-items-center rounded-lg text-ryh-ink3 transition hover:bg-ryh-card hover:text-ryh-coral"
                     @click="emit('delete', document)"
                 >
                     <Trash2 class="h-3.5 w-3.5" />
-                </button>
+                </IconButton>
             </div>
         </div>
     </div>

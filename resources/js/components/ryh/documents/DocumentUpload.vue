@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/ryh/ui/Button.vue';
 import type { DocumentFolderData } from '@/types/generated';
 import { router } from '@inertiajs/vue3';
 import { Upload } from 'lucide-vue-next';
@@ -77,7 +78,7 @@ function onDrop(event: DragEvent): void {
             </div>
             <div class="mt-0.5 text-[13px] text-ryh-ink3">PDF, images, spreadsheets. Up to 50MB each · going into {{ active.name }}</div>
         </div>
-        <button type="button" class="ryh-btn w-full flex-none bg-ryh-coral text-white sm:w-auto" @click="chooseFiles">Choose files</button>
+        <Button class="w-full flex-none sm:w-auto" @click="chooseFiles">Choose files</Button>
         <input ref="fileInput" type="file" multiple aria-label="Upload files" class="hidden" @change="onFileChange" />
     </section>
 

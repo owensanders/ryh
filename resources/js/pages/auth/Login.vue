@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
+import Button from '@/components/ryh/ui/Button.vue';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { isStandalone } from '@/lib/pwa';
 import { Head, Link, useForm } from '@inertiajs/vue3';
@@ -87,10 +88,10 @@ const submit = () => {
                 Remember me
             </label>
 
-            <button type="submit" class="ryh-btn mt-2 bg-ryh-coral text-white" tabindex="4" :disabled="form.processing">
+            <Button class="mt-2" type="submit" tabindex="4" :disabled="form.processing">
                 <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                 Sign in
-            </button>
+            </Button>
         </form>
 
         <p class="mt-6 text-center text-[13px] text-ryh-ink3">

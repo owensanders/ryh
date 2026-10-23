@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import IconButton from '@/components/ryh/ui/IconButton.vue';
 import { tint } from '@/lib/ryh';
 import type { TagOption } from '@/types/ryh';
 import { X } from 'lucide-vue-next';
@@ -57,14 +58,13 @@ function removeIngredientRow(index: number): void {
                 placeholder="Qty"
                 :aria-label="`Ingredient ${index + 1} quantity`"
             />
-            <button
-                type="button"
+            <IconButton
+                label="Remove ingredient"
                 class="grid h-7 w-7 flex-none place-items-center rounded-md text-ryh-ink3 hover:bg-ryh-soft hover:text-ryh-coral"
-                aria-label="Remove ingredient"
                 @click="removeIngredientRow(index)"
             >
                 <X class="h-3.5 w-3.5" />
-            </button>
+            </IconButton>
         </div>
         <button type="button" class="w-auto self-start text-[12.5px] font-semibold text-ryh-coral hover:opacity-75" @click="addIngredientRow">
             + Add ingredient
@@ -74,17 +74,16 @@ function removeIngredientRow(index: number): void {
     <div class="flex flex-col gap-1.5">
         <span class="ryh-label">Colour</span>
         <div class="flex gap-2">
-            <button
+            <IconButton
+                :label="`Colour ${t + 1}`"
                 v-for="t in TINTS"
                 :key="t"
-                type="button"
-                :aria-label="`Colour ${t + 1}`"
                 :aria-pressed="tintValue === t"
                 class="h-7 w-7 rounded-[9px] transition"
                 :class="tintValue === t ? 'ring-2 ring-ryh-ink ring-offset-2 ring-offset-ryh-card' : ''"
                 :style="{ background: tint(t) }"
                 @click="tintValue = t"
-            ></button>
+            ></IconButton>
         </div>
     </div>
 

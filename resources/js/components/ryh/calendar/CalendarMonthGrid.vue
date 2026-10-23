@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import IconButton from '@/components/ryh/ui/IconButton.vue';
 import { useCalendarEditor } from '@/composables/useCalendarEditor';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import { eventsFor, isEditable, VISIBLE_PER_CELL } from '@/lib/calendar';
@@ -31,15 +32,14 @@ const { openNew, openEdit, expandedDay } = useCalendarEditor();
                     <span class="px-1 text-[12px] font-bold" :class="day.isToday ? 'text-ryh-coral' : 'text-ryh-ink2'">
                         {{ day.dateLabel }}
                     </span>
-                    <button
+                    <IconButton
+                        :label="`Add an event on ${day.dateLabel}`"
                         v-if="can?.createCalendarEvents && day.date >= calendar.todayDate"
-                        type="button"
                         class="ml-auto grid h-7 w-7 place-items-center rounded-md text-ryh-ink3 transition hover:bg-ryh-soft hover:text-ryh-ink [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:focus-visible:opacity-100 [@media(hover:hover)]:group-hover:opacity-100"
-                        :aria-label="`Add an event on ${day.dateLabel}`"
                         @click="openNew(day)"
                     >
                         <Plus class="h-3.5 w-3.5" :stroke-width="2.5" />
-                    </button>
+                    </IconButton>
                 </div>
 
                 <button

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import DocumentCard from '@/components/ryh/documents/DocumentCard.vue';
+import IconButton from '@/components/ryh/ui/IconButton.vue';
 import { useConfirm } from '@/composables/useConfirm';
 import type { DocumentData, DocumentFolderData } from '@/types/generated';
 import { router } from '@inertiajs/vue3';
@@ -73,9 +74,9 @@ function destroyDocument(document: DocumentData): void {
                         {{ option }}
                     </button>
                 </div>
-                <button type="button" aria-label="Delete folder" class="rounded-lg p-1.5 transition hover:bg-ryh-soft" @click="destroyFolder">
+                <IconButton label="Delete folder" class="rounded-lg p-1.5 transition hover:bg-ryh-soft" @click="destroyFolder">
                     <Trash2 class="h-4 w-4 text-ryh-ink3" />
-                </button>
+                </IconButton>
             </div>
         </div>
 

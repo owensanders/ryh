@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import GuardianConfirm from '@/components/ryh/GuardianConfirm.vue';
+import Button from '@/components/ryh/ui/Button.vue';
 import AuthWizardLayout from '@/layouts/auth/AuthWizardLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
@@ -215,14 +216,14 @@ function submitJoin(): void {
                 </div>
 
                 <div class="mt-2 flex items-center gap-3.5">
-                    <button
+                    <Button
+                        class="px-6"
                         type="submit"
-                        class="ryh-btn bg-ryh-coral px-6 text-white"
                         :disabled="createForm.name.trim() === '' || (invitesMinors && !createForm.guardian_confirmed) || createForm.processing"
                     >
                         <LoaderCircle v-if="createForm.processing" class="h-4 w-4 animate-spin" />
                         Create household
-                    </button>
+                    </Button>
                 </div>
             </form>
 
@@ -241,10 +242,10 @@ function submitJoin(): void {
                 </div>
 
                 <div class="mt-2 flex items-center gap-3.5">
-                    <button type="submit" class="ryh-btn bg-ryh-coral px-6 text-white" :disabled="!codeLooksValid || joinForm.processing">
+                    <Button class="px-6" type="submit" :disabled="!codeLooksValid || joinForm.processing">
                         <LoaderCircle v-if="joinForm.processing" class="h-4 w-4 animate-spin" />
                         Request to join
-                    </button>
+                    </Button>
                 </div>
 
                 <div class="text-[13px] leading-relaxed text-ryh-ink3">Owners must approve new members before you get access.</div>

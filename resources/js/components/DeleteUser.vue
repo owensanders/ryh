@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/ryh/ui/Button.vue';
 import { useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
@@ -55,7 +56,7 @@ const closeModal = () => {
             <p class="mt-0.5 text-[13px] text-ryh-ink2">Please proceed with caution, this cannot be undone.</p>
 
             <Dialog>
-                <DialogTrigger class="ryh-btn mt-3.5 w-auto bg-ryh-coral text-white"> Delete account </DialogTrigger>
+                <DialogTrigger as-child><Button class="mt-3.5 w-auto">Delete account</Button></DialogTrigger>
                 <DialogContent class="rounded-[22px] border-ryh-line bg-ryh-card text-ryh-ink sm:rounded-[22px]">
                     <form class="flex flex-col gap-5" @submit="deleteUser">
                         <DialogHeader class="space-y-2">
@@ -94,15 +95,15 @@ const closeModal = () => {
                         </div>
 
                         <DialogFooter class="gap-2">
-                            <DialogClose class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="closeModal"> Cancel </DialogClose>
+                            <DialogClose as-child><Button variant="secondary" class="w-auto" @click="closeModal">Cancel</Button></DialogClose>
 
-                            <button
+                            <Button
+                                class="w-auto"
                                 type="submit"
-                                class="ryh-btn w-auto bg-ryh-coral text-white"
                                 :disabled="form.processing || (!!householdError && !form.confirm_household_deletion)"
                             >
                                 Delete account
-                            </button>
+                            </Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>

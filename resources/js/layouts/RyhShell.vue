@@ -3,6 +3,7 @@ import InstallPrompt from '@/components/ryh/InstallPrompt.vue';
 import NotificationBell from '@/components/ryh/NotificationBell.vue';
 import RyhLogo from '@/components/ryh/RyhLogo.vue';
 import Toast from '@/components/ryh/Toast.vue';
+import IconButton from '@/components/ryh/ui/IconButton.vue';
 import { useAppearance } from '@/composables/useAppearance';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import { logout } from '@/lib/logout';
@@ -128,14 +129,13 @@ function toggleTheme(): void {
                         <span class="hidden text-[13px] font-semibold sm:block">{{ user?.name?.split(' ')[0] }}</span>
                     </Link>
 
-                    <button
-                        type="button"
-                        title="Logout"
+                    <IconButton
+                        label="Logout"
                         class="hidden h-[38px] w-[38px] place-items-center rounded-xl bg-ryh-soft text-sm transition-colors hover:bg-ryh-line sm:grid"
                         @click="logout"
                     >
                         <LogOut class="h-4 w-4" />
-                    </button>
+                    </IconButton>
                 </header>
 
                 <!-- scroll-region: Inertia resets this to the top on a new screen and restores it on Back. -->

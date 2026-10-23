@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
+import Button from '@/components/ryh/ui/Button.vue';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
@@ -92,7 +93,7 @@ const updatePassword = () => {
                     </div>
 
                     <div class="flex items-center gap-4">
-                        <button type="submit" class="ryh-btn w-auto bg-ryh-coral text-white" :disabled="form.processing">Save password</button>
+                        <Button class="w-auto" type="submit" :disabled="form.processing">Save password</Button>
 
                         <TransitionRoot
                             :show="form.recentlySuccessful"

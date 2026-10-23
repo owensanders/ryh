@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Button from '@/components/ryh/ui/Button.vue';
+import IconButton from '@/components/ryh/ui/IconButton.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useCalendarEditor } from '@/composables/useCalendarEditor';
 import { PALETTE } from '@/lib/ryh';
@@ -82,18 +84,16 @@ const { open, editing, form, toggleAttendee, submit, destroy } = useCalendarEdit
                 <div class="flex flex-col gap-1.5">
                     <span class="ryh-label">Colour</span>
                     <div class="flex gap-2">
-                        <button
+                        <IconButton
+                            :label="colour"
                             v-for="colour in PALETTE"
                             :key="colour"
-                            type="button"
-                            :title="colour"
-                            :aria-label="colour"
                             :aria-pressed="form.colour === colour"
                             class="h-7 w-7 rounded-[9px] transition"
                             :class="form.colour === colour ? 'ring-2 ring-ryh-ink ring-offset-2 ring-offset-ryh-card' : ''"
                             :style="{ background: `var(--ryh-${colour})` }"
                             @click="form.colour = colour"
-                        ></button>
+                        ></IconButton>
                     </div>
                 </div>
 
@@ -111,13 +111,11 @@ const { open, editing, form, toggleAttendee, submit, destroy } = useCalendarEdit
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <button type="submit" class="ryh-btn w-auto bg-ryh-coral text-white" :disabled="form.processing">
+                    <Button class="w-auto" type="submit" :disabled="form.processing">
                         {{ editing ? 'Save changes' : 'Add event' }}
-                    </button>
-                    <button type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="open = false">Cancel</button>
-                    <button v-if="editing?.can.delete" type="button" class="ryh-btn ml-auto w-auto bg-ryh-soft text-ryh-coral" @click="destroy">
-                        Delete
-                    </button>
+                    </Button>
+                    <Button variant="secondary" class="w-auto" @click="open = false">Cancel</Button>
+                    <Button variant="danger" class="ml-auto w-auto" v-if="editing?.can.delete" @click="destroy"> Delete </Button>
                 </div>
             </form>
         </DialogContent>

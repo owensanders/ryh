@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import Button from '@/components/ryh/ui/Button.vue';
 import AuthWizardLayout from '@/layouts/auth/AuthWizardLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const props = defineProps<{
@@ -57,16 +58,8 @@ const nextSteps = [
             </div>
 
             <div class="mt-6 flex items-center gap-3">
-                <Link v-if="!pending" :href="route('app')" class="ryh-btn bg-ryh-coral px-6 text-white">Open my dashboard</Link>
-                <button
-                    v-else
-                    type="button"
-                    disabled
-                    title="Waiting for the household owner to approve you"
-                    class="ryh-btn bg-ryh-coral px-6 text-white"
-                >
-                    Open my dashboard
-                </button>
+                <Button class="px-6" v-if="!pending" :href="route('app')">Open my dashboard</Button>
+                <Button class="px-6" v-else disabled title="Waiting for the household owner to approve you"> Open my dashboard </Button>
             </div>
         </div>
     </AuthWizardLayout>

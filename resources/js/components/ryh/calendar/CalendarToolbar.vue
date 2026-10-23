@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/ryh/ui/Button.vue';
 import { useCalendarEditor } from '@/composables/useCalendarEditor';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import { defaultDay } from '@/lib/calendar';
@@ -41,15 +42,10 @@ const { openNew } = useCalendarEditor();
 
         <span class="ml-1 text-[15px] font-extrabold tracking-tight">{{ calendar.monthLabel }}</span>
 
-        <button
-            v-if="can?.createCalendarEvents"
-            type="button"
-            class="ryh-btn ml-2 w-auto bg-ryh-coral text-white"
-            @click="openNew(defaultDay(calendar))"
-        >
+        <Button class="ml-2 w-auto" v-if="can?.createCalendarEvents" @click="openNew(defaultDay(calendar))">
             <Plus class="h-4 w-4" :stroke-width="2.5" />
             New event
-        </button>
+        </Button>
 
         <div
             class="-mx-4 flex w-[calc(100%+2rem)] items-center gap-1.5 overflow-x-auto px-4 pb-1 md:mx-0 md:ml-auto md:w-auto md:flex-wrap md:overflow-visible md:p-0"

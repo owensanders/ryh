@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import IconButton from '@/components/ryh/ui/IconButton.vue';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import { useMealEditor } from '@/composables/useMealEditor';
 import { PLANNED_DAY_PROPS, tint } from '@/lib/ryh';
@@ -58,15 +59,14 @@ function drop(date: string): void {
             <div class="flex items-baseline gap-1.5">
                 <span class="text-[13px] font-extrabold">{{ day.dayLabel }}</span>
                 <span class="font-mono text-[11px] text-ryh-ink3">{{ day.dateLabel }}</span>
-                <button
+                <IconButton
+                    :label="`Add a meal on ${day.dateLabel}`"
                     v-if="can?.createPlannedMeals"
-                    type="button"
                     class="ml-auto grid h-8 w-8 place-items-center rounded-md text-ryh-ink3 transition hover:bg-ryh-soft hover:text-ryh-ink [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:focus-visible:opacity-100 [@media(hover:hover)]:group-hover:opacity-100"
-                    :aria-label="`Add a meal on ${day.dateLabel}`"
                     @click="openNew(day.date)"
                 >
                     <Plus class="h-3.5 w-3.5" :stroke-width="2.5" />
-                </button>
+                </IconButton>
             </div>
 
             <button

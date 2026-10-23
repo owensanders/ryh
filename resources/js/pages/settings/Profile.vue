@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/ryh/ui/Button.vue';
 import { TransitionRoot } from '@headlessui/vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 
@@ -73,7 +74,7 @@ const submit = () => {
                     </div>
 
                     <div class="flex items-center gap-4">
-                        <button type="submit" class="ryh-btn w-auto bg-ryh-coral text-white" :disabled="form.processing">Save</button>
+                        <Button class="w-auto" type="submit" :disabled="form.processing">Save</Button>
 
                         <TransitionRoot
                             :show="form.recentlySuccessful"

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import GuardianConfirm from '@/components/ryh/GuardianConfirm.vue';
+import IconButton from '@/components/ryh/ui/IconButton.vue';
 import { forMinors } from '@/lib/house';
 import type { HouseData } from '@/types/generated';
 import { router, useForm } from '@inertiajs/vue3';
@@ -84,10 +85,9 @@ function regenerateJoinCode(): void {
                 <div class="text-[13px] font-semibold">Invite code</div>
                 <div class="mt-0.5 text-[11.5px] text-ryh-ink3">Share this so someone can join without an email invite.</div>
             </div>
-            <button
-                type="button"
+            <IconButton
+                label="Invite code"
                 role="switch"
-                aria-label="Invite code"
                 :aria-checked="house.joinCodeEnabled"
                 class="h-[26px] w-11 flex-none rounded-full p-[3px] transition-colors"
                 :style="{ background: house.joinCodeEnabled ? 'var(--ryh-mint)' : 'var(--ryh-line)' }"
@@ -97,7 +97,7 @@ function regenerateJoinCode(): void {
                     class="block h-5 w-5 rounded-full bg-white transition-transform"
                     :style="{ transform: house.joinCodeEnabled ? 'translateX(18px)' : 'translateX(0)' }"
                 ></span>
-            </button>
+            </IconButton>
         </div>
 
         <div v-if="house.joinCodeEnabled" class="mt-3 flex flex-wrap items-center gap-2.5">

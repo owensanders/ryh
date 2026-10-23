@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import RecurringIcon from '@/components/ryh/RecurringIcon.vue';
+import Button from '@/components/ryh/ui/Button.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useConfirm } from '@/composables/useConfirm';
 import type { IncomeSourceData } from '@/types/generated';
@@ -136,13 +137,11 @@ function destroyIncome(): void {
                 </label>
 
                 <div class="flex items-center gap-2">
-                    <button type="submit" class="ryh-btn w-auto bg-ryh-coral text-white" :disabled="incomeForm.processing">
+                    <Button class="w-auto" type="submit" :disabled="incomeForm.processing">
                         {{ editingIncome ? 'Save changes' : 'Add income source' }}
-                    </button>
-                    <button type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="incomeOpen = false">Cancel</button>
-                    <button v-if="editingIncome" type="button" class="ryh-btn ml-auto w-auto bg-ryh-soft text-ryh-coral" @click="destroyIncome">
-                        Delete
-                    </button>
+                    </Button>
+                    <Button variant="secondary" class="w-auto" @click="incomeOpen = false">Cancel</Button>
+                    <Button variant="danger" class="ml-auto w-auto" v-if="editingIncome" @click="destroyIncome"> Delete </Button>
                 </div>
             </form>
         </DialogContent>

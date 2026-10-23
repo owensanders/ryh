@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import IconButton from '@/components/ryh/ui/IconButton.vue';
 import type { DocumentFolderData } from '@/types/generated';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
@@ -60,14 +61,13 @@ function dropOnFolder(folder: DocumentFolderData): void {
                 class="h-11 flex-1 rounded-[13px] border border-dashed border-ryh-line bg-transparent px-3 text-[13.5px]"
                 @keydown.enter="addFolder"
             />
-            <button
-                type="button"
-                aria-label="Add folder"
+            <IconButton
+                label="Add folder"
                 class="h-11 w-11 flex-none rounded-[13px] bg-ryh-soft text-lg transition hover:bg-ryh-line"
                 @click="addFolder"
             >
                 <Plus class="mx-auto h-4 w-4" :stroke-width="2.5" />
-            </button>
+            </IconButton>
         </div>
 
         <div class="mt-3.5 rounded-2xl border border-ryh-line bg-ryh-panel p-4">

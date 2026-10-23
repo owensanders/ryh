@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ShoppingListDialog from '@/components/ryh/shopping/ShoppingListDialog.vue';
 import ShoppingListPanel from '@/components/ryh/shopping/ShoppingListPanel.vue';
+import Button from '@/components/ryh/ui/Button.vue';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
@@ -25,15 +26,10 @@ const listDialog = ref<InstanceType<typeof ShoppingListDialog> | null>(null);
     <RyhLayout title="Shopping Lists" :subtitle="`${lists.length} lists`">
         <div class="flex animate-ryh-rise flex-col items-start gap-5 lg:flex-row">
             <div class="flex w-full flex-none flex-col gap-1.5 lg:w-[232px]">
-                <button
-                    v-if="can?.createShoppingLists"
-                    type="button"
-                    class="ryh-btn mb-1 w-auto self-start bg-ryh-coral text-white"
-                    @click="listDialog?.openNew()"
-                >
+                <Button class="mb-1 w-auto self-start" v-if="can?.createShoppingLists" @click="listDialog?.openNew()">
                     <Plus class="h-4 w-4" :stroke-width="2.5" />
                     New list
-                </button>
+                </Button>
 
                 <Link
                     v-for="list in lists"

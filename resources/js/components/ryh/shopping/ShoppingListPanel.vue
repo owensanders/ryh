@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import ShoppingItemDialog from '@/components/ryh/shopping/ShoppingItemDialog.vue';
+import IconButton from '@/components/ryh/ui/IconButton.vue';
 import { useConfirm } from '@/composables/useConfirm';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import { useOptimistic } from '@/composables/useOptimistic';
@@ -72,27 +73,25 @@ function destroyActiveList(): void {
             <div class="flex-1">
                 <div class="flex items-center gap-1.5">
                     <h3 class="text-lg font-extrabold tracking-[-0.02em]">{{ activeList.name }}</h3>
-                    <button
+                    <IconButton
+                        label="Rename list"
                         v-if="activeList.can.update"
-                        type="button"
-                        aria-label="Rename list"
                         class="rounded-lg p-1 transition hover:bg-ryh-soft"
                         @click="emit('rename', activeList)"
                     >
                         <Pencil class="h-3.5 w-3.5 text-ryh-ink3" />
-                    </button>
+                    </IconButton>
                 </div>
                 <div class="mt-1 text-[13px] text-ryh-ink3">{{ activeList.remaining }} items left</div>
             </div>
-            <button
+            <IconButton
+                label="Delete list"
                 v-if="activeList.can.delete"
-                type="button"
-                aria-label="Delete list"
                 class="rounded-lg p-1.5 transition hover:bg-ryh-soft"
                 @click="destroyActiveList"
             >
                 <Trash2 class="h-4 w-4 text-ryh-ink3" />
-            </button>
+            </IconButton>
         </div>
 
         <form v-if="can?.createShoppingItems" class="my-4 flex gap-2" @submit.prevent="addItem">
@@ -140,15 +139,14 @@ function destroyActiveList(): void {
                     </span>
                     <span class="font-mono text-[11.5px] text-ryh-ink3">{{ item.quantity }}</span>
                 </button>
-                <button
+                <IconButton
+                    label="Edit item"
                     v-if="item.can.update"
-                    type="button"
-                    aria-label="Edit item"
                     class="absolute right-0.5 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-lg transition [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
                     @click.stop="itemDialog?.openEdit(item)"
                 >
                     <Pencil class="h-3.5 w-3.5 text-ryh-ink3" />
-                </button>
+                </IconButton>
             </div>
         </div>
 

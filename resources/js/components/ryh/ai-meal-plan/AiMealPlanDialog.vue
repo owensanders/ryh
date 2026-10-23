@@ -6,6 +6,7 @@ import AiPlanKitchenStep from '@/components/ryh/ai-meal-plan/AiPlanKitchenStep.v
 import AiPlanLoading from '@/components/ryh/ai-meal-plan/AiPlanLoading.vue';
 import AiPlanResult from '@/components/ryh/ai-meal-plan/AiPlanResult.vue';
 import AiPlanStepIndicator from '@/components/ryh/ai-meal-plan/AiPlanStepIndicator.vue';
+import Button from '@/components/ryh/ui/Button.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { provideAiMealPlanForm, type AiMealPlanSettings } from '@/composables/useAiMealPlanForm';
 import { hasSeenPlan, markPlanSeen, useAiPlanUpdates } from '@/composables/useAiPlanUpdates';
@@ -159,37 +160,24 @@ function submit(): void {
                 </p>
 
                 <div class="flex flex-wrap items-center gap-2">
-                    <button v-if="step > 0" type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" :disabled="form.processing" @click="back">
-                        Back
-                    </button>
-                    <button v-else type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="close">Cancel</button>
+                    <Button variant="secondary" class="w-auto" v-if="step > 0" :disabled="form.processing" @click="back"> Back </Button>
+                    <Button variant="secondary" class="w-auto" v-else @click="close">Cancel</Button>
 
                     <div class="ml-auto flex flex-wrap justify-end gap-2">
-                        <button v-if="!isLastStep" type="submit" class="ryh-btn w-auto bg-ryh-coral text-white" :disabled="!canContinue">Next</button>
-                        <button
-                            v-else-if="aiUnavailable"
-                            type="submit"
-                            class="ryh-btn w-auto bg-ryh-coral text-white"
-                            :disabled="selectedDays.length === 0 || form.processing"
-                        >
+                        <Button class="w-auto" v-if="!isLastStep" type="submit" :disabled="!canContinue">Next</Button>
+                        <Button class="w-auto" v-else-if="aiUnavailable" type="submit" :disabled="selectedDays.length === 0 || form.processing">
                             Use my recipes
-                        </button>
+                        </Button>
                         <template v-else>
-                            <button
-                                type="button"
-                                class="ryh-btn w-auto bg-ryh-soft text-ryh-ink"
+                            <Button
+                                variant="secondary"
+                                class="w-auto"
                                 :disabled="selectedDays.length === 0 || form.processing"
                                 @click="planFromLibrary"
                             >
                                 Use my recipes
-                            </button>
-                            <button
-                                type="submit"
-                                class="ryh-btn w-auto bg-ryh-coral text-white"
-                                :disabled="selectedDays.length === 0 || form.processing"
-                            >
-                                Generate my week
-                            </button>
+                            </Button>
+                            <Button class="w-auto" type="submit" :disabled="selectedDays.length === 0 || form.processing"> Generate my week </Button>
                         </template>
                     </div>
                 </div>

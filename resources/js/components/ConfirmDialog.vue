@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from '@/components/ryh/ui/Button.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 defineProps<{
@@ -21,10 +22,10 @@ const emit = defineEmits<{
             </DialogHeader>
             <p class="text-[13.5px] text-ryh-ink2">{{ message }}</p>
             <div class="flex items-center gap-2">
-                <button type="button" class="ryh-btn w-auto bg-ryh-coral text-white" @click="emit('confirm')">
+                <Button class="w-auto" @click="emit('confirm')">
                     {{ confirmLabel ?? 'Delete' }}
-                </button>
-                <button type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="emit('update:open', false)">Cancel</button>
+                </Button>
+                <Button variant="secondary" class="w-auto" @click="emit('update:open', false)">Cancel</Button>
             </div>
         </DialogContent>
     </Dialog>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import RecipeDetailFields from '@/components/ryh/RecipeDetailFields.vue';
+import Button from '@/components/ryh/ui/Button.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useMealEditor } from '@/composables/useMealEditor';
 import type { MemberData, ShoppingListData } from '@/types/generated';
@@ -120,13 +121,11 @@ const {
                 <p v-if="hasUnhandledErrors" class="text-[12.5px] text-ryh-coral">Couldn't save — check the recipe details above.</p>
 
                 <div class="flex items-center gap-2">
-                    <button type="submit" class="ryh-btn w-auto bg-ryh-coral text-white" :disabled="form.processing">
+                    <Button class="w-auto" type="submit" :disabled="form.processing">
                         {{ editing ? 'Save changes' : 'Add meal' }}
-                    </button>
-                    <button type="button" class="ryh-btn w-auto bg-ryh-soft text-ryh-ink" @click="open = false">Cancel</button>
-                    <button v-if="editing?.can.delete" type="button" class="ryh-btn ml-auto w-auto bg-ryh-soft text-ryh-coral" @click="destroy">
-                        Remove
-                    </button>
+                    </Button>
+                    <Button variant="secondary" class="w-auto" @click="open = false">Cancel</Button>
+                    <Button variant="danger" class="ml-auto w-auto" v-if="editing?.can.delete" @click="destroy"> Remove </Button>
                 </div>
             </form>
         </DialogContent>

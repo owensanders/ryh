@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
+import IconButton from '@/components/ryh/ui/IconButton.vue';
 import { useConfirm } from '@/composables/useConfirm';
 import { useOptimistic } from '@/composables/useOptimistic';
 import { CHORE_BOARD_PROPS, tickStyle } from '@/lib/ryh';
@@ -122,15 +123,14 @@ function requestDelete(chore: ChoreData): void {
                     <span class="flex-1 text-sm font-medium leading-snug" :class="chore.done ? 'text-ryh-ink3 line-through' : 'text-ryh-ink'">
                         {{ chore.name }}
                     </span>
-                    <button
+                    <IconButton
+                        label="Delete chore"
                         v-if="chore.can.delete"
-                        type="button"
-                        title="Delete chore"
                         class="grid h-6 w-6 flex-none place-items-center rounded-lg border-0 bg-transparent text-ryh-ink3 transition hover:bg-ryh-soft hover:text-ryh-coral"
                         @click.stop="requestDelete(chore)"
                     >
                         <X class="h-3 w-3" :stroke-width="2.5" />
-                    </button>
+                    </IconButton>
                 </div>
                 <div v-if="chore.assignee" class="mt-3 flex items-center gap-1.5">
                     <span

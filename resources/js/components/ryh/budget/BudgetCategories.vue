@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import RecurringIcon from '@/components/ryh/RecurringIcon.vue';
+import Button from '@/components/ryh/ui/Button.vue';
+import IconButton from '@/components/ryh/ui/IconButton.vue';
 import { useConfirm } from '@/composables/useConfirm';
 import type { BudgetCategoryData } from '@/types/generated';
 import { router, useForm } from '@inertiajs/vue3';
@@ -104,23 +106,21 @@ function addCategory(): void {
                     >
                         ✓
                     </button>
-                    <button
+                    <IconButton
+                        label="Edit category"
                         v-else
-                        type="button"
-                        title="Edit category"
                         class="grid h-8 w-8 place-items-center rounded-[10px] text-ryh-ink3 transition hover:bg-ryh-line hover:text-ryh-ink"
                         @click="openEditCategory(category)"
                     >
                         <Pencil class="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                        type="button"
-                        title="Delete category"
+                    </IconButton>
+                    <IconButton
+                        label="Delete category"
                         class="grid h-8 w-8 place-items-center rounded-[10px] text-ryh-ink3 transition hover:bg-ryh-soft hover:text-ryh-coral"
                         @click="destroyCategory(category)"
                     >
                         <Trash2 class="h-3.5 w-3.5" />
-                    </button>
+                    </IconButton>
                 </div>
             </div>
         </div>
@@ -146,10 +146,10 @@ function addCategory(): void {
                 aria-label="New category budget"
                 @keydown.enter="addCategory"
             />
-            <button type="button" class="ryh-btn w-auto flex-none bg-ryh-coral text-white" @click="addCategory">
+            <Button class="w-auto flex-none" @click="addCategory">
                 <Plus class="h-4 w-4" :stroke-width="2.5" />
                 Add
-            </button>
+            </Button>
         </div>
         <label class="mt-2 flex items-center gap-1.5 text-[12px] text-ryh-ink3">
             <input v-model="newCategoryForm.is_recurring" type="checkbox" class="h-3.5 w-3.5" />
