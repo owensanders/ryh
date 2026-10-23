@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import ChoreAddForm from '@/components/ryh/chores/ChoreAddForm.vue';
-import ChoreBoard from '@/components/ryh/chores/ChoreBoard.vue';
-import ChoreDialog from '@/components/ryh/chores/ChoreDialog.vue';
-import ChoreNotify from '@/components/ryh/chores/ChoreNotify.vue';
-import ChoreScores from '@/components/ryh/chores/ChoreScores.vue';
+import ChoreAddForm from '@/components/chores/ChoreAddForm.vue';
+import ChoreBoard from '@/components/chores/ChoreBoard.vue';
+import ChoreDialog from '@/components/chores/ChoreDialog.vue';
+import ChoreNotify from '@/components/chores/ChoreNotify.vue';
+import ChoreScores from '@/components/chores/ChoreScores.vue';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';

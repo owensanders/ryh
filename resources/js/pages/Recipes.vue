@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
-import RecipeDetailFields from '@/components/ryh/RecipeDetailFields.vue';
-import Button from '@/components/ryh/ui/Button.vue';
-import Field from '@/components/ryh/ui/Field.vue';
-import Input from '@/components/ryh/ui/Input.vue';
-import Select from '@/components/ryh/ui/Select.vue';
-import Textarea from '@/components/ryh/ui/Textarea.vue';
+import RecipeDetailFields from '@/components/RecipeDetailFields.vue';
+import Button from '@/components/ui/Button.vue';
+import Field from '@/components/ui/Field.vue';
+import Input from '@/components/ui/Input.vue';
+import Select from '@/components/ui/Select.vue';
+import Textarea from '@/components/ui/Textarea.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAddIngredientsToShoppingList } from '@/composables/useAddIngredientsToShoppingList';
 import { useHouseholdAbilities } from '@/composables/useHouseholdAbilities';

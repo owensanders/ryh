@@ -4,7 +4,7 @@ export type InstallScene = 'safari-site' | 'safari-share' | 'share-sheet' | 'chr
 
 <script setup lang="ts">
 import TapHint from '@/components/landing/TapHint.vue';
-import RyhLogo from '@/components/ryh/RyhLogo.vue';
+import RyhLogo from '@/components/RyhLogo.vue';
 import { BookOpen, ChevronLeft, ChevronRight, Copy, EllipsisVertical, Lock, Share, SquarePlus } from 'lucide-vue-next';
 import { computed } from 'vue';
 

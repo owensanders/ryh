@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Button from '@/components/ryh/ui/Button.vue';
+import Button from '@/components/ui/Button.vue';
 import { useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 

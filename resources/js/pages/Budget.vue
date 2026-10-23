@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import BudgetCategories from '@/components/ryh/budget/BudgetCategories.vue';
-import BudgetHero from '@/components/ryh/budget/BudgetHero.vue';
-import BudgetIncome from '@/components/ryh/budget/BudgetIncome.vue';
-import BudgetOverview from '@/components/ryh/budget/BudgetOverview.vue';
-import Button from '@/components/ryh/ui/Button.vue';
+import BudgetCategories from '@/components/budget/BudgetCategories.vue';
+import BudgetHero from '@/components/budget/BudgetHero.vue';
+import BudgetIncome from '@/components/budget/BudgetIncome.vue';
+import BudgetOverview from '@/components/budget/BudgetOverview.vue';
+import Button from '@/components/ui/Button.vue';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import type { BudgetCategoryData, BudgetMonthSummaryData, IncomeSourceData } from '@/types/generated';

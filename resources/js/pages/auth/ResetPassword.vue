@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
-import Button from '@/components/ryh/ui/Button.vue';
-import Field from '@/components/ryh/ui/Field.vue';
-import Input from '@/components/ryh/ui/Input.vue';
+import Button from '@/components/ui/Button.vue';
+import Field from '@/components/ui/Field.vue';
+import Input from '@/components/ui/Input.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';

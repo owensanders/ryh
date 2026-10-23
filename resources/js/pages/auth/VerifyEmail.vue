@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Button from '@/components/ryh/ui/Button.vue';
+import Button from '@/components/ui/Button.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { logout } from '@/lib/logout';
 import { Head, useForm } from '@inertiajs/vue3';

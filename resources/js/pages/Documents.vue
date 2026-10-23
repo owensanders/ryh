@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import DocumentFolders from '@/components/ryh/documents/DocumentFolders.vue';
-import DocumentList from '@/components/ryh/documents/DocumentList.vue';
-import DocumentUpload from '@/components/ryh/documents/DocumentUpload.vue';
+import DocumentFolders from '@/components/documents/DocumentFolders.vue';
+import DocumentList from '@/components/documents/DocumentList.vue';
+import DocumentUpload from '@/components/documents/DocumentUpload.vue';
 import RyhLayout from '@/layouts/RyhLayout.vue';
 import RyhShell from '@/layouts/RyhShell.vue';
 import type { DocumentData, DocumentFolderData } from '@/types/generated';

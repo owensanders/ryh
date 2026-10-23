@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import Button from '@/components/ryh/ui/Button.vue';
-import Field from '@/components/ryh/ui/Field.vue';
-import Input from '@/components/ryh/ui/Input.vue';
+import Button from '@/components/ui/Button.vue';
+import Card from '@/components/ui/Card.vue';
+import Field from '@/components/ui/Field.vue';
+import Input from '@/components/ui/Input.vue';
 import { TransitionRoot } from '@headlessui/vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 
@@ -39,7 +40,7 @@ const submit = () => {
 <template>
     <RyhLayout title="Settings" subtitle="Manage your profile and account">
         <SettingsLayout>
-            <section class="rounded-[22px] border border-ryh-line bg-ryh-card p-4 sm:p-[22px]">
+            <Card as="section">
                 <h3 class="text-[15px] font-extrabold tracking-[-0.01em]">Profile information</h3>
                 <p class="mt-1 text-[13px] text-ryh-ink3">Update your name and email address.</p>
 
@@ -79,7 +80,7 @@ const submit = () => {
                         </TransitionRoot>
                     </div>
                 </form>
-            </section>
+            </Card>
 
             <DeleteUser />
         </SettingsLayout>
