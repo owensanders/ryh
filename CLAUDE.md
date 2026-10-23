@@ -297,8 +297,14 @@ and `DB_DATABASE=schema_dump artisan schema:dump --prune`, keep
 ./vendor/bin/sail bin pint
 ./vendor/bin/sail npm run lint
 ./vendor/bin/sail npx vue-tsc --noEmit
+./vendor/bin/sail npm test               # Vitest: composables and lib helpers
 npm run e2e                              # Playwright, with Sail up; includes axe on each main page
 ```
+
+Frontend logic (composables, `lib/`) has Vitest tests beside it
+(`useOptimistic.test.ts`), run in jsdom with Inertia's router mocked and
+`route()` stubbed (`resources/js/test/setup.ts`). A composable that needs
+provide/inject runs inside `withSetup()`.
 
 `e2e/accessibility.spec.ts` runs axe on each main page and fails on any
 serious or critical WCAG 2.1 A/AA problem. Colour contrast is left out: the

@@ -59,9 +59,15 @@ test('moving between screens keeps the tab bar and header, and starts each scree
     const tabs = page.getByRole('navigation', { name: 'Main' });
     await tabs.evaluate((nav) => (nav.dataset.original = 'yes'));
     await page.locator('header').evaluate((header) => (header.dataset.original = 'yes'));
-    await page.evaluate(() => window.scrollTo(0, 600));
-    // Inertia records the scroll position for Back shortly after scrolling stops.
-    await expect.poll(() => page.evaluate(() => history.state?.documentScrollPosition?.top ?? 0)).toBeGreaterThan(500);
+    // Inertia records the scroll position for Back shortly after scrolling stops. Scrolled
+    // again each time round, in case the dashboard hadn't finished growing tall enough yet.
+    await expect
+        .poll(async () => {
+            await page.evaluate(() => window.scrollTo(0, 600));
+
+            return page.evaluate(() => history.state?.documentScrollPosition?.top ?? 0);
+        })
+        .toBeGreaterThan(500);
 
     await tabs.getByRole('link', { name: 'Chores' }).click();
     await expect(page).toHaveURL(/\/chores$/);
