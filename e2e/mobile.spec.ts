@@ -1,7 +1,4 @@
-import { expect, test } from '@playwright/test';
-import { storageState } from './support/users';
-
-test.use({ storageState: storageState('owner') });
+import { expect, test } from './support/fixtures';
 
 // Phones get the bottom tab bar and a "More" sheet instead of the sidebar.
 test('on a phone, the tab bar and More sheet reach every screen', async ({ page }) => {

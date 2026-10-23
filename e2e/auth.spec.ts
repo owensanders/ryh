@@ -1,10 +1,12 @@
-import { expect, test } from '@playwright/test';
 import { logIn, logInAndLand } from './support/auth';
+import { expect, test } from './support/fixtures';
 import { registerNewUser, verifyEmail } from './support/register';
-import { uniqueName, users } from './support/users';
+import { uniqueName } from './support/users';
 
-test('signing in lands on the dashboard and signing out returns to the landing page', async ({ page }) => {
-    await logInAndLand(page, users.owner.email);
+test.use({ role: null });
+
+test('signing in lands on the dashboard and signing out returns to the landing page', async ({ page, household }) => {
+    await logInAndLand(page, household.members.owner.email);
     await expect(page.getByText(/Good (morning|afternoon|evening), Sarah/)).toBeVisible();
 
     await page.getByRole('button', { name: 'Logout' }).click();
@@ -14,8 +16,8 @@ test('signing in lands on the dashboard and signing out returns to the landing p
     await expect(page).toHaveURL(/\/login$/);
 });
 
-test('a wrong password is refused', async ({ page }) => {
-    await logIn(page, users.owner.email, 'not-the-password');
+test('a wrong password is refused', async ({ page, household }) => {
+    await logIn(page, household.members.owner.email, 'not-the-password');
 
     await expect(page.getByText('These credentials do not match our records.')).toBeVisible();
     await expect(page).toHaveURL(/\/login$/);

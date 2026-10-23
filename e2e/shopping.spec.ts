@@ -1,7 +1,5 @@
-import { expect, test } from '@playwright/test';
-import { storageState, uniqueName } from './support/users';
-
-test.use({ storageState: storageState('owner') });
+import { expect, test } from './support/fixtures';
+import { uniqueName } from './support/users';
 
 test('the owner adds an item, ticks it off, then starts a new list', async ({ page }) => {
     const item = uniqueName('Oat milk');
@@ -93,8 +91,4 @@ test('an item ticked off on the dashboard is ticked off on its list', async ({ p
     await expect(page.getByRole('heading', { name: listName })).toBeVisible();
     const row = page.getByRole('checkbox', { name: new RegExp(item) }).first();
     await expect(row).toHaveAttribute('aria-checked', wasDone ? 'false' : 'true');
-
-    // Put it back for the other tests.
-    await row.click();
-    await expect(row).toHaveAttribute('aria-checked', wasDone ? 'true' : 'false');
 });

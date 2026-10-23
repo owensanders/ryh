@@ -48,9 +48,7 @@ test('a full household turns away someone with its join code', async ({ page, br
     const { email } = await ownerOfNewHousehold(page, 'Cody', 'Coder');
 
     const inviteCode = page.getByRole('switch', { name: 'Invite code' });
-    if ((await inviteCode.getAttribute('aria-checked')) !== 'true') {
-        await inviteCode.click();
-    }
+    // A household's invite code starts switched on.
     await expect(inviteCode).toHaveAttribute('aria-checked', 'true');
     const code = (await page.getByTestId('join-code').innerText()).trim();
 

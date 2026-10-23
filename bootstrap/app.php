@@ -24,6 +24,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
         then: function (): void {
             Route::group([], base_path('routes/stripe.php'));
+
+            // Test-only setup for the Playwright suite; nowhere else.
+            if (app()->environment('e2e')) {
+                Route::middleware('web')->group(base_path('routes/e2e.php'));
+            }
         },
     )
     ->withMiddleware(function (Middleware $middleware) {

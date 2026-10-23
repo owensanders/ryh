@@ -1,7 +1,5 @@
-import { expect, test } from '@playwright/test';
-import { storageState, uniqueName } from './support/users';
-
-test.use({ storageState: storageState('owner') });
+import { expect, test } from './support/fixtures';
+import { uniqueName } from './support/users';
 
 test("an event added for today shows under Today in the dashboard's Coming up card", async ({ page }) => {
     const event = uniqueName('Dentist');
@@ -29,8 +27,8 @@ test("a busy day's '+N more' opens the editor, and an event can be renamed and d
 
     await page.goto('/calendar');
 
-    // Four events today is more than a month cell shows.
-    for (const n of [1, 2, 3, 4]) {
+    // Five events today: more than a month cell shows, even after one is deleted.
+    for (const n of [1, 2, 3, 4, 5]) {
         await page.getByRole('button', { name: 'New event' }).click();
         await dialog.getByLabel('Title').fill(`${prefix} ${n}`);
         await dialog.getByRole('button', { name: 'Add event' }).click();
