@@ -15,4 +15,9 @@ class DocumentMoveRequest extends FormRequest
             'folder_id' => ['required', 'integer', 'exists:document_folders,id'],
         ];
     }
+
+    public function folderId(): int
+    {
+        return (int) $this->validated('folder_id');
+    }
 }

@@ -30,18 +30,14 @@ class HouseholdController extends Controller
 
     public function switchCurrent(HouseholdSelectRequest $request, SwitchCurrentHouseholdAction $switch): RedirectResponse
     {
-        $switch->handle($this->user($request), (int) $request->validated('household_id'));
+        $switch->handle($this->user($request), $request->householdId());
 
         return to_route('app');
     }
 
     public function leave(LeaveHouseholdRequest $request, LeaveHouseholdAction $leave, HouseholdOptionsViewModel $getOptions): RedirectResponse
     {
-        $householdName = $leave->handle(
-            $this->user($request),
-            (int) $request->validated('household_id'),
-            $request->boolean('confirm_household_deletion'),
-        );
+        $householdName = $leave->handle($this->user($request), $request->toInput());
 
         if ($getOptions->toData($this->user($request)) === []) {
             return to_route('household.setup');

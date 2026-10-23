@@ -20,4 +20,9 @@ class HouseholdSelectRequest extends FormRequest
             ],
         ];
     }
+
+    public function householdId(): int
+    {
+        return (int) $this->validated('household_id');
+    }
 }

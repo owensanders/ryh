@@ -42,12 +42,13 @@ class HouseholdSetupController extends Controller
             return to_route('household.done');
         }
 
-        $household = $createHousehold->handle($this->user($request), $request->toInput());
+        $setup = $request->toInput();
+        $household = $createHousehold->handle($this->user($request), $setup);
 
         return to_route('household.done')->with('householdSetup', [
             'mode' => 'create',
             'householdName' => $household->name,
-            'inviteCount' => count($request->validated('invites', [])),
+            'inviteCount' => count($setup->invites),
         ]);
     }
 
@@ -57,7 +58,7 @@ class HouseholdSetupController extends Controller
             return to_route('household.done');
         }
 
-        $household = $joinHousehold->handle($this->user($request), (string) $request->validated('code'));
+        $household = $joinHousehold->handle($this->user($request), $request->code());
 
         return to_route('household.done')->with('householdSetup', [
             'mode' => 'join',

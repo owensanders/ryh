@@ -25,7 +25,7 @@ class PasswordResetLinkController extends Controller
     {
         // The status is deliberately ignored — the response must not reveal whether
         // the address is registered.
-        $sendLink->handle($request->validated('email'));
+        $sendLink->handle($request->email());
 
         return back()->with('status', __('A reset link will be sent if the account exists.'));
     }

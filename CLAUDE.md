@@ -62,20 +62,27 @@ Each layer only talks to the one below it.
   business rules.
 - **Form requests** (`app/Http/Requests`): validate, and normalise first in
   `prepareForValidation()` (trim text, `''` → null, cast ids to int,
-  defaults), so `$request->validated()` is already what gets stored. A
-  request for a write builds its typed input in `toInput()`
-  (`ChoreInput::from($this->validated())`), and the controller passes that
-  to the action.
+  defaults), so `$request->validated()` is already what gets stored. It
+  hands its values over typed: a form whose fields go to an action together
+  through `toInput()` (`ChoreInput::from($this->validated())`), and a single
+  value through a named getter (`MoveChoreRequest::status()`,
+  `BudgetCategoryRequest::month()`). Controllers never read, cast or parse
+  the request themselves, query strings included: a page opened with values
+  in its link has a request class too (`ShowRegisterRequest`), which ignores
+  a malformed value rather than refusing the page. Enforced by PHPStan's
+  `TypedRequestValuesRule`; Stripe's webhook payload is the one exception.
 - **Actions** (`app/Actions/<Area>`): all business rules, one class per
   operation (`CreateChoreAction`), run by a public `handle()` method, the way
   Laravel's own Fortify and Jetstream actions work. They take models, enums,
   scalars, lists, or a typed input (`app/Inputs`), never a keyed array, and
-  return the model they worked on (or nothing),
-  never a shaped array. `*Data` is for what the browser receives, so view
-  models build it, not actions. The exceptions are suggestions an action
-  produces rather than reads: `MealSuggestionData`, flashed by the library plan
-  and stored on an `AiMealPlan` by its job. Transactions and
-  notifications start here. Enforced by PHPStan's `TypedActionInputRule`.
+  return the model they worked on, nothing, or, when an outcome can end
+  several ways, a readonly `*Result` (`app/Results`, like
+  `InviteJoinResult`): never a shaped array. `*Data` is for what the
+  browser receives, so view models build it, not actions. The exception is
+  suggestions an action produces rather than reads: `MealSuggestionData`,
+  flashed by the library plan and stored on an `AiMealPlan` by its job.
+  Transactions and notifications start here. Enforced by PHPStan's
+  `TypedActionInputRule`.
 - **View models** (`app/ViewModels/<Area>`): everything one page needs, built
   by a public `toData()` that returns its `*ScreenData` (`ChoreBoardViewModel`).
   Plain classes over the Data layer, not `spatie/laravel-view-models`, which
@@ -105,8 +112,8 @@ and is reached through the household so it's already scoped:
 `$household->chores()->forBoard()->get()`. Anything else stays inline where
 it's used.
 
-Controllers, middleware, form requests, policies, listeners, mail and
-notifications never start a query, run one, or write a model: no
+Controllers, middleware, form requests, policies, listeners, mail,
+notifications and Data classes never start a query, run one, or write a model: no
 `Model::where(...)` or `DB::table(...)`, no relation methods like
 `$household->members()`, no `$model->update(...)`, `->refresh()` or
 `->load(...)`. What they may do: ask a model a question through a method on it
@@ -251,12 +258,15 @@ lock the household row first with `$household->lockRow()`.
 
 ## Errors
 
-An action says what went wrong by throwing, never with `abort()`:
+An action says what went wrong by throwing, never with `abort()` or
+Laravel's `ValidationException`:
 
 - A message people should read: a `UserFacingException` subclass in
   `app/Exceptions`, with named constructors holding the wording
   (`MealPlanUnavailableException::weeklyLimitReached()`). It renders itself as
-  a form error under its `errorKey()`, so controllers don't catch it.
+  a form error under its `errorKey()`, so controllers don't catch it. One
+  whose messages belong under different fields takes the field in its
+  constructor (`MembershipException::alreadyMember()` shows under `email`).
 - Not found, or not this household's: `ModelNotFoundException`, which is a 404.
 
 These are the only messages that reach the screen. Never catch
@@ -279,7 +289,8 @@ A class name ends with what it is: `ChoreStatusEnum`, `CreateChoreAction`,
 `ChoreRequest`, `ChoreController`,
 `ChoreAssignedNotification`, `QueueHeartbeatJob`, `RecordLoginStreakListener`,
 `UserNotificationBroadcastEvent`, `ResolveHouseholdMiddleware`,
-`MoneyHelper`, `UtcDateTimeCast`, `PlatformProbesService`, `AuthorizesHouseholdAccessTrait`.
+`MoneyHelper`, `UtcDateTimeCast`, `PlatformProbesService`, `AuthorizesHouseholdAccessTrait`,
+`ChoreInput`, `InviteJoinResult`.
 **Models are the one exception.** Their class names are stored in the database
 (`notifications.notifiable_type`) and used in channel names. Enforced by
 `NamingConventionsTest`, which also fails when a new folder has no naming rule.

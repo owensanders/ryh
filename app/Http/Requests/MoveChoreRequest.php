@@ -17,4 +17,9 @@ class MoveChoreRequest extends FormRequest
             'status' => ['required', Rule::enum(ChoreStatusEnum::class)],
         ];
     }
+
+    public function status(): ChoreStatusEnum
+    {
+        return ChoreStatusEnum::from((string) $this->validated('status'));
+    }
 }

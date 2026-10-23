@@ -16,4 +16,9 @@ class DestroyPushSubscriptionRequest extends FormRequest
             'endpoint' => ['required', 'string'],
         ];
     }
+
+    public function endpoint(): string
+    {
+        return (string) $this->validated('endpoint');
+    }
 }

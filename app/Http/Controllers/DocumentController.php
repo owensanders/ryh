@@ -38,7 +38,7 @@ class DocumentController extends Controller
 
     public function storeFolder(DocumentFolderRequest $request, CreateDocumentFolderAction $create): RedirectResponse
     {
-        $folder = $create->handle($this->household($request), (string) $request->validated('name'));
+        $folder = $create->handle($this->household($request), $request->name());
 
         return back()->with('toast', "“{$folder->name}” folder created");
     }
@@ -60,7 +60,7 @@ class DocumentController extends Controller
 
     public function move(DocumentMoveRequest $request, Document $document, MoveDocumentAction $move): RedirectResponse
     {
-        $folder = $move->handle($document, (int) $request->validated('folder_id'));
+        $folder = $move->handle($document, $request->folderId());
 
         return back()->with('toast', "“{$document->name}” moved to {$folder->name}");
     }

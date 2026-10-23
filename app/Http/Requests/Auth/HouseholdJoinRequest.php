@@ -15,4 +15,9 @@ class HouseholdJoinRequest extends FormRequest
             'code' => ['required', 'string', 'max:32'],
         ];
     }
+
+    public function code(): string
+    {
+        return (string) $this->validated('code');
+    }
 }

@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Actions\House;
 
 use App\Enums\HouseholdRoleEnum;
+use App\Exceptions\MembershipException;
+use App\Inputs\LeaveHouseholdInput;
 use App\Models\Household;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
 class LeaveHouseholdAction
 {
@@ -18,29 +19,30 @@ class LeaveHouseholdAction
         private readonly DeleteHouseholdAction $deleteHousehold,
     ) {}
 
-    /** @throws ValidationException */
-    /** @return string The household's name, for saying they've left it. */
-    public function handle(User $user, int $householdId, bool $confirmHouseholdDeletion = false): string
+    /**
+     * @return string The household's name, for saying they've left it.
+     *
+     * @throws MembershipException
+     */
+    public function handle(User $user, LeaveHouseholdInput $input): string
     {
-        $household = Household::find($householdId);
+        $household = Household::find($input->householdId);
 
         if ($household === null) {
-            throw (new ModelNotFoundException())->setModel(Household::class, [$householdId]);
+            throw (new ModelNotFoundException())->setModel(Household::class, [$input->householdId]);
         }
 
         $membership = $household->membershipOf($user);
 
         if ($membership === null) {
-            throw (new ModelNotFoundException())->setModel(Household::class, [$householdId]);
+            throw (new ModelNotFoundException())->setModel(Household::class, [$input->householdId]);
         }
 
         if ($membership->role === HouseholdRoleEnum::Owner && $household->isSoleOwner($user)) {
             $hasOtherMembers = $household->members()->get()->contains(fn (User $m) => $m->id !== $user->id);
 
-            if ($hasOtherMembers && ! $confirmHouseholdDeletion) {
-                throw ValidationException::withMessages([
-                    'household' => "You're the sole owner of this household. Leaving will permanently delete it and all its data (chores, meals, shopping lists, calendar, budget, documents). Consider promoting another member to Owner instead, or confirm to delete everything.",
-                ]);
+            if ($hasOtherMembers && ! $input->confirmHouseholdDeletion) {
+                throw MembershipException::soleOwnerLeaving();
             }
 
             $this->cancelSubscription->handle($household);

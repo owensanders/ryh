@@ -7,6 +7,7 @@ rules:
     - Tests\PHPStan\QueryBoundaryRule
     - Tests\PHPStan\UserFacingErrorsRule
     - Tests\PHPStan\TypedActionInputRule
+    - Tests\PHPStan\TypedRequestValuesRule
 
 parameters:
     level: 8

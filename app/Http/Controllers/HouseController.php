@@ -11,7 +11,6 @@ use App\Actions\House\RegenerateJoinCodeAction;
 use App\Actions\House\RemoveMemberAction;
 use App\Actions\House\ToggleJoinCodeAction;
 use App\Actions\House\UpdateHouseholdTimezoneAction;
-use App\Enums\HouseholdRoleEnum;
 use App\Http\Requests\HouseTimezoneRequest;
 use App\Http\Requests\InviteRequest;
 use App\Http\Requests\JoinCodeToggleRequest;
@@ -49,7 +48,7 @@ class HouseController extends Controller
     {
         $household = $this->household($request);
 
-        $role = HouseholdRoleEnum::from($request->validated('role'));
+        $role = $request->role();
         $change->handle($member, $household, $role, $this->user($request));
 
         return back()->with('toast', "{$member->name} is now {$role->label()}");
@@ -76,16 +75,16 @@ class HouseController extends Controller
 
     public function updateTimezone(HouseTimezoneRequest $request, UpdateHouseholdTimezoneAction $update): RedirectResponse
     {
-        $update->handle($this->household($request), $request->validated('timezone'));
+        $update->handle($this->household($request), $request->timezone());
 
         return back()->with('toast', 'Time zone updated');
     }
 
     public function toggleJoinCode(JoinCodeToggleRequest $request, ToggleJoinCodeAction $toggle): RedirectResponse
     {
-        $toggle->handle($this->household($request), (bool) $request->validated('enabled'));
+        $toggle->handle($this->household($request), $request->enabled());
 
-        return back()->with('toast', $request->boolean('enabled') ? 'Invite code turned on' : 'Invite code turned off');
+        return back()->with('toast', $request->enabled() ? 'Invite code turned on' : 'Invite code turned off');
     }
 
     public function regenerateJoinCode(Request $request, RegenerateJoinCodeAction $regenerate): RedirectResponse

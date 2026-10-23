@@ -56,7 +56,7 @@ class RecipeController extends Controller
         Recipe $recipe,
         AddRecipeIngredientsToListAction $addIngredients,
     ): RedirectResponse {
-        $updated = $addIngredients->handle($this->household($request), $recipe, (int) $request->validated('shopping_list_id'));
+        $updated = $addIngredients->handle($this->household($request), $recipe, $request->shoppingListId());
 
         return back()->with('toast', "Ingredients added to {$updated->name}");
     }

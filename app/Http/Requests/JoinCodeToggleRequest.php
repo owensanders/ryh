@@ -15,4 +15,9 @@ class JoinCodeToggleRequest extends FormRequest
             'enabled' => ['required', 'boolean'],
         ];
     }
+
+    public function enabled(): bool
+    {
+        return (bool) $this->validated('enabled');
+    }
 }

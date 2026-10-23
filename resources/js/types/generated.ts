@@ -268,10 +268,6 @@ export type IncomeSourceData = {
     isRecurring: boolean;
 };
 export type InviteJoinOutcomeEnum = 'joined' | 'household_gone' | 'needs_guardian' | 'household_full';
-export type InviteJoinResultData = {
-    outcome: InviteJoinOutcomeEnum;
-    householdName: string | null;
-};
 export type KitchenEquipmentEnum =
     | 'Oven'
     | 'Hob'

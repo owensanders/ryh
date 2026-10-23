@@ -44,10 +44,7 @@ class NotificationController extends Controller
     {
         $save->handle(
             $this->user($request),
-            $request->validated('endpoint'),
-            $request->validated('keys.p256dh'),
-            $request->validated('keys.auth'),
-            $request->validated('contentEncoding'),
+            $request->toInput(),
         );
 
         return response()->noContent();
@@ -55,7 +52,7 @@ class NotificationController extends Controller
 
     public function unsubscribe(DestroyPushSubscriptionRequest $request, DeletePushSubscriptionAction $delete): HttpResponse
     {
-        $delete->handle($this->user($request), $request->validated('endpoint'));
+        $delete->handle($this->user($request), $request->endpoint());
 
         return response()->noContent();
     }

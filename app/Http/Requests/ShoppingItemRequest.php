@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Inputs\ShoppingItemInput;
 use App\Traits\NormalisesInputTrait;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -32,5 +33,10 @@ class ShoppingItemRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge(['name' => $this->trimmed('name'), 'quantity' => $this->trimmedOrNull('quantity')]);
+    }
+
+    public function toInput(): ShoppingItemInput
+    {
+        return ShoppingItemInput::from($this->validated());
     }
 }

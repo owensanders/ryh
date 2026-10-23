@@ -35,7 +35,7 @@ class ProfileController extends Controller
 
     public function destroy(DeleteAccountRequest $request, DeleteAccountAction $deleteAccount): RedirectResponse
     {
-        $deleteAccount->handle($this->user($request), $request->boolean('confirm_household_deletion'));
+        $deleteAccount->handle($this->user($request), $request->confirmsHouseholdDeletion());
 
         return redirect('/');
     }

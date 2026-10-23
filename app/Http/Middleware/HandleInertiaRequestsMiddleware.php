@@ -38,7 +38,7 @@ class HandleInertiaRequestsMiddleware extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user() !== null ? AuthUserData::from($request->user()) : null,
+                'user' => $request->user() !== null ? AuthUserData::fromModel($request->user()) : null,
             ],
             // Lazy: this runs before the route's middleware has resolved the household.
             'household' => fn () => $this->household($request),

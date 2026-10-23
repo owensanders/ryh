@@ -29,4 +29,9 @@ class DocumentFolderRequest extends FormRequest
             'name.required' => 'Give the folder a name.',
         ];
     }
+
+    public function name(): string
+    {
+        return (string) $this->validated('name');
+    }
 }

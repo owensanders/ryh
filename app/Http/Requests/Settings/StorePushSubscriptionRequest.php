@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Settings;
 
+use App\Inputs\PushSubscriptionInput;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -22,5 +23,10 @@ class StorePushSubscriptionRequest extends FormRequest
             'keys.auth' => ['required', 'string', 'max:255'],
             'contentEncoding' => ['nullable', Rule::enum(ContentEncoding::class)],
         ];
+    }
+
+    public function toInput(): PushSubscriptionInput
+    {
+        return PushSubscriptionInput::from($this->validated());
     }
 }

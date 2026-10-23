@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Support\CurrentHouseholdHelper;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -37,5 +39,14 @@ class IndexCalendarRequest extends FormRequest
         throw new HttpResponseException(
             redirect()->route('calendar.index')->withErrors($validator)->withInput(),
         );
+    }
+
+    /** The month asked for (`YYYY-MM`), or the household's current one. */
+    public function month(): CarbonImmutable
+    {
+        $month = $this->validated('month');
+        $requested = is_string($month) ? CarbonImmutable::createFromFormat('!Y-m', $month) : null;
+
+        return ($requested ?? CurrentHouseholdHelper::household($this)->today())->startOfMonth();
     }
 }

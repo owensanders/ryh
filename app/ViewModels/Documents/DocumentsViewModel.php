@@ -31,7 +31,7 @@ class DocumentsViewModel
                 ->values()
                 ->all(),
             active: $active !== null ? DocumentFolderData::fromModel($active, $activeDocuments->count()) : null,
-            documents: $activeDocuments->map(DocumentData::fromModel(...))->values()->all(),
+            documents: $activeDocuments->map(fn (Document $document) => DocumentData::fromModel($document, $household->today()))->values()->all(),
             storageLabel: $this->formatBytes($totalBytes).' of '.$this->formatBytes($quotaBytes),
             storagePct: $quotaBytes > 0 ? max(2, (int) round($totalBytes / $quotaBytes * 100)) : 0,
         );
