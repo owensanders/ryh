@@ -1,10 +1,28 @@
 <script setup lang="ts">
 import IconButton from '@/components/ui/IconButton.vue';
-import type { DocumentData } from '@/types/generated';
+import { moveDocument } from '@/composables/useMoveDocument';
+import type { DocumentData, DocumentFolderData } from '@/types/generated';
 import { Download, Trash2 } from 'lucide-vue-next';
+import { computed } from 'vue';
 
-/** One document: drag it onto a folder to move it, download it, or delete it. */
-defineProps<{ document: DocumentData }>();
+/**
+ * One document: move it (drag it onto a folder, or pick one from its "Move
+ * to" menu, which works from a keyboard or a touch screen), download it, or
+ * delete it.
+ */
+const props = defineProps<{ document: DocumentData; folders: DocumentFolderData[]; activeId: number }>();
+
+const otherFolders = computed(() => props.folders.filter((folder) => folder.id !== props.activeId));
+
+function moveTo(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const folderId = Number(select.value);
+    select.value = '';
+
+    if (folderId) {
+        moveDocument(props.document.id, folderId);
+    }
+}
 
 const emit = defineEmits<{ delete: [document: DocumentData] }>();
 
@@ -53,7 +71,16 @@ const draggingId = defineModel<number | null>('draggingId', { required: true });
                 </span>
                 <span class="text-[11.5px] text-ryh-ink3">Added by {{ document.addedBy.name }}</span>
             </template>
-            <div class="ml-auto flex gap-1">
+            <div class="ml-auto flex items-center gap-1">
+                <select
+                    v-if="otherFolders.length"
+                    :aria-label="`Move ${document.name} to another folder`"
+                    class="h-[30px] max-w-[110px] rounded-lg border-0 bg-transparent px-1.5 text-[11.5px] font-semibold text-ryh-ink2 transition hover:bg-ryh-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-ryh-coral"
+                    @change="moveTo"
+                >
+                    <option value="">Move to…</option>
+                    <option v-for="folder in otherFolders" :key="folder.id" :value="folder.id">{{ folder.name }}</option>
+                </select>
                 <a
                     :href="route('documents.download', { document: document.id })"
                     title="Download"

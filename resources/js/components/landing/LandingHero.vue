@@ -107,7 +107,7 @@ function watchWithSound(): void {
                     v-if="tourMuted || tourEnded"
                     type="button"
                     class="group absolute inset-0 flex items-end p-4"
-                    :aria-label="tourEnded ? 'Watch the product tour again with sound' : 'Watch the product tour with sound'"
+                    :aria-label="tourEnded ? 'Replay the product tour with sound' : 'Watch with sound: the product tour'"
                     @click="watchWithSound"
                 >
                     <span

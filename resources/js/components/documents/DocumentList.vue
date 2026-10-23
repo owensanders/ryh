@@ -10,7 +10,7 @@ import { Search, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 /** The open folder's documents, searched and sorted in the browser, with deleting the folder or a document. */
-const props = defineProps<{ active: DocumentFolderData; documents: DocumentData[] }>();
+const props = defineProps<{ active: DocumentFolderData; documents: DocumentData[]; folders: DocumentFolderData[] }>();
 
 /** The document being dragged, if any. */
 const draggingId = defineModel<number | null>('draggingId', { required: true });
@@ -87,12 +87,14 @@ function destroyDocument(document: DocumentData): void {
                 :key="document.id"
                 v-model:dragging-id="draggingId"
                 :document="document"
+                :folders="folders"
+                :active-id="active.id"
                 @delete="destroyDocument"
             />
         </div>
         <div v-else class="py-14 text-center">
             <div class="text-[15px] font-bold">Nothing in here yet</div>
-            <div class="mt-1.5 text-[13px] text-ryh-ink3">Drop a file above, or drag one in from another folder.</div>
+            <div class="mt-1.5 text-[13px] text-ryh-ink3">Drop a file above, or move one in from another folder.</div>
         </div>
     </Card>
 

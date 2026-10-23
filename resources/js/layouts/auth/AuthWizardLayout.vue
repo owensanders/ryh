@@ -27,7 +27,7 @@ const steps = [
             >
                 <div class="absolute -right-16 -top-16 h-72 w-72 rounded-full bg-ryh-coral opacity-20 blur-3xl"></div>
 
-                <Link :href="route('home')" class="relative flex" aria-label="RYH home">
+                <Link :href="route('home')" class="relative flex">
                     <RyhLogo class="h-9" />
                 </Link>
 

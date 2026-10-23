@@ -34,7 +34,7 @@ const draggingId = ref<number | null>(null);
 
             <div v-if="active" class="flex w-full min-w-0 flex-1 flex-col gap-3.5">
                 <DocumentUpload :active="active" />
-                <DocumentList v-model:dragging-id="draggingId" :active="active" :documents="documents" />
+                <DocumentList v-model:dragging-id="draggingId" :active="active" :documents="documents" :folders="folders" />
             </div>
 
             <div v-else class="flex w-full min-w-0 flex-1 flex-col items-center justify-center gap-3 py-24 text-center">

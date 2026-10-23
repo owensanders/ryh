@@ -151,7 +151,8 @@ touched. Each test makes its own Parker household through a test-only route
 workers locally, two in CI. Registration links are read from Mailpit, and AI
 meal planning is a fixed fake (`App\Ai\Fakes\E2eMealPlanFake`), so no API key
 or paid call is needed. CI runs the same suite in the `e2e` job and uploads the
-report and traces when it fails.
+report and traces when it fails. `e2e/accessibility.spec.ts` runs axe on each
+main page and fails on serious WCAG 2.1 A/AA problems, colour contrast aside.
 
 Build the frontend in Sail (`sail npm run build`) before a run: the e2e server
 serves `public/build`, and a stale build tests old code.
