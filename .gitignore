@@ -3,12 +3,10 @@
 /public/build
 /public/hot
 /public/storage
-# Rendered promo video (see video/) — kept local until it's hosted on S3.
+# The promo video's Remotion project, and what it renders, live only locally;
+# the rendered .mp4 stays local until it's hosted on S3.
+/video/
 /public/videos/*.mp4
-# The TikTok cut of the promo video, kept local for now.
-/video/src/tiktok/
-/video/src/components/PhoneFrame.tsx
-/video/scripts/render-tiktok.mjs
 .DS_Store
 /storage/*.key
 /storage/pail
