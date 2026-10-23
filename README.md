@@ -127,6 +127,7 @@ CI runs all of these on every pull request:
 ./vendor/bin/sail npm run lint
 ./vendor/bin/sail npm run format:check
 ./vendor/bin/sail npx vue-tsc --noEmit
+./vendor/bin/sail npm test               # Vitest: composables and lib helpers
 ./vendor/bin/sail artisan typescript:transform       # regenerate types after changing app/Data or app/Enums
 ```
 

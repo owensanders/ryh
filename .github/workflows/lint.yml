@@ -67,3 +67,6 @@ jobs:
 
       - name: Lint Frontend
         run: npx eslint .
+
+      - name: Unit-test Frontend
+        run: npm test
