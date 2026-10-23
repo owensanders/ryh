@@ -4,6 +4,7 @@ import HouseInvite from '@/components/house/HouseInvite.vue';
 import Button from '@/components/ui/Button.vue';
 import Card from '@/components/ui/Card.vue';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import Select from '@/components/ui/Select.vue';
 import { forMinors } from '@/lib/house';
 import type { HouseData } from '@/types/generated';
 import { router } from '@inertiajs/vue3';
@@ -95,16 +96,17 @@ function approveMember(memberId: number): void {
                     </div>
                     <div class="mt-1 truncate text-[12.5px] text-ryh-ink3">{{ member.email }}</div>
                 </div>
-                <select
-                    :value="member.role"
+                <Select
+                    :model-value="member.role"
+                    size="sm"
                     :aria-label="`Role for ${member.name}`"
-                    class="order-last ml-[58px] h-[38px] min-w-0 flex-1 rounded-[11px] border border-ryh-line bg-ryh-sunk px-2.5 text-[13px] font-semibold sm:order-none sm:ml-0 sm:w-[132px] sm:flex-none"
+                    class="order-last ml-[58px] flex-1 sm:order-none sm:ml-0 sm:w-[132px] sm:flex-none"
                     @change="setRole(member.id, ($event.target as HTMLSelectElement).value, $event)"
                 >
                     <option v-for="option in house.roleOptions" :key="option.value" :value="option.value">
                         {{ option.label }}
                     </option>
-                </select>
+                </Select>
                 <button
                     v-if="member.pendingReason === 'requested'"
                     type="button"

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
 import Button from '@/components/ui/Button.vue';
 import Card from '@/components/ui/Card.vue';
 import Field from '@/components/ui/Field.vue';
@@ -51,7 +50,7 @@ const updatePassword = () => {
                 <p class="mt-1 text-[13px] text-ryh-ink3">Use a long, random password to keep the account secure.</p>
 
                 <form class="mt-5 flex flex-col gap-4" @submit.prevent="updatePassword">
-                    <Field label="Current password" for="current_password">
+                    <Field label="Current password" for="current_password" :error="form.errors.current_password">
                         <Input
                             id="current_password"
                             ref="currentPasswordInput"
@@ -61,10 +60,9 @@ const updatePassword = () => {
                             autocomplete="current-password"
                             placeholder="••••••••"
                         />
-                        <InputError :message="form.errors.current_password" />
                     </Field>
 
-                    <Field label="New password" for="password">
+                    <Field label="New password" for="password" :error="form.errors.password">
                         <Input
                             id="password"
                             ref="passwordInput"
@@ -74,10 +72,9 @@ const updatePassword = () => {
                             autocomplete="new-password"
                             placeholder="••••••••"
                         />
-                        <InputError :message="form.errors.password" />
                     </Field>
 
-                    <Field label="Confirm password" for="password_confirmation">
+                    <Field label="Confirm password" for="password_confirmation" :error="form.errors.password_confirmation">
                         <Input
                             id="password_confirmation"
                             v-model="form.password_confirmation"
@@ -86,7 +83,6 @@ const updatePassword = () => {
                             autocomplete="new-password"
                             placeholder="••••••••"
                         />
-                        <InputError :message="form.errors.password_confirmation" />
                     </Field>
 
                     <div class="flex items-center gap-4">

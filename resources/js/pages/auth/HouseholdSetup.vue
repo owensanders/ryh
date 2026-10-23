@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import GuardianConfirm from '@/components/GuardianConfirm.vue';
-import InputError from '@/components/InputError.vue';
 import Button from '@/components/ui/Button.vue';
+import ErrorMessage from '@/components/ui/ErrorMessage.vue';
 import Field from '@/components/ui/Field.vue';
 import Input from '@/components/ui/Input.vue';
 import Select from '@/components/ui/Select.vue';
@@ -142,9 +142,8 @@ function submitJoin(): void {
                 class="mt-5 flex flex-col gap-3.5 rounded-[20px] border border-ryh-line bg-ryh-card p-6"
                 @submit.prevent="submitCreate"
             >
-                <Field label="Household name" for="householdName">
+                <Field label="Household name" for="householdName" :error="createForm.errors.name">
                     <Input id="householdName" v-model="createForm.name" type="text" placeholder="The Doe household" />
-                    <InputError :message="createForm.errors.name" />
                 </Field>
 
                 <Field label="Household size" for="householdSize">
@@ -187,19 +186,17 @@ function submitJoin(): void {
                         That's everyone — a household holds {{ props.maxMembers }} people, including you.
                     </div>
                     <div v-else class="mt-2.5 flex gap-2">
-                        <input
+                        <Input
                             v-model="inviteEmail"
                             type="email"
                             placeholder="their@email.co.uk"
-                            class="h-[46px] min-w-0 flex-1 rounded-[13px] border border-ryh-line bg-ryh-sunk px-3.5 text-sm placeholder:text-ryh-ink3"
+                            aria-label="Email to invite"
+                            class="flex-1"
                             @keydown.enter.prevent="addInvite"
                         />
-                        <select
-                            v-model="inviteRole"
-                            class="h-[46px] w-[130px] rounded-[13px] border border-ryh-line bg-ryh-sunk px-2.5 text-[13px] font-semibold"
-                        >
+                        <Select v-model="inviteRole" aria-label="Their role" class="w-[130px] px-2.5 text-[13px] font-semibold">
                             <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
-                        </select>
+                        </Select>
                         <button
                             type="button"
                             class="h-[46px] rounded-[13px] border border-ryh-line px-4 text-[13.5px] font-bold transition-colors hover:bg-ryh-soft"
@@ -208,11 +205,11 @@ function submitJoin(): void {
                             Add
                         </button>
                     </div>
-                    <InputError :message="inviteError" />
+                    <ErrorMessage :message="inviteError" />
 
                     <div v-if="invitesMinors" class="mt-3">
                         <GuardianConfirm id="setup-guardian" v-model="createForm.guardian_confirmed" />
-                        <InputError :message="createForm.errors.guardian_confirmed" />
+                        <ErrorMessage :message="createForm.errors.guardian_confirmed" />
                     </div>
                 </div>
 
@@ -229,7 +226,7 @@ function submitJoin(): void {
             </form>
 
             <form v-else class="mt-5 flex flex-col gap-3.5 rounded-[20px] border border-ryh-line bg-ryh-card p-6" @submit.prevent="submitJoin">
-                <Field label="Invite code" for="joinCode">
+                <Field label="Invite code" for="joinCode" :error="joinForm.errors.code">
                     <Input
                         id="joinCode"
                         v-model="joinForm.code"
@@ -238,7 +235,6 @@ function submitJoin(): void {
                         placeholder="DOE-4Q72KD"
                     />
                     <span class="text-[12.5px] text-ryh-ink3">Ask whoever set the household up to send you the code.</span>
-                    <InputError :message="joinForm.errors.code" />
                 </Field>
 
                 <div class="mt-2 flex items-center gap-3.5">

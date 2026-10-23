@@ -188,11 +188,15 @@ binding in `AppServiceProvider`.
   secondary, danger, dark or card; `href` makes it a link) for anything
   styled `ryh-btn`, and `IconButton` for a button that shows only an icon.
   Its `label` prop is required and becomes the accessible name and tooltip.
-  Inside a dialog's trigger or close, wrap them with `as-child`. Form controls are
-  `Input`, `Select` and `Textarea` (`v-model`; other attributes pass
-  through), inside a `Field` (`label`, `for` = the control's id, `error`,
-  `hint`), which links the label and marks the control invalid and
-  described by its error. A bordered panel is a `Card` (`as` for a
+  Inside a dialog's trigger or close, wrap them with `as-child`. Every text
+  input, select and textarea is an `Input`, `Select` or `Textarea`
+  (`v-model`; other attributes pass through): `size` `sm`, `md` or `lg`, or
+  `bare` inside a box of its own, which then shows the focus ring
+  (`focus-within:`). A labelled field sits in a `Field` (`label`, `for` =
+  the control's id, `error`, `hint`, an `aside` slot beside the label,
+  `hideLabel`), which links the label and marks the control invalid and
+  described by its error. A control without a visible label has an
+  `aria-label`. An error that isn't about one field is an `ErrorMessage`. A bordered panel is a `Card` (`as` for a
   section), and a small soft label a `Badge` (`mono` for times and costs).
   `ui/dialog` and `ui/tooltip` are shadcn-vue's, generated: change them
   only to fix them.

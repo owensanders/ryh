@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import Button from '@/components/ui/Button.vue';
+import Field from '@/components/ui/Field.vue';
 import Input from '@/components/ui/Input.vue';
 import { useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
-import InputError from '@/components/InputError.vue';
 import {
     Dialog,
     DialogClose,
@@ -68,8 +68,7 @@ const closeModal = () => {
                             </DialogDescription>
                         </DialogHeader>
 
-                        <div class="flex flex-col gap-1.5">
-                            <label for="password" class="sr-only">Password</label>
+                        <Field label="Password" for="password" hide-label :error="form.errors.password">
                             <Input
                                 id="password"
                                 ref="passwordInput"
@@ -80,8 +79,7 @@ const closeModal = () => {
                                 autocomplete="current-password"
                                 placeholder="Password"
                             />
-                            <InputError :message="form.errors.password" />
-                        </div>
+                        </Field>
 
                         <div v-if="householdError" class="rounded-[13px] bg-[color-mix(in_srgb,var(--ryh-coral)_10%,transparent)] p-3.5">
                             <p class="text-[13px] text-ryh-ink2">{{ householdError }}</p>

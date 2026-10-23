@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import IconButton from '@/components/ui/IconButton.vue';
+import Select from '@/components/ui/Select.vue';
 import { moveDocument } from '@/composables/useMoveDocument';
 import type { DocumentData, DocumentFolderData } from '@/types/generated';
 import { Download, Trash2 } from 'lucide-vue-next';
@@ -72,15 +73,17 @@ const draggingId = defineModel<number | null>('draggingId', { required: true });
                 <span class="text-[11.5px] text-ryh-ink3">Added by {{ document.addedBy.name }}</span>
             </template>
             <div class="ml-auto flex items-center gap-1">
-                <select
+                <Select
                     v-if="otherFolders.length"
+                    model-value=""
+                    bare
                     :aria-label="`Move ${document.name} to another folder`"
-                    class="h-[30px] max-w-[110px] rounded-lg border-0 bg-transparent px-1.5 text-[11.5px] font-semibold text-ryh-ink2 transition hover:bg-ryh-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-ryh-coral"
+                    class="h-[30px] max-w-[110px] flex-none rounded-lg px-1.5 text-[11.5px] font-semibold text-ryh-ink2 transition hover:bg-ryh-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-ryh-coral"
                     @change="moveTo"
                 >
                     <option value="">Move to…</option>
                     <option v-for="folder in otherFolders" :key="folder.id" :value="folder.id">{{ folder.name }}</option>
-                </select>
+                </Select>
                 <a
                     :href="route('documents.download', { document: document.id })"
                     title="Download"

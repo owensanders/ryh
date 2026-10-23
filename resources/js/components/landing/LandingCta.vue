@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Input from '@/components/ui/Input.vue';
 import type { PlanData } from '@/types/generated';
 import { router } from '@inertiajs/vue3';
 import { ref } from 'vue';
@@ -25,13 +26,13 @@ function startRegistration(): void {
 
         <form class="flex w-full flex-none flex-col gap-2.5 lg:w-[360px]" @submit.prevent="startRegistration">
             <label for="cta-email" class="sr-only">Email address</label>
-            <input
+            <Input
                 id="cta-email"
                 v-model="email"
                 type="email"
                 autocomplete="email"
                 placeholder="you@household.co.uk"
-                class="h-[54px] rounded-[15px] border border-ryh-line bg-ryh-card px-[18px] text-[15px] text-ryh-ink placeholder:text-ryh-ink3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ryh-coral"
+                class="h-[54px] rounded-[15px] bg-ryh-card px-[18px] text-[15px]"
             />
             <button type="submit" class="h-[54px] rounded-[15px] bg-ryh-coral text-[15.5px] font-bold text-white transition hover:-translate-y-0.5">
                 Create your household
