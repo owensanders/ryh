@@ -1,8 +1,17 @@
 # RYH
 
+[![tests](https://github.com/owensanders/ryh/actions/workflows/tests.yml/badge.svg)](https://github.com/owensanders/ryh/actions/workflows/tests.yml)
+[![linter](https://github.com/owensanders/ryh/actions/workflows/lint.yml/badge.svg)](https://github.com/owensanders/ryh/actions/workflows/lint.yml)
+
 Family home organiser — dashboard, meal planner, shopping lists, chores,
 shared calendar, budget and a document vault, with live in-app notifications.
 A Laravel 12 + Inertia 3 + Vue 3 (TypeScript) + Tailwind app, running under Laravel Sail.
+
+| Dashboard | Meal planner |
+|---|---|
+| ![The dashboard: tonight's dinner, the shopping list, today's chores, what's coming up and the month's budget](docs/screenshots/dashboard.png) | ![The meal planner: a week of meals by day, with the recipe library below](docs/screenshots/meals.png) |
+| **Calendar** | **Chores** |
+| ![The calendar: a month of household events, filterable by person](docs/screenshots/calendar.png) | ![The chore board: each person's progress, today's tasks and completed ones](docs/screenshots/chores.png) |
 
 RYH is for UK households, by design: dates are written the UK way (en-GB),
 money is in pounds (£), and AI meal plans are costed at UK supermarket prices.
@@ -128,9 +137,11 @@ Things to check on the phone:
 
 ## Checks
 
-Run all of these before merging a change. CI (`.github/workflows`) is set up
-to run the same, but GitHub Actions don't run on this private repo without
-billing, so they're run locally. The list is kept in step with CLAUDE.md's.
+Run all of these before merging a change. CI (`.github/workflows`) runs the
+same on every push and pull request: the `linter` workflow (Pint, PHPStan,
+Prettier, ESLint, Vitest) and the `tests` workflow (generated types, build,
+type check, PHPUnit, and the Playwright suite). The list is kept in step with
+CLAUDE.md's.
 
 ```bash
 ./vendor/bin/sail bin pint --test

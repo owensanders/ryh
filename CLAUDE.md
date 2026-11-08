@@ -337,9 +337,8 @@ and `DB_DATABASE=schema_dump artisan schema:dump --prune`, keep
 
 ## Checks
 
-Run all of these before merging. CI (`.github/workflows`) is set up to run
-the same, but GitHub Actions don't run on this private repo without
-billing, so they're run locally.
+Run all of these before merging. CI (`.github/workflows`) runs the same on
+every push and pull request.
 
 ```bash
 ./vendor/bin/sail bin pint --test
