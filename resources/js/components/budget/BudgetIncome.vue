@@ -89,13 +89,13 @@ function destroyIncome(): void {
                 >
                     {{ source.initials }}
                 </span>
-                <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-1.5">
+                <span class="block min-w-0 flex-1">
+                    <span class="flex items-center gap-1.5">
                         <span class="text-[13.5px] font-semibold">{{ source.label }}</span>
-                        <RecurringIcon v-if="source.isRecurring" />
-                    </div>
-                    <div v-if="source.meta" class="mt-0.5 text-[11.5px] text-ryh-ink3">{{ source.meta }}</div>
-                </div>
+                        <RecurringIcon v-if="source.isRecurring" plain />
+                    </span>
+                    <span v-if="source.meta" class="mt-0.5 block text-[11.5px] text-ryh-ink3">{{ source.meta }}</span>
+                </span>
                 <span class="font-mono text-[13px]">{{ source.amount }}</span>
             </button>
         </div>
