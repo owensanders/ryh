@@ -13,8 +13,11 @@ final class MoneyHelper
         return (int) round(((float) $pounds) * 100);
     }
 
+    /** The sign goes before the pound sign: -215000 is "-£2,150", not "£-2,150". */
     public static function format(int $pence): string
     {
-        return '£'.number_format(intdiv($pence, 100));
+        $pounds = intdiv($pence, 100);
+
+        return ($pounds < 0 ? '-' : '').'£'.number_format(abs($pounds));
     }
 }

@@ -354,6 +354,25 @@ class RyhSeeder extends Seeder
                 'position' => $position,
             ]);
         }
+
+        // [label, meta, colour, £ a month] — enough coming in to cover what's budgeted.
+        $income = [
+            ['Sarah’s salary', 'Monthly', PaletteEnum::Mint, 2400],
+            ['James’s salary', 'Monthly', PaletteEnum::Sky, 1900],
+            ['Child benefit', 'Every 4 weeks', PaletteEnum::Sun, 225],
+        ];
+
+        foreach ($income as $position => [$label, $meta, $colour, $amount]) {
+            $household->incomeSources()->create([
+                'label' => $label,
+                'meta' => $meta,
+                'colour' => $colour,
+                'amount_pence' => $amount * 100,
+                'is_recurring' => true,
+                'month' => $month->toDateString(),
+                'position' => $position,
+            ]);
+        }
     }
 
     /**
