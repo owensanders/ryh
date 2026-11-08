@@ -133,15 +133,19 @@ test('a document moves to another folder from its menu, with the keyboard alone'
     await page.getByRole('link', { name: /Property/ }).click();
     await expect(page.getByRole('heading', { name: 'Property' })).toBeVisible();
 
+    const filename = `${uniqueName('epc').replace(/\s/g, '-')}.pdf`;
+    await page.getByLabel('Upload files').setInputFiles({ name: filename, mimeType: 'application/pdf', buffer: readFileSync('e2e/fixtures/receipt.pdf') });
+    await expect(page.getByText(filename, { exact: true })).toBeVisible();
+
     // A native select: it takes focus from the keyboard, and a choice moves the document.
-    const menu = page.getByLabel('Move EPC certificate.pdf to another folder');
+    const menu = page.getByLabel(`Move ${filename} to another folder`);
     await menu.focus();
     await expect(menu).toBeFocused();
     await menu.selectOption({ label: 'Insurance' });
-    await expect(page.getByText('EPC certificate.pdf')).toHaveCount(0);
+    await expect(page.getByText(filename, { exact: true })).toHaveCount(0);
 
     await page.getByRole('link', { name: /Insurance/ }).click();
-    await expect(page.getByText('EPC certificate.pdf')).toBeVisible();
+    await expect(page.getByText(filename, { exact: true })).toBeVisible();
 });
 
 test("a file that can't be uploaded says why", async ({ page }) => {

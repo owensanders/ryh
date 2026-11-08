@@ -62,17 +62,18 @@ const draggingId = defineModel<number | null>('draggingId', { required: true });
             </span>
         </div>
 
-        <div class="mt-3.5 flex items-center gap-2 border-t border-ryh-line pt-3">
-            <template v-if="document.addedBy">
+        <!-- Wraps on a narrow card: the actions drop to their own line, right-aligned, rather than spilling out. -->
+        <div class="mt-3.5 flex flex-wrap items-center gap-2 border-t border-ryh-line pt-3">
+            <div v-if="document.addedBy" class="flex min-w-0 items-center gap-2">
                 <span
                     class="grid h-[22px] w-[22px] flex-none place-items-center rounded-lg text-[9px] font-extrabold text-[#0E1A2B]"
                     :style="{ background: document.addedBy.colour }"
                 >
                     {{ document.addedBy.initials }}
                 </span>
-                <span class="text-[11.5px] text-ryh-ink3">Added by {{ document.addedBy.name }}</span>
-            </template>
-            <div class="ml-auto flex items-center gap-1">
+                <span class="min-w-0 truncate text-[11.5px] text-ryh-ink3">Added by {{ document.addedBy.name }}</span>
+            </div>
+            <div class="ml-auto flex flex-none items-center gap-1">
                 <Select
                     v-if="otherFolders.length"
                     model-value=""

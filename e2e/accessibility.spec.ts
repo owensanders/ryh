@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import type { Page } from '@playwright/test';
+import { readFileSync } from 'node:fs';
 import { expect, test } from './support/fixtures';
 
 /**
@@ -16,7 +17,10 @@ async function seriousProblems(page: Page): Promise<string[]> {
 
     return results.violations
         .filter((violation) => FAILS_ON.includes(violation.impact ?? ''))
-        .map((violation) => `${violation.id} (${violation.impact}): ${violation.help}\n    ${violation.nodes.map((node) => node.target.join(' ')).join('\n    ')}`);
+        .map(
+            (violation) =>
+                `${violation.id} (${violation.impact}): ${violation.help}\n    ${violation.nodes.map((node) => node.target.join(' ')).join('\n    ')}`,
+        );
 }
 
 const appPages = [
@@ -46,6 +50,17 @@ for (const path of appPages) {
         expect(await seriousProblems(page)).toEqual([]);
     });
 }
+
+// Nothing is seeded into a folder, so upload one to have a document card checked too.
+test('/documents with a document in the folder has no serious accessibility problems', async ({ page }) => {
+    await page.goto('/documents');
+    await page
+        .getByLabel('Upload files')
+        .setInputFiles({ name: 'receipt.pdf', mimeType: 'application/pdf', buffer: readFileSync('e2e/fixtures/receipt.pdf') });
+    await expect(page.getByLabel('Move receipt.pdf to another folder')).toBeVisible();
+
+    expect(await seriousProblems(page)).toEqual([]);
+});
 
 test.describe('signed out', () => {
     test.use({ role: null });
