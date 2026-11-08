@@ -1,7 +1,9 @@
 # RYH: working conventions
 
 Laravel 12 + Inertia 3 + Vue 3 (TypeScript), run under Sail. The README
-covers setup, features, and the architecture diagrams. This file is the rules.
+covers the features; `docs/` covers setup (`development.md`), the
+architecture and its diagrams (`architecture.md`) and the checks
+(`testing.md`). This file is the rules.
 Where a test enforces a rule, it's named; a change that breaks the rule fails
 the checks (see "Checks").
 
@@ -337,9 +339,8 @@ and `DB_DATABASE=schema_dump artisan schema:dump --prune`, keep
 
 ## Checks
 
-Run all of these before merging. CI (`.github/workflows`) is set up to run
-the same, but GitHub Actions don't run on this private repo without
-billing, so they're run locally.
+Run all of these before merging. CI (`.github/workflows`) runs the same on
+every push and pull request.
 
 ```bash
 ./vendor/bin/sail bin pint --test
@@ -368,5 +369,5 @@ meal's day in its dialog).
 
 ## Keep in step
 
-- The README's architecture diagrams are Mermaid. Update them when the shape
-  of the system changes (a new service, queue or layer).
+- The architecture diagrams in `docs/architecture.md` are Mermaid. Update
+  them when the shape of the system changes (a new service, queue or layer).

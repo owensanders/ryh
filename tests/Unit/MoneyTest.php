@@ -17,4 +17,12 @@ class MoneyTest extends TestCase
         $this->assertSame('£1', MoneyHelper::format(199));
         $this->assertSame('£1,284', MoneyHelper::format(128_400));
     }
+
+    #[Test]
+    public function itPutsTheMinusSignBeforeThePoundSign(): void
+    {
+        $this->assertSame('-£2,150', MoneyHelper::format(-215_000));
+        $this->assertSame('-£1', MoneyHelper::format(-199));
+        $this->assertSame('£0', MoneyHelper::format(-50));
+    }
 }
